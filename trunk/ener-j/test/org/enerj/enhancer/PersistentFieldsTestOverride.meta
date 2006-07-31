@@ -1,0 +1,15 @@
+# $Header: /cvsroot/ener-j/ener-j/test/org/enerj/enhancer/PersistentFieldsTestOverride.meta,v 1.3 2005/08/12 02:56:44 dsyrstad Exp $
+
+class *
+persistent=not  # Default for all
+
+class org.enerj.enhancer.PersistentFieldsTest$TestClass1
+    persistent=capable
+    field mIntOverriddenPersistent1
+        transient=false
+    field mIntOverriddenPersistent2
+        transient=false
+    field mThisDoesNotExistOnTheClass
+        transient=true
+    field mIntOverriddenNonPersistent2
+        transient=true

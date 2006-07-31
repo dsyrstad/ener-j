@@ -1,0 +1,82 @@
+$Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/ToDo.txt,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
+
+To-Do List:
+
+- If DefaultMetaObjectServer opens local thread for server, upon last close to thread, an implicit 
+  shutdown should occur.
+
+- Need recovery log rolling/archiving on full database "EndCheckpoint".
+
+- Need recovery program. In FilePageServer, we can distinguish between a volume that 
+  is in-use (locked) and one that was not closed properly (not locked, but open flag set).
+
+- Need log roll-forward recovery on empty database (recreate from logs)
+
+- Server helpers and connect methods should all accept a Properties parameter which
+  contains overrides.
+
+- PagedObjectServer: handleStorageException needs work.
+    - This will require a forced shutdown. Rollback all transactions and close down.
+
+- PagedObjectServer: if txn active on disconnect, must log msg and roll it back.
+
+- Need message logging throughout ObjectServer.
+
+- PagedObjectServer should have a "max txn length/size" parameter. Transactions that exceed
+  this length (if set), throw an exception. Checkpoint would clear the length used
+  by a transaction.
+
+- Should rollback release allocated OIDs? Should commit put back unused OIDs?
+
+- PagedObjectServer.connect() - do something with connectMode. Set locally on the session and
+  disallow update ops if read-only.  If exclusive, we must be the first session and
+  we need to flag the server not to allow additional sessions.
+
+- Looks like most of the ODMG API expects to throw ODMGRuntimeException and not 
+  ODMGException. However, half of the ObjectServer methods throw ODMGException. 
+  These should be revisied to throw ODMGRuntimeException and then everything else 
+  on down (LockServer, RedoLogServer, etc.) should be fixed too. Not fixing it means
+  confusing exceptions will be thrown. Then EnerJDatabase and EnerJTransaction need to be revised
+  to not catch ODMGException and not remap.
+
+- Need an Exception "wrap-and-rethrow" capability that will wrap a given exception
+  in the same type but new object and provide the original exception as a cause.
+  - Check this 1.4 is supposed to do some automagic chaining. If I explicitly rethrow
+    an exception, does it include the stack trace where I'm throwing from?
+
+- Write tests for PageServer, RedoLogServer, and UpdateCache.
+
+- ClusteredPageServer (transparently clusters), RedundantPageServers (mirrors pages to
+  two or more page servers and has auto-failover), CachedPageServer (provides a page cache).
+  SynchronizedPageServer (thread safe). RemotePageClient/RemotePageServer.
+
+- PageServer configuration should not be edited. Should be maintained by a utility.
+
+- Need way of enumerating all allocated pages so we can do a pageserver to pageserver
+  copy. Need way of allocating pages at fixed positions (for copy to same pages). Or would
+  object-by-object (OID-by-OID) copy be better?
+
+- ObjectServer - Different choices for lock granularity. Object, Page, Class (lock the
+  class - like a table lock), Database.
+
+- PagedStore: in processStoreRequest, the case where we're growing the object could be
+  handled smoother, albeit more complex. We could reuse existing storage and then
+  allocate new segments when we run out. 
+
+Priority B
+----------
+- DefaultMetaObjectServer: Authentication
+
+- DefaultMetaObjectServer: Security/Permissions
+
+- I have much more efficient DataInput/OutputStreams that should be used for logging,
+  PagedStore, ObjectSerializer, etc.
+
+- Online backup and associated recovery
+
+Priority C
+----------
+- Need to support isolation levels other than serializable to support better
+  indexed access. E.g., we should support "read committed".
+
+- Hot reconfiguration of ObjectServer/PageServer/LogServer, etc.

@@ -1,0 +1,96 @@
+// Ener-J
+// Copyright 2001, 2002 Visual Systems Corporation
+// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/LargeList.java,v 1.1 2005/08/16 04:24:45 dsyrstad Exp $
+
+package org.enerj.core;
+
+import java.io.*;
+import java.util.*;
+
+import org.odmg.*;
+
+/**
+ * Represents additional Collection methods for a "large" list. A large list
+ * is one which contain more than 2 billion items.
+ *
+ * @version $Id: LargeList.java,v 1.1 2005/08/16 04:24:45 dsyrstad Exp $
+ * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
+ */
+public interface LargeList extends LargeCollection, java.util.List
+{
+    //----------------------------------------------------------------------
+    /**
+     * Inserts anElementCount null elements into the array (expands array). 
+     * Elements from anIndex (inclusive)  to the end of the array are shifted 
+     * to the right (the zeroth element being the left) by anElementCount elements. 
+     * The array grows by anElementCount elements. mModCount is incremented by anElementCount.
+     *
+     * @param anIndex the index to start at. May equal sizeAsLong() to append to list.
+     * @param anElementCount the number of empty (null) elements to insert.
+     *
+     * @throws IndexOutOfBoundsException if index is out of range (anIndex < 0 || 
+     *  anIndex > sizeAsLong() || anElementCount < 0).
+     */
+    public void insertElements(long anIndex, long anElementCount);
+    
+    //----------------------------------------------------------------------
+    /**
+     * Removes anElementCount elements from the array (shrinks array). 
+     * Elements from (anIndex + anElementCount) (inclusive) to the end of 
+     * the array are shifted to the left (the zeroth element being the left). 
+     * The array shrinks  by anElementCount elements. mModCount is incremented.
+     *
+     * @param anIndex the index to start at.
+     * @param anElementCount the number of elements to remove.
+     *
+     * @throws IndexOutOfBoundsException if index is out of range (anIndex < 0 || 
+     *  anIndex >= sizeAsLong() || (anIndex + anElementCount) > sizeAsLong()).
+     */
+    public void removeElements(long anIndex, long anElementCount);
+    
+    //----------------------------------------------------------------------
+    /**
+     * Sets the element at the specified index. Grows the array if necessary.
+     * If the array grows, new elements between sizeAsLong() and anIndex-1 are
+     * filled with nulls and mModCount is incremented.
+     *
+     * @param anIndex the index of the element.
+     * @param anElement the element to be set. May be null.
+     */
+    public void setAtIndex(long anIndex, Object anElement);
+    
+    //----------------------------------------------------------------------
+    /**
+     * Gets the element at the specified index.
+     *
+     * @param anIndex the index of the element.
+     *
+     * @return the object at anIndex, which may be null.
+     *
+     * @throws IndexOutOfBoundsException if index is out of range (anIndex < 0 || 
+     *  anIndex >= sizeAsLong()).
+     */
+    public Object getAtIndex(long anIndex);
+
+    //----------------------------------------------------------------------
+    /**
+     * Like Collection.indexOf(), but returns result as long.
+     *
+     * @param anObject the object to find the first index of.
+     *
+     * @return the first index of anObject, or -1L if the object is not in the array.
+     */
+    public long indexOfAsLong(Object anObject);
+
+    //----------------------------------------------------------------------
+    /**
+     * Like Collection.lastIndexOf(), but returns result as long.
+     *
+     * @param anObject the object to find the last index of.
+     *
+     * @return the last index of anObject, or -1L if the object is not in the array.
+     */
+    public long lastIndexOfAsLong(Object anObject);
+
+}
+

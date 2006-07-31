@@ -1,0 +1,13 @@
+$Header: /cvsroot/ener-j/ener-j/test/org/enerj/sco/Tests.txt,v 1.3 2005/08/12 02:56:49 dsyrstad Exp $
+
+SCO Tests:
+
+General:
+    + Test that SCOs modify their owners, even if SCO is several times
+      removed via a multidimensional array or Collection.
+    + Test that various SCO mutator methods cause modification and that they set the
+      proper value on the SCO.
+    + Cloning of SCO subclass should set owner to null.
+    - If _only_ a SCO is modified (not any other owner fields), not only should the owner be marked modified, but
+      the owner should get committed to the database. This ensures that the owner is being added to
+      the modified list.

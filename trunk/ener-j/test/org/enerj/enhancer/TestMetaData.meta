@@ -1,0 +1,22 @@
+# This is not an official test. It's mainly for experimentation with the enhancer.
+# It is used with org.enerj.enhancer.TestClass
+# This is a commment
+# So is this
+; And This
+
+class *
+persistent=not  # Default for all
+
+class org.enerj.enhancer  # Package default. class this is not a class def
+persistent=not
+
+#class org.vitminO.nonexistent # Non existent package name in source path - error
+#persistent=not
+
+class org.enerj.enhancer.TestClass
+persistent=capable
+
+    field mTestNonPersistentTransient 
+        transient=false  # Override transient
+
+# That's all

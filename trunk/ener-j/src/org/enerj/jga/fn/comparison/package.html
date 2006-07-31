@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!-- $Id: package.html,v 1.3 2005/08/12 02:56:48 dsyrstad Exp $
+     Copyright (c) 2002, David A. Hall
+-->
+</head>
+<body>
+Provides Functors and Predicates that compare values of various types.  
+<p>
+As of the 0.6 release, this package is in a state of transition.  The forces
+at work are
+<ol>
+<li> the comparision mechanism in Java, ie, the Comparable and Comparator 
+interfaces.
+<li> a desire to simplify the design so that a particular comparison method,
+eg, Less, is embodied in a single class.
+<li> a desire to preserve type-safety.
+<li> a desire to preserve convenience of default constructors.
+</ol>
+In the previous releases, there were two functors that provided for a
+single comparison method -- one that was restricted to
+<tt>Comparable</tt> arguments, and one that used (and therefore
+required at construction) a <tt>Comparator</tt>.  There was no
+relationship between the restricted version, which was named for the
+specific comparison operator (ie, <tt>Less.java</tt>) and the version
+that required a <tt>Comparator</tt>, which was named with a
+'<tt>-Comp</tt>' suffix (ie, <tt>LessComp.java</tt>).
+<p>
+To create a relationship between the two versions would have required
+that the '<tt>-Comp</tt>' version be the base class.  To derive the
+<tt>-Comp</tt> version from the <tt>Comparable</tt> version would have
+had the effect of imposing a restriction in the base class that the
+derived class relaxes (this violates substitutabiliy).
+<p>
+Ideally, there would be one class: it would have to use a
+<tt>Comparator</tt> as implementation in order to be universally
+applicable, but the default constructor could provide some sort of
+default <tt>Comparator</tt>.  Unfortunately, there really is no useful
+comparator that can be applied globally.  The most common case that we
+can support, however, would be that <tt>Comparable</tt> objects be
+compare via their <tt>compareTo()</tt> method, as the
+<tt>ComparableComparator</tt> does.  For this to work, we would need
+to ensure that the default constructor could only be called when the
+parm type of the functor implements <tt>Comparable</tt>.  Java cannot
+enforce this restriction.
+<p>
+What we can do is define a subclass that has a more
+restrictive bound than the base class.  Throughout this package,
+classes that need to support <tt>Comparable</tt> objects via a default
+<tt>Comparator</tt> define a public static subclass that imposes the
+additional generic bound and provides the correct default constructor.
+I've created a convention by which all of the subclasses are named for
+the bound they impose, so in this package, to use a comparison
+operator for <tt>Comparable</tt> types requires the use of the
+<tt>Comparable</tt> subclass.  For example, to compare some arbitrary
+class for which a <tt>Comparator</tt> is available, you might use a
+<tt>Less</tt> object, and pass the <tt>Comparator</tt> at
+construction.  To compare <tt>String</tt> objects, you would use
+<tt>Less.Comparable</tt>, whose default constructor passes a default
+<tt>Comparator</tt> to the base <tt>Less</tt> constructor.
+<p>
+So, the upshot of all this is that in the next release, we will be
+able to partially resolve the competing forces.  The comparison
+functors will support all types of java objects using both comparison
+mechinisms with a single primary class for each comparison operation
+(the nested subclasses are de-emphasized -- they are an unfortunate
+implementation detail necessary to work around a limitation in generic
+java).  The final versions preserve type-safety and the cost in
+inconvenience is not too great, as there is still a default
+constructor, it has simply been moved to the nested subclass in order
+to restrict its usage to appropriate generified types.  In the next
+release:
+<ul>
+<li>The default constructor in the base classes will be removed.  
+<li>The '<tt>-Comp</tt>' versions will be removed.
+</ul>
+Both of these changes are deferred for one release in order to avoid
+breaking code without warning.
+</body>
+</html>

@@ -1,0 +1,64 @@
+$Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/ToDo.txt,v 1.1 2005/08/16 04:24:45 dsyrstad Exp $
+
+Core To-Do List:
+
+- Objects that are "new"ed but never referenced (not reachable) should not be sent to MOS.
+  We just need to check for locally referenced, or bound to root. 
+
+- ObjectSerializer: Need better String format. Right now it's pure dbl byte.
+  If straight ISO-8859-1 (< 0xff), single byte. Use 0xff to introduce dbl byte mode.
+  Once dbl byte, it stays dbl byte.
+  Make sure 0xff is handled as a character in dbl byte mode.
+
+- Poet allows one open Database to be shared by two Transactions in two different threads.
+  If we can remove as much variable state from DB as possible, or make it thread safe,
+  we could do this. Also have to think about implications for ObjectServer.
+
+- Poet throws an exception (NoUniqueDatabase) if more than one database is open and a
+  Transaction is created without using the explicit DB form. This is probably a better
+  way of handling it rather than a list of open dbs.
+
+- Poet allows nested transactions. On commits of lower levels, the buffers just "roll-up"
+  to the next higher level. On aborts on lower levels, the buffers are just tossed. Need to
+  be careful about stuff already flushed to database (out of the buffer), but not committed.
+
+- ClientCache: Seems like we should be able to override WeakReference.enqueue() and remove
+  it from the map. But be careful - this will probably be called from a system thread.
+  
+- Schema Evolution support... The whole proxy object thing..... see Notes.txt
+
+- Careful about updating extents - could be a point of single threading. Maybe
+  separate txn in O.S. when committing client txn. Same with Index.
+- Couldn't any one index serve as the extent? This may reduce write-locking on some 
+  global node.
+
+- Need a simple FCO class to wrap java arrays. Like RegularDArray, but without all
+  of the capability. get(i), set(i, v). Define size on construction. Does not grow.
+
+- We need a limit in EnerJTransaction on how many modified objects it holds on to before flushing some
+  to the DB. Should have a high/low water mark thing. Otherwise a long update session where the
+  instances would normally be GCed will cause them not to be GCed. Think about the effect on
+  saved image (ClientCache) and rollback. The object will no longer be on the modification
+  list, so we won't rollback the image (but the image will be in the cache if the object
+  wasn't GCed). Maybe the user should just do a checkpoint?
+
+- Investigate Database.makePersistent. JDO 5.5.1 says that a transient object (stale) transistions to 
+  persistent-new if makePersistent is called on it. Is this the ODMG intention?
+
+- Derivitives of ODMG types (this should be directly Persistable): DSet, DBag, DList, DArray,
+DMap.
+
+- Database and Txn methods that modify a database must throw DatabaseIsReadOnlyException if 
+  the database is open read-only.
+
+- A Database on a read-only filesystem, or file perms are read-only, should not be opened
+  read/write or exclusive.
+
+- A Command pattern could be implemented for Transactions that would handle exception
+  retries, etc. You could do Transaction.begin(Database, CommandIntf).
+
+- Database should implement some of the methods specified for PersistenceManager specified
+  by JDO, such as evict*() (evicts non-modified objects from cache) - see JDO 12.6.1. This is 
+  implemented to some degree by EnerJDatabase.evictAll(), the support is present in ClientCache ...
+
+- Check out R*Trees in SHORE DB. Also check out KDB trees.
