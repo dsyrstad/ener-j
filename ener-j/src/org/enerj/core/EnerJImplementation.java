@@ -1,0 +1,225 @@
+// Ener-J
+// Copyright 2001, 2002 Visual Systems Corporation
+// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/EnerJImplementation.java,v 1.4 2006/05/05 13:47:14 dsyrstad Exp $
+
+package org.enerj.core;
+
+import org.odmg.*;
+
+import org.enerj.server.*;
+
+/**
+ * Ener-J implementation of org.odmg.Implementation.
+ * Also provides static versions of these methods for faster access.
+ *
+ * @version $Id: EnerJImplementation.java,v 1.4 2006/05/05 13:47:14 dsyrstad Exp $
+ * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
+ * @see org.odmg.Implementation
+ */
+public class EnerJImplementation implements Implementation
+{
+    public static final String OBJ_JUMPED_TRANSACTIONS_MSG = "Object's use jumped between transactions";
+
+    private static EnerJImplementation sSingleton;
+
+    //----------------------------------------------------------------------
+    /**
+     * Constructor is private to force use of the static getInstance()
+     * method. 
+     */
+    private EnerJImplementation()
+    {
+    }
+
+    //----------------------------------------------------------------------
+    /**
+     * Gets the singleton instance of Implementation.
+     */
+    public static final EnerJImplementation getInstance()
+    {
+        if (sSingleton == null) {
+            sSingleton = new EnerJImplementation();
+        }
+
+        return sSingleton;
+    }
+
+    //----------------------------------------------------------------------
+    /**
+     * Gets the Ener-J representation of the object's identifier.
+     *
+     * @param anObject The object whose identifier is being accessed.
+     *
+     * @return The object's identifier in the form of a long. Returns ObjectServer.NULL_OID
+     *  if object is not a Persistable or is transient.
+     */
+    public static final long getEnerJObjectId(Object anObject)
+    {
+        if (anObject instanceof Persistable) {
+            Persistable persistable = (Persistable)anObject;
+            EnerJDatabase db = persistable.enerj_GetDatabase();
+            if (db == null) {
+                EnerJTransaction txn = EnerJTransaction.getCurrentTransaction();
+                if (txn == null) {
+                    return ObjectServer.NULL_OID; // Transient
+                }
+                
+                db = txn.getDatabase();
+            }
+            
+            return db.getOID(anObject);
+        }
+        
+        return ObjectServer.NULL_OID;
+    }
+
+    //----------------------------------------------------------------------
+    /**
+     * Get the Ener-J <code>Database</code> implementation that contains the
+     * object <code>obj</code>.
+     *
+     * @param obj The object. This should be a Persistable object.
+     *
+     * @return The <code>EnerJDatabase</code> that contains the object. Returns null
+     * if the object is not a Persistable.
+     */
+    public static final EnerJDatabase getEnerJDatabase(Object obj)
+    {
+        if (obj instanceof Persistable) {
+            return ((Persistable)obj).enerj_GetDatabase();
+        }
+
+        return null;
+    }
+    
+    //----------------------------------------------------------------------
+    /**
+     * Marks a persistable as modified. This is necessary if the contents
+     * of an array contained in a persistable are modified.
+     *
+     * @param anObject the persistable object.
+     */
+    public static final void setModified(Object anObject)
+    {
+        if (anObject instanceof Persistable) {
+            PersistableHelper.addModified((Persistable)anObject);
+        }
+    }
+    
+    //----------------------------------------------------------------------
+    /**
+     * Get a new EnerJTransaction instance. Similar to newTransaction(), only
+     * it returns a EnerJTransaction.
+     */
+    public final EnerJTransaction newEnerJTransaction()
+    {
+        return new EnerJTransaction();
+    }
+
+    //----------------------------------------------------------------------
+    /** 
+     * Get the current EnerJTransaction for this thread. Similar to currentTransaction(),
+     * only it returns a EnerJTransaction.
+     */
+    public final EnerJTransaction currentEnerJTransaction()
+    {
+        return EnerJTransaction.getCurrentTransaction();
+    }
+
+    //----------------------------------------------------------------------
+    /**
+     * Get a new EnerJDatabase instance. Similar to newDatabase(), only it returns
+     * a EnerJDatabase. 
+     */
+    public final EnerJDatabase newEnerJDatabase()
+    {
+        return new EnerJDatabase();
+    }
+
+    //----------------------------------------------------------------------
+    // Start of org.odmg.Implementation interface methods...
+    //----------------------------------------------------------------------
+
+    //----------------------------------------------------------------------
+    // Javadoc will be copied from org.odmg.Implementation interface.
+    public final Transaction newTransaction()
+    {
+        return newEnerJTransaction();
+    }
+
+    //----------------------------------------------------------------------
+    // Javadoc will be copied from org.odmg.Implementation interface.
+    public final Transaction currentTransaction()
+    {
+        return currentEnerJTransaction();
+    }
+
+    //----------------------------------------------------------------------
+    // Javadoc will be copied from org.odmg.Implementation interface.
+    public final Database newDatabase()
+    {
+        return newEnerJDatabase();
+    }
+
+    //----------------------------------------------------------------------
+    // Javadoc will be copied from org.odmg.Implementation interface.
+    public final OQLQuery newOQLQuery()
+    {
+        return null; /**  TODO  */
+    }
+
+    //----------------------------------------------------------------------
+    // Javadoc will be copied from org.odmg.Implementation interface.
+    public final DList newDList()
+    {
+        return new RegularDList();
+    }
+
+    //----------------------------------------------------------------------
+    // Javadoc will be copied from org.odmg.Implementation interface.
+    public final DBag newDBag()
+    {
+        return new RegularDBag();
+    }
+
+    //----------------------------------------------------------------------
+    // Javadoc will be copied from org.odmg.Implementation interface.
+    public final DSet newDSet()
+    {
+        return new RegularDSet();
+    }
+
+    //----------------------------------------------------------------------
+    // Javadoc will be copied from org.odmg.Implementation interface.
+    public final DArray newDArray()
+    {
+        return new RegularDArray();
+    }
+
+    //----------------------------------------------------------------------
+    // Javadoc will be copied from org.odmg.Implementation interface.
+    public final DMap newDMap()
+    {
+        return new RegularDMap();
+    }
+
+    //----------------------------------------------------------------------
+    // Javadoc will be copied from org.odmg.Implementation interface.
+    public final String getObjectId(Object obj)
+    {
+        long oid = getEnerJObjectId(obj);
+
+        return String.valueOf(oid);
+    }
+    
+    //----------------------------------------------------------------------
+    // Javadoc will be copied from org.odmg.Implementation interface.
+    public final Database getDatabase(Object obj)
+    {
+        return getEnerJDatabase(obj);
+    }
+
+    //----------------------------------------------------------------------
+    // ...End of org.odmg.Implementation interface methods.
+    //----------------------------------------------------------------------
+}

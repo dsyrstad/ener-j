@@ -1,0 +1,26 @@
+To Do
+-----
+- ASTs - DefineQuery, InClause, QuantifierExpr, InExpr, GroupClause
+
+- OJB and LDB have OQL tests. 
+
+- LDB has various sample database schemas. 
+
+- 4.10.15 - Projection field names are variables usable in where clause. Likewise, group by variable names are usable in the
+projection. Group by introduces "partition". having and order by cannot see the from variables.
+
+- If arg to InvokeMethod/InvokeNoArgMethod/GetField is null, and it's not a static method, return null.
+
+- DArray should extend DList. An array is a list.
+
+- Should have a base collection class for the ODMG "D" collections. Also BaseDSet. These would implement
+the common operations. 
+
+- Extract union/difference/intersection/concat from D* collections into utility classes that 
+operate on regular Collections.
+
+- Need dynamic collection classes. E.g., List concat should be a List class that takes two lists 
+ and dynamically return values. Same for intersect, diff, union. Hopefully, most joins could be 
+ done this way too. These should be optimized for one-time forward access (e.g., Iteration).
+
+- date/time/timestamp "2005-04-04" should be supported as date '2005-04-04' (single quotes)

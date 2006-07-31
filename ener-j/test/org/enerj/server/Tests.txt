@@ -1,0 +1,79 @@
+$Header: /cvsroot/ener-j/ener-j/test/org/enerj/server/Tests.txt,v 1.3 2005/08/12 02:56:45 dsyrstad Exp $
+
+Tests:
+
+LockScheduler:
+    + Single txn gaining no locks, then ending. Also test that locks cannot be gained after
+      the txn ends.
+    + Single txn multiple objects. Examining getLockMode should show proper lock.  
+      Also tests that locks are dropped after ending the txn.
+    + Single txn promoting from READ to WRITE, from UPGRADE to WRITE, and from READ to UPGRADE to WRITE.
+       Also tests that demotions are invalid and that locking the same object in the same mode is
+       ok.
+    + Multiple txn's, multiple readers (test shared readers).
+    + Multiple txn's, multiple readers, single UPGRADE. Second UPGRADE should wait.
+    + Multiple txn's, multiple readers, WRITE request should wait.
+    + Multiple txn's, one upgrader, readers read, writer waits.
+    + Multiple txn's, one writer, readers wait. All readers should gain lock when writer
+      releases.
+    + Multiple txn's, one writer, upgrader and readers wait. Upgrader should be first in queue, followed
+      by readers, followed by a second upgrader that will wait for the first upgrader.
+      Locks should be obtained in FIFO order.
+    + Test zero timeout (test true and false returns).
+    + Test non-zero timeout (test true and false returns). 
+    + Test -1 timeout (assumed tested with cases above).
+    + Test waits-for deadlock detection with various cycles.
+    + Test deadlock with the single resource deadlock (both take READ, one tries WRITE, the other tries WRITE).
+      This same thing should happen with UPGRADE instead of WRITE, but first UPGRADE should be granted.
+    + Test that the UPGRADE lock avoids the single resource deadlock condition (as described above).
+      (one takes UPGRADE, the other waits for UPGRADE, the first takes WRITE, the first releases, 
+       the second gets UPGRADE, then takes WRITE, then releases).
+    + Test timestamp deadlock - just needs to be simple scenario.
+
+OIDList:
+    + allocateOIDBlock - new OIDs each call, at least 1 per call, and that they're not the NULL OID.
+    + getListSize - first size should be 1 for null OID, should increase as allocateOIDBlock is called. 
+    + setOIDInfo
+    + getCIDforOID
+    + getObjectOffsetForOID
+    + one page of oids (single link)
+    + multiple pages of oids (linked list)
+    + closing and reopening. All OIDs should be there. - writeHeader
+    + skipping OIDs so multiple blank pages are allocated in one call.
+    + growing the OID page array (by allocating at least 2000 pages and referencing the last OID).
+
+PagedStore:
+    # Tested via ObjectServerTest.
+
+ObjectServerTest:
+    + getNewOIDBlock: new OIDs each call, at least 1 per call, and that they're not the NULL_OID.
+      There should be no duplicates within the OIDs.
+    + getCIDForOID:  NULL_CID for a newly allocated OID.
+    + storeObject - in each case, should be able to load the object back. The object should have
+      a specific byte pattern.
+        + getCIDForOID: returns previously set value via storeObject.
+        + New object
+            + Zero length - should at least have a header and return a zero-length array on load.
+            + single segment
+            + multiple segment
+        + Replace object
+            + new object larger than previous. + single segment; + span multiple segments
+            + new object same size as previous. + single segment; + span multiple segments; + both zero length
+            + new object smaller than previous, but not zero length. 
+                + previous and new in single segment.
+                + previous and new in same number of multiple segments.
+                + previous more segments than new, but new still span multiple segments.
+                + previous more segments than new, new in a single segment.
+            + new object zero length, previous > zero length. 
+                + previous single segment; 
+                + previous spanned multiple segments.
+    # loadObject - tested via storeObject cases.
+    - Test interface requirements for transaction being active on each method that requires it.
+    - Other transaction oriented methods.
+    - Lock method.
+
+PagedObjectServerTest:
+    - Logging
+    - Checkpointing
+    o how do we verify freed space? Need integrity check method on PagedStore.
+

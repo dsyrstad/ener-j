@@ -1,0 +1,4 @@
+JGA 0.7 has been incorporated directly into the Ener-J src and test package structure so
+that it could be extended. The package name is different so that the modified classes
+do not conflict with an application wanting to use the official JGA distribution. 
+The package can be found at org.enerj.jga.

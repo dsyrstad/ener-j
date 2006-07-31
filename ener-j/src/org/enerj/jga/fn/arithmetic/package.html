@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!-- $Id: package.html,v 1.3 2005/08/12 02:56:44 dsyrstad Exp $
+     Copyright (c) 2002, David A. Hall
+-->
+</head>
+<body>
+
+Provides simple arithmetic Functors for Number classes.
+<p>
+Implementation is provided by a set of adaptor objects that implement the 
+Arithmatic interface.  Adaptors are provided for all standard Number classes:
+the six Reference classes in the java.lang package (Byte, Short, Integer, 
+Long, Float, and Double) and the two classes defined in the java.math package
+(BigInteger and BigDecimal).
+<p>
+To apply the Functors found in this package with user-defined Number
+implementations, it is necessary to create and register an implementation of
+Arithmetic or IntegerArithmetic.  For example, assuming that a 
+<code>Fraction</code> class has been defined, support for arithmetic operations
+could be provided by<br>
+<pre>
+public class FractionMath implements Arithmetic&lt;Fraction&gt; {
+    public Fraction plus (Fraction x, Fraction y) {
+        // implementation omitted
+    }
+    ...
+}
+</pre>
+<p>
+Before any Functors can be built using the Fraction class, it is necessary to
+register the FractionMath implementation with the ArithmeticFactory.<br>
+<pre>
+ArithmeticFactory.register(Fraction.class, new FractionMath());
+</pre>
+</body>
+</html>
