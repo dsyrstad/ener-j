@@ -57,32 +57,32 @@ public class CallbackTest extends TestCase
         PersistableHelper.setNonTransactional(persistable);
 
         // These should all be false right now.
-        assertTrue("voPostLoad should not have been called", !hasPostLoad || !aTestable.wasPostLoadCalled());
-        assertTrue("voPreStore should not have been called", !hasPreStore || !aTestable.wasPreStoreCalled());
-        assertTrue("voPostStore should not have been called", !hasPostStore || !aTestable.wasPostStoreCalled());
+        assertTrue("enerjPostLoad should not have been called", !hasPostLoad || !aTestable.wasPostLoadCalled());
+        assertTrue("enerjPreStore should not have been called", !hasPreStore || !aTestable.wasPreStoreCalled());
+        assertTrue("enerjPostStore should not have been called", !hasPostStore || !aTestable.wasPostStoreCalled());
 
         ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream(1000);
         DataOutputStream dataOutput = new DataOutputStream(byteOutputStream);
         persistable.enerj_WriteObject( new ObjectSerializer.WriteContext(dataOutput) );
         byte[] buf  = byteOutputStream.toByteArray();
         
-        assertTrue("voPostLoad should not have been called", !hasPostLoad || !aTestable.wasPostLoadCalled());
-        assertTrue("voPreStore should have been called", !hasPreStore || aTestable.wasPreStoreCalled());
-        assertTrue("voPostStore should have been called", !hasPostStore || aTestable.wasPostStoreCalled());
+        assertTrue("enerjPostLoad should not have been called", !hasPostLoad || !aTestable.wasPostLoadCalled());
+        assertTrue("enerjPreStore should have been called", !hasPreStore || aTestable.wasPreStoreCalled());
+        assertTrue("enerjPostStore should have been called", !hasPostStore || aTestable.wasPostStoreCalled());
 
         aTestable.reset();
         // These should all be false right now.
-        assertTrue("voPostLoad should not have been called", !hasPostLoad || !aTestable.wasPostLoadCalled());
-        assertTrue("voPreStore should not have been called", !hasPreStore || !aTestable.wasPreStoreCalled());
-        assertTrue("voPostStore should not have been called", !hasPostStore || !aTestable.wasPostStoreCalled());
+        assertTrue("enerjPostLoad should not have been called", !hasPostLoad || !aTestable.wasPostLoadCalled());
+        assertTrue("enerjPreStore should not have been called", !hasPreStore || !aTestable.wasPreStoreCalled());
+        assertTrue("enerjPostStore should not have been called", !hasPostStore || !aTestable.wasPostStoreCalled());
         
         DataInputStream dataInput = new DataInputStream( new ByteArrayInputStream(buf) );
         persistable.enerj_ReadObject( new ObjectSerializer.ReadContext(dataInput) );
         
         // These should all be false right now.
-        assertTrue("voPostLoad should have been called", !hasPostLoad || aTestable.wasPostLoadCalled());
-        assertTrue("voPreStore should not have been called", !hasPreStore || !aTestable.wasPreStoreCalled());
-        assertTrue("voPostStore should not have been called", !hasPostStore || !aTestable.wasPostStoreCalled());
+        assertTrue("enerjPostLoad should have been called", !hasPostLoad || aTestable.wasPostLoadCalled());
+        assertTrue("enerjPreStore should not have been called", !hasPreStore || !aTestable.wasPreStoreCalled());
+        assertTrue("enerjPostStore should not have been called", !hasPostStore || !aTestable.wasPostStoreCalled());
     }
     
     //----------------------------------------------------------------------
@@ -139,19 +139,19 @@ public class CallbackTest extends TestCase
         }
         
         //----------------------------------------------------------------------
-        private void voPostLoad()
+        private void enerjPostLoad()
         {
             mPostLoadCalled = true;
         }
 
         //----------------------------------------------------------------------
-        private void voPreStore()
+        private void enerjPreStore()
         {
             mPreStoreCalled = true;
         }
 
         //----------------------------------------------------------------------
-        private void voPostStore()
+        private void enerjPostStore()
         {
             mPostStoreCalled = true;
         }
@@ -210,19 +210,19 @@ public class CallbackTest extends TestCase
         }
         
         //----------------------------------------------------------------------
-        public void voPostLoad()
+        public void enerjPostLoad()
         {
             mPostLoadCalled = true;
         }
 
         //----------------------------------------------------------------------
-        public void voPreStore()
+        public void enerjPreStore()
         {
             mPreStoreCalled = true;
         }
 
         //----------------------------------------------------------------------
-        public void voPostStore()
+        public void enerjPostStore()
         {
             mPostStoreCalled = true;
         }
@@ -281,19 +281,19 @@ public class CallbackTest extends TestCase
         }
         
         //----------------------------------------------------------------------
-        private void voPostLoad()
+        private void enerjPostLoad()
         {
             mPostLoadCalled = true;
         }
 
         //----------------------------------------------------------------------
-        private void voPreStore()
+        private void enerjPreStore()
         {
             mPreStoreCalled = true;
         }
 
         //----------------------------------------------------------------------
-        private void voPostStore()
+        private void enerjPostStore()
         {
             mPostStoreCalled = true;
         }
@@ -354,19 +354,19 @@ public class CallbackTest extends TestCase
         }
         
         //----------------------------------------------------------------------
-        public void voPostLoad()
+        public void enerjPostLoad()
         {
             mPostLoadCalled = true;
         }
 
         //----------------------------------------------------------------------
-        public void voPreStore()
+        public void enerjPreStore()
         {
             mPreStoreCalled = true;
         }
 
         //----------------------------------------------------------------------
-        public void voPostStore()
+        public void enerjPostStore()
         {
             mPostStoreCalled = true;
         }

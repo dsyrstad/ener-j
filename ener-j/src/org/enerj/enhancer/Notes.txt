@@ -11,11 +11,11 @@ Notes:
   org.odmg.ClassNotPersistenceCapableException.
 
 - Callback hooks optionally implemented on Persistable objects:
-{any scope} void voPostLoad() - invoked after loading the object's fields
-{any scope} void voPreStore() - invoked prior to storing the object's, and object's super-class, fields.
-{any scope} void voPostStore() - invoked after storing the object's fields. Possibly used to
-    undo special setup done by voPreStore().
-{any scope} void voPreHollow() - invoked prior to hollowing of object and prior to hollowing 
+{any scope} void enerjPostLoad() - invoked after loading the object's fields
+{any scope} void enerjPreStore() - invoked prior to storing the object's, and object's super-class, fields.
+{any scope} void enerjPostStore() - invoked after storing the object's fields. Possibly used to
+    undo special setup done by enerjPreStore().
+{any scope} void enerjPreHollow() - invoked prior to hollowing of object and prior to hollowing 
     of super-class. Possible use is to allow object to hollow transient fields.
 
 - Mutable SCO Subclasses: These maintain a FCO owner so that the FCO can be marked dirty

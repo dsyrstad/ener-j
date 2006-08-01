@@ -45,13 +45,10 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
 {
     private static final String FIELD_ACCESSOR_PREFIX = "enerj_Get_";
     private static final String FIELD_MUTATOR_PREFIX = "enerj_Set_";
-    private static final String sPersistableClassName = Persistable.class.getName();
-    private static final String sPersistentAwareClassName = PersistentAware.class.getName();
-    private static final String sPersistableHelperClassName = PersistableHelper.class.getName();
-    private static final String sPostLoadMethodName = "voPostLoad";
-    private static final String sPreStoreMethodName = "voPreStore";
-    private static final String sPostStoreMethodName = "voPostStore";
-    private static final String sPreHollowMethodName = "voPreHollow";
+    private static final String sPostLoadMethodName = "enerjPostLoad";
+    private static final String sPreStoreMethodName = "enerjPreStore";
+    private static final String sPostStoreMethodName = "enerjPostStore";
+    private static final String sPreHollowMethodName = "enerjPreHollow";
     private static final String sClassIdFieldName = "enerj_sClassId";
     
     private static final String sEnerJDatabaseDescr = Type.getDescriptor(EnerJDatabase.class);
@@ -971,11 +968,11 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
             }
         }
 
-        // Invoke voPostLoad if it exists
+        // Invoke enerjPostLoad if it exists
         if (mHasPostLoad) {
             // this
             mv.visitVarInsn(ALOAD, 0);
-            // See comments on call to voPreStore for reason why INVOKESPECIAL is used.
+            // See comments on call to enerjPreStore for reason why INVOKESPECIAL is used.
             mv.visitMethodInsn(INVOKESPECIAL, mThisClassNameSlashed, sPostLoadMethodName, sNoArgMethodSignature);
         }
         
@@ -1002,7 +999,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitFieldInsn(GETFIELD, sWriteContextClassNameSlashed, "mStream", "Ljava/io/DataOutput;");
         mv.visitVarInsn(ASTORE, 2);
 
-        // Invoke voPreStore if it exists
+        // Invoke enerjPreStore if it exists
         if (mHasPreStore) {
             // Use INVOKESPECIAL here rather than INVOKEVIRTUAL for two reasons:
             // 1) We want to call the method on this object ONLY, NOT an overridden
@@ -1058,9 +1055,9 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
             }
         }
 
-        // Invoke voPostStore if it exists
+        // Invoke enerjPostStore if it exists
         if (mHasPostStore) {
-            // See comments on call to voPreStore for reason why INVOKESPECIAL is used.
+            // See comments on call to enerjPreStore for reason why INVOKESPECIAL is used.
             mv.visitVarInsn(ALOAD, 0);
             mv.visitMethodInsn(INVOKESPECIAL, mThisClassNameSlashed, sPostStoreMethodName, sNoArgMethodSignature);
         }
@@ -1093,10 +1090,10 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         Label startLabel = new Label();
         mv.visitLabel(startLabel);
 
-        // Invoke voPreHollow if it exists
+        // Invoke enerjPreHollow if it exists
         if (mHasPreHollow) {
             mv.visitVarInsn(ALOAD, 0);
-            mv.visitMethodInsn(INVOKESPECIAL, mThisClassNameSlashed, "voPreHollow", sNoArgMethodSignature);
+            mv.visitMethodInsn(INVOKESPECIAL, mThisClassNameSlashed, "enerjPreHollow", sNoArgMethodSignature);
         }
 
         if (!mIsTopLevelPersistable) {
@@ -1182,13 +1179,13 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
     private void emitClassId()
     {
         // Emit static field
-        FieldVisitor fv = cv.visitField(ACC_PRIVATE + ACC_STATIC + ACC_TRANSIENT, "enerj_sClassId", "J", null, null);
+        FieldVisitor fv = cv.visitField(ACC_PRIVATE + ACC_STATIC + ACC_TRANSIENT, sClassIdFieldName, "J", null, null);
         fv.visitEnd();
 
         // Emit static getter. We'll use this when we only have a class and not an object.
         MethodVisitor mv = cv.visitMethod(ACC_PUBLIC + ACC_STATIC, "enerj_GetClassIdStatic", "()J", null, null);
         mv.visitCode();
-        mv.visitFieldInsn(GETSTATIC, mThisClassNameSlashed, "enerj_sClassId", "J");
+        mv.visitFieldInsn(GETSTATIC, mThisClassNameSlashed, sClassIdFieldName, "J");
         mv.visitInsn(LRETURN);
         mv.visitMaxs(0, 0);
         mv.visitEnd();
@@ -1199,7 +1196,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitCode();
         Label startLabel = new Label();
         mv.visitLabel(startLabel);
-        mv.visitFieldInsn(GETSTATIC, mThisClassNameSlashed, "enerj_sClassId", "J");
+        mv.visitFieldInsn(GETSTATIC, mThisClassNameSlashed, sClassIdFieldName, "J");
         mv.visitInsn(LRETURN);
 
         Label endLabel = new Label();
@@ -1219,7 +1216,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         MethodVisitor mv = cv.visitMethod(ACC_STATIC, "<clinit>", sNoArgMethodSignature, null, null);
         mv.visitCode();
         mv.visitLdcInsn( new Long(mClassId) );
-        mv.visitFieldInsn(PUTSTATIC, mThisClassNameSlashed, "enerj_sClassId", "J");
+        mv.visitFieldInsn(PUTSTATIC, mThisClassNameSlashed, sClassIdFieldName, "J");
         mv.visitInsn(RETURN);
         mv.visitMaxs(0, 0);
         mv.visitEnd();
@@ -1429,7 +1426,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
                 // Existing <clinit>, insert instructions to initialize class ID. Then flag that we did it.
                 mEnhancedClinit = true;
                 mv.visitLdcInsn( new Long(mClassId) );
-                mv.visitFieldInsn(PUTSTATIC, mThisClassNameSlashed, "enerj_sClassId", "J");
+                mv.visitFieldInsn(PUTSTATIC, mThisClassNameSlashed, sClassIdFieldName, "J");
             }
             
             mv.visitInsn(anOpcode);

@@ -15,5 +15,5 @@ p=":"
 }
 
 echo "$EnerJDBPATH"
-java -javaagent:lib/enerjenh.jar -Dvo.dbpath=$EnerJDBPATH -cp $base/classes$p$base/lib/jga-0.7-retro.jar$p$base$p$base/lib/asm-2.2.2.jar org.enerj.util.CreateDatabase $1 $2 $3 $4 $5 $6 $7
+java -javaagent:lib/enerjenh.jar -Denerj.dbpath=$EnerJDBPATH -cp $base/classes$p$base/lib/jga-0.7-retro.jar$p$base$p$base/lib/asm-2.2.2.jar org.enerj.util.CreateDatabase $1 $2 $3 $4 $5 $6 $7
 

@@ -59,7 +59,7 @@ public class ExtentTest extends TestCase
     {
         clearDBFiles();
         long start = System.currentTimeMillis();
-        System.setProperty("vo.dbpath", "databases/JUnit");
+        System.setProperty("enerj.dbpath", "databases/JUnit");
         PagedObjectServer.createDatabase("Test", "GeneralDB", 0L, 0L);
         System.out.println("Create DB took " + (System.currentTimeMillis() - start) + " ms");
     }

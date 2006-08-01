@@ -30,7 +30,7 @@ class TempODMGTester
     //----------------------------------------------------------------------
     private static void createDB() throws Exception
     {
-        System.setProperty("vo.dbpath", "databases/JUnit");
+        System.setProperty("enerj.dbpath", "databases/JUnit");
         File tmpPageFile = new File("databases/JUnit/TempODMGTest/TempODMGTest-volume");
         tmpPageFile.delete();
         

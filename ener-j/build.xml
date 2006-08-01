@@ -107,7 +107,7 @@ Available targets:
                 <pathelement location="${asm.jar}"/>
             </classpath>
             <sysproperty key="ANT" value=""/>
-            <sysproperty key="vo.dbpath" value="databases"/>
+            <sysproperty key="enerj.dbpath" value="databases"/>
             <arg value="--debug" />
             <arg value="--destdir" />
                 <arg value="${testEnhancedClasses}" />

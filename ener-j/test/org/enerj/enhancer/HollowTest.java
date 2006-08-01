@@ -47,13 +47,13 @@ public class HollowTest extends TestCase
         PersistableHelper.setNonTransactional(persistable);
 
         assertTrue("Fields should be set", aHollowable.areFieldsSet());
-        assertTrue("voPreHollow should not have been called", !hasPreHollow || !aHollowable.wasPreHollowCalled());
+        assertTrue("enerjPreHollow should not have been called", !hasPreHollow || !aHollowable.wasPreHollowCalled());
 
         persistable.enerj_Hollow();
         // Set loaded flag so that checkLoaded doesn't try to load this object
         persistable.enerj_SetLoaded(true);
         assertTrue("Fields should not be set", !aHollowable.areFieldsSet());
-        assertTrue("voPreHollow should have been called", !hasPreHollow || aHollowable.wasPreHollowCalled());
+        assertTrue("enerjPreHollow should have been called", !hasPreHollow || aHollowable.wasPreHollowCalled());
     }
     
     //----------------------------------------------------------------------
@@ -84,7 +84,7 @@ public class HollowTest extends TestCase
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     /**
-     * Test class for Hollow on a Top-Level Persistable with a private voPreHollow
+     * Test class for Hollow on a Top-Level Persistable with a private enerjPreHollow
      * callback.
      */
     @Persist
@@ -112,7 +112,7 @@ public class HollowTest extends TestCase
         }
 
         //----------------------------------------------------------------------
-        private void voPreHollow()
+        private void enerjPreHollow()
         {
             mHollowCalled = true;
         }
@@ -127,7 +127,7 @@ public class HollowTest extends TestCase
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     /**
-     * Test class for Hollow on a Top-Level Persistable with a public voPreHollow
+     * Test class for Hollow on a Top-Level Persistable with a public enerjPreHollow
      * callback.
      */
     @Persist
@@ -155,7 +155,7 @@ public class HollowTest extends TestCase
         }
 
         //----------------------------------------------------------------------
-        public void voPreHollow()
+        public void enerjPreHollow()
         {
             mHollowCalled = true;
         }
@@ -170,7 +170,7 @@ public class HollowTest extends TestCase
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     /**
-     * Test class for Hollow on a Non-Top-Level Persistable with a private voPreHollow
+     * Test class for Hollow on a Non-Top-Level Persistable with a private enerjPreHollow
      * callback.
      */
     @Persist
@@ -198,7 +198,7 @@ public class HollowTest extends TestCase
         }
 
         //----------------------------------------------------------------------
-        private void voPreHollow()
+        private void enerjPreHollow()
         {
             mHollowCalled = true;
         }
@@ -213,8 +213,8 @@ public class HollowTest extends TestCase
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     /**
-     * Test class for Hollow on a Non-Top-Level Persistable with a public voPreHollow
-     * callback. Note that the voPreHollow callback technically overrides the super
+     * Test class for Hollow on a Non-Top-Level Persistable with a public enerjPreHollow
+     * callback. Note that the enerjPreHollow callback technically overrides the super
      * class version, but since invokespecial is used to invoke the callback, it
      * should be invoked on both objects.
      */
@@ -243,7 +243,7 @@ public class HollowTest extends TestCase
         }
 
         //----------------------------------------------------------------------
-        public void voPreHollow()
+        public void enerjPreHollow()
         {
             mHollowCalled = true;
         }
@@ -258,7 +258,7 @@ public class HollowTest extends TestCase
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     /**
-     * Test class for Hollow on a Top-Level Persistable without a voPreHollow
+     * Test class for Hollow on a Top-Level Persistable without a enerjPreHollow
      * callback.
      */
     @Persist
@@ -295,7 +295,7 @@ public class HollowTest extends TestCase
     //----------------------------------------------------------------------
     //----------------------------------------------------------------------
     /**
-     * Test class for Hollow on a Top-Level Persistable without a voPreHollow
+     * Test class for Hollow on a Top-Level Persistable without a enerjPreHollow
      * callback.
      */
     @Persist

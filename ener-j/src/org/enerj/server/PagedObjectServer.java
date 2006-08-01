@@ -196,7 +196,7 @@ public class PagedObjectServer implements ObjectServer
     
     //----------------------------------------------------------------------
     /**
-     * Creates a new database on disk. The "vo.dbpath" system property must be set.
+     * Creates a new database on disk. The "enerj.dbpath" system property must be set.
      *
      * @param aDescription a description for the database. May be null.
      * @param aDBName The database name. See {@link #connect(Properties)}.

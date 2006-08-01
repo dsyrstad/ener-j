@@ -93,7 +93,7 @@ class EnhancerTemplate_Orig extends java.util.Date implements Cloneable
     /**
      * User callback.
      */
-    private void voPreHollow()
+    private void enerjPreHollow()
     {
     }
     
