@@ -34,7 +34,7 @@ package org.enerj.server;
  * <li>vo.password - the password for username. Optional.</li>
  * <li>vo.hostname - the host to connect to. Required for a remote connection. Does not exist for a in-client local connection.</li>
  * <li>vo.port - the port on the host to connect to. Optional. </li>
- * <li>vo.dbpath - a list of database directory names, separated by File.pathSeparator. Required on non-proxy servers.</li> 
+ * <li>enerj.dbpath - a list of database directory names, separated by File.pathSeparator. Required on non-proxy servers.</li> 
  * </ul>
  * 
  * These are also static defined by this interface.
@@ -71,7 +71,7 @@ public interface MetaObjectServer extends ObjectServer
     /** The port on the host to connect to. Optional. */
     public static final String EnerJ_PORT_PROP = "vo.port"; 
     /** A list of database directory names, separated by File.pathSeparator. */
-    public static final String EnerJ_DBPATH_PROP = "vo.dbpath";
+    public static final String EnerJ_DBPATH_PROP = "enerj.dbpath";
     /** The directory where the database configuration was found. */
     public static final String EnerJ_DBDIR_PROP = "vo.dbdir";
 }

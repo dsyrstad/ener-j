@@ -110,30 +110,30 @@ class TestClass implements Cloneable
     
     //----------------------------------------------------------------------
     // Optional EnerJ callback.
-    private void voPostLoad()
+    private void enerjPostLoad()
     {
-        System.out.println("voPostLoad called on " + this);
+        System.out.println("enerjPostLoad called on " + this);
     }
     
     //----------------------------------------------------------------------
     // Optional EnerJ callback.
-    private void voPreStore()
+    private void enerjPreStore()
     {
-        System.out.println("voPreStore called on " + this);
+        System.out.println("enerjPreStore called on " + this);
     }
     
     //----------------------------------------------------------------------
     // Optional EnerJ callback.
-    private void voPostStore()
+    private void enerjPostStore()
     {
-        System.out.println("voPostStore called on " + this);
+        System.out.println("enerjPostStore called on " + this);
     }
     
     //----------------------------------------------------------------------
     // Optional EnerJ callback.
-    private void voPreHollow()
+    private void enerjPreHollow()
     {
-        System.out.println("voPreHollow called on " + this);
+        System.out.println("enerjPreHollow called on " + this);
     }
     
     //----------------------------------------------------------------------

@@ -80,10 +80,10 @@ public class Enhancer
     private static final String sDataOutputClassName = "java.io.DataOutput";
     private static final String sReadContextClassName = sObjectSerializerClassName + "$ReadContext";
     private static final String sWriteContextClassName = sObjectSerializerClassName + "$WriteContext";
-    private static final String sPostLoadMethodName = "voPostLoad";
-    private static final String sPreStoreMethodName = "voPreStore";
-    private static final String sPostStoreMethodName = "voPostStore";
-    private static final String sPreHollowMethodName = "voPreHollow";
+    private static final String sPostLoadMethodName = "enerjPostLoad";
+    private static final String sPreStoreMethodName = "enerjPreStore";
+    private static final String sPostStoreMethodName = "enerjPostStore";
+    private static final String sPreHollowMethodName = "enerjPreHollow";
     private static final String sClassIdFieldName = "enerj_sClassId";
 
     private static final String[] sNoArgNames = new String[0];
@@ -1692,9 +1692,9 @@ public class Enhancer
      * @param someFields a list of the persistent fields for this class (not including
      *  super-class fields).
      * @param isTopLevelPersistable true if this is a top-level persistable class.
-     * @param hasPostLoad true if the voPostLoad method exists.
-     * @param hasPreStore true if the voPreStore method exists.
-     * @param hasPostStore true if the voPostStore method exists.
+     * @param hasPostLoad true if the enerjPostLoad method exists.
+     * @param hasPreStore true if the enerjPreStore method exists.
+     * @param hasPostStore true if the enerjPostStore method exists.
      *
      * @throws Exception in the event of an error.
      */
@@ -1728,7 +1728,7 @@ public class Enhancer
         writeInstructions.append( factory.createGetField(sWriteContextClassName, "mStream", sDataOutputType) );
         InstructionHandle writeStreamStart = writeInstructions.append( InstructionConstants.ASTORE_2 );
 
-        // Invoke voPreStore if it exists
+        // Invoke enerjPreStore if it exists
         if (hasPreStore) {
             // Use INVOKESPECIAL here rather than INVOKEVIRTUAL for two reasons:
             // 1) We want to call the method on this object ONLY, NOT an overridden
@@ -1821,17 +1821,17 @@ public class Enhancer
             }
         }
 
-        // Invoke voPostStore if it exists
+        // Invoke enerjPostStore if it exists
         if (hasPostStore) {
-            // See comments on call to voPreStore for reason why INVOKESPECIAL is used.
+            // See comments on call to enerjPreStore for reason why INVOKESPECIAL is used.
             writeInstructions.append( InstructionConstants.ALOAD_0 );
             writeInstructions.append( factory.createInvoke(className, sPostStoreMethodName, Type.EnerJID, 
                                     Type.NO_ARGS, Constants.INVOKESPECIAL) );
         }
         
-        // Invoke voPostLoad if it exists
+        // Invoke enerjPostLoad if it exists
         if (hasPostLoad) {
-            // See comments on call to voPreStore for reason why INVOKESPECIAL is used.
+            // See comments on call to enerjPreStore for reason why INVOKESPECIAL is used.
             readInstructions.append( InstructionConstants.ALOAD_0 );
             readInstructions.append( factory.createInvoke(className, sPostLoadMethodName, Type.EnerJID, 
                                     Type.NO_ARGS, Constants.INVOKESPECIAL) );
@@ -1866,7 +1866,7 @@ public class Enhancer
      * @param someFields a list of the persistent fields for this class (not including
      *  super-class fields).
      * @param isTopLevelPersistable true if this is a top-level persistable class.
-     * @param hasPreHollow true if the voPreHollow method exists.
+     * @param hasPreHollow true if the enerjPreHollow method exists.
      *
      * @throws Exception in the event of an error.
      */
@@ -1884,9 +1884,9 @@ public class Enhancer
             Type.EnerJID, Type.NO_ARGS, null,
             "enerj_Hollow", className, instructions, constantPoolGen);
 
-        // Invoke voPreHollow if it exists
+        // Invoke enerjPreHollow if it exists
         if (hasPreHollow) {
-            // See comments on call to voPreStore for reason why INVOKESPECIAL is used.
+            // See comments on call to enerjPreStore for reason why INVOKESPECIAL is used.
             instructions.append( InstructionConstants.ALOAD_0 );
             instructions.append( factory.createInvoke(className, sPreHollowMethodName, Type.EnerJID, 
                                     Type.NO_ARGS, Constants.INVOKESPECIAL) );

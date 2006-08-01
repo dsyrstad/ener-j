@@ -69,9 +69,9 @@ Enhancer Tests:
     + Regular class subclassing Persistable. Regular class fields should not be persisted.
       Class itself cannot be persisted.
 
-    + Test hollow. Should call voPreHollow if it exists (try both ways). Should call
+    + Test hollow. Should call enerjPreHollow if it exists (try both ways). Should call
       super.enerj_Hollow if not a top-level persistable.
-    + Test invocation of voPostLoad/voPreStore/voPostStore callbacks (voPreHollow tested with Hollow).
+    + Test invocation of enerjPostLoad/enerjPreStore/enerjPostStore callbacks (enerjPreHollow tested with Hollow).
     + Test clone. Should be marked new, not modified, not loaded. OID should be different
       than cloning object.
     + Test TL Persistable with super class other than Object that does not implement clone() (nor does TLP).

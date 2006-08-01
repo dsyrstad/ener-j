@@ -77,7 +77,7 @@ class EnhancerTemplateSubClass_Orig extends EnhancerTemplate_Orig implements Clo
     /**
      * User callback.
      */
-    private void voPreHollow()
+    private void enerjPreHollow()
     {
     }
     

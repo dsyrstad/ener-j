@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="org/enerj/jga/|org/enerj/query/oql/fn/" kind="src" path="src"/>
-	<classpathentry kind="src" path="src/org/enerj/jga"/>
-	<classpathentry kind="src" path="src/org/enerj/query/oql/fn"/>
-	<classpathentry excluding="org/enerj/oo7/" kind="src" path="test"/>
-	<classpathentry kind="src" path="test/org/enerj/oo7"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry output="testClasses" kind="src" path="test"/>
 	<classpathentry kind="lib" path="lib/asm-2.2.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/junit-3.8.1.jar"/>

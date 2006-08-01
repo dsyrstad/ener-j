@@ -157,7 +157,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
     /**
      * User callback.
      */
-    private void voPreHollow()
+    private void enerjPreHollow()
     {
     }
     
@@ -624,7 +624,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
      */
     public void enerj_Hollow() 
     {
-        voPreHollow();
+        enerjPreHollow();
         
         mByteObj = null;
         mBooleanObj = null;

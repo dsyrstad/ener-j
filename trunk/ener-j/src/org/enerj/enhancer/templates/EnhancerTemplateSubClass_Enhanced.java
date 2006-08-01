@@ -92,7 +92,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
     /**
      * User callback.
      */
-    private void voPreHollow()
+    private void enerjPreHollow()
     {
     }
 
@@ -327,7 +327,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
      */
     public void enerj_Hollow() 
     {
-        voPreHollow();
+        enerjPreHollow();
         
         super.enerj_Hollow();
         mByteObj = null;

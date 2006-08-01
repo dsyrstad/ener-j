@@ -21,7 +21,7 @@ public class CreateDatabase
         System.err.println("Usage: " + CreateDatabase.class.getName() + " [options] DatabaseName");
         System.err.println("DatabaseName - The database name.");
         System.err.println("    The database name must correspond to a base filename with \".properties\"");
-        System.err.println("    appended that can be found along the path specified by vo.dbpath.");
+        System.err.println("    appended that can be found along the path specified by enerj.dbpath.");
         System.err.println("    This is a Java properties file. See the plug-in class descriptions");
         System.err.println("    for information on the contents of the configuration file.");
         System.err.println("");

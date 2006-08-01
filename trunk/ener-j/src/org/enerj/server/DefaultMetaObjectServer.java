@@ -100,7 +100,7 @@ public class DefaultMetaObjectServer implements MetaObjectServer
      * Connects to a database.
      *
      * @param someProperties the connect properties. See {@link MetaObjectServer}. The "vo.dbname" property
-     *  is expected to resolve to a file named "{vo.dbname}/{vo.dbname}.properties" somewhere in vo.dbpath. In this properties file,
+     *  is expected to resolve to a file named "{vo.dbname}/{vo.dbname}.properties" somewhere in enerj.dbpath. In this properties file,
      *  the following properties must be set:<p>
      *  <ul>
      *  <li><i>DefaultMetaObjectServer.ObjectServerClass</i> - the class name of the ObjectServer plug-in.</li>
@@ -124,7 +124,7 @@ public class DefaultMetaObjectServer implements MetaObjectServer
      */
     public static MetaObjectServerSession connect(Properties someProperties) throws ODMGException 
     {
-        // Look up {dbname}.properties on vo.dbpath.  
+        // Look up {dbname}.properties on enerj.dbpath.  
         String dbPath = someProperties.getProperty(EnerJ_DBPATH_PROP);
         if (dbPath == null) {
             dbPath = ".";
