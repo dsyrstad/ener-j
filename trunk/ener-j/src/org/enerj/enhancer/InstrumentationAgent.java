@@ -19,7 +19,7 @@ import org.objectweb.asm.ClassWriter;
 /**
  * Contains the Instrumentation premain method to handle on-the-fly enhancement. 
  * Meta data is read from annotations on the classes and packages.  
- * The Java system property "vo.metadata" may be set to a global default meta data file name.
+ * The Java system property "enerj.metadata" may be set to a global default meta data file name.
  * If this is set, any meta data in this file overrides the annotations.
  * 
  * @version $Id: InstrumentationAgent.java,v 1.14 2006/06/03 20:30:53 dsyrstad Exp $
@@ -83,7 +83,7 @@ public class InstrumentationAgent implements ClassFileTransformer
                 // Lazily init metadata.
                 if (mMetaData == null) {
                     List<String> metaFiles = new ArrayList<String>(1);
-                    String metaFile = System.getProperty("vo.metadata");
+                    String metaFile = System.getProperty("enerj.metadata");
                     if (metaFile != null) {
                         metaFiles.add(metaFile);
                     }
@@ -97,7 +97,7 @@ public class InstrumentationAgent implements ClassFileTransformer
                 }
                 
                 //logger.finest("Enhancing " + dottedClassName);
-                long start = System.currentTimeMillis();
+                //long start = System.currentTimeMillis();
                 ClassReader classReader = new ClassReader(aClassfileBuffer);
                 ClassWriter classWriter = new ClassWriter(true);
                 ClassEnhancer classEnhancer;
