@@ -11,6 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.enerj.annotations.Persist;
+import org.enerj.annotations.PersistenceAware;
+import org.enerj.annotations.SchemaAnnotation;
+import org.enerj.util.ClassUtil;
+import org.enerj.util.asm.AnnotationNode;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
@@ -19,12 +24,6 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.enerj.annotations.Persist;
-import org.enerj.annotations.PersistenceAware;
-import org.enerj.annotations.SchemaAnnotation;
-import org.enerj.core.Persistable;
-import org.enerj.util.ClassUtil;
-import org.enerj.util.asm.AnnotationNode;
 
 /**
  * Enhancer MetaData representation.
@@ -34,7 +33,6 @@ import org.enerj.util.asm.AnnotationNode;
  */
 class MetaData
 {
-    private static final String sPersistableClassName = Persistable.class.getName();
     private static final String sSchemaAnnotationDescr = Type.getDescriptor(SchemaAnnotation.class);
     private static final String sPersistDescr = Type.getDescriptor(Persist.class);
     private static final String sPersistenceAwareDescr = Type.getDescriptor(PersistenceAware.class);
