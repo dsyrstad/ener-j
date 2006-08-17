@@ -205,8 +205,12 @@ public class Enhancer
             File base;
             String lcComponent = component.toLowerCase(); 
             if (lcComponent.endsWith(".jar") || lcComponent.endsWith(".zip")) {
-                URI jarURI = new URI("jar:file:" + component + "!/");
-                base = new File("jar:file:" + component + "!/");
+            	// TODO We don't support scanning JAR files yet. JARs *should* be treated like directories by File...
+            	/*
+            	component = component.replace(File.separatorChar, '/');
+                URI jarURI = new URI("jar:file:/" + component + "!/");
+                */
+            	continue;
             }
             else {
                 base = new File(component);

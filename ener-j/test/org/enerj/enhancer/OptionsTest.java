@@ -18,10 +18,6 @@ import org.enerj.core.Persistable;
  */
 public class OptionsTest extends TestCase 
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/OptionsTestDB?DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
-
-    private static boolean sEnhanced = false;
-    
     //----------------------------------------------------------------------
     public OptionsTest(String aTestName) 
     {
@@ -50,6 +46,7 @@ public class OptionsTest extends TestCase
         
         // Warning should be generated, but enhancement should not fail.
         Exception lastException = Enhancer.getLastRunEnhancerException();
+        assertNull(lastException);
     }
     
     //----------------------------------------------------------------------

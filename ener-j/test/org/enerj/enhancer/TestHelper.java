@@ -58,7 +58,7 @@ public class TestHelper
     public static void enhance(String[] someMetaDataNames) throws Exception
     {
         // Find the directory of the first class. This will be our sourcepath.
-        String classDir = "./testClasses";
+        String classDir = "." + File.separatorChar + "testClasses";
         String baseDir = FileUtil.getParentDirectory(classDir) + File.separatorChar;
 
         String packageName = TestHelper.class.getPackage().getName();

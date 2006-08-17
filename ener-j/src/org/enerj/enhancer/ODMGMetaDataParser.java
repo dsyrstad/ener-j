@@ -278,8 +278,7 @@ class ODMGMetaDataParser
     {
         List<Pair> pairs = new LinkedList<Pair>();
 
-        int tokenType;
-        while ((tokenType = mTokenizer.nextToken()) == StreamTokenizer.TT_WORD) {
+        while (mTokenizer.nextToken() == StreamTokenizer.TT_WORD) {
             if (mTokenizer.sval.equals("class") || mTokenizer.sval.equals("field")) {
                 mTokenizer.pushBack();
                 break;
