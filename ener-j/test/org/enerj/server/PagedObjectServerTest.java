@@ -47,12 +47,12 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
         props.setProperty("PagedObjectServer.RedoLogServerClass", ArchivingRedoLogServer.class.getName() );
         props.setProperty("PagedObjectServer.MaxUpdateCacheSize", "8192000");
         props.setProperty("PagedObjectServer.UpdateCacheInitialHashSize", "80000");
-        props.setProperty("ArchivingRedoLogServer.logName", "/tmp/PagedObjectServerTest.log");
+        props.setProperty("ArchivingRedoLogServer.logName", getLogFile().getAbsolutePath());
         props.setProperty("ArchivingRedoLogServer.shouldArchive", "true");
         props.setProperty("ArchivingRedoLogServer.requestedLogSize", "0");
         props.setProperty("CachedPageServer.delegatePageServerClass", FilePageServer.class.getName() );
         props.setProperty("CachedPageServer.numberOfCachedPages", "1000");
-        props.setProperty("FilePageServer.volume", "/tmp/ObjectServer-volume");
+        props.setProperty("FilePageServer.volume", getPageFile().getAbsolutePath());
         props.setProperty("FilePageServer.pageSize", "8192");
         props.setProperty("LockScheduler.initialNumObjs", "20000");
         props.setProperty("LockScheduler.deadlockAlgorithm", "Waits-For");
