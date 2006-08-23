@@ -334,7 +334,8 @@ public class ObjectSerializerTest extends TestCase
     {
         long oid = aDatabase.getOID(aPersistable);
         aDatabase.storePersistable(aPersistable);
-        
+
+        EnerJImplementation.getInstance().currentEnerJTransaction().flush();
         aDatabase.evictAll();
 
         Persistable persistable2 = aDatabase.getObjectForOID(oid);

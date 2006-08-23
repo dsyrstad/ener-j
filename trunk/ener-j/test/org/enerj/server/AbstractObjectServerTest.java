@@ -5,6 +5,7 @@
 package org.enerj.server;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Properties;
@@ -32,6 +33,16 @@ public abstract class AbstractObjectServerTest extends TestCase
     public AbstractObjectServerTest(String aTestName) 
     {
         super(aTestName);
+
+    	try {
+    		mTmpLogFile = File.createTempFile("PagedObjectServerText", "log");
+    		mTmpLogFile.delete();
+    		mTmpPageFile = File.createTempFile("ObjectServer", "volume");
+    		mTmpPageFile.delete();
+    	}
+    	catch (IOException e) {
+    		// Shouldn't happen
+    	}
     }
     
     //----------------------------------------------------------------------
@@ -47,30 +58,37 @@ public abstract class AbstractObjectServerTest extends TestCase
     abstract protected String getObjectServerClassName();
 
     //----------------------------------------------------------------------
+    protected File getPageFile()
+    {
+    	return mTmpPageFile;
+    }
+    
+    //----------------------------------------------------------------------
+    protected File getLogFile()
+    {
+    	return mTmpPageFile;
+    }
+    
+    //----------------------------------------------------------------------
     /**
      * Creates a new page server volume.
      */
     private void createPageVolume() throws Exception
     {
-        //String tmpdir = System.getProperty("java.io.tmpdir");
-        //  TODO  this currently has to be in sync with object server properties file, which will become a problem
-        //  TODO  /tmp/ may not work on non *nix systems.
-        mTmpPageFile = new File("/tmp/ObjectServer-volume");
-        mTmpPageFile.delete();
-        if (mTmpPageFile.exists()) {
-            throw new Exception("Huh? " + mTmpPageFile.getAbsolutePath() + " still exists. Possibly last instance of PageServer didn't shutdown.");
+        getPageFile().delete();
+        if (getPageFile().exists()) {
+            throw new Exception("Huh? " + getPageFile().getAbsolutePath() + " still exists. Possibly last instance of PageServer didn't shutdown.");
         }
         
         // Delete the log file
-        mTmpLogFile = new File("/tmp/PagedObjectServerTest.log");
-        mTmpLogFile.delete();
+        getPageFile().delete();
 
         // Pre-allocate first page so it's zeros.
-        FilePageServer.createVolume(mTmpPageFile.getAbsolutePath(), PAGE_SIZE, 0x1234L, 0L, 300000000L, (long)PAGE_SIZE);
+        FilePageServer.createVolume(getPageFile().getAbsolutePath(), PAGE_SIZE, 0x1234L, 0L, 300000000L, (long)PAGE_SIZE);
 
         // Make sure page server knows that first page is allocated.
         Properties props = new Properties( System.getProperties() );
-        props.setProperty("FilePageServer.volume", mTmpPageFile.getAbsolutePath() );
+        props.setProperty("FilePageServer.volume", getPageFile().getAbsolutePath() );
         PageServer pageServer = (PageServer)PluginHelper.connect(FilePageServer.class.getName(), props);
         long allocatedPage = pageServer.allocatePage();
         long logicalFirstPage = pageServer.getLogicalFirstPageOffset();
@@ -511,8 +529,8 @@ public abstract class AbstractObjectServerTest extends TestCase
 
         for (int i = 0; i < oids.length; i++) {
             mSession.getLock(oids[i], Transaction.READ, -1L);
-            long testCID = mSession.getCIDForOID(oids[i]);
-            byte[] obj = mSession.loadObject(oids[i]);
+            mSession.getCIDForOID(oids[i]);
+            mSession.loadObject(oids[i]);
         }
 
         elapsed = System.currentTimeMillis() - start;
