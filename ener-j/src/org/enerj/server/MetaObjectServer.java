@@ -59,20 +59,20 @@ public interface MetaObjectServer extends ObjectServer
 {
     // Property keys.
     /** The database name. Required. */
-    public static final String EnerJ_DBNAME_PROP = "vo.dbname";
+    public static final String ENERJ_DBNAME_PROP = "enerj.dbname";
     /** The database access mode. This is the integer value of the org.odmg.Database access modes. Required. */
-    public static final String EnerJ_ACCESS_MODE_PROP = "vo.accessmode";
+    public static final String ENERJ_ACCESS_MODE_PROP = "enerj.accessmode";
     /** The username for the database. Optional. */
-    public static final String EnerJ_USERNAME_PROP = "vo.username";
+    public static final String ENERJ_USERNAME_PROP = "enerj.username";
     /** The password for username. Optional. */
-    public static final String EnerJ_PASSWORD_PROP = "vo.password"; 
+    public static final String ENERJ_PASSWORD_PROP = "enerj.password"; 
     /** The host to connect to. Required for a remote connection. Must not exist for a in-client local connection. */
-    public static final String EnerJ_HOSTNAME_PROP = "vo.hostname";
+    public static final String ENERJ_HOSTNAME_PROP = "enerj.hostname";
     /** The port on the host to connect to. Optional. */
-    public static final String EnerJ_PORT_PROP = "vo.port"; 
+    public static final String ENERJ_PORT_PROP = "enerj.port"; 
     /** A list of database directory names, separated by File.pathSeparator. */
-    public static final String EnerJ_DBPATH_PROP = "enerj.dbpath";
+    public static final String ENERJ_DBPATH_PROP = "enerj.dbpath";
     /** The directory where the database configuration was found. */
-    public static final String EnerJ_DBDIR_PROP = "vo.dbdir";
+    public static final String ENERJ_DBDIR_PROP = "enerj.dbdir";
 }
 

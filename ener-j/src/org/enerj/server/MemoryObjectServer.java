@@ -141,9 +141,9 @@ public class MemoryObjectServer implements ObjectServer
      */
     public static ObjectServerSession connect(Properties someProperties) throws ODMGException 
     {
-        String dbName = someProperties.getProperty(MetaObjectServer.EnerJ_DBNAME_PROP);
+        String dbName = someProperties.getProperty(MetaObjectServer.ENERJ_DBNAME_PROP);
         if (dbName ==  null) {
-            throw new DatabaseNotFoundException(MetaObjectServer.EnerJ_DBNAME_PROP + " parameter expected");
+            throw new DatabaseNotFoundException(MetaObjectServer.ENERJ_DBNAME_PROP + " parameter expected");
         }
 
         String fileName = someProperties.getProperty("MemoryObjectServer.file");

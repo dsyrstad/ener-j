@@ -4,6 +4,9 @@
 
 package org.enerj.server;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Properties;
 
 import junit.framework.Test;
@@ -18,17 +21,66 @@ import junit.framework.TestSuite;
  */
 public class PagedObjectServerTest extends AbstractObjectServerTest
 {
+	private static final String DB_NAME = "PagedObjectServerTest";
+    private File mTmpPageFile = null;
+    private File mTmpLogFile = null;
     
     //----------------------------------------------------------------------
     public PagedObjectServerTest(String aTestName) 
     {
         super(aTestName);
+
+    	try {
+    		mTmpLogFile = File.createTempFile(DB_NAME, ".log");
+    		mTmpLogFile.delete();
+    		mTmpLogFile.deleteOnExit();
+    		mTmpPageFile = File.createTempFile(DB_NAME, ".enerj");
+    		mTmpPageFile.delete();
+    		mTmpLogFile.deleteOnExit();
+    	}
+    	catch (IOException e) {
+    		// Shouldn't happen
+    	}
     }
     
     //----------------------------------------------------------------------
-    public static void main(String[] args)
+    private File getPageFile()
     {
-        junit.swingui.TestRunner.run(PagedObjectServerTest.class);
+    	return mTmpPageFile;
+    }
+    
+    //----------------------------------------------------------------------
+    private File getLogFile()
+    {
+    	return mTmpPageFile;
+    }
+    
+    //----------------------------------------------------------------------
+    /**
+     * Creates a new page server volume.
+     */
+    protected void createDB() throws Exception
+    {
+        getPageFile().delete();
+        if (getPageFile().exists()) {
+            throw new Exception("Huh? " + getPageFile().getAbsolutePath() + " still exists. Possibly last instance of PageServer didn't shutdown.");
+        }
+        
+        // Delete the log file
+        getLogFile().delete();
+        
+        Properties props = getObjectServerProperties();
+        props.setProperty("DefaultMetaObjectServer.ObjectServerClass", getObjectServerClassName());
+        
+        File dbdir = getPageFile().getParentFile();
+        System.setProperty(MetaObjectServer.ENERJ_DBPATH_PROP, dbdir.getAbsolutePath());
+        dbdir = new File(dbdir, DB_NAME);
+        dbdir.mkdir();
+        
+        FileOutputStream propStream = new FileOutputStream(new File(dbdir, DB_NAME + ".properties"));
+        props.store(propStream, null);
+        propStream.close();
+        PagedObjectServer.createDatabase("test", DB_NAME, 0L, 0L);
     }
     
     //----------------------------------------------------------------------
@@ -41,7 +93,7 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
     protected Properties getObjectServerProperties()
     {
         Properties props = new Properties( System.getProperties() );
-        props.setProperty("vo.dbname", "PageObjectServerTest");
+        props.setProperty(MetaObjectServer.ENERJ_DBNAME_PROP, DB_NAME);
         props.setProperty("PagedObjectServer.PageServerClass", CachedPageServer.class.getName() );
         props.setProperty("PagedObjectServer.LockServerClass", LockScheduler.class.getName() );
         props.setProperty("PagedObjectServer.RedoLogServerClass", ArchivingRedoLogServer.class.getName() );

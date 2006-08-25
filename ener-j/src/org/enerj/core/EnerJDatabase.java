@@ -4,12 +4,12 @@
 
 package org.enerj.core;
 
-import static org.enerj.server.MetaObjectServer.EnerJ_ACCESS_MODE_PROP;
-import static org.enerj.server.MetaObjectServer.EnerJ_DBNAME_PROP;
-import static org.enerj.server.MetaObjectServer.EnerJ_HOSTNAME_PROP;
-import static org.enerj.server.MetaObjectServer.EnerJ_PASSWORD_PROP;
-import static org.enerj.server.MetaObjectServer.EnerJ_PORT_PROP;
-import static org.enerj.server.MetaObjectServer.EnerJ_USERNAME_PROP;
+import static org.enerj.server.MetaObjectServer.ENERJ_ACCESS_MODE_PROP;
+import static org.enerj.server.MetaObjectServer.ENERJ_DBNAME_PROP;
+import static org.enerj.server.MetaObjectServer.ENERJ_HOSTNAME_PROP;
+import static org.enerj.server.MetaObjectServer.ENERJ_PASSWORD_PROP;
+import static org.enerj.server.MetaObjectServer.ENERJ_PORT_PROP;
+import static org.enerj.server.MetaObjectServer.ENERJ_USERNAME_PROP;
 import gnu.trove.TLongHashSet;
 
 import java.io.ByteArrayInputStream;
@@ -1140,23 +1140,23 @@ public class EnerJDatabase implements Database
         }
 
         // Set MetaObjectServer properties
-        props.setProperty(EnerJ_DBNAME_PROP, dbname);
-        props.setProperty(EnerJ_ACCESS_MODE_PROP, String.valueOf(accessMode) );
+        props.setProperty(ENERJ_DBNAME_PROP, dbname);
+        props.setProperty(ENERJ_ACCESS_MODE_PROP, String.valueOf(accessMode) );
 
         if (username != null) {
-            props.setProperty(EnerJ_USERNAME_PROP, username);
+            props.setProperty(ENERJ_USERNAME_PROP, username);
         }
         
         if (password != null) {
-            props.setProperty(EnerJ_PASSWORD_PROP, password);
+            props.setProperty(ENERJ_PASSWORD_PROP, password);
         }
         
         if (host != null) {
-            props.setProperty(EnerJ_HOSTNAME_PROP, host);
+            props.setProperty(ENERJ_HOSTNAME_PROP, host);
         }
         
         if (port != -1) {
-            props.setProperty(EnerJ_PORT_PROP, String.valueOf(port) );
+            props.setProperty(ENERJ_PORT_PROP, String.valueOf(port) );
         }
 
         // Add query parameters

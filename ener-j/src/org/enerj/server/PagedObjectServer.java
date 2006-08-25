@@ -14,13 +14,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
 
-import org.odmg.Database;
-import org.odmg.DatabaseClosedException;
-import org.odmg.DatabaseNotFoundException;
-import org.odmg.LockNotGrantedException;
-import org.odmg.ODMGException;
-import org.odmg.ODMGRuntimeException;
-import org.odmg.TransactionNotInProgressException;
 import org.enerj.core.DatabaseRoot;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJTransaction;
@@ -34,6 +27,13 @@ import org.enerj.server.logentry.StoreObjectLogEntry;
 import org.enerj.util.FileUtil;
 import org.enerj.util.RequestProcessor;
 import org.enerj.util.StringUtil;
+import org.odmg.Database;
+import org.odmg.DatabaseClosedException;
+import org.odmg.DatabaseNotFoundException;
+import org.odmg.LockNotGrantedException;
+import org.odmg.ODMGException;
+import org.odmg.ODMGRuntimeException;
+import org.odmg.TransactionNotInProgressException;
 
 /** 
  * The defautl Ener-J ObjectServer. Stores objects in pages on a PageServer.
@@ -98,8 +98,8 @@ public class PagedObjectServer implements ObjectServer
      */
     private PagedObjectServer(Properties someProperties) throws ODMGException  
     {
-        // This get is here just to require the property. It is actually gotten by PagedStore 
-        String pageServerClassName = getRequiredProperty(someProperties, "PagedObjectServer.PageServerClass");
+        // This get is here just to require the property. It is actually used by PagedStore. 
+        getRequiredProperty(someProperties, "PagedObjectServer.PageServerClass");
         String lockServerClassName = getRequiredProperty(someProperties, "PagedObjectServer.LockServerClass");
         String logServerClassName = getRequiredProperty(someProperties, "PagedObjectServer.RedoLogServerClass");
         
@@ -107,7 +107,7 @@ public class PagedObjectServer implements ObjectServer
         int updateCacheInitialHashSize = getRequiredIntProperty(someProperties, "PagedObjectServer.UpdateCacheInitialHashSize");
         mUpdateCache = new UpdateCache(maxUpdateCacheSize, updateCacheInitialHashSize);
         
-        mDBName = getRequiredProperty(someProperties, MetaObjectServer.EnerJ_DBNAME_PROP);
+        mDBName = getRequiredProperty(someProperties, MetaObjectServer.ENERJ_DBNAME_PROP);
         
         try {
             mRedoLogServer = (RedoLogServer)PluginHelper.connect(logServerClassName, someProperties);
@@ -211,15 +211,11 @@ public class PagedObjectServer implements ObjectServer
      */
     public static void createDatabase(String aDescription, String aDBName, long aMaximumSize, long aPreAllocatedSize) throws ODMGException
     {
-        boolean completed = false;
-        EnerJDatabase db = null;
-        EnerJTransaction txn = null;
-
         // Load database properties.  First copy system properties.
         Properties props = new Properties( System.getProperties() );
 
         String propFileName = aDBName + File.separatorChar + aDBName + ".properties";
-        String dbPath = getRequiredProperty(props, MetaObjectServer.EnerJ_DBPATH_PROP);
+        String dbPath = getRequiredProperty(props, MetaObjectServer.ENERJ_DBPATH_PROP);
         File propFile = FileUtil.findFileOnPath(propFileName, dbPath);
         if (propFile == null) {
             throw new DatabaseNotFoundException("Cannot find " + propFileName + " in any of the directories " + dbPath); 
@@ -228,14 +224,42 @@ public class PagedObjectServer implements ObjectServer
         try {
             FileInputStream inPropFile = new FileInputStream(propFile);
             props.load(inPropFile);
-            props.setProperty(MetaObjectServer.EnerJ_DBDIR_PROP, propFile.getParent() );
         }
         catch (IOException e) {
             throw new ODMGException("Error reading " + propFile, e);
         }
 
-        String volumeFileName = StringUtil.substituteMacros( getRequiredProperty(props, FilePageServer.EnerJLUME_PROP), props);
-        int pageSize = getRequiredIntProperty(props, FilePageServer.PAGE_SIZE_PROP);
+        createDatabase(aDescription, aDBName, aMaximumSize, aPreAllocatedSize, props, propFile);
+    }
+
+    //----------------------------------------------------------------------
+    /**
+     * Creates a new database on disk. The "enerj.dbpath" system property must be set.
+     *
+     * @param aDescription a description for the database. May be null.
+     * @param aDBName The database name. See {@link #connect(Properties)}.
+     * @param aMaximumSize the maximum size for the volume. This will be rounded up
+     *  to the nearest page boundary. If this value is zero, the volume will grow unbounded.
+     * @param aPreAllocatedSize the number of bytes to pre-allocate. This will be rounded up
+     *  to the nearest page boundary.
+     * @param someDBProps the database properties, normally read from a database propeties file.
+     * @param aDBDir the base directory of the database.
+     * 
+     * @throws ODMGException if an error occurs.
+     *
+     *  TODO  Allow multiple volumes to be specfiied.
+     */
+	private static void createDatabase(String aDescription, String aDBName, long aMaximumSize, long aPreAllocatedSize, 
+			Properties someDBProps, File aDBDir) throws ODMGException {
+		
+		someDBProps.setProperty(MetaObjectServer.ENERJ_DBDIR_PROP, aDBDir.getParent() );
+        String volumeFileName = StringUtil.substituteMacros( getRequiredProperty(someDBProps, FilePageServer.VOLUME_PROP), someDBProps);
+        int pageSize = getRequiredIntProperty(someDBProps, FilePageServer.PAGE_SIZE_PROP);
+
+        boolean completed = false;
+        EnerJDatabase db = null;
+        EnerJTransaction txn = null;
+
         try {
             // Generate a database Id.
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1024);
@@ -264,7 +288,7 @@ public class PagedObjectServer implements ObjectServer
 
             // Pre-allocate first page so it's zeros.
             // Make sure page server knows that first page is allocated.
-            PageServer pageServer = FilePageServer.connect(props); 
+            PageServer pageServer = FilePageServer.connect(someDBProps); 
             long allocatedPage = pageServer.allocatePage();
             long logicalFirstPage = pageServer.getLogicalFirstPageOffset();
             if (allocatedPage != 0 || logicalFirstPage != 0) {
@@ -308,7 +332,7 @@ public class PagedObjectServer implements ObjectServer
                 new File(volumeFileName).delete();
             }
         }
-    }
+	}
 
     //----------------------------------------------------------------------
     /**
@@ -511,7 +535,7 @@ public class PagedObjectServer implements ObjectServer
         // See if there is already a ObjectServer for this database.
         // Synchronize on sCurrentServers during the get/put process so that another thread
         // cannot create one at the same time.
-        String dbName = getRequiredProperty(someProperties, MetaObjectServer.EnerJ_DBNAME_PROP);
+        String dbName = getRequiredProperty(someProperties, MetaObjectServer.ENERJ_DBNAME_PROP);
         synchronized (sCurrentServers) {
             Session session;
             PagedObjectServer server = (PagedObjectServer)sCurrentServers.get(dbName);

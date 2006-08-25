@@ -4,8 +4,6 @@
 
 package org.enerj.server;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Properties;
@@ -24,8 +22,6 @@ public abstract class AbstractObjectServerTest extends TestCase
 {
     private static final int PAGE_SIZE = 8192;
     
-    private File mTmpPageFile = null;
-    private File mTmpLogFile = null;
     private ObjectServerSession mSession = null;
 
     
@@ -33,16 +29,6 @@ public abstract class AbstractObjectServerTest extends TestCase
     public AbstractObjectServerTest(String aTestName) 
     {
         super(aTestName);
-
-    	try {
-    		mTmpLogFile = File.createTempFile("PagedObjectServerText", "log");
-    		mTmpLogFile.delete();
-    		mTmpPageFile = File.createTempFile("ObjectServer", "volume");
-    		mTmpPageFile.delete();
-    	}
-    	catch (IOException e) {
-    		// Shouldn't happen
-    	}
     }
     
     //----------------------------------------------------------------------
@@ -56,46 +42,9 @@ public abstract class AbstractObjectServerTest extends TestCase
      * Gets the class name of the ObjectServer to be tested.
      */
     abstract protected String getObjectServerClassName();
-
-    //----------------------------------------------------------------------
-    protected File getPageFile()
-    {
-    	return mTmpPageFile;
-    }
     
-    //----------------------------------------------------------------------
-    protected File getLogFile()
-    {
-    	return mTmpPageFile;
-    }
-    
-    //----------------------------------------------------------------------
-    /**
-     * Creates a new page server volume.
-     */
-    private void createPageVolume() throws Exception
-    {
-        getPageFile().delete();
-        if (getPageFile().exists()) {
-            throw new Exception("Huh? " + getPageFile().getAbsolutePath() + " still exists. Possibly last instance of PageServer didn't shutdown.");
-        }
-        
-        // Delete the log file
-        getPageFile().delete();
+    abstract protected void createDB() throws Exception;
 
-        // Pre-allocate first page so it's zeros.
-        FilePageServer.createVolume(getPageFile().getAbsolutePath(), PAGE_SIZE, 0x1234L, 0L, 300000000L, (long)PAGE_SIZE);
-
-        // Make sure page server knows that first page is allocated.
-        Properties props = new Properties( System.getProperties() );
-        props.setProperty("FilePageServer.volume", getPageFile().getAbsolutePath() );
-        PageServer pageServer = (PageServer)PluginHelper.connect(FilePageServer.class.getName(), props);
-        long allocatedPage = pageServer.allocatePage();
-        long logicalFirstPage = pageServer.getLogicalFirstPageOffset();
-        pageServer.disconnect();
-        assertTrue( allocatedPage == logicalFirstPage );
-    }
-    
     //----------------------------------------------------------------------
     /**
      * Connects to the ObjectServer.
@@ -108,7 +57,7 @@ public abstract class AbstractObjectServerTest extends TestCase
     //----------------------------------------------------------------------
     protected void setUp() throws Exception
     {
-        createPageVolume();
+        createDB();
         mSession = connectToObjectServer();
     }
 
@@ -118,12 +67,6 @@ public abstract class AbstractObjectServerTest extends TestCase
         if (mSession != null) {
             mSession.shutdown();
             mSession = null;
-        }
-
-        if (mTmpPageFile != null) {
-            mTmpPageFile.delete();
-            mTmpLogFile.delete();
-            mTmpPageFile = null;
         }
     }
     

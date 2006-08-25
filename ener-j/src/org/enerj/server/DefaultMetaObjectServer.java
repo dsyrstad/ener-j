@@ -125,12 +125,12 @@ public class DefaultMetaObjectServer implements MetaObjectServer
     public static MetaObjectServerSession connect(Properties someProperties) throws ODMGException 
     {
         // Look up {dbname}.properties on enerj.dbpath.  
-        String dbPath = someProperties.getProperty(EnerJ_DBPATH_PROP);
+        String dbPath = someProperties.getProperty(ENERJ_DBPATH_PROP);
         if (dbPath == null) {
             dbPath = ".";
         }
         
-        String dbname = getRequiredProperty(someProperties, EnerJ_DBNAME_PROP);
+        String dbname = getRequiredProperty(someProperties, ENERJ_DBNAME_PROP);
 
         Properties dbConfigProps = new Properties(someProperties);
 
@@ -142,7 +142,7 @@ public class DefaultMetaObjectServer implements MetaObjectServer
             try {
                 FileInputStream inPropFile = new FileInputStream(propFile);
                 dbConfigProps.load(inPropFile);
-                dbConfigProps.setProperty(EnerJ_DBDIR_PROP, propFile.getParent() );
+                dbConfigProps.setProperty(ENERJ_DBDIR_PROP, propFile.getParent() );
             }
             catch (IOException e) {
                 throw new ODMGException("Error reading " + propFile, e);

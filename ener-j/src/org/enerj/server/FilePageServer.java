@@ -12,6 +12,7 @@ import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.util.Properties;
 
 import org.enerj.util.StringUtil;
@@ -27,7 +28,7 @@ import org.enerj.util.StringUtil;
  */
 public class FilePageServer implements PageServer
 {
-    public static final String EnerJLUME_PROP = "FilePageServer.volume";
+    public static final String VOLUME_PROP = "FilePageServer.volume";
     public static final String PAGE_SIZE_PROP = "FilePageServer.pageSize";
     
     /** mVolumeFile and mVolumeChannel both reference the same file while it is open. 
@@ -83,7 +84,8 @@ public class FilePageServer implements PageServer
             mVolumeFile = new RandomAccessFile(aVolumeFileName, openMode);
             mVolumeChannel = mVolumeFile.getChannel();
             // Keep an exclusive lock on the entire file until we close it.
-            if (mVolumeChannel.tryLock() == null) {
+            FileLock fileLock = mVolumeChannel.tryLock();
+            if (fileLock == null) {
                 throw new PageServerException("Cannot lock volume: " + aVolumeFileName);
             }
 
@@ -178,7 +180,8 @@ public class FilePageServer implements PageServer
         try {
             volume = new RandomAccessFile(volumeFile, "rw");
             FileChannel channel = volume.getChannel();
-            if (channel.tryLock() == null) {
+            FileLock lock = channel.tryLock();
+            if (lock == null) {
                 throw new PageServerException("Cannot lock volume: " + volumeFile);
             }
             
