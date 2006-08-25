@@ -286,7 +286,7 @@ public class PagedObjectServer implements ObjectServer
             // Create the volume
             FilePageServer.createVolume(volumeFileName, pageSize, databaseId, 0L, aMaximumSize, Math.min((long)pageSize, aPreAllocatedSize) );
 
-            // Pre-allocate first page so it's zeros.
+            // Pre-allocate first page so it's all zeros.
             // Make sure page server knows that first page is allocated.
             PageServer pageServer = FilePageServer.connect(someDBProps); 
             long allocatedPage = pageServer.allocatePage();
@@ -309,8 +309,6 @@ public class PagedObjectServer implements ObjectServer
             db.setDatabaseRoot(root);
             
             txn.commit();
-            
-            db.close();
             completed = true;
         }
         catch (ODMGException e) {
