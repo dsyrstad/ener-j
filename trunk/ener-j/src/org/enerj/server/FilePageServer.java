@@ -36,6 +36,7 @@ public class FilePageServer implements PageServer
      */
     private RandomAccessFile mVolumeFile = null;
     private FileChannel mVolumeChannel = null;
+    private FileLock mFileLock = null;
 
     /** The volume's header information. This attribute is read-only, but the 
      * contents of the header are read/write. 
@@ -84,8 +85,8 @@ public class FilePageServer implements PageServer
             mVolumeFile = new RandomAccessFile(aVolumeFileName, openMode);
             mVolumeChannel = mVolumeFile.getChannel();
             // Keep an exclusive lock on the entire file until we close it.
-            FileLock fileLock = mVolumeChannel.tryLock();
-            if (fileLock == null) {
+            mFileLock = mVolumeChannel.tryLock();
+            if (mFileLock == null) {
                 throw new PageServerException("Cannot lock volume: " + aVolumeFileName);
             }
 
@@ -123,6 +124,7 @@ public class FilePageServer implements PageServer
 
                     mVolumeFile = null;
                     mVolumeChannel = null;
+                    mFileLock = null;
                 }
             }
         } // End finally
@@ -313,6 +315,10 @@ public class FilePageServer implements PageServer
             mHeader.write(mVolumeChannel);
             // Sync to disk now and update time stamps...
             mVolumeChannel.force(true);
+            if (!mFileLock.isValid()) {
+            	throw new PageServerException("FileLock is not valid");
+            }
+            
             mVolumeFile.close();
         }
         catch (Throwable t) {
@@ -322,6 +328,7 @@ public class FilePageServer implements PageServer
             mVolumeFile = null;
             mVolumeChannel = null;
             mHeader = null;
+            mFileLock = null;
         }
     }
 
