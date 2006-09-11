@@ -11,7 +11,8 @@ base=`dirname $0`/..
 os=`uname -o`
 p=":"
 [ "$os" = "Cygwin" ] && {
-        p=";"
+    p=";"
+	base=`echo $base | sed -e 's#/cygdrive/c#c:#'`
 }
 
 echo "$EnerJDBPATH"
