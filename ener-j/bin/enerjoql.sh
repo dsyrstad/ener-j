@@ -12,6 +12,7 @@ os=`uname -o`
 p=":"
 [ "$os" = "Cygwin" ] && {
 	p=";"
+	base=`echo $base | sed -e 's#/cygdrive/c#c:#'`
 }
 
 java -javaagent:lib/enerjenh.jar -Xverify:none -XX:+UseParallelGC -XX:PermSize=20M -XX:MaxNewSize=32M -XX:NewSize=32M -Xms256m -Xmx512m -cp $base/classes$p$base/lib/asm-2.2.2.jar -Denerj.dbpath=$EnerJDBPATH org.enerj.util.EnerJQLCmdLine "$1" "$2" "$3" "$4"
