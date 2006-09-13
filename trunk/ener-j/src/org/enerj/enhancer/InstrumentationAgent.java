@@ -74,7 +74,7 @@ public class InstrumentationAgent implements ClassFileTransformer
     {
         // We can be active and the Finalizer can reenter ourself, which causes deadlock. Avoid this.
         // Also we don't enhance java system classes.
-        if (Thread.currentThread().getName().equals("Finalizer") || aClassName.startsWith("java/")) {
+        if (Thread.currentThread().getName().equals("Finalizer") || aClassName.startsWith("java/") || aClassName.startsWith("sun/")) {
             return null;
         }
         

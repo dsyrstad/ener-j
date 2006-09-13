@@ -16,4 +16,4 @@ p=":"
 }
 
 echo $base
-java -javaagent:lib/enerjenh.jar -server -Xverify:none -XX:+UseParallelGC -XX:PermSize=20M -XX:MaxNewSize=32M -XX:NewSize=32M -Xms256m -Xmx512m -cp $base/classes$p$base/lib/asm-2.2.2.jar -Denerj.dbpath=$EnerJDBPATH org.enerj.oo7.OO7Loader oo7 $1 $2
+java -javaagent:lib/enerjenh.jar -server -Xverify:none -XX:+UseParallelGC -XX:PermSize=20M -XX:MaxNewSize=32M -XX:NewSize=32M -Xms256m -Xmx512m -cp $base/classes$p$base/testClasses$p$base/lib/asm-2.2.2.jar -Denerj.dbpath=$EnerJDBPATH org.enerj.oo7.OO7Loader oo7 $1 $2
