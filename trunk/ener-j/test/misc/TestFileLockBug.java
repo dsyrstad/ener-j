@@ -2,60 +2,64 @@ package misc;
 
 import java.io.File;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.Arrays;
 
-public class TestFileLockBug 
+public class TestFileLockBug
 {
+    public static void main(String[] args) throws Exception
+    {
+        TestFileLockBug o = new TestFileLockBug();
+        try {
+            o.run();
+        }
+        finally {
+            new File("test.file").delete();
+        }
+    }
 
-	public static void main(String[] args) throws Exception
-	{
-		try {
-			for (int i = 0; i < 5; i++) {
-				System.out.println("Iteration " + i);
-				RandomAccessFile ras = new RandomAccessFile("test.file", "rw");
-				FileChannel chan = ras.getChannel();
-				if (chan.tryLock() == null) {
-					throw new Exception("Lock failed");
-				}
+    void run() throws Exception
+    {
+        RandomAccessFile ras = new RandomAccessFile("test.file", "rw");
+        getLock(ras); // Get the initial lock
 
-				ByteBuffer hdr = ByteBuffer.allocate(73);
-				hdr.putLong(1);
-                hdr.putInt(2);
-                hdr.putLong(3);
-                hdr.putLong(4);
-                hdr.putLong(5);
-                hdr.putLong(6);
-                hdr.putInt(7);
-                hdr.putLong(8);
-                hdr.put((byte)1);
-                hdr.putLong(1);
-                hdr.putLong(1);                
-                hdr.flip();
-                
-                chan.write(hdr, 0);
-				
-				chan.force(true);
+        ras.seek(0);
+        ras.write(new byte[1024]);
 
-				switch (i) {
-				case 0:
-					break;
-				case 1:
-					ras.seek(1024);
-					ras.writeLong(5);
-					break;
-				default:
-					ras.seek(1024);
-					ras.readLong();
-					break;
-				}
-				
-				ras.close();
-			}
-		}
-		finally {
-			new File("test.file").delete();
-		}
-	}
+        Thread t1 = new Thread(new LockThread(ras), "Thread 1");
+        Thread t2 = new Thread(new LockThread(ras), "Thread 2");
+        t1.start();
+        t2.start();
+    }
+
+    void getLock(RandomAccessFile ras) throws Exception
+    {
+        FileChannel chan = ras.getChannel();
+        if (chan.tryLock() == null) {
+            throw new Exception("Lock failed on thread " + Thread.currentThread());
+        }
+    }
+
+
+    private static final class LockThread implements Runnable
+    {
+        private RandomAccessFile ras;
+
+        LockThread(RandomAccessFile ras)
+        {
+            this.ras = ras;
+        }
+
+        public void run()
+        {
+            for (int i = 0; i < 1; i++) {
+                try {
+                    ras.seek(0);
+                    ras.read(new byte[1024]);
+                }
+                catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
 }
