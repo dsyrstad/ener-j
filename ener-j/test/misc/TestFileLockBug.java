@@ -19,14 +19,40 @@ public class TestFileLockBug
 
     void run() throws Exception
     {
-        RandomAccessFile ras = new RandomAccessFile("test.file", "rw");
+        final RandomAccessFile ras = new RandomAccessFile("test.file", "rw");
         getLock(ras); // Get the initial lock
 
-        ras.seek(0);
-        ras.write(new byte[1024]);
-
-        Thread t1 = new Thread(new LockThread(ras), "Thread 1");
-        Thread t2 = new Thread(new LockThread(ras), "Thread 2");
+        Thread t1 = new Thread("Thread 1") {
+            public void run()
+            {
+                for (int i = 0; i < 1000000; i++) {
+                    try {
+                        ras.seek(0);
+                        ras.read(new byte[1024]);
+                    }
+                    catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        };
+        
+        Thread t2 = new Thread("Thread 2")  {
+            public void run()
+            {
+                for (int i = 0; i < 1000000; i++) {
+                    try {
+                        ras.seek(0);
+                        ras.write(new byte[1024]);
+                        ras.getChannel().force(false);
+                    }
+                    catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+        };
+        
         t1.start();
         t2.start();
     }
@@ -36,30 +62,6 @@ public class TestFileLockBug
         FileChannel chan = ras.getChannel();
         if (chan.tryLock() == null) {
             throw new Exception("Lock failed on thread " + Thread.currentThread());
-        }
-    }
-
-
-    private static final class LockThread implements Runnable
-    {
-        private RandomAccessFile ras;
-
-        LockThread(RandomAccessFile ras)
-        {
-            this.ras = ras;
-        }
-
-        public void run()
-        {
-            for (int i = 0; i < 1; i++) {
-                try {
-                    ras.seek(0);
-                    ras.read(new byte[1024]);
-                }
-                catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
         }
     }
 }

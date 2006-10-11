@@ -4,13 +4,27 @@
 
 package org.enerj.server;
 
-import java.util.*;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.odmg.*;
-
-import org.enerj.server.logentry.*;
-import org.enerj.util.*;
+import org.enerj.server.logentry.BeginTransactionLogEntry;
+import org.enerj.server.logentry.CheckpointTransactionLogEntry;
+import org.enerj.server.logentry.CommitTransactionLogEntry;
+import org.enerj.server.logentry.EndDatabaseCheckpointLogEntry;
+import org.enerj.server.logentry.LogEntry;
+import org.enerj.util.ResettableBufferedInputStream;
+import org.enerj.util.StringUtil;
+import org.enerj.util.TrackedDataOutputStream;
+import org.odmg.DatabaseOpenException;
+import org.odmg.ODMGException;
 
 /**
  * An Archiving RedoLogServer implementation. Logs are optionally archived once a 
@@ -23,8 +37,8 @@ import org.enerj.util.*;
  */
 public class ArchivingRedoLogServer implements RedoLogServer
 {
-    private boolean mDisconnected = false;
-    private String mConfigResourceName;
+    private static Logger logger = Logger.getLogger(ArchivingRedoLogServer.class.getName());
+    
     private String mLogFileName;
     
     // A stream for reading the log file. This is a RandomAccessFile so we can seek on the stream.
@@ -39,6 +53,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
     // These are the above buffered streams wrapped in DataInput/OutputStreams.
     private DataInputStream mLogDataInputStream;
     private TrackedDataOutputStream mLogDataOutputStream;
+    
 
     //----------------------------------------------------------------------
     /**
@@ -85,6 +100,8 @@ public class ArchivingRedoLogServer implements RedoLogServer
     private void init(String aLogFileName) throws ODMGException  
     {
         mLogFileName = aLogFileName;
+        logger.info("Opening and locking log " + mLogFileName + " on thread " + Thread.currentThread());
+        
         try {
             mLogFileOutputStream = new FileOutputStream(mLogFileName, true);
             // Lock the log so no other process can manipulate it.
@@ -180,7 +197,6 @@ public class ArchivingRedoLogServer implements RedoLogServer
                 throw new ODMGException("Error closing log " + mLogFileName + ": " + e, e);
             }
             finally {
-                mDisconnected = true;
                 mLogFileInputRAF = null;
                 mLogFileOutputStream = null;
                 mLogBufferedInputStream = null;
@@ -238,6 +254,10 @@ public class ArchivingRedoLogServer implements RedoLogServer
      */
     public LogEntry read(long aLogPosition) throws ODMGException
     {
+        if (logger.isLoggable(Level.INFO)) {
+            logger.info("Reading log entry at " + aLogPosition + " from thread " + Thread.currentThread());
+        }
+        
         synchronized (mLogFileInputRAF) {
             try {
                 if (mLogFileInputRAF.getFilePointer() != aLogPosition) {
