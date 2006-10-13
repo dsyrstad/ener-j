@@ -8,6 +8,7 @@ import org.odmg.DMap;
 import org.odmg.Database;
 import org.odmg.Implementation;
 import org.odmg.ODMGException;
+import org.odmg.ObjectNameNotFoundException;
 import org.odmg.Transaction;
 import org.enerj.core.RegularDBag;
 import org.enerj.core.RegularDMap;
@@ -185,15 +186,28 @@ public class OO7Loader
 
             // Create data
             int size = ((mType != LARGE) ? 1 : 10);
-            DBag modules = new RegularDBag(size);
-            mAtomicPartByIDMap = new RegularDMap(1024*1024);
-            mDB.bind(mAtomicPartByIDMap, "AtomicPartsByID");
+            
+            DBag modules;
+            try {
+                modules = (DBag)mDB.lookup("Modules");
+            }
+            catch (ObjectNameNotFoundException e) {
+                modules = new RegularDBag(size);
+                mDB.bind(modules, "Modules");
+            }
+            
+            try {
+                mAtomicPartByIDMap = (DMap)mDB.lookup("AtomicPartsByID");
+            }
+            catch (ObjectNameNotFoundException e) {
+                mAtomicPartByIDMap = new RegularDMap(1024*1024);
+                mDB.bind(mAtomicPartByIDMap, "AtomicPartsByID");
+            }
 
             for (int idx = 0; idx < size; idx++) {
                 modules.add( buildModule() );
             }
             
-            mDB.bind(modules, "Modules");
 
             // Commit
             txn.commit();
