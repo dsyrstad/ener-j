@@ -4,15 +4,11 @@
 
 package org.enerj.server;
 
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.enerj.server.logentry.BeginTransactionLogEntry;
@@ -20,9 +16,7 @@ import org.enerj.server.logentry.CheckpointTransactionLogEntry;
 import org.enerj.server.logentry.CommitTransactionLogEntry;
 import org.enerj.server.logentry.EndDatabaseCheckpointLogEntry;
 import org.enerj.server.logentry.LogEntry;
-import org.enerj.util.ResettableBufferedInputStream;
 import org.enerj.util.StringUtil;
-import org.enerj.util.TrackedDataOutputStream;
 import org.odmg.DatabaseOpenException;
 import org.odmg.ODMGException;
 
@@ -30,6 +24,16 @@ import org.odmg.ODMGException;
  * An Archiving RedoLogServer implementation. Logs are optionally archived once a 
  * checkpoint has been reached.
  * <p>
+ * Things we know about accessing the long file.
+ * <ol>
+ * <li>Only one instance of this class will be writing to the log at any one time. Hence, we can track
+ *     where the EOF is for appending records, since we always know the size after opening it.</li>
+ * <li>Once written to, the content of the file will never change. 
+ *     Hence, we can keep portions of the file buffered.</li>
+ * <li>Only one instance of this class will be reading the log at any one time.</li>
+ * <li>It is possible that one thread may be reading while another is writing. But at most one thread will
+ *     be reading and one thread will writing at any given time.</li>
+ * </ol>
  *
  *
  * @version $Id: ArchivingRedoLogServer.java,v 1.4 2006/05/05 13:47:14 dsyrstad Exp $
@@ -41,19 +45,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
     
     private String mLogFileName;
     
-    // A stream for reading the log file. This is a RandomAccessFile so we can seek on the stream.
-    private RandomAccessFile mLogFileInputRAF = null;
-    // A Stream for writing the log file.
-    private FileOutputStream mLogFileOutputStream = null;
-
-    // These are mLogFileRAF wrapped in a File and buffered Input/OutputStreams.
-    private ResettableBufferedInputStream mLogBufferedInputStream;
-    private BufferedOutputStream mLogBufferedOuptutStream;
-
-    // These are the above buffered streams wrapped in DataInput/OutputStreams.
-    private DataInputStream mLogDataInputStream;
-    private TrackedDataOutputStream mLogDataOutputStream;
-    
+    private BufferedRandomAccessLogFile mRandomAccessLogFile = null;
 
     //----------------------------------------------------------------------
     /**
@@ -100,28 +92,15 @@ public class ArchivingRedoLogServer implements RedoLogServer
     private void init(String aLogFileName) throws ODMGException  
     {
         mLogFileName = aLogFileName;
-        logger.info("Opening and locking log " + mLogFileName + " on thread " + Thread.currentThread());
         
         try {
-            mLogFileOutputStream = new FileOutputStream(mLogFileName, true);
+            logger.info("Opening ArchivingRedoLogServer on log file " + mLogFileName);
+            
+            mRandomAccessLogFile = new BufferedRandomAccessLogFile(mLogFileName, "rw");
             // Lock the log so no other process can manipulate it.
-            if (mLogFileOutputStream.getChannel().tryLock() == null) {
+            if (mRandomAccessLogFile.getChannel().tryLock() == null) {
                 throw new DatabaseOpenException("Log file " + mLogFileName + " is in use by another process.");
             }
-            
-            mLogFileInputRAF = new RandomAccessFile(mLogFileName, "r");
-
-            FileInputStream logFIS = new FileInputStream( mLogFileInputRAF.getFD() );
-
-            //  TODO  make these buffer sizes configurable?
-            mLogBufferedInputStream = new ResettableBufferedInputStream(logFIS, 8192);
-            mLogBufferedOuptutStream = new BufferedOutputStream(mLogFileOutputStream, 8192);
-
-            mLogDataInputStream = new DataInputStream(mLogBufferedInputStream);
-            
-            // This will be the first append position.
-            long eofPosition = mLogFileInputRAF.length();
-            mLogDataOutputStream = new TrackedDataOutputStream(mLogBufferedOuptutStream, eofPosition);
         }
         catch (IOException e) {
             throw new ODMGException("Unable to open log file: " + mLogFileName + ": " + e, e);
@@ -136,11 +115,11 @@ public class ArchivingRedoLogServer implements RedoLogServer
      */
     private void flush() throws ODMGException
     {
-        synchronized (mLogFileOutputStream) {
+        synchronized (mRandomAccessLogFile) {
             try {
-                mLogBufferedOuptutStream.flush();
+                // TODO If buffering writes, flush them here.
                 //Alternate: mLogFileOutputStream.getFD().sync();
-                mLogFileOutputStream.getChannel().force(false);
+                mRandomAccessLogFile.getChannel().force(false);
             }
             catch (IOException e) {
                 throw new ODMGException("Error flushing log to disk: " + e, e);
@@ -182,27 +161,18 @@ public class ArchivingRedoLogServer implements RedoLogServer
     //----------------------------------------------------------------------
     public void disconnect() throws ODMGException
     {
-        synchronized (mLogFileOutputStream) {
+        synchronized (mRandomAccessLogFile) {
             try {
-                if (mLogFileOutputStream != null) {
+                if (mRandomAccessLogFile != null) {
                     flush();
-                    mLogFileOutputStream.close();
-                }
-                
-                if (mLogFileInputRAF != null) {
-                    mLogFileInputRAF.close();
+                    mRandomAccessLogFile.close();
                 }
             }
             catch (IOException e) {
                 throw new ODMGException("Error closing log " + mLogFileName + ": " + e, e);
             }
             finally {
-                mLogFileInputRAF = null;
-                mLogFileOutputStream = null;
-                mLogBufferedInputStream = null;
-                mLogBufferedOuptutStream = null;
-                mLogDataInputStream = null;
-                mLogDataOutputStream = null;
+                mRandomAccessLogFile = null;
             }
         }
     }
@@ -210,18 +180,20 @@ public class ArchivingRedoLogServer implements RedoLogServer
     //----------------------------------------------------------------------
     public void append(LogEntry aLogEntry) throws ODMGException
     {
-        synchronized (mLogFileOutputStream) {
+        synchronized (mRandomAccessLogFile) {
             try {
                 // We use the input RandomAccessFile's length (same file as the
                 // output) to determine the log position.
-                long entryPosition =  mLogDataOutputStream.getPosition();
+                long entryPosition =  mRandomAccessLogFile.length();
+                mRandomAccessLogFile.seek(entryPosition);
+                
                 aLogEntry.setLogPosition(entryPosition);
                 if (aLogEntry instanceof BeginTransactionLogEntry) {
                     // Assign a transaction id.
                     aLogEntry.setTransactionId(entryPosition);
                 }
                 
-                aLogEntry.appendToLog(mLogDataOutputStream);
+                aLogEntry.appendToLog(mRandomAccessLogFile);
 
                 if (aLogEntry instanceof CommitTransactionLogEntry ||
                     aLogEntry instanceof CheckpointTransactionLogEntry ||
@@ -254,18 +226,10 @@ public class ArchivingRedoLogServer implements RedoLogServer
      */
     public LogEntry read(long aLogPosition) throws ODMGException
     {
-        if (logger.isLoggable(Level.INFO)) {
-            logger.info("Reading log entry at " + aLogPosition + " from thread " + Thread.currentThread());
-        }
-        
-        synchronized (mLogFileInputRAF) {
+        synchronized (mRandomAccessLogFile) {
             try {
-                if (mLogFileInputRAF.getFilePointer() != aLogPosition) {
-                    mLogBufferedInputStream.resetBuffer();
-                    mLogFileInputRAF.seek(aLogPosition);
-                }
-                
-                return LogEntry.createFromLog(mLogDataInputStream, aLogPosition);
+                mRandomAccessLogFile.seek(aLogPosition);
+                return LogEntry.createFromLog(mRandomAccessLogFile, aLogPosition);
             }
             catch (IOException e) {
                 throw new ODMGException("Error reading log entry at " + aLogPosition + ": " + e, e);
@@ -276,4 +240,101 @@ public class ArchivingRedoLogServer implements RedoLogServer
     //----------------------------------------------------------------------
     // ...End of RedoLogServer interface.
     //----------------------------------------------------------------------
+
+    /**
+     * Read-buffered version of RandomAccessFile specifically designed to support the log. 
+     * It's not general purpose because writes do not write through to the read buffer.
+     * Note that this code originated from SwiftVis by Mark Lewis at http://www.cs.trinity.edu/~mlewis/SwiftVis/
+     * on 10/13/2006. The site says "SwiftVis is an open source work in progress.", but does not
+     * claim a copyright nor license on any of the source distribution files.
+     * <p>
+     * TODO I have contacted Mark about the status. 10/13/2006.
+     * 
+     * @version $Id: $
+     * @author <a href="mailto:dsyrstad@vitamin-o.org">Dan Syrstad </a>
+     */
+    private static final class BufferedRandomAccessLogFile extends RandomAccessFile
+    {
+        private byte[] mReadBuf;
+        private int mReadBufLength = 0;
+        private int mReadBufCurrentOfs = 0;
+        private static final int DEFAULT_BUFFER_SIZE = 8192;
+
+        public BufferedRandomAccessLogFile(File f, String mode) throws FileNotFoundException
+        {
+            super(f, mode);
+            mReadBuf = new byte[DEFAULT_BUFFER_SIZE];
+        }
+
+        public BufferedRandomAccessLogFile(String f, String mode) throws FileNotFoundException
+        {
+            super(f, mode);
+            mReadBuf = new byte[DEFAULT_BUFFER_SIZE];
+        }
+
+        public BufferedRandomAccessLogFile(File f, String mode, int bufSize) throws FileNotFoundException
+        {
+            super(f, mode);
+            mReadBuf = new byte[bufSize];
+        }
+
+        public int read() throws IOException
+        {
+            if (mReadBufCurrentOfs >= mReadBufLength) {
+                fillBuffer();
+                if (mReadBufLength < 1)
+                    return -1;
+            }
+            
+            ++mReadBufCurrentOfs;
+            return mReadBuf[mReadBufCurrentOfs - 1] & 0xff;
+        }
+
+        public int read(byte[] buf) throws IOException
+        {
+            return read(buf, 0, buf.length);
+        }
+
+        public int read(byte[] buf, int offset, int len) throws IOException
+        {
+            int intoOffset = offset;
+            int endIdx = offset + len;
+            int numBytesRead = 0;
+            while (intoOffset < endIdx) {
+                if (mReadBufCurrentOfs >= mReadBufLength) {
+                    fillBuffer();
+                    if (mReadBufLength < 1)
+                        return numBytesRead;
+                }
+                
+                // Determine how much we can copy in one chunk.
+                int numBytesLeftInBuf = len - intoOffset;
+                int numBytesLeftInReadBuf = mReadBufLength - mReadBufCurrentOfs;
+                int numBytesToCopy = (numBytesLeftInBuf < numBytesLeftInReadBuf ? numBytesLeftInBuf : numBytesLeftInReadBuf);
+                System.arraycopy(mReadBuf, mReadBufCurrentOfs, buf, intoOffset, numBytesToCopy);
+                intoOffset += numBytesToCopy;
+                mReadBufCurrentOfs += numBytesToCopy;
+                numBytesRead += numBytesToCopy;
+            }
+            
+            return numBytesRead;
+        }
+
+        public void seek(long filePos) throws IOException
+        {
+            super.seek(filePos);
+            fillBuffer();
+        }
+
+        public long getFilePointer() throws IOException
+        {
+            return super.getFilePointer() - (mReadBufLength - mReadBufCurrentOfs);
+        }
+
+        private void fillBuffer() throws IOException
+        {
+            mReadBufCurrentOfs = 0;
+            mReadBufLength = super.read(mReadBuf);
+        }
+    }
 }
