@@ -149,7 +149,7 @@ Available targets:
                 <include name="**/*.txt"/>
             </fileset>
         </delete>
-    	<junit fork="true" reloading="true" haltonerror="false" haltonfailure="false" printsummary="false">
+    	<junit fork="true" reloading="false" haltonerror="false" haltonfailure="false" printsummary="false">
     		<jvmarg value="-javaagent:${agent.jar}"/>
   			<classpath>
   				<pathelement location="${build.testdest}"/>
