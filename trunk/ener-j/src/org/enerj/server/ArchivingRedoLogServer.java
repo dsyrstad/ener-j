@@ -117,7 +117,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
     {
         synchronized (mRandomAccessLogFile) {
             try {
-                // TODO If buffering writes, flush them here.
+                mRandomAccessLogFile.flush();
                 //Alternate: mLogFileOutputStream.getFD().sync();
                 mRandomAccessLogFile.getChannel().force(false);
             }
@@ -185,7 +185,6 @@ public class ArchivingRedoLogServer implements RedoLogServer
                 // We use the input RandomAccessFile's length (same file as the
                 // output) to determine the log position.
                 long entryPosition =  mRandomAccessLogFile.length();
-                mRandomAccessLogFile.seek(entryPosition);
                 
                 aLogEntry.setLogPosition(entryPosition);
                 if (aLogEntry instanceof BeginTransactionLogEntry) {
@@ -242,7 +241,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
     //----------------------------------------------------------------------
 
     /**
-     * Read-buffered version of RandomAccessFile specifically designed to support the log. 
+     * Buffered version of RandomAccessFile specifically designed to support the log. 
      * It's not general purpose because writes do not write through to the read buffer.
      * Note that this code originated from SwiftVis by Mark Lewis at http://www.cs.trinity.edu/~mlewis/SwiftVis/
      * on 10/13/2006. The site says "SwiftVis is an open source work in progress.", but does not
@@ -255,21 +254,24 @@ public class ArchivingRedoLogServer implements RedoLogServer
      */
     private static final class BufferedRandomAccessLogFile extends RandomAccessFile
     {
-        private byte[] mReadBuf;
+        private static final int DEFAULT_READ_BUFFER_SIZE = 8192;
+        private static final int DEFAULT_WRITE_BUFFER_SIZE = 100 * 8192;
+
+        private byte[] mReadBuf = new byte[DEFAULT_READ_BUFFER_SIZE];
         private int mReadBufLength = 0;
         private int mReadBufCurrentOfs = 0;
-        private static final int DEFAULT_BUFFER_SIZE = 8192;
+        
+        private byte[] mWriteBuf = new byte[DEFAULT_WRITE_BUFFER_SIZE];
+        private int mWriteBufCurrentOfs = 0;
 
         public BufferedRandomAccessLogFile(File f, String mode) throws FileNotFoundException
         {
             super(f, mode);
-            mReadBuf = new byte[DEFAULT_BUFFER_SIZE];
         }
 
         public BufferedRandomAccessLogFile(String f, String mode) throws FileNotFoundException
         {
             super(f, mode);
-            mReadBuf = new byte[DEFAULT_BUFFER_SIZE];
         }
 
         public BufferedRandomAccessLogFile(File f, String mode, int bufSize) throws FileNotFoundException
@@ -278,6 +280,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
             mReadBuf = new byte[bufSize];
         }
 
+        @Override
         public int read() throws IOException
         {
             if (mReadBufCurrentOfs >= mReadBufLength) {
@@ -290,11 +293,13 @@ public class ArchivingRedoLogServer implements RedoLogServer
             return mReadBuf[mReadBufCurrentOfs - 1] & 0xff;
         }
 
+        @Override
         public int read(byte[] buf) throws IOException
         {
             return read(buf, 0, buf.length);
         }
 
+        @Override
         public int read(byte[] buf, int offset, int len) throws IOException
         {
             int intoOffset = offset;
@@ -320,15 +325,81 @@ public class ArchivingRedoLogServer implements RedoLogServer
             return numBytesRead;
         }
 
+        /**
+         * Flushes the write buffer.
+         *
+         * @throws IOException
+         */
+        void flush() throws IOException
+        {
+            if (mWriteBufCurrentOfs > 0) {
+                // Seek to EOF. Writes always append.
+                seek( super.length() );
+                super.write(mWriteBuf, 0, mWriteBufCurrentOfs);
+                mWriteBufCurrentOfs = 0;
+            }
+        }
+        
+        @Override
+        public void close() throws IOException
+        {
+            flush();
+            super.close();
+        }
+
+        @Override
+        public long length() throws IOException
+        {
+            // Return the actual file length + what is in the write buffer.
+            // Writes always append, so the buffer always adds to the length of the file.
+            return super.length() + mWriteBufCurrentOfs;
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException
+        {
+            int numLeft = len;
+            while (numLeft > 0) {
+                if (mWriteBufCurrentOfs >= mWriteBuf.length) {
+                    flush();
+                }
+                
+                int numWriteBufLeft = mWriteBuf.length - mWriteBufCurrentOfs;
+                int numToCopy = (numLeft > numWriteBufLeft ? numWriteBufLeft : numLeft);
+                System.arraycopy(b, off, mWriteBuf, mWriteBufCurrentOfs, numToCopy);
+                off += numToCopy;
+                mWriteBufCurrentOfs += numToCopy;
+                numLeft -= numToCopy;
+            }
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException
+        {
+            write(b, 0, b.length);
+        }
+
+        @Override
+        public void write(int b) throws IOException
+        {
+            if (mWriteBufCurrentOfs >= mWriteBuf.length) {
+                flush();
+            }
+
+            mWriteBuf[mWriteBufCurrentOfs] = (byte)(b & 0xff);
+            ++mWriteBufCurrentOfs;
+        }
+
         public void seek(long filePos) throws IOException
         {
             super.seek(filePos);
-            fillBuffer();
+            mReadBufLength = 0;
         }
 
         public long getFilePointer() throws IOException
         {
-            return super.getFilePointer() - (mReadBufLength - mReadBufCurrentOfs);
+            //return super.getFilePointer() - (mReadBufLength - mReadBufCurrentOfs);
+            throw new IOException("Do not call this method because read & writes are buffered.");
         }
 
         private void fillBuffer() throws IOException
