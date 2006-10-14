@@ -142,6 +142,7 @@ Available targets:
     </target>
 
     <target name="test" depends="compile" description="JUnit tests" >
+    	<echo>Make sure to specify "-lib lib" when running this target.</echo>
     	<mkdir dir="test-results"/>
         <delete>
             <fileset dir="test-results">
@@ -156,7 +157,7 @@ Available targets:
                 <pathelement location="${asm.jar}"/>
         		<pathelement location="${junit.jar}"/>
 			</classpath>
-    		<formatter type="plain"/>
+    		<formatter type="xml"/>
     		<!-- test name="org.enerj.core.EnerJTransactionTest" / -->
     		<batchtest todir="test-results">
             	<fileset dir="${testsrc.dir}" casesensitive="yes">
@@ -166,6 +167,14 @@ Available targets:
             	</fileset>
     		</batchtest>
     	</junit>
+    	
+    	<!-- Format in HTML -->
+    	<junitreport todir="test-results">
+    	    <fileset dir="test-results">
+    	      <include name="TEST-*.xml" />
+    	    </fileset>
+    	    <report todir="test-results" />
+		</junitreport>
     </target>
 
     <target name="javadoc" depends="init" description="Javadoc">
