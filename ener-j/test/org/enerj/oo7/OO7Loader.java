@@ -187,27 +187,28 @@ public class OO7Loader
             // Create data
             int size = ((mType != LARGE) ? 1 : 10);
             
-            DBag modules;
+            DBag modules = new RegularDBag(size);
             try {
-                modules = (DBag)mDB.lookup("Modules");
+                mDB.unbind("Modules");
             }
             catch (ObjectNameNotFoundException e) {
-                modules = new RegularDBag(size);
-                mDB.bind(modules, "Modules");
+                // Ignore
             }
             
+            mAtomicPartByIDMap = new RegularDMap(1024*1024);
             try {
-                mAtomicPartByIDMap = (DMap)mDB.lookup("AtomicPartsByID");
+                mDB.unbind("AtomicPartsByID");
             }
             catch (ObjectNameNotFoundException e) {
-                mAtomicPartByIDMap = new RegularDMap(1024*1024);
-                mDB.bind(mAtomicPartByIDMap, "AtomicPartsByID");
+                // Ignore
             }
 
             for (int idx = 0; idx < size; idx++) {
                 modules.add( buildModule() );
             }
             
+            mDB.bind(mAtomicPartByIDMap, "AtomicPartsByID");
+            mDB.bind(modules, "Modules");
 
             // Commit
             txn.commit();
