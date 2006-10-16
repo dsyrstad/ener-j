@@ -400,16 +400,36 @@ class MetaData
      */
     private ClassDef getUncachedClassDef(String aClassName, byte[] someClassBytecodes) throws MetaDataException
     {
+        // Check global meta data.
+        
+        // Progressively work back thru package defs, and finally 
+        // return the default def if no others are found.
+        String packageName = getPackageName(aClassName);
+        ClassDef classDef = mPackageDefaultsMap.get(packageName);
+        if (classDef != null) {
+            return classDef;
+        }
+        
+        // Test recursive package defaults. If our packageName, or any part of it, matches one in 
+        // the map, use the corresponding ClassDef. We search from most qualified package name to least
+        // so that "com.xyz.abc.*" overrides "com.xyz.*".
+        for (; packageName.length() > 0; packageName = getPackageName(packageName)) {
+            classDef = mRecursivePackageDefaultsMap.get(packageName);
+            if (classDef != null) {
+                return classDef;
+            }
+        }
+
         // Look at class meta data or schema annotations. Schema annotations are taken over
         // meta data annotations because schema annotations are added as a result of static enhancement.
-        ClassDef classDef = getClassDefFromClassAnnotation(aClassName, someClassBytecodes);
+        classDef = getClassDefFromClassAnnotation(aClassName, someClassBytecodes);
         if (classDef != null) {
             return classDef;
         }
         
         // Check package annotations all of the way up the hierarchy.
         // If we find one, cache a ClassDef for the package-info class and one for the class.
-        String packageName = getPackageName(aClassName);
+        packageName = getPackageName(aClassName);
         for (; packageName.length() > 0; packageName = getPackageName(packageName)) {
             try {
                 ClassReflector pkgInfo = getClassReflector(packageName + ".package-info", null);
@@ -426,27 +446,6 @@ class MetaData
             }
         }
         
-        
-        // Check global meta data.
-        
-        // Progressively work back thru package defs, and finally 
-        // return the default def if no others are found.
-        packageName = getPackageName(aClassName);
-        classDef = mPackageDefaultsMap.get(packageName);
-        if (classDef != null) {
-            return classDef;
-        }
-        
-        // Test recursive package defaults. If our packageName, or any part of it, matches one in 
-        // the map, use the corresponding ClassDef. We search from most qualified package name to least
-        // so that "com.xyz.abc.*" overrides "com.xyz.*".
-        for (; packageName.length() > 0; packageName = getPackageName(packageName)) {
-            classDef = mRecursivePackageDefaultsMap.get(packageName);
-            if (classDef != null) {
-                return classDef;
-            }
-        }
-
         // Punt. Return the default definition.
         return mDefaultClassDef;
     }

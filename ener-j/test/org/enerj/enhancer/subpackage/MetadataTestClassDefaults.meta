@@ -13,28 +13,30 @@ class *   # defaults all classes to persistent capable
 #persistent=not
 #class org.apache.bcel.util
 #persistent=not
+class gnu.*
+    persistent=not
 class com.*
-persistent=not
-class org.odmg
-persistent=not
-class org.enerj
-persistent=not
-class org.enerj.core.*
-persistent=not
-class org.enerj.jga.*
-persistent=not
-class org.enerj.query.*
-persistent=not
-class org.enerj.enhancer
-persistent=not
-class org.enerj.server.*
-persistent=not
-class org.enerj.util.*
-persistent=not
-class org.enerj.sco.*
-persistent=not
-class org.enerj.oo7.*
-persistent=not
-class org.enerj.tools.*
-persistent=not
+    persistent=not
+class org.odmg.*
+    persistent=not
+class org.enerj.*
+    persistent=not
+#class org.enerj.core.*
+#    persistent=not
+#class org.enerj.jga.*
+#    persistent=not
+#class org.enerj.query.*
+#    persistent=not
+#class org.enerj.enhancer.*
+#    persistent=not
+#class org.enerj.server.*
+#    persistent=not
+#class org.enerj.util.*
+#    persistent=not
+#class org.enerj.sco.*
+#    persistent=not
+#class org.enerj.oo7.*
+#    persistent=not
+#class org.enerj.tools.*
+#    persistent=not
 
