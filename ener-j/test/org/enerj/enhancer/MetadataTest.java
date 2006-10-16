@@ -9,6 +9,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.enerj.core.Persistable;
+import org.enerj.util.asm.ClassReflector;
 
 /**
  * Tests miscellaneous Metadata functionality.
@@ -122,6 +123,22 @@ public class MetadataTest extends TestCase
         }
     }
     
+    
+    //--------------------------------------------------------------------------------
+    /**
+     * Checks that SimpleTestClass and SimpleTestClass2 are Persistables after enhancement.
+     * We purposely avoid using Java to load the classes because the enhancer may have modified
+     * them after they were loaded.  
+     *
+     * @throws Exception
+     */
+    private void checkForPersistableSimpleTestClasses() throws Exception
+    {
+        String persistableName = Persistable.class.getName();
+        assertTrue("SimpleTestClass must be Persistable", new ClassReflector("org.enerj.enhancer.subpackage.SimpleTestClass").containsSuperInterface(persistableName) );
+        assertTrue("SimpleTestClass2 must be Persistable", new ClassReflector("org.enerj.enhancer.subpackage.SimpleTestClass2").containsSuperInterface(persistableName) );
+    }
+    
     //----------------------------------------------------------------------
     /**
      * Test "class *" defaults.
@@ -132,9 +149,7 @@ public class MetadataTest extends TestCase
         // This should not throw an Exception
         TestHelper.enhance("subpackage/MetadataTestClassDefaults.meta"); 
         
-        // The two classes should implement Persistable, so the following casts should work.
-        Persistable p1 = (Persistable)(Object)new org.enerj.enhancer.subpackage.SimpleTestClass();
-        Persistable p2 = (Persistable)(Object)new org.enerj.enhancer.subpackage.SimpleTestClass2();
+        checkForPersistableSimpleTestClasses();
     }
     
     //----------------------------------------------------------------------
@@ -145,25 +160,18 @@ public class MetadataTest extends TestCase
     {
         // Test "class *" defaults - which should be persistent=capable.
         // This should not throw an Exception
-        TestHelper.enhance("subpackage/MetadataTestClassDefaults.meta"); 
+        TestHelper.enhance("subpackage/MetadataTestPackageDefaults.meta"); 
         
-        // The two classes should implement Persistable, so the following casts should work.
-        Persistable p1 = (Persistable)(Object)new org.enerj.enhancer.subpackage.SimpleTestClass();
-        Persistable p2 = (Persistable)(Object)new org.enerj.enhancer.subpackage.SimpleTestClass2();
+        checkForPersistableSimpleTestClasses();
         
-        // This should not have been enhanced. It should throw ClassCastException
-        try {
-            Persistable p3 = (Persistable)(Object)new org.enerj.enhancer.MetadataTest.TestClassNever();
-            fail("ClassCastException expected - class should not be enhanced");
-        }
-        catch (ClassCastException e) {
-            // Ok
-        }
+        // This should not have been enhanced.
+        assertFalse("TestClassNever must not be Persistable", 
+            new ClassReflector("org.enerj.enhancer.MetadataTest$TestClassNever").containsSuperInterface(Persistable.class.getName()) );
 
         // This interface should not have been enhanced (interfaces never are), even though
         // it was in the specified package. It should not have the Persistable interface.
-        Class[] interfaces = org.enerj.enhancer.subpackage.SimpleTestInterface.class.getInterfaces();
-        assertTrue("Interface should not be enhanced", interfaces.length == 0);
+        assertFalse("SimpleTestInterface must not be Persistable", 
+                        new ClassReflector("org.enerj.enhancer.subpackage.SimpleTestInterface").containsSuperInterface(Persistable.class.getName()) );
     }
     
     //----------------------------------------------------------------------

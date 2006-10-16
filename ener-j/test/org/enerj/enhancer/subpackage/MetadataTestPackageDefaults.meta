@@ -1,8 +1,15 @@
 # $Header: /cvsroot/ener-j/ener-j/test/org/enerj/enhancer/subpackage/MetadataTestPackageDefaults.meta,v 1.3 2005/08/12 02:56:47 dsyrstad Exp $
 
 class *
-persistent=not
+	persistent=not
 
-class org.enerj.enhancer.subpackage   # defaults all classes to persistent capable
+class gnu.*
+    persistent=not
+class com.*
+    persistent=not
+class org.*
+    persistent=not
+
+class org.enerj.enhancer.subpackage.*   # defaults all classes to persistent capable
 
 
