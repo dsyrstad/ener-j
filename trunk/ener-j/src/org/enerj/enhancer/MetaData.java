@@ -16,12 +16,9 @@ import org.enerj.annotations.PersistenceAware;
 import org.enerj.annotations.SchemaAnnotation;
 import org.enerj.util.ClassUtil;
 import org.enerj.util.asm.AnnotationNode;
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Attribute;
+import org.enerj.util.asm.ClassReflector;
+import org.enerj.util.asm.FieldNode;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
@@ -563,12 +560,12 @@ class MetaData
         // Load class information using ASM. If so, cache it in mClassReflectorMap.
         try {
             if (someClassBytecodes == null) {
-                someClassBytecodes = ClassUtil.getBytecode(aClassName);
+                classInfo = new ClassReflector(aClassName);
             }
-
-            ClassReader classReader = new ClassReader(someClassBytecodes);
-            classInfo = new ClassReflector();
-            classReader.accept(classInfo, false);
+            else {
+                classInfo = new ClassReflector(someClassBytecodes);
+            }
+            
             mClassReflectorCache.put(aClassName, classInfo);
             return classInfo;
         }
@@ -677,129 +674,5 @@ class MetaData
     void addClassDef(String aClassName, ClassDef aClassDef)
     {
         mClassDefMap.put(aClassName, aClassDef);
-    }
-
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
-    /**
-     * A simple ASM ClassVisitor that gathers information about a class. 
-     */
-    private static final class ClassReflector implements ClassVisitor
-    {
-        private String mSuperClass = null;
-        private String[] mSuperInterfaces = null;
-        private List<AnnotationNode> mClassAnnotations = new ArrayList<AnnotationNode>();
-        private List<FieldNode> mFields = new ArrayList<FieldNode>();
-        
-
-        public void visit(int someVersion, int access, String someName, String someSignature, String someSuperName, String[] someInterfaces)
-        {
-            if (someSuperName != null) {
-                mSuperClass = someSuperName.replace('/', '.');
-            }
-            
-            if (someInterfaces != null) {
-                mSuperInterfaces = new String[ someInterfaces.length ];
-                for (int i = 0; i < someInterfaces.length; i++) {
-                    mSuperInterfaces[i] = someInterfaces[i].replace('/', '.');
-                }
-            }
-        }
-
-        public AnnotationVisitor visitAnnotation(String aDesc, boolean isVisible)
-        {
-            AnnotationNode v = new AnnotationNode(aDesc);
-            mClassAnnotations.add(v);
-            return v;
-        }
-
-        public void visitAttribute(Attribute attr)
-        {
-        }
-
-        public void visitEnd()
-        {
-        }
-
-        public FieldVisitor visitField(int access, String aName, String aDesc, String aSignature, Object aValue)
-        {
-            FieldNode fieldNode = new FieldNode(aName);
-            mFields.add(fieldNode);
-            return fieldNode;
-        }
-
-        public void visitInnerClass(String someName, String someOuterName, String someInnerName, int access)
-        {
-        }
-
-        public MethodVisitor visitMethod(int access, String someName, String someDesc, String someSignature, String[] someExceptions)
-        {
-            return null;
-        }
-
-        public void visitOuterClass(String someOwner, String someName, String someDesc)
-        {
-        }
-
-        public void visitSource(String someSource, String someDebug)
-        {
-        }
-
-        String getSuperClass()
-        {
-            return mSuperClass;
-        }
-
-        String[] getSuperInterfaces()
-        {
-            return mSuperInterfaces;
-        }
-
-        List<AnnotationNode> getClassAnnotations()
-        {
-            return mClassAnnotations;
-        }
-
-        List<FieldNode> getFields()
-        {
-            return mFields;
-        }
-    }
-    
-    
-    private static final class FieldNode implements FieldVisitor
-    {
-        private String mName;
-        private List<AnnotationNode> mAnnotations = new ArrayList<AnnotationNode>();
-
-        FieldNode(String aName) 
-        { 
-            mName = aName;
-        }
-
-        public AnnotationVisitor visitAnnotation(String aDesc, boolean anVisible)
-        {
-            AnnotationNode anno = new AnnotationNode(aDesc);
-            mAnnotations.add(anno);
-            return anno;
-        }
-
-        public void visitAttribute(Attribute attr)
-        {
-        }
-
-        public void visitEnd()
-        {
-        }
-
-        List<AnnotationNode> getAnnotations()
-        {
-            return mAnnotations;
-        }
-
-        String getName()
-        {
-            return mName;
-        }
     }
 }

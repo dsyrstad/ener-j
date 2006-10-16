@@ -17,10 +17,12 @@ class gnu.*
     persistent=not
 class com.*
     persistent=not
-class org.odmg.*
+class org.*
     persistent=not
-class org.enerj.*
+class org.enerj.enhancer
     persistent=not
+class org.enerj.enhancer.subpackage.*
+    persistent=capable
 #class org.enerj.core.*
 #    persistent=not
 #class org.enerj.jga.*
