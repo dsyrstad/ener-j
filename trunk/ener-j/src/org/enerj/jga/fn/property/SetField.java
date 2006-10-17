@@ -25,20 +25,26 @@ import java.text.MessageFormat;
 import org.enerj.jga.fn.BinaryFunctor;
 import org.enerj.jga.fn.EvaluationException;
 
-/**
- * Binary Functor that sets the named field of the first argument to the
- * value.  The field name and type are set at construction.  The return
- * value will be that which the argument's field setter field returns
- * (generally either null or the old value).
- * <p>
- * Note that declaring the return type incorrectly can result in
- * ClassCastExceptions being thrown when the functor is invoked: the compiler
- * cannot check the return type of a reflectively loaded field.
- * <p>
- * Copyright &copy; 2002  David A. Hall
- *
- * @author <a href="mailto:davidahall@users.sourceforge.net">David A. Hall</a>
- **/
+/*******************************************************************************
+ * Copyright 2000, 2006 Visual Systems Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License version 2
+ * which accompanies this distribution in a file named "COPYING".
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *      
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *******************************************************************************/
 
 // NOTE: compiling this class yields one unchecked cast warning.  It is really
 // up to the user to declare this class properly (the return type must be

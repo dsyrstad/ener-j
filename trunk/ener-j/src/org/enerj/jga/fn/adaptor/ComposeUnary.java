@@ -22,29 +22,26 @@ package org.enerj.jga.fn.adaptor;
 import org.enerj.jga.fn.BinaryFunctor;
 import org.enerj.jga.fn.UnaryFunctor;
 
-/**
- * Unary Functor that passes the results of two Unary Functors as the arguments
- * to a Binary Functor.  This allows for the construction of compound functors
- * from the primitives found in the arithmetic, logical, property, and
- * comparison packages.
- * <p>
- * For example: LogicalAnd is of limited utility since it takes only Boolean
- * arguments.  To use LogicalAnd for something a little more interesting
- * (eg, is the given integer between 1 and 10), combine LogicalAnd with
- * GreaterEqual and LessEqual using Binary&nbsp;Compose and Bind1st as follows:
- * <pre>
- * new ComposeUnary&lt;Integer,Boolean,Boolean,Boolean&gt; (
- *     new Bind1st&lt;Integer,Integer,Boolean&gt; (1, new LessEqual&lt;Integer&gt;()),
- *     new Bind1st&lt;Integer,Integer,Boolean&gt; (10, new GreaterEqual&lt;Integer&gt;()),
- *     new LogicalAnd());
- * </pre>
- * While it may not be the most readable construction in the world, it does
- * become easier over time.
- * <p>
- * Copyright &copy; 2002  David A. Hall
- *
- * @author <a href="mailto:davidahall@users.sourceforge.net">David A. Hall</a>
- **/
+/*******************************************************************************
+ * Copyright 2000, 2006 Visual Systems Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License version 2
+ * which accompanies this distribution in a file named "COPYING".
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *      
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *******************************************************************************/
 
 public class ComposeUnary<T,F1,F2,R> extends UnaryFunctor<T,R> {
 

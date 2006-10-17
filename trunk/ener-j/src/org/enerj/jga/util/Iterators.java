@@ -58,32 +58,26 @@ import org.enerj.jga.fn.logical.UnaryNegate;
 import org.enerj.jga.util.FilterIterator;
 import org.enerj.jga.fn.arithmetic.Minus;
 
-/**
- * Facade for the Algorithms adapted from STL, defined to work primarily with
- * iterators.  These algorithms are adapted from STL, with modifications to be
- * consistent with typical java practice.  For example, typical STL algorithms
- * are defined with pairs of iterators defining a half-open range over some
- * implied collection.  It works in C++ because the STL iterators can be
- * compared for equality.  Java iterators are not guaranteed to be comparable
- * to each other by contract, so the same signatures wouldn't work.
- * <p>
- * Typically, where an STL algorithm would take a pair of iterators, this facade
- * will take a single iterator and where an STL algorithm would return an
- * iterator, we'll return an iterator.  In this facade, the iterator returned
- * will frequently be specialized in some way: either a ListIterator or one of
- * the iterators defined in jga.
- * <P>
- * It is best to assume that all of the methods in this class may (but are not
- * guaranteed to) advance the iterator argument.  Also, once an iterator has
- * been passed to one of the methods of this class, it should not be used
- * again.  On the other hand, unless otherwise noted, it is safe to pass the
- * iterator returned by one of the methods in this class back to the method
- * that returned it, or to any of the other methods.
- * <p>
- * Copyright &copy; 2003  David A. Hall
- *
- * @author <a href="mailto:davidahall@users.sf.net">David A. Hall</a>
- */
+/*******************************************************************************
+ * Copyright 2000, 2006 Visual Systems Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License version 2
+ * which accompanies this distribution in a file named "COPYING".
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *      
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *******************************************************************************/
 
 public class Iterators {
 

@@ -25,25 +25,26 @@ import org.enerj.jga.fn.logical.Any;
 import java.util.Iterator;
 
 
-/**
- * Visitor that performs a walk of compound functor structures.  This visitor
- * implements the Visitor interface associated with all of the compounding
- * functors in the <a href="adaptor/package-summary.html">org.enerj.jga.fn.adaptor</a>
- * package, as well as the two that are in the
- * <a href="logical/package-summary.html">org.enerj.jga.fn.logical</a> package.
- * <p>
- * Basing visitors on this base class will allow most implementations to ignore
- * the tree structure, and implement visiting the leaf node functors that are
- * of interest.  When used in this way, the tree nodes will be ignored by the
- * visitor (exception that the visit walks through them).  If the tree nodes
- * are to be considered during the visit, then the implementation can override
- * methods contained in this class: depending on where in the overridden
- * implementation the call to super() occurs, either breadth-first, depth-first,
- * or in-line traversal can be supported.
- * <p>
- * Copyright &copy; 2005  David A. Hall
- * @author <a href="mailto:davidahall@users.sf.net">David A. Hall</a>
- */
+/*******************************************************************************
+ * Copyright 2000, 2006 Visual Systems Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License version 2
+ * which accompanies this distribution in a file named "COPYING".
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *      
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *******************************************************************************/
 
 public class AdaptorVisitor extends AbstractVisitor
         implements

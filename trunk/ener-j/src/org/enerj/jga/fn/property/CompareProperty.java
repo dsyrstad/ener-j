@@ -23,30 +23,26 @@ import org.enerj.jga.fn.BinaryFunctor;
 import org.enerj.jga.fn.UnaryPredicate;
 import org.enerj.jga.fn.comparison.EqualTo;
 
-/**
- * Unary Predicate that compares the value of the named property to the
- * given value.  The type of comparison is a binary predicate: the two
- * arguments passed to the predicate are the value of the argument's property
- * in the first position and the constant value passed at construction in the
- * second position.
- * <p>
- * The test returns
- * <code>bp(getProperty(name).fn(arg), value)</code>.  This is also
- * equivalent to the following:<br>
- * <pre>
- * UnaryPredicate CompareProperty =
- *     new UnaryCompose(new Binder2nd(bp, value),
- *                      new GetProperty(propName))
- * </pre>
- * with one less call to <code>fn</code> at evaluation and somewhat clearer
- * construction syntax.
- * <p>
- * To Serialize a CompareProperty, the generic parameter V must be serializable.
- * <p>
- * Copyright &copy; 2003  David A. Hall
- *
- * @author <a href="mailto:davidahall@users.sourceforge.net">David A. Hall</a>
- **/
+/*******************************************************************************
+ * Copyright 2000, 2006 Visual Systems Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License version 2
+ * which accompanies this distribution in a file named "COPYING".
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *      
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *******************************************************************************/
 
 public class CompareProperty<T,V> extends UnaryPredicate<T> {
     

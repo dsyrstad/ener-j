@@ -29,20 +29,26 @@ import org.enerj.jga.fn.adaptor.ChainBinary;
 import org.enerj.jga.fn.adaptor.ChainUnary;
 import org.enerj.jga.util.Arrays;
 
-/**
- * Functor that invokes a method described at construction and returns the
- * result or null if the result is void.  The arguments must be passed to the
- * functor in an array, and the values must be assignable to the corresponding
- * classes given at construction.
- * <p>
- * Note that declaring the return type incorrectly can result in
- * ClassCastExceptions being thrown when the functor is invoked: the compiler
- * cannot check the return type of a reflectively loaded method.
- * <p>
- * Copyright &copy; 2003  David A. Hall
- *
- * @author <a href="mailto:davidahall@users.sourceforge.net">David A. Hall</a>
- **/
+/*******************************************************************************
+ * Copyright 2000, 2006 Visual Systems Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License version 2
+ * which accompanies this distribution in a file named "COPYING".
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *      
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *******************************************************************************/
 
 public class InvokeMethod<T,R> extends BinaryFunctor<T,Object[],R> {
 
