@@ -22,25 +22,26 @@ import java.util.Iterator;
 import org.enerj.jga.fn.BinaryFunctor;
 import org.enerj.jga.fn.UnaryFunctor;
 
-/**
- * Applies a BinaryFunctor to each element in an iteration, and returns the
- * final result.  Each member of the collection is passed to the functor along
- * with the previous result.  If the two arg constructor is used, then the given
- * value is used on the first invocation of the functor: otherwise the first
- * element of the iteration is consumed and passed as the starting value.
- * <p>
- * If the iteration was empty, then the result of this function is the starting
- * value or null if no starting value was given.
- * <p>
- * If no starting value was given, and the iteration has exactly one element,
- * then the element is returned without the BinaryFunctor being used.
- * <p>
- * To Serialize an Accumulate, the generic parameter T must be serializable.
- * <p>
- * Copyright &copy; 2003  David A. Hall
- *
- * @author <a href="mailto:davidahall@users.sf.net">David A. Hall</a>
- */
+/*******************************************************************************
+ * Copyright 2000, 2006 Visual Systems Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License version 2
+ * which accompanies this distribution in a file named "COPYING".
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *      
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *******************************************************************************/
 
 public class Accumulate<T> extends UnaryFunctor<Iterator<? extends T>, T> {
     

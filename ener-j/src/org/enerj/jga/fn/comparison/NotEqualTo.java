@@ -22,22 +22,26 @@ package org.enerj.jga.fn.comparison;
 import org.enerj.jga.fn.BinaryPredicate;
 import java.util.Comparator;
 
-/**
- * Binary Predicate that returns TRUE for object arguments <b>x</b> and
- * <b>y</b> when x != y using the built-in equals() method or an optional
- * Comparator given at construction.  By default, this object will not throw
- * NullPointerException: it will return true if either runtime arguments is null
- * but false if both are null.  If an optional comparator is used, then its
- * implementation will determine if a NullPointerException is thrown when passed
- * a null argument.
- * <p>
- * To serialize an NotEqual functor, the comparator passed at construction(if
- * any) must be Serializable.
- * <p>
- * Copyright &copy; 2002  David A. Hall
- *
- * @author <a href="mailto:davidahall@users.sourceforge.net">David A. Hall</a>
- **/
+/*******************************************************************************
+ * Copyright 2000, 2006 Visual Systems Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License version 2
+ * which accompanies this distribution in a file named "COPYING".
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *      
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *******************************************************************************/
 
 
 public class NotEqualTo<T> extends BinaryPredicate<T,T> {

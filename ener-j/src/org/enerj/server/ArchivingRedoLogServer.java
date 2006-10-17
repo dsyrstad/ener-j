@@ -240,18 +240,26 @@ public class ArchivingRedoLogServer implements RedoLogServer
     // ...End of RedoLogServer interface.
     //----------------------------------------------------------------------
 
-    /**
-     * Buffered version of RandomAccessFile specifically designed to support the log. 
-     * It's not general purpose because writes do not write through to the read buffer.
-     * Note that this code originated from SwiftVis by Mark Lewis at http://www.cs.trinity.edu/~mlewis/SwiftVis/
-     * on 10/13/2006. The site says "SwiftVis is an open source work in progress.", but does not
-     * claim a copyright nor license on any of the source distribution files.
-     * <p>
-     * TODO I have contacted Mark about the status. 10/13/2006.
-     * 
-     * @version $Id: $
-     * @author <a href="mailto:dsyrstad@vitamin-o.org">Dan Syrstad </a>
-     */
+/*******************************************************************************
+ * Copyright 2000, 2006 Visual Systems Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License version 2
+ * which accompanies this distribution in a file named "COPYING".
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *      
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *******************************************************************************/
     private static final class BufferedRandomAccessLogFile extends RandomAccessFile
     {
         private static final int DEFAULT_READ_BUFFER_SIZE = 8192;

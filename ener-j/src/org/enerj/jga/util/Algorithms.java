@@ -55,30 +55,26 @@ import org.enerj.jga.fn.logical.BinaryNegate;
 import org.enerj.jga.fn.logical.UnaryNegate;
 import org.enerj.jga.util.FilterIterator;
 import org.enerj.jga.util.UniqueIterator;
-/**
- * Facade for the Algorithms adapted from STL, defined to work primarily with
- * collections.  These algorithms are adapted from STL, with modifications to be
- * consistent with typical java practice.  For example, typical STL algorithms
- * are defined with pairs of iterators defining a half-open range over some
- * implied collection. It works in C++ because the STL iterators can be compared
- * for equality.  Java iterators are not guaranteed to be comparable to each
- * other by contract, so the same signatures wouldn't work.
- * <p>
- * Typically, where an STL algorithm would take a pair of iterators, we'll take
- * a collection.  Where an STL algorithm would return an iterator, we'll return
- * an iterator.  Note that it will always be java.lang.Iterator when using
- * this class: for some of the more powerful uses, use the Iterators class,
- * which will often return an implementation of Iterator that is tailored for
- * the semantics of the algorithm that was called.
- * <p>
- * The algorithms in this class and the same set of algorithms in the Iterators
- * class will always return the same results when called with identical
- * arguments.
- * <p>
- * Copyright &copy; 2003  David A. Hall
- *
- * @author <a href="mailto:davidahall@users.sf.net">David A. Hall</a>
- */
+/*******************************************************************************
+ * Copyright 2000, 2006 Visual Systems Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License version 2
+ * which accompanies this distribution in a file named "COPYING".
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *      
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *******************************************************************************/
 
 public class Algorithms {
 

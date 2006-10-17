@@ -23,19 +23,26 @@ import org.enerj.jga.fn.BinaryFunctor;
 import java.io.Serializable;
 import java.util.Comparator;
 
-/**
- * Functor wrapper around Comparator object.  Allows Comparators to be used
- * anywhere a Functor returning an Integer could have been used.  Also
- * implements Comparator as well, so an instance of this class could be used
- * anywhere that the constructor argument could be used.
- * <p>
- * To Serialize a ComparatorFn, the Comparator given at construction must be
- * Serializable.
- * <p>
- * Copyright &copy; 2002  David A. Hall
- *
- * @author <a href="mailto:davidahall@users.sourceforge.net">David A. Hall</a>
- **/
+/*******************************************************************************
+ * Copyright 2000, 2006 Visual Systems Corporation.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Public License version 2
+ * which accompanies this distribution in a file named "COPYING".
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *      
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *      
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ *******************************************************************************/
 
 public class ComparatorFn<T> extends BinaryFunctor<T,T,Integer> implements Comparator<T> {
 
