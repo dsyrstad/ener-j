@@ -276,4 +276,18 @@ LockScheduler.deadlockAlgorithm=Waits-For
         	<arg value="${size}" />
         </java>
 	</target>
+
+	<target name="benchmarkOO7" depends="requiredb" description="Benchmarks the oo7 database">
+        <java classname="org.enerj.oo7.OO7Bench" failonerror="true" fork="true" >
+    		<jvmarg value="-javaagent:${agent.jar}"/>
+        	<jvmarg line="${jvmopts}" />
+  			<classpath>
+  				<pathelement location="${build.testdest}"/>
+    		    <pathelement location="${build.dest}"/>
+                <pathelement location="${asm.jar}"/>
+			</classpath>
+            <sysproperty key="enerj.dbpath" value="${databases.dir}"/>
+            <arg value="${db}" />
+        </java>
+	</target>
 </project>
