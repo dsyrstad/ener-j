@@ -41,6 +41,7 @@ Available targets:
         <property name="docs.dir" value="${basedir}/docs"/>
         <property name="lib.dir" value="${basedir}/lib"/>
         <property name="apidocs.dir" value="${docs.dir}/api"/>
+        <property name="databases.dir" value="${basedir}/databases"/>
     	<property name="junit.jar" value="${lib.dir}/junit-3.8.1.jar" />
     	<property name="asm.jar" value="${lib.dir}/asm-2.2.2.jar" />
     	<property name="agent.jar" value="${lib.dir}/${agent-jarname}.jar" />
@@ -149,7 +150,7 @@ Available targets:
                 <include name="**/*.txt"/>
             </fileset>
         </delete>
-    	<junit fork="true" reloading="false" haltonerror="false" haltonfailure="false" printsummary="false">
+    	<junit fork="true" reloading="false" haltonerror="false" haltonfailure="false" printsummary="false" >
     		<jvmarg value="-javaagent:${agent.jar}"/>
   			<classpath>
   				<pathelement location="${build.testdest}"/>
@@ -197,7 +198,11 @@ Available targets:
         <delete dir="${apidocs.dir}"/>
     </target>
 	
-	<target name="browser" depends="init" description="Runs the object browser.">
+	<target name="requiredb" depends="init">
+		<fail unless="db" message="You must specify -Ddb={database-name}"/>
+	</target>
+		
+	<target name="browser" depends="requiredb" description="Runs the object browser.">
         <java classname="org.enerj.tools.browser.EnerJBrowser" failonerror="true" fork="true">
     		<jvmarg value="-javaagent:${agent.jar}"/>
         	<!-- jvmarg line="${jvmopts}" / -->
@@ -206,9 +211,69 @@ Available targets:
     		    <pathelement location="${build.dest}"/>
                 <pathelement location="${asm.jar}"/>
 			</classpath>
-            <sysproperty key="enerj.dbpath" value="databases"/>
-            <arg value="oo7" />
+            <sysproperty key="enerj.dbpath" value="${databases.dir}"/>
+            <arg value="${db}" />
         </java>
 	</target>
 
+	<target name="baseCreateDb" depends="requiredb" description="Creates a database based on an existing properties file.">
+		<delete file="${databases.dir}/${db}/${db}.enerj" />
+		<delete file="${databases.dir}/${db}/${db}.log" />
+        <java classname="org.enerj.util.CreateDatabase" failonerror="true" fork="true">
+    		<jvmarg value="-javaagent:${agent.jar}"/>
+        	<!-- jvmarg line="${jvmopts}" / -->
+  			<classpath>
+    		    <pathelement location="${build.dest}"/>
+                <pathelement location="${asm.jar}"/>
+			</classpath>
+            <sysproperty key="enerj.dbpath" value="${databases.dir}"/>
+            <arg value="${db}" />
+        </java>
+	</target>
+
+	<target name="createDbProps" depends="requiredb" description="Creates a standard database properties file.">
+		<mkdir dir="${databases.dir}/${db}" />
+		
+		<echo file="${databases.dir}/${db}/${db}.properties">
+DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.PagedObjectServer
+PagedObjectServer.PageServerClass=org.enerj.server.CachedPageServer
+PagedObjectServer.LockServerClass=org.enerj.server.LockScheduler
+PagedObjectServer.RedoLogServerClass=org.enerj.server.ArchivingRedoLogServer
+PagedObjectServer.MaxUpdateCacheSize=256000000
+PagedObjectServer.UpdateCacheInitialHashSize=100000
+ArchivingRedoLogServer.logName=${enerj.dbdir}/${db}.log
+ArchivingRedoLogServer.shouldArchive=true
+ArchivingRedoLogServer.requestedLogSize=0
+CachedPageServer.delegatePageServerClass=org.enerj.server.FilePageServer
+CachedPageServer.numberOfCachedPages=10000
+FilePageServer.volume=${enerj.dbdir}/${db}.enerj
+FilePageServer.pageSize=8192
+LockScheduler.initialNumObjs=20000
+LockScheduler.deadlockAlgorithm=Waits-For
+</echo>
+	</target>
+	
+	<target name="createdb" depends="createDbProps,baseCreateDb" description="Creates a standard database by creating a properties file." />
+	
+	<target name="setOO7db" description="Sets the OO7 database name">
+		<property name="db" value="oo7" />
+	</target>
+	
+	<target name="loadOO7" depends="setOO7db,createdb" description="Loads the oo7 database">
+		<fail unless="type" message="You must specify -Dtype={t|m|l}"/>
+		<fail unless="size" message="You must specify -Dsize={3|6|9}"/>
+        <java classname="org.enerj.oo7.OO7Loader" failonerror="true" fork="true" >
+    		<jvmarg value="-javaagent:${agent.jar}"/>
+        	<jvmarg line="${jvmopts}" />
+  			<classpath>
+  				<pathelement location="${build.testdest}"/>
+    		    <pathelement location="${build.dest}"/>
+                <pathelement location="${asm.jar}"/>
+			</classpath>
+            <sysproperty key="enerj.dbpath" value="${databases.dir}"/>
+            <arg value="${db}" />
+        	<arg value="${type}" />
+        	<arg value="${size}" />
+        </java>
+	</target>
 </project>

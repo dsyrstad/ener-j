@@ -114,22 +114,13 @@ public class OO7Bench
             return traversal(p.getRootPart(), op, new HashSet());
         }
         else if (op == 7) {
-            if (p.getDocument().getText().indexOf('I') >= 0)
-                return 1;
-            else
-                return 0;
+            return (p.getDocument().getText().indexOf('I') >= 0 ? 1 : 0);
         }
         else if (op == 8) {
-            if (p.getDocument().getText().indexOf('I') >= 0) // FIXME
-                return 1;
-            else
-                return 0;
+            return (p.getDocument().getText().indexOf('I') >= 0 ? 1 : 0); // FIXME
         }
         else if (op == 9) {
-            if (p.getDocument().getText().indexOf('I') >= 0) // FIXME
-                return 1;
-            else
-                return 0;
+            return (p.getDocument().getText().indexOf('I') >= 0 ? 1 : 0); // FIXME
         }
         else {
             return traversal(p.getRootPart(), op, new HashSet());
