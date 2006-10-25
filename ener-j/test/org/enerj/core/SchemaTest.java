@@ -396,7 +396,7 @@ public class SchemaTest extends TestCase
         //----------------------------------------------------------------------
         // Test creation date
         // Sleep a bit so we're sure current time exceeds creation time
-        try {  Thread.sleep(2L);  }  catch (Exception e) { }
+        try {  Thread.sleep(1000L);  }  catch (Exception e) { }
         Date now = new Date();
         assertTrue("Creation date should before now", version.getCreationDate().before(now) );
         Date anHourAgo = new Date( now.getTime() - (60L * 60L * 1000L) );

@@ -129,6 +129,9 @@ public class FilePageServer implements PageServer
         catch (FileNotFoundException e) {
             throw new PageServerNotFoundException("Cannot find volume: " + aVolumeFileName, e);
         }
+        catch (PageServerException e) {
+            throw e;
+        }
         catch (Throwable t) {
             throw new PageServerException("Cannot open volume " + aVolumeFileName + ": " + t, t);
         }

@@ -241,12 +241,25 @@ public class PagedObjectServer implements ObjectServer
             throw new DatabaseNotFoundException("Cannot find " + propFileName + " in any of the directories " + dbPath); 
         }
 
+        FileInputStream inPropFile = null;
         try {
-            FileInputStream inPropFile = new FileInputStream(propFile);
+            inPropFile = new FileInputStream(propFile);
             props.load(inPropFile);
         }
         catch (IOException e) {
             throw new ODMGException("Error reading " + propFile, e);
+        }
+        finally {
+            if (inPropFile != null) {
+                try {
+                    inPropFile.close();
+                }
+                catch (IOException e) {
+                    throw new ODMGException("Error closing properties file: " + propFile, e);
+                }
+                
+                inPropFile = null;
+            }
         }
 
         createDatabase(aDescription, aDBName, aMaximumSize, aPreAllocatedSize, props, propFile);
