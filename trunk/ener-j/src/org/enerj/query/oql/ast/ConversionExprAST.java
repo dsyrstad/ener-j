@@ -113,9 +113,6 @@ public class ConversionExprAST extends BaseAST
 
         if (mOp == OQLTokens.TOK_DISTINCT) { 
             // Convert a collection (which may already be a Set) to a Set of distinct elements.
-            // TODO How is this different from listtoset? Is it? The OQL doc says something about
-            // TODO returning the same collection. But we don't want to modify persistent collections
-            // TODO and some collections are not modifiable.
             if (Collection.class.isAssignableFrom(type)) {
                 return Set.class;
             }
@@ -153,7 +150,7 @@ public class ConversionExprAST extends BaseAST
         
         UnaryFunctor functor = mExpr.resolve();
 
-        if (mOp == OQLTokens.TOK_LISTTOSET || mOp == OQLTokens.TOK_DISTINCT /* TODO - see getType() */) {
+        if (mOp == OQLTokens.TOK_LISTTOSET || mOp == OQLTokens.TOK_DISTINCT) {
             Class exprType = mExpr.getType();
             if (Set.class.isAssignableFrom(exprType)) {
                 // It's already a Set.
