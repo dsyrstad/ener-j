@@ -30,7 +30,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.odmg.ObjectNameNotFoundException;
 import org.odmg.QueryException;
+import org.enerj.core.EnerJDatabase;
 import org.enerj.jga.fn.Generator;
 import org.enerj.jga.fn.UnaryFunctor;
 import org.enerj.jga.fn.adaptor.ApplyUnaryReturnArg;
@@ -164,14 +166,24 @@ public class IdentifierWithArgumentsAST extends BaseAST
         // Must have a value list for a named query.
         if ((mIsObjectConstruction == null || !mIsObjectConstruction) && mValueList != null) {
             // See if the query is locally defined (i.e., non-persistent).
-            VariableDef var = EvaluatorContext.getContext().getVariable(mIdent);
+            EvaluatorContext context = EvaluatorContext.getContext();
+            VariableDef var = context.getVariable(mIdent);
             if (var != null) {
                 mIsObjectConstruction = false;
                 mNamedQueryFunctor = (InvokeNamedQuery)var.getValueFunctor();
                 return var.getType();
             }
             
-            // TODO - handle persistent named queries
+            // Try Persistent Named Query
+            EnerJDatabase db = context.getDatabase();
+            try {
+                mNamedQueryFunctor = (InvokeNamedQuery)db.lookup(DefineQueryAST.NAMED_QUERY_PREFIX + mIdent);
+                mIsObjectConstruction = false;
+                return mNamedQueryFunctor.getResultType();
+            }
+            catch (ObjectNameNotFoundException e) {
+                // Not found - Ignore -- keep going.
+            }
             
             if (mIsObjectConstruction != null) {
                 throw new QueryException("Unable to find named query '" + mIdent + '\'');
@@ -214,7 +226,7 @@ public class IdentifierWithArgumentsAST extends BaseAST
             return mNamedQueryFunctor.compose( mValueList.resolveAgainstTypes(paramTypes) );
         }
         
-        // It's an object construction.
+        // It's object construction.
         // Get the constructor parameter types. 
         if (mFieldList instanceof FieldListAST) {
             // Named Property construction. Find no-arg constructor, then set properties.

@@ -36,6 +36,8 @@ import java.lang.ref.*;
  * from being GCed before they are stored. 
  * This cache only holds weak references to the cached objects. As a cached object is
  * GCed, it will eventually be cleaned from the cache.
+ * 
+ * TODO This needs to flush() when the Cache reaches the max size, and then drop the LRU entry.
  *
  * @version $Id: DefaultClientCache.java,v 1.1 2006/05/13 21:51:08 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
