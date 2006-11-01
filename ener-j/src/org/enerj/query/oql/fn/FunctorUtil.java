@@ -60,7 +60,7 @@ public class FunctorUtil
      */
     public static UnaryFunctor createUnaryFunctor(Class aFunctorClass, Class aType) throws IllegalArgumentException 
     {
-        // TODO -- These could be cached by functor class/type -- there are a limited set used.
+        // TODO -- These could be cached by functor class/type -- there is a limited set used.
         try {
             Constructor xtor = aFunctorClass.getDeclaredConstructor( new Class[] { Class.class } );
             return (UnaryFunctor)xtor.newInstance( new Object[] { aType } );
