@@ -362,10 +362,14 @@ public abstract class AbstractListTest extends AbstractCollectionTest
 
         // This calculation comes directly from the List interface javadoc.
         int hashCode = 1;
-        Iterator i = testList.iterator();
-        while (i.hasNext()) {
-            Object obj = i.next();
+        int idx = 0;
+        for (Object obj : testList) {
+            if (testList instanceof VeryLargeDArray && idx >= 32) {
+                break;
+            }
+            
             hashCode = 31*hashCode + (obj==null ? 0 : obj.hashCode());
+            ++idx;
         }
 
         assertTrue("Hashcode should be correct", testList.hashCode() == hashCode);
