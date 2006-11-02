@@ -343,7 +343,7 @@ public class TLongHashSet extends TLongHash implements Serializable {
         // number of entries
         stream.writeInt(_size);
 
-        // TODO dsyrstad: SerializationProcedure forces a LOT of stuff to be bound in.
+        // dsyrstad: Note: SerializationProcedure forces a LOT of stuff to be bound in.
         /*SerializationProcedure writeProcedure = new SerializationProcedure(stream);
         if (! forEach(writeProcedure)) {
             throw writeProcedure.exception;

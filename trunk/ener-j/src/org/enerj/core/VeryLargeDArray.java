@@ -326,9 +326,15 @@ public class VeryLargeDArray
     //----------------------------------------------------------------------
     public boolean addAll(int anIndex, Collection aCollection) 
     {
-        //  TODO  what if Collection is this kind - we should use .sizeAsLong(). -
-        //  TODO  maybe implement a LargeCollection interface?
-        insertElements(anIndex, aCollection.size() );
+        long numElements;
+        if (aCollection instanceof LargeCollection) {
+            numElements = ((LargeCollection)aCollection).sizeAsLong();
+        }
+        else {
+            numElements = aCollection.size();
+        }
+        
+        insertElements(anIndex, numElements);
 
         Iterator iterator = aCollection.iterator();
         boolean result = iterator.hasNext();
@@ -555,9 +561,9 @@ public class VeryLargeDArray
     public int hashCode() 
     {
         // This calculation is based on the List.hashCode() documentation.
-        //  TODO  Whoa! very expensize. But who'll use it? Maybe just the first N elements would be good enough.
         int hashCode = 1;
-        for (long i = 0; i < mSize; i++) {
+        long numElements = (mSize < 32 ? mSize : 32);
+        for (long i = 0; i < numElements; i++) {
             Object obj = getAtIndex(i);
             hashCode = 31 * hashCode + (obj == null ? 0 : obj.hashCode());
         }
