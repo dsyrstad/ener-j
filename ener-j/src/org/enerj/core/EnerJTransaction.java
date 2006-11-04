@@ -27,6 +27,7 @@ package org.enerj.core;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
+import org.enerj.server.ObjectServer;
 import org.odmg.ClassNotPersistenceCapableException;
 import org.odmg.Database;
 import org.odmg.DatabaseClosedException;
@@ -35,7 +36,6 @@ import org.odmg.ODMGRuntimeException;
 import org.odmg.Transaction;
 import org.odmg.TransactionInProgressException;
 import org.odmg.TransactionNotInProgressException;
-import org.enerj.server.ObjectServer;
 
 /**
  * Ener-J implementation of org.odmg.Transaction.
@@ -76,6 +76,9 @@ public class EnerJTransaction implements Transaction
      * on an abort.
      */
     private boolean mRestoreValues = false;
+    
+    /** True if flush() is currently flushing. */
+    private boolean mFlushing = false;
 
     //----------------------------------------------------------------------
     /**
@@ -199,6 +202,7 @@ public class EnerJTransaction implements Transaction
         
         mIsOpen = true;
         mTransactionDatabase = voDatabase;
+        mTransactionDatabase.getClientCache().setTransaction(this);
     }
 
     //----------------------------------------------------------------------
@@ -363,10 +367,17 @@ public class EnerJTransaction implements Transaction
      */
     public void flush()
     {
+        // Prevent reentrancy
+        if (mFlushing) {
+            return;
+        }
+        
+        mFlushing = true;
         try {
             flushAndKeepModifiedList();
         }
         finally {
+            mFlushing = false;
             // Clear out modified objects.
             mModifiedObjects.clear();
         }

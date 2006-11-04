@@ -105,7 +105,6 @@ public class OO7Loader
             }
         }
         
-        EnerJTransaction.getCurrentTransaction().flush();
         return result;
     }
 
@@ -136,7 +135,6 @@ public class OO7Loader
             }
         }
 
-        EnerJTransaction.getCurrentTransaction().flush();
         return result;
     }
 
@@ -182,7 +180,6 @@ public class OO7Loader
             manualSize = 1000000 / 2;   // 1MB (2 bytes/char)
 
         result.setManual(new Manual(mRandom.nextInt(), manualSize, randomString(10), randomString(manualSize), result));
-        EnerJTransaction.getCurrentTransaction().flush();
         return result;
     }
 
