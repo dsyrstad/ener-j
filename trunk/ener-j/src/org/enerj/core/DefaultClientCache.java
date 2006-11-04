@@ -24,13 +24,15 @@
 
 package org.enerj.core;
 
-import java.util.*;
-import java.lang.ref.*;
+import gnu.trove.TLongObjectHashMap;
+import gnu.trove.TLongObjectIterator;
+
+import java.lang.ref.ReferenceQueue;
 
 /**
  * Client-side object cache. Used by EnerJDatabase.
- * This is NOT an LRU cache. Objects only fall off the cache if they've
- * been GCed. This means that the cache can grow from its initial size.
+ * This is an LRU cache. Objects fall off the cache if they've
+ * been GCed or the maximum size is reached.
  * EnerJTransaction takes care of holding strong references to objects that 
  * have been modified before they are stored in the database. This prevents modified objects
  * from being GCed before they are stored. 
@@ -48,25 +50,47 @@ class DefaultClientCache implements ClientCache
     /** Client-side Object Cache. Key is Long(oid), value is CacheWeakReference (whose referent is a 
      * Persistable). 
      */
-    private HashMap mCache;
+    private TLongObjectHashMap mCache;
 
     /** ReferenceQueue for CacheWeakReferences stored in mClientCache. This allows us
      * to clean GCed objects out of the cache. 
      */
     private ReferenceQueue mCacheReferenceQueue = new ReferenceQueue();
+    
+    /** Transaction registered with this cache, if any. */
+    private EnerJTransaction mTxn = null;
+    private int mMaxSize;
+    /** Number of cache items to drop-off when we reach the max. */
+    private int mDropSize;
 
     //----------------------------------------------------------------------
     /**
      * Constructs a new client-side object cache of the specified size.
      *
-     * @param anInitialSize the initial number of objects that the cache can hold.
+     * @param aMaxSize the initial number of objects that the cache can hold.
      *  The cache will grow if more than this many objects are added. The growth
      *  behaviour is the same as java.util.HashMap.
      */
-    DefaultClientCache(int anInitialSize)
+    DefaultClientCache(int aMaxSize)
     {
+        mMaxSize = aMaxSize;
+        mDropSize = mMaxSize / 10; // Drop 10% at a time. 
+        
         // The calculation below is to offset the effect of the load factor.
-        mCache = new HashMap(anInitialSize + (anInitialSize / 3), .75F);
+        mCache = new TLongObjectHashMap(mMaxSize + (mMaxSize / 3), .75F);
+    }
+    
+    
+    //--------------------------------------------------------------------------------
+    /**
+     * Registers a transaction with the cache. This transaction will be used to flush
+     * objects that fall off of the cache. 
+     *
+     * @param aTxn the transaction. May be null to unset the transaction. 
+     */
+    public void setTransaction(EnerJTransaction aTxn)
+    {
+        mTxn = aTxn;
     }
     
     //--------------------------------------------------------------------------------
@@ -78,9 +102,23 @@ class DefaultClientCache implements ClientCache
     public void add(long anOID, Object anObject)
     {
         cleanup();
-        Long oidKey = new Long(anOID);
-        if (!mCache.containsKey(oidKey)) {
-            mCache.put(oidKey, new CacheWeakReference(anOID, anObject, mCacheReferenceQueue) );
+        
+        if (mCache.size() >= mMaxSize) {
+            if (mTxn != null) {
+                // Make sure all modified objects are written out so we can drop one.
+                mTxn.flush();
+            }
+            
+            // Remove a random entry. TODO This is not LRU behavior. 
+            TLongObjectIterator iter = mCache.iterator();
+            for (int i = 0; i < mDropSize && iter.hasNext(); i++) {
+                iter.advance();
+                iter.remove();
+            }
+        }
+
+        if (!mCache.containsKey(anOID)) {
+            mCache.put(anOID, new CacheWeakReference(anOID, anObject, mCacheReferenceQueue) );
         }
     }
     
@@ -93,8 +131,7 @@ class DefaultClientCache implements ClientCache
     public CacheWeakReference findEntry(long anOID)
     {
         cleanup();
-        Long oidKey = new Long(anOID);
-        return (CacheWeakReference)mCache.get(oidKey);
+        return (CacheWeakReference)mCache.get(anOID);
     }
 
     //--------------------------------------------------------------------------------
@@ -113,7 +150,7 @@ class DefaultClientCache implements ClientCache
         Object referent = ref.get();
         if (referent == null) {
             // Referent was GCed. Remove the entry and return null.
-            mCache.remove( new Long(anOID) );
+            mCache.remove(anOID);
             return null;
         }
         
@@ -129,7 +166,7 @@ class DefaultClientCache implements ClientCache
     public void evict(long anOID)
     {
         cleanup();
-        mCache.remove( new Long(anOID) );
+        mCache.remove(anOID);
     }
     
     //--------------------------------------------------------------------------------
@@ -187,9 +224,9 @@ class DefaultClientCache implements ClientCache
     {
         cleanup();
         
-        Iterator iterator = mCache.values().iterator();
-        while (iterator.hasNext()) {
-            CacheWeakReference ref = (CacheWeakReference)iterator.next();
+        Object[] values = mCache.getValues();
+        for (Object refObj : values) {
+            CacheWeakReference ref = (CacheWeakReference)refObj;
             Persistable persistable = (Persistable)ref.get();
             if (persistable != null) {
                 persistable.enerj_Hollow();
@@ -207,9 +244,9 @@ class DefaultClientCache implements ClientCache
     {
         cleanup();
         
-        Iterator iterator = mCache.values().iterator();
-        while (iterator.hasNext()) {
-            CacheWeakReference ref = (CacheWeakReference)iterator.next();
+        Object[] values = mCache.getValues();
+        for (Object refObj : values) {
+            CacheWeakReference ref = (CacheWeakReference)refObj;
             ref.setSavedImage(null);
             Persistable persistable = (Persistable)ref.get();
             if (persistable != null) {
@@ -229,7 +266,7 @@ class DefaultClientCache implements ClientCache
         CacheWeakReference ref;
         
         while ((ref = (CacheWeakReference)mCacheReferenceQueue.poll()) != null) {
-            mCache.remove( new Long( ref.getOID() ) );
+            mCache.remove(ref.getOID());
         }
     }
 }

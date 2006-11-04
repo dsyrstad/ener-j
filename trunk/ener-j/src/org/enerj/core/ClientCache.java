@@ -23,8 +23,8 @@ package org.enerj.core;
 
 /**
  * Client-side object cache. Used by EnerJDatabase.
- * This is NOT an LRU cache. Objects only fall off the cache if they've
- * been GCed. This means that the cache can grow from its initial size.
+ * This is an LRU cache. Objects fall off the cache if they've
+ * been GCed or the maximum size is reached.
  * EnerJTransaction takes care of holding strong references to objects that 
  * have been modified before they are stored in the database. This prevents modified objects
  * from being GCed before they are stored. 
@@ -37,6 +37,14 @@ package org.enerj.core;
  */
 interface ClientCache
 {
+    //--------------------------------------------------------------------------------
+    /**
+     * Registers a transaction with the cache. This transaction will be used to flush
+     * objects that fall off of the cache. 
+     *
+     * @param aTxn the transaction. May be null to unset the transaction. 
+     */
+    public void setTransaction(EnerJTransaction aTxn);
 
     //----------------------------------------------------------------------
     /**
