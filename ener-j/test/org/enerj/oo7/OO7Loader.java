@@ -23,18 +23,13 @@ package org.enerj.oo7;
 import java.util.ArrayList;
 import java.util.Random;
 
-import org.odmg.DBag;
-import org.odmg.DMap;
-import org.odmg.Database;
-import org.odmg.Implementation;
-import org.odmg.ODMGException;
-import org.odmg.ObjectNameNotFoundException;
-import org.odmg.Transaction;
-import org.enerj.core.RegularDBag;
-import org.enerj.core.RegularDMap;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJImplementation;
 import org.enerj.core.EnerJTransaction;
+import org.odmg.Database;
+import org.odmg.Implementation;
+import org.odmg.ODMGException;
+import org.odmg.Transaction;
 
 public class OO7Loader
 {
@@ -48,7 +43,7 @@ public class OO7Loader
     private Implementation mImplementation;
     private Random mRandom;
     private EnerJDatabase mDB;
-    private DMap mAtomicPartByIDMap;
+    //private DMap mAtomicPartByIDMap;
     private int mType;
     private int mSize;
     
@@ -88,7 +83,8 @@ public class OO7Loader
             result[idx] = new AtomicPart(idx + 1000, mRandom.nextInt(10000), mRandom.nextInt(), mRandom.nextInt(),
                             mRandom.nextInt());
 
-            mAtomicPartByIDMap.put(result[idx].getId(), result[idx]);
+            //mAtomicPartByIDMap.put(result[idx].getId(), result[idx]);
+            mDB.makePersistent(result[idx]);
         }
         
         // Construct ring
@@ -126,7 +122,7 @@ public class OO7Loader
             new Document(mRandom.nextInt(), randomString(5), randomString(documentSize), current);
             
             // Add some parts
-            ArrayList bag = new ArrayList(atomicPerComp);
+            ArrayList<AtomicPart> bag = new ArrayList<AtomicPart>(atomicPerComp);
             current.setParts(bag);
             current.setRootPart(atomicParts[0]);
             bag.add(current.getRootPart());
@@ -142,7 +138,7 @@ public class OO7Loader
     {
         if (level == 1) {
             BaseAssembly result = new BaseAssembly(mRandom.nextInt(), mRandom.nextInt());
-            ArrayList bag = new ArrayList(3);
+            ArrayList<CompositePart> bag = new ArrayList<CompositePart>(3);
             result.setComponentsPrivate(bag);
             for (int idx = 0; idx < 3; idx++) {
                 bag.add(compositeParts[mRandom.nextInt(compositeParts.length)]);
@@ -152,7 +148,7 @@ public class OO7Loader
         }
         else {
             ComplexAssembly result = new ComplexAssembly(mRandom.nextInt(), mRandom.nextInt(), mod);
-            ArrayList bag = new ArrayList(3);
+            ArrayList<Assembly> bag = new ArrayList<Assembly>(3);
             result.setSubAssemblies(bag);
             for (int idx = 0; idx < 3; idx++) {
                 Assembly asm = buildAssemblies(level - 1, mod, compositeParts);
@@ -204,6 +200,7 @@ public class OO7Loader
             // Create data
             int size = ((mType != LARGE) ? 1 : 10);
             
+            /*
             DBag modules = new RegularDBag(size);
             try {
                 mDB.unbind("Modules");
@@ -219,14 +216,17 @@ public class OO7Loader
             catch (ObjectNameNotFoundException e) {
                 // Ignore
             }
-
+            */
+            
             for (int idx = 0; idx < size; idx++) {
-                modules.add( buildModule() );
+                //modules.add( buildModule() );
+                Module module = buildModule();
+                mDB.makePersistent(module);
             }
             
-            mDB.bind(mAtomicPartByIDMap, "AtomicPartsByID");
-            mDB.bind(modules, "Modules");
-
+            /*mDB.bind(mAtomicPartByIDMap, "AtomicPartsByID");
+            mDB.bind(modules, "Modules");*/
+    
             // Commit
             txn.commit();
 

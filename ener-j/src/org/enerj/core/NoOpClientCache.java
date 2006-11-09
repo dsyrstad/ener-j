@@ -42,6 +42,17 @@ class NoOpClientCache implements ClientCache
     {
     }
 
+    
+    //--------------------------------------------------------------------------------
+    /** 
+     * 
+     * {@inheritDoc}
+     * @see org.enerj.core.ClientCache#setTransaction(org.enerj.core.EnerJTransaction)
+     */
+    public void setTransaction(EnerJTransaction aTxn)
+    {
+    }
+
     //--------------------------------------------------------------------------------
     /** 
      * 
