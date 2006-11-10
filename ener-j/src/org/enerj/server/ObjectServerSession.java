@@ -103,20 +103,15 @@ public interface ObjectServerSession
 
     //----------------------------------------------------------------------
     /**
-     * Store an object in the database.
-     * A transaction must be active on session.
+     * Stores some objects in the database.
+     * A transaction must be active on session. A WRITE lock is forced on an 
+     * object if it isn't WRITE locked already.
      *
-     * @param aCID the Class Id of the object.
-     * @param anOID the OID of the object.
-     * @param aSerializedObject the object serialized to a byte array. This
-     *  array must <em>NOT</em> be reused by the caller after this call completes.
-     *  I.e., the caller should allocate a new byte array for each call to this method.
-     * @param isNew true if this is a new object in the database.
+     * @param someObjects an array of {@link SerializedObject}.
      *
      * @throws ODMGException in the event of an error.
      */
-    public void storeObject(long aCID, long anOID, byte[] aSerializedObject, boolean isNew)
-         throws ODMGException;
+    public void storeObjects(SerializedObject[] someObjects) throws ODMGException;
     
     //----------------------------------------------------------------------
     /**

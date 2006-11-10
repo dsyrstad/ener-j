@@ -508,24 +508,28 @@ public class DefaultMetaObjectServer implements MetaObjectServer
         }
 
         //----------------------------------------------------------------------
-        public void storeObject(long aCID, long anOID, byte[] aSerializedObject, boolean isNew)
-             throws ODMGException
+        public void storeObjects(SerializedObject[] someObjects) throws ODMGException
         {
-            mDelegateSession.storeObject(aCID, anOID, aSerializedObject, isNew);
+            mDelegateSession.storeObjects(someObjects);
             
-            // Evict this from our cache because the client has changed it.
-            getClientDatabase().evict(anOID);
-            
-            if (isNew && !SystemCIDMap.isSystemCID(aCID)) {
-                // Queue this object to be added to its extent on commit - only after delegate stores successfully.
-                TLongArrayList oids = mPendingNewOIDs.get(aCID);
-                if (oids == null) {
-                    // First instance of the CID to be stored in this txn, create new list.
-                    oids = new TLongArrayList(1000);
-                    mPendingNewOIDs.put(aCID, oids);
-                }
+            for (SerializedObject object : someObjects) {
+                long anOID = object.getOID();
+                long aCID = object.getCID();
                 
-                oids.add(anOID);
+                // Evict this from our cache because the client has changed it.
+                getClientDatabase().evict(anOID);
+                
+                if (object.isNew() && !SystemCIDMap.isSystemCID(aCID)) {
+                    // Queue this object to be added to its extent on commit - only after delegate stores successfully.
+                    TLongArrayList oids = mPendingNewOIDs.get(aCID);
+                    if (oids == null) {
+                        // First instance of the CID to be stored in this txn, create new list.
+                        oids = new TLongArrayList(1000);
+                        mPendingNewOIDs.put(aCID, oids);
+                    }
+                    
+                    oids.add(anOID);
+                }
             }
         }
 
@@ -702,8 +706,7 @@ public class DefaultMetaObjectServer implements MetaObjectServer
         }
 
         //----------------------------------------------------------------------
-        public void storeObject(long aCID, long anOID, byte[] aSerializedObject, boolean isNew)
-             throws ODMGException
+        public void storeObjects(SerializedObject[] someObjects) throws ODMGException
         {
             // TODO check user privs based on CID.
             /*
@@ -712,7 +715,7 @@ public class DefaultMetaObjectServer implements MetaObjectServer
             }
             */
 
-            mPrivilegedSession.storeObject(aCID, anOID, aSerializedObject, isNew);
+            mPrivilegedSession.storeObjects(someObjects);
         }
 
         //----------------------------------------------------------------------

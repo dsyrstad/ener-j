@@ -32,6 +32,7 @@ import org.odmg.ClassNotPersistenceCapableException;
 import org.odmg.Database;
 import org.odmg.DatabaseClosedException;
 import org.odmg.LockNotGrantedException;
+import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.Transaction;
 import org.odmg.TransactionInProgressException;
@@ -53,7 +54,7 @@ public class EnerJTransaction implements Transaction
      * a transaction is started (begin). It is unset when a transaction is commited or
      * aborted.
      */
-    private static ThreadLocal<EnerJTransaction> sCurrentTransactionForThread = new ThreadLocal();
+    private static ThreadLocal<EnerJTransaction> sCurrentTransactionForThread = new ThreadLocal<EnerJTransaction>();
     
     /** True if the Transaction has started, but neither commit nor abort have been called. */
     private boolean mIsOpen = false;
@@ -76,9 +77,6 @@ public class EnerJTransaction implements Transaction
      * on an abort.
      */
     private boolean mRestoreValues = false;
-    
-    /** True if flush() is currently flushing. */
-    private boolean mFlushing = false;
 
     //----------------------------------------------------------------------
     /**
@@ -367,17 +365,10 @@ public class EnerJTransaction implements Transaction
      */
     public void flush()
     {
-        // Prevent reentrancy
-        if (mFlushing) {
-            return;
-        }
-        
-        mFlushing = true;
         try {
             flushAndKeepModifiedList();
         }
         finally {
-            mFlushing = false;
             // Clear out modified objects.
             mModifiedObjects.clear();
         }
@@ -390,7 +381,10 @@ public class EnerJTransaction implements Transaction
      */
     private void flushAndKeepModifiedList()
     {
-        assert mFlushIterator == null; 
+        if (mFlushIterator != null) {
+            return; // Prevent reentrancy
+        }
+        
         checkIsOpenAndOwnedByThread();
         
         try {
@@ -416,6 +410,11 @@ public class EnerJTransaction implements Transaction
                     mFlushIterator.previous();
                 }
             }
+            
+            mTransactionDatabase.flushSerializedObjectQueue();
+        }
+        catch (ODMGException e) {
+            throw new ODMGRuntimeException(e);
         }
         finally {
             mFlushIterator = null;

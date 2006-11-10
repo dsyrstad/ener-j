@@ -477,12 +477,19 @@ public class MemoryObjectServer implements ObjectServer
         }
 
         //----------------------------------------------------------------------
-        public synchronized void storeObject(long aCID, long anOID, byte[] aSerializedObject, boolean isNew)
-                 throws ODMGException
+        public synchronized void storeObjects(SerializedObject[] someObjects) throws ODMGException
         {
-            MemoryTxn txn = getTransaction();
-            MemoryDBEntry entry = new MemoryDBEntry(aCID, anOID, aSerializedObject);
-            mDatabase.storeEntry(entry);
+            for (SerializedObject object : someObjects) {
+                long anOID = object.getOID();
+                long aCID = object.getCID();
+                
+                // Make sure the object is WRITE locked.
+                getLock(anOID, EnerJTransaction.WRITE, -1);
+                
+                MemoryTxn txn = getTransaction();
+                MemoryDBEntry entry = new MemoryDBEntry(aCID, anOID, object.getImage());
+                mDatabase.storeEntry(entry);
+            }
         }
 
         //----------------------------------------------------------------------
