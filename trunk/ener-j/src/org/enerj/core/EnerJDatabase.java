@@ -40,9 +40,11 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import org.odmg.ClassNotPersistenceCapableException;
@@ -74,6 +76,8 @@ import org.enerj.util.URIUtil;
  */
 public class EnerJDatabase implements Database
 {
+    /** Maximum size of mSerializedObjectQueue. TODO make this configurable */
+    private static final int sMaxSerializedObjectQueueSize = 100000;
     private static final Class[] sEnerJDatabaseArgType = { EnerJDatabase.class };
     private static final Object[] sEnerJDatabaseArg = { null };
 
@@ -128,6 +132,11 @@ public class EnerJDatabase implements Database
     private long[] mOIDCache = null;
     private int mOIDCachePosition = 0;
     private boolean mIsServerSideDB = false;
+    
+    /** Queue of serialized objects waiting to be flushed to database. */
+    private List<SerializedObject> mSerializedObjectQueue = new ArrayList<SerializedObject>(100);
+    /** Number of bytes in mSerializedObjectQueue. */
+    private int mSerializedObjectQueueSize = 0;
 
     //----------------------------------------------------------------------
     /**
@@ -563,7 +572,8 @@ public class EnerJDatabase implements Database
      * Store a Persistable object whose modified or new flags are set to true. 
      * Afterwards, the object's new and modified flags are set to
      * false. The loaded flag is set to true (in case the object was new). Also ensures
-     * that the object is WRITE-locked. 
+     * that the object is WRITE-locked. The method {@link #flushSerializedObjectQueue()} must be 
+     * called after the caller has finished storing Persistables. 
      * <p>
      * This method is intended only for Ener-J internal use.
      *
@@ -584,9 +594,6 @@ public class EnerJDatabase implements Database
 
         //Logger.global.finest("Storing object: " + aPersistable.getClass().getName() + " oid=" + oid + " cid=" + cid);
 
-        // Make sure we have a write-lock.
-        mBoundToTransaction.lock(aPersistable, EnerJTransaction.WRITE);
-        
         // Error if object is not loaded or not new at this point.
         if ( !aPersistable.enerj_IsLoaded() && !aPersistable.enerj_IsNew()) {
             throw new ODMGRuntimeException("INTERNAL: Attempted to store a persistable object that is not loaded or not new. OID=" + oid + " CID=" + cid);
@@ -610,7 +617,7 @@ public class EnerJDatabase implements Database
 
         byte[] objectBytes = createSerializedImage(aPersistable);
         try {
-            mMetaObjectServerSession.storeObject(cid, oid, objectBytes, aPersistable.enerj_IsNew() );
+            queueObjectToStore(cid, oid, objectBytes, aPersistable.enerj_IsNew() );
         }
         catch (RuntimeException e) {
             throw e;
@@ -625,6 +632,56 @@ public class EnerJDatabase implements Database
         aPersistable.enerj_SetLoaded(true);
     }
 
+    //----------------------------------------------------------------------
+    /**
+     * Queue a serialized object to be stored to the database. If a pre-configured
+     * number of bytes have already been queued, the queue is flushed to the database. 
+     * The method {@link #flushSerializedObjectQueue()} must be 
+     * called after the caller has finished storing objects. 
+     *
+     * @param aCID the Class Id of the object.
+     * @param anOID the OID of the object.
+     * @param aSerializedObject the object serialized to a byte array. This
+     *  array must <em>NOT</em> be reused by the caller after this call completes.
+     *  I.e., the caller should allocate a new byte array for each call to this method.
+     * @param isNew true if this is a new object in the database.
+     *
+     * @throws ODMGException in the event of an error.
+     */
+    private void queueObjectToStore(long aCID, long anOID, byte[] aSerializedObject, boolean isNew)
+        throws ODMGException
+    {
+        mSerializedObjectQueue.add( new SerializedObject(anOID, aCID, aSerializedObject, isNew) );
+        mSerializedObjectQueueSize += aSerializedObject.length;
+        
+        if (mSerializedObjectQueueSize >= sMaxSerializedObjectQueueSize) {
+            flushSerializedObjectQueue();
+        }
+    }
+    
+    //----------------------------------------------------------------------
+    /**
+     * Flushes previously serialized objects queued by {@link #storePersistable(Persistable)}
+     * to the database.  
+     * <p>
+     * This method is intended only for Ener-J internal use.
+     *
+     * @throws ODMGException in the event of an error.
+     */
+    public void flushSerializedObjectQueue() throws ODMGException
+    {
+        SerializedObject[] objects = mSerializedObjectQueue.toArray(new SerializedObject[ mSerializedObjectQueue.size() ]);
+        try {
+            mMetaObjectServerSession.storeObjects(objects);
+        }
+        catch (RuntimeException e) {
+            throw new ODMGException("Could not store object.", e);
+        }
+        finally {
+            mSerializedObjectQueue.clear();
+            mSerializedObjectQueueSize = 0;
+        }
+    }
     
     //--------------------------------------------------------------------------------
     /**

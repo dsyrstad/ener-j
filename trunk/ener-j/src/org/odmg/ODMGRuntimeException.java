@@ -34,5 +34,16 @@ public class ODMGRuntimeException extends RuntimeException {
     {
         super(msg, cause);
     }
+
+    //--------------------------------------------------------------------------
+    /**
+     * Construct with an error message and a cause.
+     * 
+     * @param cause the original cause.
+     */
+    public ODMGRuntimeException(Throwable cause) 
+    {
+        super(cause);
+    }
 }
 

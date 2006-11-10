@@ -24,7 +24,7 @@
 
 package org.enerj.server;
 
-import java.io.*;
+import java.io.Serializable;
 
 /**
  * Represents an object serialized as a byte[] with its associated CID and OID.
@@ -37,10 +37,11 @@ public class SerializedObject implements Serializable
     private byte[] mImage;
     private long mOID;
     private long mCID;
+    private boolean mIsNew = false;
 
     //----------------------------------------------------------------------
     /**
-     * Constructs a SerializedObject.
+     * Constructs a SerializedObject that is not new.
      *
      * @param anOID the OID of the object.
      * @param aCID the CID of the object.
@@ -51,6 +52,23 @@ public class SerializedObject implements Serializable
         mOID = anOID;
         mCID = aCID;
         mImage = anImage;
+    }
+
+    //----------------------------------------------------------------------
+    /**
+     * Constructs a SerializedObject.
+     *
+     * @param anOID the OID of the object.
+     * @param aCID the CID of the object.
+     * @param anImage the serialized image of the object, as serialized by ObjectSerializer.
+     * @param isNew true if the object is new.
+     */
+    public SerializedObject(long anOID, long aCID, byte[] anImage, boolean isNew)
+    {
+        mOID = anOID;
+        mCID = aCID;
+        mImage = anImage;
+        mIsNew = isNew;
     }
 
     //----------------------------------------------------------------------
@@ -69,6 +87,28 @@ public class SerializedObject implements Serializable
     public long getCID()
     {
         return mCID;
+    }
+
+    //--------------------------------------------------------------------------------
+    /**
+     * Determines if the object is new.
+     *
+     * @return true if the object is new.
+     */
+    public boolean isNew()
+    {
+        return mIsNew;
+    }
+
+    //--------------------------------------------------------------------------------
+    /**
+     * Sets whether the object is new.
+     *
+     * @param true if the object is new.
+     */
+    public void setIsNew(boolean isNew)
+    {
+        mIsNew = isNew;
     }
 }
 

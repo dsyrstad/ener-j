@@ -747,20 +747,26 @@ public class PagedObjectServer implements ObjectServer
         }
 
         //----------------------------------------------------------------------
-        public void storeObject(long aCID, long anOID, byte[] aSerializedObject, boolean isNew)
-             throws ODMGException
+        public void storeObjects(SerializedObject[] someObjects) throws ODMGException
         {
-
-            Transaction txn = getTransaction();
-
-            StoreObjectLogEntry logEntry = new StoreObjectLogEntry( txn.getLogTransactionId(), anOID, aCID, aSerializedObject);
-            mObjectServer.mRedoLogServer.append(logEntry);
-
-            PagedStore.StoreObjectRequest request = mObjectServer.mPagedStore.new StoreObjectRequest(aCID, anOID, aSerializedObject);
-            request.mLogEntryPosition = logEntry.getLogPosition();
-
-            // Throw update into the cache. It doesn't hit the database (PagedStore) until checkpoint or commit.
-            mObjectServer.mUpdateCache.cacheUpdateRequest(request, txn);
+            for (SerializedObject object : someObjects) {
+                long anOID = object.getOID();
+                long aCID = object.getCID();
+                
+                // Make sure the object is WRITE locked.
+                getLock(anOID, EnerJTransaction.WRITE, -1);
+                
+                Transaction txn = getTransaction();
+    
+                StoreObjectLogEntry logEntry = new StoreObjectLogEntry( txn.getLogTransactionId(), anOID, aCID, object.getImage());
+                mObjectServer.mRedoLogServer.append(logEntry);
+    
+                PagedStore.StoreObjectRequest request = mObjectServer.mPagedStore.new StoreObjectRequest(aCID, anOID, object.getImage());
+                request.mLogEntryPosition = logEntry.getLogPosition();
+    
+                // Throw update into the cache. It doesn't hit the database (PagedStore) until checkpoint or commit.
+                mObjectServer.mUpdateCache.cacheUpdateRequest(request, txn);
+            }
         }
 
         //----------------------------------------------------------------------
