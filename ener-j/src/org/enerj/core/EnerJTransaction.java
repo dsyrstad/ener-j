@@ -365,6 +365,10 @@ public class EnerJTransaction implements Transaction
      */
     public void flush()
     {
+        if (mFlushIterator != null) {
+            return; // Prevent reentrancy
+        }
+        
         try {
             flushAndKeepModifiedList();
         }
@@ -381,10 +385,6 @@ public class EnerJTransaction implements Transaction
      */
     private void flushAndKeepModifiedList()
     {
-        if (mFlushIterator != null) {
-            return; // Prevent reentrancy
-        }
-        
         checkIsOpenAndOwnedByThread();
         
         try {
