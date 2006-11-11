@@ -931,6 +931,10 @@ public class PagedObjectServer implements ObjectServer
         //----------------------------------------------------------------------
         public void getLock(long anOID, int aLockLevel, long aWaitTime) throws LockNotGrantedException 
         {
+            if (mAllowNontransactionalReads && aLockLevel == org.odmg.Transaction.READ) {
+                // Don't bother to check for a txn or get read locks if we're doing non-transactional reads.
+                return;
+            }
 
             Transaction txn = getTransaction();
 
