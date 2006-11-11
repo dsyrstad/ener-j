@@ -371,7 +371,8 @@ public class LockScheduler implements LockServer
 
                     // Attempting to demote/downgrade? Error.
                     if ( currentLock.mLockMode.isMoreExclusiveThan(lockMode) ) {
-                        aRequest.complete( new LockNotGrantedException("Attempted downgrade a lock from " + currentLock.mLockMode + " to " + lockMode) );
+                        // Just ignore the request.
+                        aRequest.complete(true);
                         return;
                     }
 

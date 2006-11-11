@@ -92,6 +92,7 @@ public interface ObjectServerSession
     /**
      * Gets the class Id (CID) for a given OID.
      * A transaction must be active on session, or non-transactional reads must be allowed.
+     * A READ lock is automatically obtained if it doesn't exist already.
      *
      * @param anOID the Object Id.
      *
@@ -117,6 +118,7 @@ public interface ObjectServerSession
     /**
      * Load an object from the database.
      * A transaction must be active on session, or non-transactional reads must be allowed.
+     * A READ lock is automatically taken on the object.
      *
      * @param anOID the OID of the object.
      *

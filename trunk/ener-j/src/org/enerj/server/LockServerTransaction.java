@@ -24,9 +24,7 @@
 
 package org.enerj.server;
 
-import org.odmg.*;
-
-import org.enerj.core.*;
+import org.odmg.LockNotGrantedException;
 
 /**
  * Transaction context used by LockServer. A Transaction may only be 
@@ -53,7 +51,7 @@ public interface LockServerTransaction
      * the transaction currently owns a lock on the object. If the requested lock
      * mode is the same as the current lock mode held by the transaction, the
      * method immediately returns true. If the requested lock mode would result in
-     * a demotion (i.e., downgrade), a RuntimeException is thrown. If the lock
+     * a demotion (i.e., downgrade), nothing is changed. If the lock
      * cannot be immediately obtained, the calling thread blocks (depending on
      * the value of aWaitTime). Note that objects
      * are locked by their equality, not their identity. So as long as two
@@ -72,7 +70,7 @@ public interface LockServerTransaction
      * @return true if the lock was acquired, or false if the lock was not 
      *  acquired and aWaitTime was exceeded.
      *
-     * @throws LockNotGrantedException if a lock mode demotion/downgrade is attempted or
+     * @throws LockNotGrantedException if 
      *  the transaction is not active. Throws DeadlockException (type of LockNotGrantedException)
      *  if deadlock would occur by obtaining the lock.
      */
