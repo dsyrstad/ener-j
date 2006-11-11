@@ -42,7 +42,7 @@ class CacheWeakReference extends WeakReference
      * @param aReferent the referent object.
      * @param aReferenceQueue ReferenceQueue to which aReferent will be registered.
      */
-    CacheWeakReference(long anOID, Object aReferent, ReferenceQueue aReferenceQueue)
+    CacheWeakReference(long anOID, Persistable aReferent, ReferenceQueue aReferenceQueue)
     {
         super(aReferent, aReferenceQueue);
         mOID = anOID;

@@ -24,10 +24,10 @@
 
 package org.enerj.core;
 
-import gnu.trove.TLongObjectHashMap;
-import gnu.trove.TLongObjectIterator;
-
 import java.lang.ref.ReferenceQueue;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Client-side object cache. Used by EnerJDatabase.
@@ -39,8 +39,6 @@ import java.lang.ref.ReferenceQueue;
  * This cache only holds weak references to the cached objects. As a cached object is
  * GCed, it will eventually be cleaned from the cache.
  * 
- * TODO This needs to flush() when the Cache reaches the max size, and then drop the LRU entry.
- *
  * @version $Id: DefaultClientCache.java,v 1.1 2006/05/13 21:51:08 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.Database
@@ -48,9 +46,9 @@ import java.lang.ref.ReferenceQueue;
 class DefaultClientCache implements ClientCache 
 {
     /** Client-side Object Cache. Key is Long(oid), value is CacheWeakReference (whose referent is a 
-     * Persistable). 
+     * Persistable). List order is by most recently accessed. 
      */
-    private TLongObjectHashMap mCache;
+    private LinkedHashMap<Long, CacheWeakReference> mCache;
 
     /** ReferenceQueue for CacheWeakReferences stored in mClientCache. This allows us
      * to clean GCed objects out of the cache. 
@@ -77,9 +75,8 @@ class DefaultClientCache implements ClientCache
         mDropSize = mMaxSize / 10; // Drop 10% at a time. 
         
         // The calculation below is to offset the effect of the load factor.
-        mCache = new TLongObjectHashMap(mMaxSize + (mMaxSize / 3), .75F);
+        mCache = new LinkedHashMap<Long, CacheWeakReference>(mMaxSize + (mMaxSize / 3), .75F, true);
     }
-    
     
     //--------------------------------------------------------------------------------
     /**
@@ -99,36 +96,39 @@ class DefaultClientCache implements ClientCache
      * {@inheritDoc}
      * @see org.enerj.core.ClientCache#add(long, java.lang.Object)
      */
-    public void add(long anOID, Object anObject)
+    public void add(long anOID, Persistable aPersistable)
     {
         cleanup();
         
+        if (!mCache.containsKey(anOID)) {
+            mCache.put(anOID, new CacheWeakReference(anOID, aPersistable, mCacheReferenceQueue) );
+        }
+
         if (mCache.size() >= mMaxSize) {
             if (mTxn != null) {
                 // Make sure all modified objects are written out so we can drop one.
                 mTxn.flush();
             }
             
-            // Remove a random entry. TODO This is not LRU behavior. 
-            TLongObjectIterator iter = mCache.iterator();
+            // Remove mDropSize LRU entries. We drop more than one so we don't thrash on flush().
+            Iterator<Map.Entry<Long,CacheWeakReference>> iter = mCache.entrySet().iterator();
             for (int i = 0; i < mDropSize && iter.hasNext(); i++) {
-                iter.advance();
+                iter.next();
                 iter.remove();
             }
-        }
-
-        if (!mCache.containsKey(anOID)) {
-            mCache.put(anOID, new CacheWeakReference(anOID, anObject, mCacheReferenceQueue) );
         }
     }
     
     //--------------------------------------------------------------------------------
-    /** 
-     * 
-     * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#findEntry(long)
+    /**
+     * Finds the CacheWeakReference entry corresponding to anOID.
+     * Calls cleanup() prior to the lookup.
+     *
+     * @param anOID the OID of the desired object.
+     *
+     * @return the entry, or null if the OID does not exist in the cache.
      */
-    public CacheWeakReference findEntry(long anOID)
+    private CacheWeakReference findEntry(long anOID)
     {
         cleanup();
         return (CacheWeakReference)mCache.get(anOID);
@@ -140,14 +140,14 @@ class DefaultClientCache implements ClientCache
      * {@inheritDoc}
      * @see org.enerj.core.ClientCache#get(long)
      */
-    public Object get(long anOID)
+    public Persistable get(long anOID)
     {
         CacheWeakReference ref = findEntry(anOID);
         if (ref == null) {
             return null;
         }
         
-        Object referent = ref.get();
+        Persistable referent = (Persistable)ref.get();
         if (referent == null) {
             // Referent was GCed. Remove the entry and return null.
             mCache.remove(anOID);
@@ -224,9 +224,7 @@ class DefaultClientCache implements ClientCache
     {
         cleanup();
         
-        Object[] values = mCache.getValues();
-        for (Object refObj : values) {
-            CacheWeakReference ref = (CacheWeakReference)refObj;
+        for (CacheWeakReference ref : mCache.values()) {
             Persistable persistable = (Persistable)ref.get();
             if (persistable != null) {
                 persistable.enerj_Hollow();
@@ -244,9 +242,7 @@ class DefaultClientCache implements ClientCache
     {
         cleanup();
         
-        Object[] values = mCache.getValues();
-        for (Object refObj : values) {
-            CacheWeakReference ref = (CacheWeakReference)refObj;
+        for (CacheWeakReference ref : mCache.values()) {
             ref.setSavedImage(null);
             Persistable persistable = (Persistable)ref.get();
             if (persistable != null) {
