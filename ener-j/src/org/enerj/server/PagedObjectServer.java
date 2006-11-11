@@ -738,6 +738,9 @@ public class PagedObjectServer implements ObjectServer
             // Check the update cache first and get CID from the store request, if there is one.
             PagedStore.StoreObjectRequest storeRequest = mObjectServer.mUpdateCache.lookupStoreRequest(anOID);
             if (storeRequest == null) {
+                // Get a read lock on the object otherwise the CID can change for the object after getting the CID.
+                // TODO make timeout configurable.
+                getLock(anOID, EnerJTransaction.READ, -1);
                 return mObjectServer.mPagedStore.getCIDForOID(anOID);
             }
             else {
@@ -773,12 +776,16 @@ public class PagedObjectServer implements ObjectServer
         public byte[] loadObject(long anOID) throws ODMGException
         {
             if (!mAllowNontransactionalReads) {
-                Transaction txn = getTransaction();
+                // Validate txn active - interface requirement
+                getTransaction();
             }
 
             // Check the update cache first and get the object from the store request, if there is one.
             PagedStore.StoreObjectRequest storeRequest = mObjectServer.mUpdateCache.lookupStoreRequest(anOID);
             if (storeRequest == null) {
+                // Get a READ lock. 
+                // TODO Configurable timeout?
+                getLock(anOID, EnerJTransaction.READ, -1);
                 // Not found - load object from PagedStore.
                 return mObjectServer.mPagedStore.loadObject(anOID);
             }

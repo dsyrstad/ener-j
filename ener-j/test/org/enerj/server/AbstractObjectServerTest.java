@@ -30,8 +30,6 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
-import org.odmg.Transaction;
-
 /**
  * Tests ObjectServer. <p>
  *
@@ -164,10 +162,12 @@ public abstract class AbstractObjectServerTest extends TestCase
     private void storeObjects(long[] someOIDs, int aLength) throws Exception
     {
         long cid = System.currentTimeMillis();
+        SerializedObject[] objects = new SerializedObject[someOIDs.length];
         for (int i = 0; i < someOIDs.length; i++) {
-            mSession.storeObject(cid + i, someOIDs[i], generateBytes(aLength, someOIDs[i], cid + i), true);
+            objects[i] = new SerializedObject(someOIDs[i], cid + i, generateBytes(aLength, someOIDs[i], cid + i), true);
         }
 
+        mSession.storeObjects(objects);
 
         for (int i = 0; i < someOIDs.length; i++) {
             byte[] obj = mSession.loadObject(someOIDs[i]);
@@ -457,62 +457,4 @@ public abstract class AbstractObjectServerTest extends TestCase
             // Expected
         }
     }
-    
-    //----------------------------------------------------------------------
-    /**
-     * A timed test. Temporary.
-     */
-    public void xxtestTimeTest() throws Exception
-    {
-        int objSize = 400;
-        
-        long start = System.currentTimeMillis();
-        mSession.beginTransaction();
-
-        long[] oids = allocateOIDs(18000);
-
-        long cid = 0x1234567890ABCDEFL;
-        for (int i = 0; i < oids.length; i++) {
-            byte[] origObj = generateBytes(objSize, 0x987654ABCL, cid + i);
-            mSession.getLock(oids[i], Transaction.WRITE, -1L);
-            mSession.storeObject(cid + i, oids[i],  origObj, true);
-        }
-
-        long elapsed = System.currentTimeMillis() - start;
-        System.out.println("Store " + oids.length + " objects: " + elapsed);
-
-        mSession.commitTransaction();
-
-        elapsed = System.currentTimeMillis() - start;
-        System.out.println("Store " + oids.length + " objects with commit: " + elapsed);
-
-        // -- Read back
-        start = System.currentTimeMillis();
-        mSession.beginTransaction();
-
-        for (int i = 0; i < oids.length; i++) {
-            mSession.getLock(oids[i], Transaction.READ, -1L);
-            mSession.getCIDForOID(oids[i]);
-            mSession.loadObject(oids[i]);
-        }
-
-        elapsed = System.currentTimeMillis() - start;
-        System.out.println("Load " + oids.length + " objects: " + elapsed);
-
-        mSession.commitTransaction();
-
-        elapsed = System.currentTimeMillis() - start;
-        System.out.println("Load " + oids.length + " objects with commit: " + elapsed);
-
-        mSession.beginTransaction();
-
-        // Read again to check values.
-        for (int i = 0; i < oids.length; i++) {
-            byte[] origObj = generateBytes(objSize, 0x987654ABCL, cid + i);
-            byte[] obj = mSession.loadObject(oids[i]);
-            assertTrue( Arrays.equals(obj, origObj) );
-        }
-
-        mSession.commitTransaction();
-    }    
 }

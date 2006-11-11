@@ -339,15 +339,15 @@ public class EnerJDatabase implements Database
         checkBoundTransaction(true);
         long oid = getOID(aPersistable);
         
-        if ( !isNontransactionalReadMode()) {
-            // getObjectForOID should have READ-locked this object. Make sure we have the lock.
-            EnerJTransaction.isAtLockLevel(aPersistable, EnerJTransaction.READ);
-        }
-
         // Look it up in the DB.
         byte[] objectBytes;
         try {
             objectBytes = mMetaObjectServerSession.loadObject(oid);
+
+            if ( !isNontransactionalReadMode() && !EnerJTransaction.isAtLockLevel(aPersistable, EnerJTransaction.READ)) {
+                // loadObject() obtains a READ lock.
+                aPersistable.enerj_SetLockLevel(EnerJTransaction.READ);
+            }
         }
         catch (RuntimeException e) {
             throw e;
@@ -374,33 +374,26 @@ public class EnerJDatabase implements Database
      */
     private Persistable createObjectForOIDAndCID(long anOID, long aCID)
     {
+        // TODO This method is an opportunity to have a queue of hollow objects to be loaded. They can be loaded by loadObject en masse.
         checkBoundTransaction(true);
 
-        Persistable persistable;
+        Persistable checkPersistable;
         // Note: If mIsServerSideDB is true, the cache will be empty.
-        persistable = (Persistable)mClientCache.get(anOID);
-        if (persistable != null) {
+        checkPersistable = (Persistable)mClientCache.get(anOID);
+        if (checkPersistable != null) {
             if (isNontransactionalReadMode()) {
                 // If we're in non-transactional read mode and this object was
                 // never loaded, make sure that we can load it later by setting it
                 // to be non-transactional.
-                PersistableHelper.setNonTransactional(persistable);
+                PersistableHelper.setNonTransactional(checkPersistable);
             }
 
-            return persistable;
-        }
-        
-        // Lookup class for OID in the DB.
-        if (!isNontransactionalReadMode()) {
-            // We must have a READ lock (minimum) on OID at this point - get a READ lock if we don't have it.
-            // Do read lock _before_ getting class id because the class id can change for an OID.
-            // Note: We don't use Transaction.lock() here because we don't have an object to work with yet.
-            //  TODO  -1L waits forever, use database or transaction configurable timeout
-            mMetaObjectServerSession.getLock(anOID, EnerJTransaction.READ,  -1L);
+            return checkPersistable;
         }
 
         if (aCID == ObjectServer.NULL_CID) {
             try {
+                // This obtains a READ lock on anOID.
                 aCID = mMetaObjectServerSession.getCIDForOID(anOID);
             }
             catch (RuntimeException e) {
@@ -442,16 +435,12 @@ public class EnerJDatabase implements Database
         try {
             Constructor constructor = oidClass.getDeclaredConstructor(sEnerJDatabaseArgType);
             constructor.setAccessible(true);
-            persistable = (Persistable)constructor.newInstance(sEnerJDatabaseArg);
+            Persistable persistable = (Persistable)constructor.newInstance(sEnerJDatabaseArg);
 
             persistable.enerj_SetDatabase(this);
             persistable.enerj_SetPrivateOID(anOID);
             if (isNontransactionalReadMode()) {
                 PersistableHelper.setNonTransactional(persistable);
-            }
-            else {
-                // Lock level was set already on OID above.
-                persistable.enerj_SetLockLevel(EnerJTransaction.READ);
             }
             
             persistable.enerj_SetNew(false);
@@ -460,12 +449,12 @@ public class EnerJDatabase implements Database
 
             // Cache it
             mClientCache.add(anOID, persistable);
+
+            return persistable;
         }
         catch (Exception e) {
             throw new org.odmg.ODMGRuntimeException("Error creating object: " + e);
         }
-
-        return persistable;
     }
 
     //--------------------------------------------------------------------------------
@@ -548,6 +537,8 @@ public class EnerJDatabase implements Database
      *
      * @param aPersistable a persistable object.
      *
+     * @return a newly allocated byte array representing the serialized image of aPersistable.
+     * 
      * @throws ODMGRuntimeException if an error occurs.
      */
     byte[] createSerializedImage(Persistable aPersistable)
@@ -617,7 +608,9 @@ public class EnerJDatabase implements Database
 
         byte[] objectBytes = createSerializedImage(aPersistable);
         try {
-            queueObjectToStore(cid, oid, objectBytes, aPersistable.enerj_IsNew() );
+            addToSerializedObjectQueue(cid, oid, objectBytes, aPersistable.enerj_IsNew() );
+            // This will be write-locked by the server.
+            aPersistable.enerj_SetLockLevel(EnerJTransaction.WRITE); 
         }
         catch (RuntimeException e) {
             throw e;
@@ -647,8 +640,10 @@ public class EnerJDatabase implements Database
      * @param isNew true if this is a new object in the database.
      *
      * @throws ODMGException in the event of an error.
+     * 
+     * TODO This and {@link #flushSerializedObjectQueue()} should be its own class.
      */
-    private void queueObjectToStore(long aCID, long anOID, byte[] aSerializedObject, boolean isNew)
+    private void addToSerializedObjectQueue(long aCID, long anOID, byte[] aSerializedObject, boolean isNew)
         throws ODMGException
     {
         mSerializedObjectQueue.add( new SerializedObject(anOID, aCID, aSerializedObject, isNew) );
