@@ -35,7 +35,7 @@ package org.enerj.core;
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.Database
  */
-interface ClientCache
+public interface ClientCache
 {
     //--------------------------------------------------------------------------------
     /**
@@ -52,20 +52,9 @@ interface ClientCache
      * the cache is left unchanged.
      *
      * @param anOID the OID of anObject.
-     * @param anObject the Object to be cached.
+     * @param aPersistable the Persistable to be cached.
      */
-    void add(long anOID, Object anObject);
-
-    //----------------------------------------------------------------------
-    /**
-     * Finds the CacheWeakReference entry corresponding to anOID.
-     * Calls cleanup() prior to the lookup.
-     *
-     * @param anOID the OID of the desired object.
-     *
-     * @return the entry, or null if the OID does not exist in the cache.
-     */
-    CacheWeakReference findEntry(long anOID);
+    void add(long anOID, Persistable aPersistable);
 
     //----------------------------------------------------------------------
     /**
@@ -73,9 +62,9 @@ interface ClientCache
      *
      * @param anOID the OID of the desired object.
      *
-     * @return the cached object, or null if the OID does not exist in the cache.
+     * @return the cached Persistable, or null if the OID does not exist in the cache.
      */
-    Object get(long anOID);
+    Persistable get(long anOID);
 
     //----------------------------------------------------------------------
     /**
