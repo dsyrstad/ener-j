@@ -217,57 +217,39 @@ abstract public class AbstractLockServerTest extends TestCase
         assertNull( lockServer.getLockMode(obj) );
 
         //----------------------------------------------------------------------
-        // UPGRADE -> READ (demotion - invalid)
+        // UPGRADE -> READ (demotion - OK - lock should stay UPGRADE)
         txn = lockServer.startTransaction();
 
         assertTrue( txn.lock(obj, LockMode.UPGRADE, -1L) );
         assertTrue( lockServer.getLockMode(obj) ==  LockMode.UPGRADE);
 
-        try {
-            txn.lock(obj, LockMode.READ, -1L);
-            fail("Expected RuntimeException");
-        }
-        catch (RuntimeException e) {
-            // Expected
-        }
+        txn.lock(obj, LockMode.READ, -1L);
 
         assertTrue( lockServer.getLockMode(obj) ==  LockMode.UPGRADE);
         txn.end();
         assertNull( lockServer.getLockMode(obj) );
 
         //----------------------------------------------------------------------
-        // WRITE -> READ (demotion - invalid)
+        // WRITE -> READ (demotion - OK - lock should stay WRITE)
         txn = lockServer.startTransaction();
 
         assertTrue( txn.lock(obj, LockMode.WRITE, -1L) );
         assertTrue( lockServer.getLockMode(obj) ==  LockMode.WRITE);
 
-        try {
-            txn.lock(obj, LockMode.READ, -1L);
-            fail("Expected RuntimeException");
-        }
-        catch (RuntimeException e) {
-            // Expected
-        }
+        txn.lock(obj, LockMode.READ, -1L);
         
         assertTrue( lockServer.getLockMode(obj) ==  LockMode.WRITE);
         txn.end();
         assertNull( lockServer.getLockMode(obj) );
 
         //----------------------------------------------------------------------
-        // WRITE -> UPGRADE (demotion - invalid)
+        // WRITE -> UPGRADE (demotion - OK - lock should stay WRITE)
         txn = lockServer.startTransaction();
 
         assertTrue( txn.lock(obj, LockMode.WRITE, -1L) );
         assertTrue( lockServer.getLockMode(obj) ==  LockMode.WRITE);
 
-        try {
-            txn.lock(obj, LockMode.UPGRADE, -1L);
-            fail("Expected RuntimeException");
-        }
-        catch (RuntimeException e) {
-            // Expected
-        }
+        txn.lock(obj, LockMode.UPGRADE, -1L);
         
         assertTrue( lockServer.getLockMode(obj) ==  LockMode.WRITE);
         txn.end();
