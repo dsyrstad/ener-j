@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import org.odmg.ClassNotPersistenceCapableException;
 import org.odmg.Database;
@@ -346,6 +347,7 @@ public class EnerJDatabase implements Database
 
         List<Persistable> prefetches = mClientCache.getAndClearPrefetches();
         long[] oids = new long[prefetches.size()];
+        //if (oids.length > 1) System.out.println("Prefetching " + oids.length + " objects");
         int idx = 0;
         for (Persistable prefetch : prefetches) {
             oids[idx++] = getOID(prefetch);
@@ -376,50 +378,63 @@ public class EnerJDatabase implements Database
     
     //----------------------------------------------------------------------
     /**
-     * Gets the Persistable object associated with anOID and aCID.
+     * Gets the Persistable objects associated with someOIDs and someCIDs.
      * The Persistable returned is hollow (not loaded yet).
      *
-     * @param anOID the database Object ID.
-     * @param aCID the CID of anOID. If this is ObjectServer.NULL_CID, the CID is
-     *  found by its OID from the server.
+     * @param someOIDs the database Object IDs to be retrieved.
+     * @param someCIDs the CIDs corresponding to someOIDs. If this is null, the CID is
+     *  found by its OID from the server. If this is non-null, it must be the same size as someOIDs.
      *
-     * @return a hollow Persistable. Returns null if the OID doesn't exist.
+     * @return an array of hollow Persistables. An element of the array may be null if the OID doesn't exist.
      *
      * @throws ODMGRuntimeException if an error occurs.
      */
-    private Persistable createObjectForOIDAndCID(long anOID, long aCID)
+    private Persistable[] createObjectsForOIDsAndCIDs(long[] someOIDs, long[] someCIDs)
     {
         // TODO This method is an opportunity to have a queue of hollow objects to be loaded. They can be loaded by loadObject en masse.
         checkBoundTransaction(true);
 
-        Persistable checkPersistable;
-        // Note: If mIsServerSideDB is true, the cache will be empty.
-        checkPersistable = (Persistable)mClientCache.get(anOID);
-        if (checkPersistable != null) {
-            if (isNontransactionalReadMode()) {
-                // If we're in non-transactional read mode and this object was
-                // never loaded, make sure that we can load it later by setting it
-                // to be non-transactional.
-                PersistableHelper.setNonTransactional(checkPersistable);
+        Persistable[] objects = new Persistable[someOIDs.length];
+        long[] oidsToRetrieveCidsFor = new long[someOIDs.length];
+        int cidsIdx = 0;
+        for (int i = 0; i < someOIDs.length; i++) {
+            
+            // Note: If mIsServerSideDB is true, the cache will be empty.
+            Persistable checkPersistable = (Persistable)mClientCache.get(someOIDs[i]);
+            if (checkPersistable != null) {
+                if (isNontransactionalReadMode()) {
+                    // If we're in non-transactional read mode and this object was
+                    // never loaded, make sure that we can load it later by setting it
+                    // to be non-transactional.
+                    PersistableHelper.setNonTransactional(checkPersistable);
+                }
+    
+                objects[i] = checkPersistable;
             }
-
-            return checkPersistable;
+            else if (someCIDs == null || someCIDs[i] == ObjectServer.NULL_CID) {
+                oidsToRetrieveCidsFor[cidsIdx++] = someOIDs[i]; 
+            }
         }
 
-        if (aCID == ObjectServer.NULL_CID) {
+        if (cidsIdx > 0) {
+            long[] oids = new long[cidsIdx];
+            System.arraycopy(oidsToRetrieveCidsFor, 0, oids, 0, cidsIdx);
+            long[] cids;
             try {
-                // This obtains a READ lock on anOID.
-                aCID = mMetaObjectServerSession.getCIDForOID(anOID);
+                // This obtains a READ lock on each OID.
+                cids = mMetaObjectServerSession.getCIDsForOIDs(oids);
             }
             catch (RuntimeException e) {
                 throw e;
             }
             catch (Exception e) {
-                throw new ODMGRuntimeException("Could not get CID for OID " + anOID, e);
+                throw new ODMGRuntimeException("Could not get CIDs for OIDs", e);
             }
 
-            if (aCID == ObjectServer.NULL_CID) {
-                throw new ODMGRuntimeException("Cannot find CID for OID " + anOID + " in database");
+            for (int i = 0; i < cids.length; i++) {
+                if (cids[i] == ObjectServer.NULL_CID) {
+                    throw new ODMGRuntimeException("Cannot find CID for OID " + oids[i] + " in database");
+                }
             }
         }
 
@@ -522,7 +537,25 @@ public class EnerJDatabase implements Database
      */
     public Persistable getObjectForOID(long anOID)
     {
-        return createObjectForOIDAndCID(anOID, ObjectServer.NULL_CID);
+        // TODO Any callers using this method should be checked carefully for possible use of the plural method.
+        return getObjectsForOIDs(new long[] { anOID } )[0];
+    }
+
+    //----------------------------------------------------------------------
+    /**
+     * Gets the Persistable objects associated with someOIDs.
+     * <p>
+     * This method is intended only for Ener-J internal use.
+     *
+     * @param someOIDs the database Object IDs to be retrieved.
+     *
+     * @return an array of Persistable. An element in the array my be null if the corresponding OID doesn't exist.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    public Persistable[] getObjectsForOIDs(long[] someOIDs)
+    {
+        return createObjectsForOIDsAndCIDs(someOIDs, null);
     }
 
     //----------------------------------------------------------------------
