@@ -31,9 +31,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.odmg.ODMGRuntimeException;
 import org.enerj.server.ExtentIterator;
 import org.enerj.server.MetaObjectServerSession;
+import org.odmg.ODMGRuntimeException;
 
 
 /**
@@ -238,14 +238,14 @@ public class EnerJExtent implements Extent
     //----------------------------------------------------------------------
     private final class EnerJExtentIterator implements java.util.Iterator
     {
-        private static final int DEFAULT_CHUNK_SIZE = 2000;
+        private static final int DEFAULT_CHUNK_SIZE = 200;
 
         /** ExtentIterator returned from the session. */
         private ExtentIterator mExtentIterator;
-        /** Queue of OIDs represent the chunk of objects we got back from next(). */
-        private long[] mOIDs = null;
+        /** Queue of Objects represent the chunk of objects we got back from next(). */
+        private Persistable[] mObjects = null;
         /** Queue position. */
-        private int mOIDIdx = 0; 
+        private int mObjectIdx = 0; 
         private boolean mIsOpen = true;
 
         //----------------------------------------------------------------------
@@ -291,13 +291,20 @@ public class EnerJExtent implements Extent
         public boolean hasNext() 
         {
             checkOpen();
-            if (mOIDs == null || mOIDIdx >= mOIDs.length) {
+            if (mObjects == null || mObjectIdx >= mObjects.length) {
                 if (!mExtentIterator.hasNext()) {
                     return false;
                 }
 
-                mOIDs = mExtentIterator.next(DEFAULT_CHUNK_SIZE);
-                mOIDIdx = 0;
+                long[] oids = mExtentIterator.next(DEFAULT_CHUNK_SIZE);
+                // Put the objects in the prefetch queue.
+                mObjects = new Persistable[oids.length];
+                for (int i = 0; i < oids.length; i++) {
+                    // TODO we should be able to do this in a batch from EnerJDatabase. That way all CIDs can be fetched at once.
+                    mObjects[i] = mDatabase.getObjectForOID(oids[i]);
+                }
+                
+                mObjectIdx = 0;
             }
 
             return true;
@@ -311,7 +318,7 @@ public class EnerJExtent implements Extent
                 throw new NoSuchElementException("Attempted to go past the end of the Extent iterator.");
             }
 
-            return mDatabase.getObjectForOID( mOIDs[mOIDIdx++] );
+            return mObjects[mObjectIdx++];
         }
         
         //----------------------------------------------------------------------

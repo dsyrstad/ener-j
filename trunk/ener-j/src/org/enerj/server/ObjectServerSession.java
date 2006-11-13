@@ -90,17 +90,17 @@ public interface ObjectServerSession
 
     //----------------------------------------------------------------------
     /**
-     * Gets the class Id (CID) for a given OID.
+     * Gets class Ids (CIDs) for the given OIDs.
      * A transaction must be active on session, or non-transactional reads must be allowed.
      * A READ lock is automatically obtained if it doesn't exist already.
      *
-     * @param anOID the Object Id.
+     * @param someOIDs an array of OIDs to get CIDs for.
      *
-     * @return the class Id, or zero (the null CID) if the OID doesn't exist.
+     * @return the class Ids. A null CID will be returned if an OID doesn't exist.
      *
      * @throws ODMGException in the event of an error. 
      */
-    public long getCIDForOID(long anOID) throws ODMGException;
+    public long[] getCIDsForOIDs(long[] someOIDs) throws ODMGException;
 
     //----------------------------------------------------------------------
     /**
