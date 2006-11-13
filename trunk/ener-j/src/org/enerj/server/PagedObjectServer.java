@@ -773,26 +773,32 @@ public class PagedObjectServer implements ObjectServer
         }
 
         //----------------------------------------------------------------------
-        public byte[] loadObject(long anOID) throws ODMGException
+        public byte[][] loadObjects(long[] someOIDs) throws ODMGException
         {
             if (!mAllowNontransactionalReads) {
                 // Validate txn active - interface requirement
                 getTransaction();
             }
 
-            // Check the update cache first and get the object from the store request, if there is one.
-            PagedStore.StoreObjectRequest storeRequest = mObjectServer.mUpdateCache.lookupStoreRequest(anOID);
-            if (storeRequest == null) {
-                // Get a READ lock. 
-                // TODO Configurable timeout?
-                getLock(anOID, EnerJTransaction.READ, -1);
-                // Not found - load object from PagedStore.
-                return mObjectServer.mPagedStore.loadObject(anOID);
+            byte[][] objects = new byte[someOIDs.length][];
+            int idx = 0;
+            for (long oid : someOIDs) {
+                // Check the update cache first and get the object from the store request, if there is one.
+                PagedStore.StoreObjectRequest storeRequest = mObjectServer.mUpdateCache.lookupStoreRequest(oid);
+                if (storeRequest == null) {
+                    // Get a READ lock. 
+                    // TODO Configurable timeout?
+                    getLock(oid, EnerJTransaction.READ, -1);
+                    // Not found - load object from PagedStore.
+                    objects[idx++] = mObjectServer.mPagedStore.loadObject(oid); // TODO Make PagedStore take a array of oids.
+                }
+                else {
+                    // Found in update cache. use updated object.
+                    objects[idx++] = storeRequest.resolveSerializedObject();
+                }
             }
-            else {
-                // Found in update cache. use updated object.
-                return storeRequest.resolveSerializedObject();
-            }
+            
+            return objects;
         }
 
         //----------------------------------------------------------------------

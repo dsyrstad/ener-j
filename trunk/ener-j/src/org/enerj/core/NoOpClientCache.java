@@ -24,6 +24,9 @@
 
 package org.enerj.core;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * A client-cache that doesn't cache anything. <p>
  * 
@@ -59,7 +62,7 @@ class NoOpClientCache implements ClientCache
      * {@inheritDoc}
      * @see org.enerj.core.ClientCache#add(long, java.lang.Object)
      */
-    public void add(long anOID, Object anObject)
+    public void add(long anOID, Persistable aPersistable)
     {
     }
 
@@ -80,7 +83,7 @@ class NoOpClientCache implements ClientCache
      * {@inheritDoc}
      * @see org.enerj.core.ClientCache#get(long)
      */
-    public Object get(long anOID)
+    public Persistable get(long anOID)
     {
         return null;
     }
@@ -156,4 +159,14 @@ class NoOpClientCache implements ClientCache
     {
     }
 
+    //--------------------------------------------------------------------------------
+    /** 
+     * 
+     * {@inheritDoc}
+     * @see org.enerj.core.ClientCache#getAndClearPrefetches()
+     */
+    public List<Persistable> getAndClearPrefetches()
+    {
+        return (List<Persistable>)Collections.EMPTY_LIST;
+    }
 }

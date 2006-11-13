@@ -493,18 +493,24 @@ public class MemoryObjectServer implements ObjectServer
         }
 
         //----------------------------------------------------------------------
-        public synchronized byte[] loadObject(long anOID) throws ODMGException
+        public synchronized byte[][] loadObjects(long[] someOIDs) throws ODMGException
         {
             if (!mAllowNontransactionalReads) {
                 MemoryTxn txn = getTransaction();
             }
             
-            MemoryDBEntry entry = mDatabase.getEntry(anOID);
-            if (entry == null) {
-                throw new org.odmg.ODMGRuntimeException("INTERNAL ERROR: OID " + anOID + " no longer exists.");
+            byte[][] objects = new byte[someOIDs.length][];
+            int idx = 0;
+            for (long oid : someOIDs) {
+                MemoryDBEntry entry = mDatabase.getEntry(oid);
+                if (entry == null) {
+                    throw new org.odmg.ODMGRuntimeException("INTERNAL ERROR: OID " + oid + " no longer exists.");
+                }
+    
+                objects[idx++] = entry.getSerializedObject();
             }
-
-            return entry.getSerializedObject();
+            
+            return objects;
         }
 
         //----------------------------------------------------------------------

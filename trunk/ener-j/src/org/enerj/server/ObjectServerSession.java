@@ -116,17 +116,18 @@ public interface ObjectServerSession
     
     //----------------------------------------------------------------------
     /**
-     * Load an object from the database.
+     * Loads objects from the database.
      * A transaction must be active on session, or non-transactional reads must be allowed.
-     * A READ lock is automatically taken on the object.
+     * READ locks are automatically taken on the objects.
      *
-     * @param anOID the OID of the object.
+     * @param someOIDs an array of OIDs of the objects to be loaded.
      *
-     * @return the object serialized in a byte array.
+     * @return an array of byte[] of the same size and in the same order as someOIDs that represent 
+     *  the serialized images of the objects.
      *
      * @throws ODMGException in the event of an error. 
      */
-    public byte[] loadObject(long anOID) throws ODMGException;
+    public byte[][] loadObjects(long[] someOIDs) throws ODMGException;
     
     //----------------------------------------------------------------------
     /**

@@ -326,7 +326,8 @@ public class EnerJDatabase implements Database
     
     //----------------------------------------------------------------------
     /**
-     * Loads the contents of aPersistable from the database. 
+     * Loads the contents of aPersistable from the database. Other objects may be
+     * prefetched at the same time.
      * <p>
      * This method is intended only for Ener-J internal use.
      *
@@ -337,17 +338,23 @@ public class EnerJDatabase implements Database
     public void loadObject(Persistable aPersistable)
     {
         checkBoundTransaction(true);
+        
+        // Make sure that the requested object is in the cache. This will also cause it to come back
+        // in the prefetch list.
         long oid = getOID(aPersistable);
+        mClientCache.add(oid, aPersistable);
+
+        List<Persistable> prefetches = mClientCache.getAndClearPrefetches();
+        long[] oids = new long[prefetches.size()];
+        int idx = 0;
+        for (Persistable prefetch : prefetches) {
+            oids[idx++] = getOID(prefetch);
+        }
         
         // Look it up in the DB.
-        byte[] objectBytes;
+        byte[][] objects;
         try {
-            objectBytes = mMetaObjectServerSession.loadObject(oid);
-
-            if ( !isNontransactionalReadMode() && !EnerJTransaction.isAtLockLevel(aPersistable, EnerJTransaction.READ)) {
-                // loadObject() obtains a READ lock.
-                aPersistable.enerj_SetLockLevel(EnerJTransaction.READ);
-            }
+            objects = mMetaObjectServerSession.loadObjects(oids);
         }
         catch (RuntimeException e) {
             throw e;
@@ -356,7 +363,15 @@ public class EnerJDatabase implements Database
             throw new ODMGRuntimeException("Could not load object", e);
         }
 
-        loadSerializedImage(aPersistable, objectBytes);
+        idx = 0;
+        for (Persistable prefetch : prefetches) {
+            loadSerializedImage(prefetch, objects[idx++]);
+
+            if ( !isNontransactionalReadMode() && !EnerJTransaction.isAtLockLevel(prefetch, EnerJTransaction.READ)) {
+                // loadObject() obtains a READ lock.
+                prefetch.enerj_SetLockLevel(EnerJTransaction.READ);
+            }
+        }
     }
     
     //----------------------------------------------------------------------

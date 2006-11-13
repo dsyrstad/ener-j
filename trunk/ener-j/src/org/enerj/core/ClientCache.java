@@ -20,6 +20,8 @@
  *******************************************************************************/
 package org.enerj.core;
 
+import java.util.List;
+
 
 /**
  * Client-side object cache. Used by EnerJDatabase.
@@ -121,4 +123,12 @@ public interface ClientCache
      */
     void cleanup();
 
+    
+    //--------------------------------------------------------------------------------
+    /**
+     * Get a list of Persistables to be prefetched. The list of prefetches is cleared.
+     *
+     * @return a list of hollow Persistables.
+     */
+    List<Persistable> getAndClearPrefetches();
 }
