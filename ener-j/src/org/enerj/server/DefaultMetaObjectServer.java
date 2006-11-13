@@ -534,9 +534,9 @@ public class DefaultMetaObjectServer implements MetaObjectServer
         }
 
         //----------------------------------------------------------------------
-        public byte[] loadObject(long anOID) throws ODMGException
+        public byte[][] loadObjects(long[] someOIDs) throws ODMGException
         {
-            return mDelegateSession.loadObject(anOID);
+            return mDelegateSession.loadObjects(someOIDs);
         }
 
         //----------------------------------------------------------------------
@@ -719,9 +719,9 @@ public class DefaultMetaObjectServer implements MetaObjectServer
         }
 
         //----------------------------------------------------------------------
-        public byte[] loadObject(long anOID) throws ODMGException
+        public byte[][] loadObjects(long[] someOIDs) throws ODMGException
         {
-            return mPrivilegedSession.loadObject(anOID);
+            return mPrivilegedSession.loadObjects(someOIDs);
         }
 
         //----------------------------------------------------------------------

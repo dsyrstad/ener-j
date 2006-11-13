@@ -169,9 +169,10 @@ public abstract class AbstractObjectServerTest extends TestCase
 
         mSession.storeObjects(objects);
 
+        byte[][] loadedObjects = mSession.loadObjects(someOIDs);
+        assertNotNull(objects);
         for (int i = 0; i < someOIDs.length; i++) {
-            byte[] obj = mSession.loadObject(someOIDs[i]);
-            assertNotNull( obj );
+            byte[] obj = loadedObjects[i];
             assertTrue( obj.length == aLength );
 
             long testCID = mSession.getCIDForOID(someOIDs[i]);
@@ -442,15 +443,15 @@ public abstract class AbstractObjectServerTest extends TestCase
         assertTrue( mSession.getAllowNontransactionalReads() );
 
         // Should succeed
-        mSession.loadObject(oids[0]);
-        mSession.loadObject(oids[1]);
+        mSession.loadObjects(new long[] { oids[0] });
+        mSession.loadObjects(new long[] { oids[1] });
 
         mSession.setAllowNontransactionalReads(false);
         assertFalse( mSession.getAllowNontransactionalReads() );
         
         try {
             // Should fail
-            mSession.loadObject(oids[0]);
+            mSession.loadObjects( new long[] { oids[0] });
             fail("Expected failure");
         }
         catch (Exception e) {

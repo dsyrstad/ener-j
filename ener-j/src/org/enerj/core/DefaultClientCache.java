@@ -25,8 +25,10 @@
 package org.enerj.core;
 
 import java.lang.ref.ReferenceQueue;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,6 +51,10 @@ class DefaultClientCache implements ClientCache
      * Persistable). List order is by most recently accessed. 
      */
     private LinkedHashMap<Long, CacheWeakReference> mCache;
+    /** A weakly referenced list of Persistables that have not been loaded yet, but probably will be. This
+     * is used to do pre-fetching.
+     */
+    private List<CacheWeakReference> mPrefetchList;
 
     /** ReferenceQueue for CacheWeakReferences stored in mClientCache. This allows us
      * to clean GCed objects out of the cache. 
@@ -76,6 +82,8 @@ class DefaultClientCache implements ClientCache
         
         // The calculation below is to offset the effect of the load factor.
         mCache = new LinkedHashMap<Long, CacheWeakReference>(mMaxSize + (mMaxSize / 3), .75F, true);
+
+        mPrefetchList = new ArrayList<CacheWeakReference>(mMaxSize / 4); 
     }
     
     //--------------------------------------------------------------------------------
@@ -101,7 +109,12 @@ class DefaultClientCache implements ClientCache
         cleanup();
         
         if (!mCache.containsKey(anOID)) {
-            mCache.put(anOID, new CacheWeakReference(anOID, aPersistable, mCacheReferenceQueue) );
+            CacheWeakReference weakRef = new CacheWeakReference(anOID, aPersistable, mCacheReferenceQueue);
+            mCache.put(anOID, weakRef);
+            if (!aPersistable.enerj_IsNew() && !aPersistable.enerj_IsLoaded()) {
+                // Non-new Persistable that has not been loaded yet. It is a prefetch candidate.
+                mPrefetchList.add(weakRef);
+            }
         }
 
         if (mCache.size() >= mMaxSize) {
@@ -264,6 +277,29 @@ class DefaultClientCache implements ClientCache
         while ((ref = (CacheWeakReference)mCacheReferenceQueue.poll()) != null) {
             mCache.remove(ref.getOID());
         }
+    }
+    
+    
+    //--------------------------------------------------------------------------------
+    /** 
+     * 
+     * {@inheritDoc}
+     * @see org.enerj.core.ClientCache#getAndClearPrefetches()
+     */
+    public List<Persistable> getAndClearPrefetches()
+    {
+        cleanup();
+        List<Persistable> prefetches = new ArrayList<Persistable>(mPrefetchList.size());
+        for (CacheWeakReference ref : mPrefetchList) {
+            Persistable obj = (Persistable)ref.get();
+            if (obj != null && !obj.enerj_IsLoaded()) {
+                prefetches.add(obj);
+            }
+        }
+        
+        mPrefetchList.clear();
+
+        return prefetches;
     }
 }
 
