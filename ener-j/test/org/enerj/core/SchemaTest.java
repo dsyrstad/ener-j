@@ -31,7 +31,6 @@ import org.odmg.Database;
 import org.odmg.Implementation;
 import org.odmg.Transaction;
 import org.enerj.annotations.Persist;
-import org.enerj.server.ObjectServer;
 
 import java.util.Date;
 import java.util.Iterator;
@@ -230,7 +229,7 @@ public class SchemaTest extends TestCase
         //----------------------------------------------------------------------
         // Test findClassVersion() and allocateClassId().
         LogicalClassSchema logicalClass = new LogicalClassSchema(schema, this.getClass().getName(), "");
-        long cid = ObjectServer.LAST_SYSTEM_CID + 99938;
+        long cid = ObjectSerializer.LAST_SYSTEM_CID + 99938;
 
         assertNull("CID shouldn't already exist", schema.findClassVersion(cid) );
         ClassVersionSchema classVersion = 
@@ -300,7 +299,7 @@ public class SchemaTest extends TestCase
 
         final int numVersions = 10;
         long[] cids = new long[numVersions];
-        long cidCounter = ObjectServer.LAST_SYSTEM_CID;
+        long cidCounter = ObjectSerializer.LAST_SYSTEM_CID;
         for (int i = 0; i < numVersions; i++) {
             cids[i] = cidCounter++;
             ClassVersionSchema version = new ClassVersionSchema(logicalClass, cids[i],  new String[0],
@@ -333,7 +332,7 @@ public class SchemaTest extends TestCase
             assertTrue("Version CID should match", version.getClassId() == cids[i]);
         }
 
-        long missingCID = ObjectServer.LAST_SYSTEM_CID - 1;
+        long missingCID = ObjectSerializer.LAST_SYSTEM_CID - 1;
         assertNull("CID should not exist", logicalClass.findVersion(missingCID) );
 
         //----------------------------------------------------------------------
@@ -386,7 +385,7 @@ public class SchemaTest extends TestCase
         LogicalClassSchema logicalClass = new LogicalClassSchema(schema, "VersionTest", "");
         schema.addLogicalClass(logicalClass);
 
-        long versionCID = ObjectServer.LAST_SYSTEM_CID + 2928;
+        long versionCID = ObjectSerializer.LAST_SYSTEM_CID + 2928;
         ClassVersionSchema version = new ClassVersionSchema(logicalClass, versionCID, new String[0],
             new byte[] { 0x01 }, new byte[] { 0x02, 0x03 },
             new String[] { "A", "B", "C" }, 

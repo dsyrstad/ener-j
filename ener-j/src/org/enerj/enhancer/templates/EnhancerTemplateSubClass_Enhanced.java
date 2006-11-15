@@ -24,10 +24,14 @@
 
 package org.enerj.enhancer.templates;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import org.enerj.core.*;
-import org.odmg.*;
+import org.enerj.core.ObjectSerializer;
+import org.enerj.core.Persistable;
+import org.enerj.core.PersistableHelper;
+import org.enerj.core.Persister;
 
 /**
  * Class file enhancer template for Ener-J. This is an example of a 
@@ -71,10 +75,10 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
     }
 
     //----------------------------------------------------------------------
-    // Generated constructor. EnerJDatabase is simply used for a unique signature.
-    public EnhancerTemplateSubClass_Enhanced(EnerJDatabase aDatabase)
+    // Generated constructor. Persister is simply used for a unique signature.
+    public EnhancerTemplateSubClass_Enhanced(Persister aPersister)
     {
-        super(aDatabase);
+        super(aPersister);
     }
 
     //----------------------------------------------------------------------
@@ -282,63 +286,63 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
     }
 
     //----------------------------------------------------------------------
-    public void enerj_ReadObject(ObjectSerializer.ReadContext aContext) throws IOException
+    public void enerj_ReadObject(ObjectSerializer aContext) throws IOException
     {
-        DataInput stream = aContext.mStream;
+        DataInput stream = aContext.getDataInput();
 
         super.enerj_ReadObject(aContext);
 
         mByte = stream.readByte();
-        mByteObj = (java.lang.Byte)ObjectSerializer.readObject(aContext, this);
+        mByteObj = (java.lang.Byte)aContext.readObject(this);
         mBoolean = stream.readBoolean();
-        mBooleanObj = (java.lang.Boolean)ObjectSerializer.readObject(aContext, this);
+        mBooleanObj = (java.lang.Boolean)aContext.readObject(this);
         mChar = stream.readChar();
-        mCharObj = (java.lang.Character)ObjectSerializer.readObject(aContext, this);
+        mCharObj = (java.lang.Character)aContext.readObject(this);
         mShort = stream.readShort();
-        mShortObj = (java.lang.Short)ObjectSerializer.readObject(aContext, this);
+        mShortObj = (java.lang.Short)aContext.readObject(this);
         mInt = stream.readInt();
-        mIntObj = (java.lang.Integer)ObjectSerializer.readObject(aContext, this);
+        mIntObj = (java.lang.Integer)aContext.readObject(this);
         mLong = stream.readLong();
-        mLongObj = (java.lang.Long)ObjectSerializer.readObject(aContext, this);
+        mLongObj = (java.lang.Long)aContext.readObject(this);
         mFloat = stream.readFloat();
-        mFloatObj = (java.lang.Float)ObjectSerializer.readObject(aContext, this);
+        mFloatObj = (java.lang.Float)aContext.readObject(this);
         mDouble = stream.readDouble();
-        mDoubleObj = (java.lang.Double)ObjectSerializer.readObject(aContext, this);
-        mString = (String)ObjectSerializer.readObject(aContext, this);
-        mObject = (Object)ObjectSerializer.readObject(aContext, this);
-        mIntArray = (int[])ObjectSerializer.readObject(aContext, this);
-        m2dArray = (int[][])ObjectSerializer.readObject(aContext, this);
-        mObjArray = (Object[])ObjectSerializer.readObject(aContext, this);
+        mDoubleObj = (java.lang.Double)aContext.readObject(this);
+        mString = (String)aContext.readObject(this);
+        mObject = (Object)aContext.readObject(this);
+        mIntArray = (int[])aContext.readObject(this);
+        m2dArray = (int[][])aContext.readObject(this);
+        mObjArray = (Object[])aContext.readObject(this);
    }
 
     //----------------------------------------------------------------------
-    public void enerj_WriteObject(ObjectSerializer.WriteContext aContext) throws IOException
+    public void enerj_WriteObject(ObjectSerializer aContext) throws IOException
     {
-        DataOutput stream = aContext.mStream;
+        DataOutput stream = aContext.getDataOutput();
 
         super.enerj_WriteObject(aContext);
 
         stream.writeByte(mByte);
-        ObjectSerializer.writeObject(aContext, mByteObj, this);
+        aContext.writeObject(mByteObj, this);
         stream.writeBoolean(mBoolean);
-        ObjectSerializer.writeObject(aContext, mBooleanObj, this);
+        aContext.writeObject(mBooleanObj, this);
         stream.writeChar(mChar);
-        ObjectSerializer.writeObject(aContext, mCharObj, this);
+        aContext.writeObject(mCharObj, this);
         stream.writeShort(mShort);
-        ObjectSerializer.writeObject(aContext, mShortObj, this);
+        aContext.writeObject(mShortObj, this);
         stream.writeInt(mInt);
-        ObjectSerializer.writeObject(aContext, mIntObj, this);
+        aContext.writeObject(mIntObj, this);
         stream.writeLong(mLong);
-        ObjectSerializer.writeObject(aContext, mLongObj, this);
+        aContext.writeObject(mLongObj, this);
         stream.writeFloat(mFloat);
-        ObjectSerializer.writeObject(aContext, mFloatObj, this);
+        aContext.writeObject(mFloatObj, this);
         stream.writeDouble(mDouble);
-        ObjectSerializer.writeObject(aContext, mDoubleObj, this);
-        ObjectSerializer.writeObject(aContext, mString, this);
-        ObjectSerializer.writeObject(aContext, mObject, this);
-        ObjectSerializer.writeObject(aContext, mIntArray, this);
-        ObjectSerializer.writeObject(aContext, m2dArray, this);
-        ObjectSerializer.writeObject(aContext, mObjArray, this);
+        aContext.writeObject(mDoubleObj, this);
+        aContext.writeObject(mString, this);
+        aContext.writeObject(mObject, this);
+        aContext.writeObject(mIntArray, this);
+        aContext.writeObject(m2dArray, this);
+        aContext.writeObject(mObjArray, this);
     }
 
     //----------------------------------------------------------------------

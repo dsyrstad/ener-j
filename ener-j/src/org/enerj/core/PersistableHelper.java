@@ -54,7 +54,7 @@ public class PersistableHelper
         aPersistable.enerj_SetNew(true);
         aPersistable.enerj_SetModified(false);
         aPersistable.enerj_SetLoaded(false);
-        aPersistable.enerj_SetPrivateOID(ObjectServer.NULL_OID);
+        aPersistable.enerj_SetPrivateOID(ObjectSerializer.NULL_OID);
         aPersistable.enerj_SetDatabase(null);
         aPersistable.enerj_SetLockLevel(EnerJTransaction.NO_LOCK);
 

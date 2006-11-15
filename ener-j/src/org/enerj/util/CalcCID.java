@@ -82,9 +82,9 @@ public class CalcCID
                     ((long)(sha1[5] & 0xff) << 40) |
                     ((long)(sha1[6] & 0xff) << 48) |
                     ((long)(sha1[7] & 0xff) << 56);
-        if (cid >= ObjectServer.NULL_CID && cid <= ObjectServer.LAST_SYSTEM_CID) {
+        if (cid >= ObjectSerializer.NULL_CID && cid <= ObjectSerializer.LAST_SYSTEM_CID) {
             // Shift it up to make it a valid user CID.
-            cid += ObjectServer.LAST_SYSTEM_CID;
+            cid += ObjectSerializer.LAST_SYSTEM_CID;
         }
         
         return cid;

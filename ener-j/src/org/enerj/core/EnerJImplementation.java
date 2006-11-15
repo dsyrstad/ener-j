@@ -81,7 +81,7 @@ public class EnerJImplementation implements Implementation
             if (db == null) {
                 EnerJTransaction txn = EnerJTransaction.getCurrentTransaction();
                 if (txn == null) {
-                    return ObjectServer.NULL_OID; // Transient
+                    return ObjectSerializer.NULL_OID; // Transient
                 }
                 
                 db = txn.getDatabase();
@@ -90,7 +90,7 @@ public class EnerJImplementation implements Implementation
             return db.getOID(anObject);
         }
         
-        return ObjectServer.NULL_OID;
+        return ObjectSerializer.NULL_OID;
     }
 
     //----------------------------------------------------------------------

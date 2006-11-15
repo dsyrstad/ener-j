@@ -102,6 +102,8 @@ public class Structure implements Comparable, Cloneable
                 return 1;
             }
             
+            // TODO what if member names don't match, or are out of order?
+            
             Object leftValue = mMemberValues[i];
             Object rightValue = struct.mMemberValues[i];
 
@@ -171,6 +173,7 @@ public class Structure implements Comparable, Cloneable
             return false;
         }
         
+        // TODO what if member names don't match, or are out of order?
         for (int i = 0; i < mMemberValues.length; i++) {
             Object leftValue = mMemberValues[i];
             Object rightValue = struct.mMemberValues[i];

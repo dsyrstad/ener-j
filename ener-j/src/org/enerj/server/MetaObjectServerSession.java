@@ -85,7 +85,7 @@ public interface MetaObjectServerSession extends ObjectServerSession
 
     //----------------------------------------------------------------------
     /**
-     * Removes an object from the extent an any indexes. Does not necessarily cause
+     * Removes an object from the extent and any indexes. Does not necessarily cause
      * it to be garbage collected.
      *
      * @param anOID the OID of the object to be removed.

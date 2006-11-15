@@ -27,7 +27,6 @@ package org.enerj.core;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-import org.enerj.server.ObjectServer;
 import org.odmg.ClassNotPersistenceCapableException;
 import org.odmg.Database;
 import org.odmg.DatabaseClosedException;
@@ -442,7 +441,7 @@ public class EnerJTransaction implements Transaction
             if (persistable.enerj_IsNew()) {
                 // New objects are evicted from the cache and get their OID cleared.
                 mTransactionDatabase.getClientCache().evict( mTransactionDatabase.getOID(persistable) );
-                persistable.enerj_SetPrivateOID(ObjectServer.NULL_OID);
+                persistable.enerj_SetPrivateOID(ObjectSerializer.NULL_OID);
             }
         }
 

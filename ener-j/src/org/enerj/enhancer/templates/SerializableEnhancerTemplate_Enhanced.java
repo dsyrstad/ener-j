@@ -33,13 +33,13 @@ import java.io.Serializable;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
-import org.enerj.core.EnerJDatabase;
+import org.enerj.core.Persister;
 
 /**
  * Class file enhancer template for Ener-J. This is a "top-level" persistable.
  * This class provides a bytecode prototype for developement of the enhancer.
  * This is the class after enhancement. Ignore the _Enhanced extension, it wouldn't normally exist.
- * This is the class stored in the database and loaded on the client via the DatabaseClassLoader.
+ * This is the class stored in the database and loaded on the client via the PersisterClassLoader.
  *
  * @version $Id: SerializableEnhancerTemplate_Enhanced.java,v 1.1 2006/06/06 21:29:36 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
@@ -57,7 +57,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
     // Maybe version should be in the cache?
     transient private long enerj_mVersion;
     transient private long enerj_mOID;
-    transient private EnerJDatabase enerj_mDatabase;
+    transient private Persister enerj_mPersister;
     /** EnerJTransaction lock level: NO_LOCK, READ, UPGRADE, or WRITE */
     transient private int enerj_mLockLevel;
     
@@ -81,16 +81,16 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
     //----------------------------------------------------------------------
 
     //----------------------------------------------------------------------
-    // May be null if Database not assigned yet (it must be New in this case).
-    public final EnerJDatabase enerj_GetDatabase()
+    // May be null if Persister not assigned yet (it must be New in this case).
+    public final Persister enerj_GetPersister()
     {
-        return enerj_mDatabase;
+        return enerj_mPersister;
     }
 
     //----------------------------------------------------------------------
-    public final void enerj_SetDatabase(EnerJDatabase aDatabase)
+    public final void enerj_SetPersister(Persister aPersister)
     {
-        enerj_mDatabase = aDatabase;
+        enerj_mPersister = aPersister;
     }
 
     //----------------------------------------------------------------------
@@ -315,17 +315,17 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
     
 
     //----------------------------------------------------------------------
-    public void enerj_ReadObject(ObjectSerializer.ReadContext aContext) throws IOException
+    public void enerj_ReadObject(ObjectSerializer aContext) throws IOException
     {
-        DataInput stream = aContext.mStream;
+        DataInput stream = aContext.getDataInput();
 
         mByte = stream.readByte();
    }
 
     //----------------------------------------------------------------------
-    public void enerj_WriteObject(ObjectSerializer.WriteContext aContext) throws IOException
+    public void enerj_WriteObject(ObjectSerializer aContext) throws IOException
     {
-        DataOutput stream = aContext.mStream;
+        DataOutput stream = aContext.getDataOutput();
 
         stream.writeByte(mByte);
     }

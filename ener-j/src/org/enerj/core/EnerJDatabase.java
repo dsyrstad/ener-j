@@ -51,7 +51,6 @@ import org.enerj.annotations.SchemaAnnotation;
 import org.enerj.server.DefaultMetaObjectServer;
 import org.enerj.server.MetaObjectServer;
 import org.enerj.server.MetaObjectServerSession;
-import org.enerj.server.ObjectServer;
 import org.enerj.server.PluginHelper;
 import org.enerj.server.SerializedObject;
 import org.enerj.util.ClassUtil;
@@ -267,7 +266,7 @@ public class EnerJDatabase implements Database
     public DatabaseRoot getDatabaseRoot()
     {
         // The following method calls checkBoundTransaction().
-        return (DatabaseRoot)getObjectForOID(ObjectServer.DATABASE_ROOT_OID);
+        return (DatabaseRoot)getObjectForOID(ObjectSerializer.DATABASE_ROOT_OID);
     }
     
     //----------------------------------------------------------------------
@@ -414,13 +413,13 @@ public class EnerJDatabase implements Database
             }
             else {
                 foundAllInCache = false;
-                if (someCIDs == null || someCIDs[i] == ObjectServer.NULL_CID) {
+                if (someCIDs == null || someCIDs[i] == ObjectSerializer.NULL_CID) {
                     oidsToRetrieveCidsFor[i] = someOIDs[i];
                     needToRetrieveCIDs = true;
                 }
                 else {
                     // A CID was supplied
-                    oidsToRetrieveCidsFor[i] = ObjectServer.NULL_OID;
+                    oidsToRetrieveCidsFor[i] = ObjectSerializer.NULL_OID;
                 }
             }
         }
@@ -449,7 +448,7 @@ public class EnerJDatabase implements Database
 
             // Merge CIDs.
             for (int i = 0; i < cids.length; i++) {
-                if (someCIDs[i] == ObjectServer.NULL_CID) {
+                if (someCIDs[i] == ObjectSerializer.NULL_CID) {
                     someCIDs[i] = cids[i];
                 }
             }
@@ -688,7 +687,7 @@ public class EnerJDatabase implements Database
             }
         }
         
-        if (oid == ObjectServer.NULL_OID) {
+        if (oid == ObjectSerializer.NULL_OID) {
             throw new ODMGRuntimeException("OID for object " + aPersistable.getClass() + " is null. CID=" + cid);
         }
 
@@ -833,7 +832,7 @@ public class EnerJDatabase implements Database
         
         byte[] objectBytes = createSerializedImage(aPersistable);
         long oid = getOID(aPersistable);
-        if (oid == ObjectServer.NULL_OID) {
+        if (oid == ObjectSerializer.NULL_OID) {
             throw new org.odmg.ODMGRuntimeException("OID for object " + aPersistable.getClass() + " is null");
         }
         
@@ -852,7 +851,7 @@ public class EnerJDatabase implements Database
         checkBoundTransaction();
         
         long oid = getOID(aPersistable);
-        if (oid == ObjectServer.NULL_OID) {
+        if (oid == ObjectSerializer.NULL_OID) {
             throw new org.odmg.ODMGRuntimeException("OID for object " + aPersistable.getClass() + " is null");
         }
         
@@ -873,7 +872,7 @@ public class EnerJDatabase implements Database
         checkBoundTransaction();
         
         long oid = getOID(aPersistable);
-        if (oid == ObjectServer.NULL_OID) {
+        if (oid == ObjectSerializer.NULL_OID) {
             throw new org.odmg.ODMGRuntimeException("OID for object " + aPersistable.getClass() + " is null");
         }
         
@@ -931,7 +930,7 @@ public class EnerJDatabase implements Database
     public long getOID(Object anObject)
     {
         if ( !(anObject instanceof Persistable)) {
-            return ObjectServer.NULL_OID;
+            return ObjectSerializer.NULL_OID;
         }
         
         Persistable persistable = (Persistable)anObject;
@@ -953,7 +952,7 @@ public class EnerJDatabase implements Database
         }
         
         long oid = persistable.enerj_GetPrivateOID();
-        if (oid == ObjectServer.NULL_OID && persistable.enerj_IsNew() && mBoundToTransaction != null) {
+        if (oid == ObjectSerializer.NULL_OID && persistable.enerj_IsNew() && mBoundToTransaction != null) {
             oid = addNewPersistable(persistable);
         }
         
@@ -1010,6 +1009,7 @@ public class EnerJDatabase implements Database
      * Adds a new Persistable to the database (locally).
      * The Persistable's database and new OID are set. The EnerJTransaction's
      * modified list is updated. The Persistable is added to the local database cache.
+     * The database schema is updated if aPersistable's class is not known to the database.
      * 
      *
      * @param aPersistable the new Persistable.
@@ -1058,13 +1058,13 @@ public class EnerJDatabase implements Database
         Persistable persistable = (Persistable)aRoot;
 
         persistable.enerj_SetDatabase(this);
-        persistable.enerj_SetPrivateOID(ObjectServer.DATABASE_ROOT_OID);
+        persistable.enerj_SetPrivateOID(ObjectSerializer.DATABASE_ROOT_OID);
 
         // Add it to Transaction modified list. Must be done _after_ OID is set.
         mBoundToTransaction.addToModifiedList(persistable, false);
         
         // Cache it
-        mClientCache.add(ObjectServer.DATABASE_ROOT_OID, persistable);
+        mClientCache.add(ObjectSerializer.DATABASE_ROOT_OID, persistable);
     }
 
     //----------------------------------------------------------------------
@@ -1449,8 +1449,6 @@ public class EnerJDatabase implements Database
         // For now... Just remove from extent. Not quite the correct semantics, but it'll do.
         mMetaObjectServerSession.removeFromExtent( getOID(persistable) );
     }
-    
-    //----------------------------------------------------------------------
     
     //--------------------------------------------------------------------------------
     /**

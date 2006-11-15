@@ -56,19 +56,6 @@ package org.enerj.server;
  */
 public interface ObjectServer
 {
-    /** System OID: the null OID. */
-    public static final long NULL_OID = 0L;
-    /** System OID: the DatabaseRoot OID. */
-    public static final long DATABASE_ROOT_OID = 1L;
-    /** System CID: the DatabaseRoot CID. */
-    public static final long DATABASE_ROOT_CID = 1L;
-    /** First available user OID. */
-    public static final long FIRST_USER_OID = 1000L;
-    
-    /** Null Class Id (CID). */
-    public static final long NULL_CID = 0L;
-    /** Last available system CID. CIDs from 1 to this value are reserved for pre-enhanced system classes. */
-    public static final long LAST_SYSTEM_CID = 10000L;
 
 }
 

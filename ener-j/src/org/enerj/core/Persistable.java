@@ -82,22 +82,23 @@ public interface Persistable
 
     //----------------------------------------------------------------------
     /**
-     * Get the database associated with this object.
+     * Get the Persister associated with this object.
      * This method is generated only on the least-derived Persistable super-class.
      *
-     * @return the EnerJDatabase, or null if the object is not currently associated with 
-     *  a database.
+     * @return the Persister, or null if the object is not currently associated with 
+     *  a Persister.
      */
-    public EnerJDatabase enerj_GetDatabase();
+    public Persister enerj_GetPersister();
 
     //----------------------------------------------------------------------
     /**
-     * Set the Database associated with this object.
+     * Set the Persister associated with this object.
      * This method is generated only on the least-derived Persistable super-class.
      *
-     * @param aDatabase the EnerJDatabase.
+     * @param aPersister the Persister, or null if the object is not currently associated with 
+     *  a Persister.
      */
-    public void enerj_SetDatabase(EnerJDatabase aDatabase);
+    public void enerj_SetPersister(Persister aPersister);
 
     //----------------------------------------------------------------------
     /**
@@ -202,22 +203,22 @@ public interface Persistable
      * Read the object's persistent field values from the specified read context.
      * The object's in-memory state is updated.
      *
-     * @param aContext an ObjectSerializer.ReadContext.
+     * @param aContext an ObjectSerializer.
      *
      * @throws IOException if an error occurs.
      */
-    public void enerj_ReadObject(ObjectSerializer.ReadContext aContext) throws IOException;
+    public void enerj_ReadObject(ObjectSerializer aContext) throws IOException;
 
     //----------------------------------------------------------------------
     /**
      * Write the object's persistent field values to the specified write context.
      * The object's in-memory state is not changed.
      *
-     * @param aContext an ObjectSerializer.WriteContext.
+     * @param aContext an ObjectSerializer.
      *
      * @throws IOException if an error occurs.
      */
-    public void enerj_WriteObject(ObjectSerializer.WriteContext aContext) throws IOException;
+    public void enerj_WriteObject(ObjectSerializer aContext) throws IOException;
 
     //----------------------------------------------------------------------
     /**
