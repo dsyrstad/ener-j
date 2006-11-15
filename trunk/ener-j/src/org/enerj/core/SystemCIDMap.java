@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.enerj.server.ObjectServer;
 
 /**
  * Provides a mapping of system persistable class names and corresponding CIDs.
@@ -79,7 +78,7 @@ public class SystemCIDMap
     {
         Long cid = (Long)sNameToCIDMap.get(aClassName);
         if (cid == null) {
-            return ObjectServer.NULL_CID;
+            return ObjectSerializer.NULL_CID;
         }
         
         return cid.longValue();
@@ -109,7 +108,7 @@ public class SystemCIDMap
      */
     public static boolean isSystemCID(long aCID)
     {
-        return aCID > 0 && aCID < ObjectServer.LAST_SYSTEM_CID;
+        return aCID > 0 && aCID < ObjectSerializer.LAST_SYSTEM_CID;
     }
 
     //----------------------------------------------------------------------

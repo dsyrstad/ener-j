@@ -44,6 +44,7 @@ import org.odmg.TransactionNotInProgressException;
 import org.enerj.core.DatabaseRoot;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJTransaction;
+import org.enerj.core.ObjectSerializer;
 
 /**
  * In-memory ObjectServer.
@@ -222,7 +223,7 @@ public class MemoryObjectServer implements ObjectServer
      */
     private static final class MemoryDB implements Serializable
     {
-        private long mNextOID = ObjectServer.FIRST_USER_OID;
+        private long mNextOID = ObjectSerializer.FIRST_USER_OID;
         private String mDatabaseName;
         // HashMap of MemoryDBEntry. Key is Long(OID), value is MemoryDBEntry.
         private Map mEntryMap = Collections.synchronizedMap( new HashMap(5000) );
@@ -470,7 +471,7 @@ public class MemoryObjectServer implements ObjectServer
             
             long[] cids = new long[someOIDs.length];
             for (int i = 0; i < someOIDs.length; i++) {
-                if (someOIDs[i] != ObjectServer.NULL_OID) {
+                if (someOIDs[i] != ObjectSerializer.NULL_OID) {
                     MemoryDBEntry entry = mDatabase.getEntry(someOIDs[i]);
                     if (entry != null) {
                         cids[i] = entry.getObjectCID();

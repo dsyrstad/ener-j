@@ -37,6 +37,7 @@ import java.util.Properties;
 import org.enerj.core.DatabaseRoot;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJTransaction;
+import org.enerj.core.ObjectSerializer;
 import org.enerj.server.logentry.BeginTransactionLogEntry;
 import org.enerj.server.logentry.CheckpointTransactionLogEntry;
 import org.enerj.server.logentry.CommitTransactionLogEntry;
@@ -738,7 +739,7 @@ public class PagedObjectServer implements ObjectServer
             long[] cids = new long[someOIDs.length];
             for (int i = 0; i < someOIDs.length; i++) {
                 long anOID = someOIDs[i];
-                if (anOID != ObjectServer.NULL_OID) {
+                if (anOID != ObjectSerializer.NULL_OID) {
                     // Check the update cache first and get CID from the store request, if there is one.
                     PagedStore.StoreObjectRequest storeRequest = mObjectServer.mUpdateCache.lookupStoreRequest(anOID);
                     if (storeRequest == null) {

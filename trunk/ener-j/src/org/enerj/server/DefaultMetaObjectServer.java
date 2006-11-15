@@ -40,6 +40,7 @@ import org.enerj.core.DatabaseRoot;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJTransaction;
 import org.enerj.core.LogicalClassSchema;
+import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Schema;
 import org.enerj.core.SparseBitSet;
 import org.enerj.core.SystemCIDMap;
@@ -337,7 +338,7 @@ public class DefaultMetaObjectServer implements MetaObjectServer
         //----------------------------------------------------------------------
         public void bind(long anOID, String aName) throws ObjectNameNotUniqueException
         {
-            DatabaseRoot root = (DatabaseRoot)getClientDatabase().getObjectForOID(DATABASE_ROOT_OID);
+            DatabaseRoot root = (DatabaseRoot)getClientDatabase().getObjectForOID(ObjectSerializer.DATABASE_ROOT_OID);
             // TODO this is nasty because we read lock and write lock the bindery here. this needs better concurrency
             Map bindery = root.getBindery();
             if (bindery.containsKey(aName)) {
@@ -351,7 +352,7 @@ public class DefaultMetaObjectServer implements MetaObjectServer
         public long lookup(String aName) throws ObjectNameNotFoundException
         {
             EnerJDatabase db = getClientDatabase();
-            DatabaseRoot root = (DatabaseRoot)db.getObjectForOID(DATABASE_ROOT_OID);
+            DatabaseRoot root = (DatabaseRoot)db.getObjectForOID(ObjectSerializer.DATABASE_ROOT_OID);
             // TODO this is nasty because we read lock and write lock the bindery here. this needs better concurrency
             Map bindery = root.getBindery();
             Long oid = (Long)bindery.get(aName);
@@ -366,7 +367,7 @@ public class DefaultMetaObjectServer implements MetaObjectServer
         public void unbind(String aName) throws ObjectNameNotFoundException
         {
             EnerJDatabase db = getClientDatabase();
-            DatabaseRoot root = (DatabaseRoot)db.getObjectForOID(DATABASE_ROOT_OID);
+            DatabaseRoot root = (DatabaseRoot)db.getObjectForOID(ObjectSerializer.DATABASE_ROOT_OID);
             // TODO this is nasty because we read lock and write lock the bindery here. this needs better concurrency
             Map bindery = root.getBindery();
             if (!bindery.containsKey(aName)) {
@@ -380,7 +381,7 @@ public class DefaultMetaObjectServer implements MetaObjectServer
         public void removeFromExtent(long anOID) throws ObjectNotPersistentException
         {
             EnerJDatabase db = getClientDatabase();
-            DatabaseRoot root = (DatabaseRoot)db.getObjectForOID(DATABASE_ROOT_OID);
+            DatabaseRoot root = (DatabaseRoot)db.getObjectForOID(ObjectSerializer.DATABASE_ROOT_OID);
             ClassVersionSchema classVersion;
             try {
                 long cid = getCIDsForOIDs(new long[] { anOID })[0];

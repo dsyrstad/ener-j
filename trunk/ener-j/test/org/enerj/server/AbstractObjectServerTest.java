@@ -28,6 +28,8 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Properties;
 
+import org.enerj.core.ObjectSerializer;
+
 import junit.framework.TestCase;
 
 /**
@@ -98,9 +100,9 @@ public abstract class AbstractObjectServerTest extends TestCase
         assertTrue( someOIDs.length >= 1 );
         long[] cids = mSession.getCIDsForOIDs(someOIDs);
         for (int i = 0; i < someOIDs.length; i++) {
-            assertTrue( someOIDs[i] > ObjectServer.NULL_OID );
+            assertTrue( someOIDs[i] > ObjectSerializer.NULL_OID );
             
-            assertTrue( cids[i] == ObjectServer.NULL_CID );
+            assertTrue( cids[i] == ObjectSerializer.NULL_CID );
         }
         
         // Verify no duplicates within the block

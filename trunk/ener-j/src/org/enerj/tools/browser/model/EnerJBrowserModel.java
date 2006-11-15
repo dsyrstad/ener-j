@@ -43,13 +43,13 @@ import org.odmg.ODMGException;
 import org.odmg.QueryException;
 import org.enerj.core.Extent;
 import org.enerj.core.LogicalClassSchema;
+import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
 import org.enerj.core.Schema;
 import org.enerj.core.Structure;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJImplementation;
 import org.enerj.core.EnerJOQLQuery;
-import org.enerj.server.ObjectServer;
 import org.enerj.util.ClassUtil;
 
 import com.vscorp.ui.model.CollectionObjectSource;
@@ -130,7 +130,7 @@ public class EnerJBrowserModel
         String baseClassName = ClassUtil.getBaseClassName( anObject.getClass() );
         if (anObject instanceof Persistable) {
             long oid = EnerJImplementation.getEnerJObjectId(anObject);
-            if (oid != ObjectServer.NULL_OID) {
+            if (oid != ObjectSerializer.NULL_OID) {
                 return baseClassName + ':' + oid;
             }
         }

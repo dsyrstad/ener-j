@@ -24,6 +24,7 @@
 
 package org.enerj.server;
 
+import org.enerj.core.ObjectSerializer;
 import org.odmg.LockNotGrantedException;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
@@ -95,8 +96,8 @@ public interface ObjectServerSession
      * A READ lock is automatically obtained if it doesn't exist already.
      *
      * @param someOIDs an array of OIDs to get CIDs for. Note that if any element
-     *  of this array is {@link ObjectServer#NULL_OID}, the corresponding CID will
-     *  be {@link ObjectServer#NULL_CID}.
+     *  of this array is {@link ObjectSerializer#NULL_OID}, the corresponding CID will
+     *  be {@link ObjectSerializer#NULL_CID}.
      *
      * @return the class Ids. A null CID will be returned if an OID doesn't exist.
      *

@@ -54,7 +54,6 @@ import org.enerj.sco.JavaUtilTreeMapSCO;
 import org.enerj.sco.JavaUtilTreeSetSCO;
 import org.enerj.sco.JavaUtilVectorSCO;
 import org.enerj.sco.SCOTracker;
-import org.enerj.server.ObjectServer;
 
 /**
  * Helper class for Persistable.enerj_ReadObject and enerj_WriteObject. 
@@ -65,6 +64,19 @@ import org.enerj.server.ObjectServer;
  */
 public class ObjectSerializer
 {
+    /** System OID: the null OID. */
+    public static final long NULL_OID = 0L;
+    /** First available user OID. */
+    public static final long FIRST_USER_OID = 1000L;
+    /** Null Class Id (CID). */
+    public static final long NULL_CID = 0L;
+    /** Last available system CID. CIDs from 1 to this value are reserved for pre-enhanced system classes. */
+    public static final long LAST_SYSTEM_CID = 10000L;
+    /** System CID: the DatabaseRoot CID. */
+    public static final long DATABASE_ROOT_CID = 1L;
+    /** System OID: the DatabaseRoot OID. */
+    public static final long DATABASE_ROOT_OID = 1L;
+
     // Type ID markers (a psuedo-class ID). Mainly for SCOs.
     // ! ! ! NOTE ! ! ! - The assigned numbers must NEVER change!
     private static final byte sNull_TypeId                        =   0;
@@ -197,34 +209,87 @@ public class ObjectSerializer
         }
     }
     
+    private ReadContext mReadContext;
+    private WriteContext mWriteContext;
+    private Persister mPersister;
+    
+    //----------------------------------------------------------------------
+    /**
+     * Construct a new ObjectSerializer for input.
+     *
+     * @param aDataInput the DataInput that provides the stream to read from.
+     * @param aPersister a Persister context to use for resolving objects.
+     */
+    public ObjectSerializer(DataInput aDataInput, Persister aPersister)
+    {
+        mReadContext = new ReadContext(aDataInput, this);
+        mPersister = aPersister;
+    }
+    
+    //----------------------------------------------------------------------
+    /**
+     * Construct a new ObjectSerializer for output.
+     *
+     * @param aDataInput the DataInput that provides the stream to read from.
+     * @param aPersister a Persister context to use for resolving objects.
+     */
+    public ObjectSerializer(DataOutput aDataOutput, Persister aPersister)
+    {
+        mWriteContext = new WriteContext(aDataOutput, this);
+        mPersister = aPersister;
+    }
+    
+    //----------------------------------------------------------------------
+    /**
+     * Gets the DataInput stream associated with this serializer.
+     * 
+     * @return the DataInput stream associated with this serializer, or null if this serializer
+     *  is not configured for input.
+     */
+    public DataInput getDataInput()
+    {
+        return (mReadContext == null ? null : mReadContext.mStream);
+    }
+    
+    //----------------------------------------------------------------------
+    /**
+     * Gets the DataOutput stream associated with this serializer.
+     * 
+     * @return the DataOutput stream associated with this serializer, or null if this serializer
+     *  is not configured for output.
+     */
+    public DataOutput getDataOutput()
+    {
+        return (mWriteContext == null ? null : mWriteContext.mStream);
+    }
+    
     //----------------------------------------------------------------------
     /**
      * Writes a Object to a stream.
      *
-     * @param aContext a WriteContext object.
      * @param aValue the value to be written (either a SCO or FCO).
      * @param aPersistable the calling Persistable object (used for a Database context). This
      *  is the same as aValue if aValue is a FCO. Otherwise it is the owner FCO.
      *
      * @throws IOException if an error occurs
      */
-    public static final void writeObject(WriteContext aContext, Object aValue, Persistable aPersistable) throws IOException
+    public void writeObject(Object aValue, Persistable aPersistable) throws IOException
     {
         if (aValue == null) {
-            aContext.mStream.writeByte(sNull_TypeId);
+            mWriteContext.mStream.writeByte(sNull_TypeId);
         }
         else if (aValue instanceof Persistable) {
-            aContext.mStream.writeByte(sFCO_TypeId);
-            writeFCO(aContext, aValue);
+            mWriteContext.mStream.writeByte(sFCO_TypeId);
+            writeFCO(aValue);
         }
         else {
             // Is it a SCO
             // Have we written it already?
-            Integer scoId = (Integer)aContext.getSCOMap().get(aValue);
+            Integer scoId = (Integer)mWriteContext.getSCOMap().get(aValue);
             if (scoId != null) {
                 // SCO already been written, only write it's Id this time.
-                aContext.mStream.writeByte(sSharedSCO_TypeId);
-                aContext.mStream.writeInt( scoId.intValue() );
+                mWriteContext.mStream.writeByte(sSharedSCO_TypeId);
+                mWriteContext.mStream.writeInt( scoId.intValue() );
                 return;
             }
 
@@ -243,10 +308,10 @@ public class ObjectSerializer
                 }
             }
 
-            aContext.mStream.writeByte( serializer.getTypeId() );
-            serializer.write(aContext, aValue, aPersistable);
+            mWriteContext.mStream.writeByte( serializer.getTypeId() );
+            serializer.write(mWriteContext, aValue, aPersistable);
             // Add this SCO to the local context
-            aContext.getSCOMap().put(aValue, new Integer( aContext.getSCOMap().size() ) );
+            mWriteContext.getSCOMap().put(aValue, new Integer( mWriteContext.getSCOMap().size() ) );
         }
     }
 
@@ -254,27 +319,26 @@ public class ObjectSerializer
     /**
      * Reads a Object from a stream.
      *
-     * @param aContext a ReadContext object.
      * @param aPersistable the calling Persistable object (used for a Database context).
      *
      * @return the value (either a SCO or FCO).
      *
      * @throws IOException if an error occurs
      */
-    public static final Object readObject(ReadContext aContext, Persistable aPersistable) throws IOException
+    public Object readObject(Persistable aPersistable) throws IOException
     {
-        byte typeId = aContext.mStream.readByte();
+        byte typeId = mReadContext.mStream.readByte();
         switch (typeId) {
         case sNull_TypeId:
             return null;
 
         case sFCO_TypeId:
-            return readFCO(aContext, aPersistable);
+            return readFCO(aPersistable);
             
         case sSharedSCO_TypeId:
-            int scoId = aContext.mStream.readInt();
+            int scoId = mReadContext.mStream.readInt();
             try {
-                return aContext.getSCOArray().get(scoId);
+                return mReadContext.getSCOArray().get(scoId);
             }
             catch (IndexOutOfBoundsException e) {
                 throw new org.odmg.ODMGRuntimeException("Internal: SCO Id " + scoId + " has not been read from the stream yet");
@@ -286,9 +350,9 @@ public class ObjectSerializer
                 throw new org.odmg.ODMGRuntimeException("Internal: unknown type id=" + typeId);
             }
             
-            Object obj = serializer.read(aContext, aPersistable);
+            Object obj = serializer.read(mReadContext, aPersistable);
             // Add SCO to Id array
-            aContext.getSCOArray().add(obj);
+            mReadContext.getSCOArray().add(obj);
             return obj;
         }
         
@@ -299,38 +363,42 @@ public class ObjectSerializer
     /**
      * Writes a FCO to a stream. 
      *
-     * @param aContext a WriteContext object.
      * @param aValue the value to be written (a FCO).
      *
      * @throws IOException if an error occurs
      */
-    private static final void writeFCO(WriteContext aContext, Object aValue) throws IOException
+    private void writeFCO(Object aValue) throws IOException
     {
-        aContext.mStream.writeLong( (aValue == null ? ObjectServer.NULL_OID : EnerJImplementation.getEnerJObjectId(aValue)) );
+        long oid = ObjectSerializer.NULL_OID;
+        if (aValue != null) {
+            Persistable persistable = (Persistable)aValue;
+            oid = persistable.enerj_GetPersister().getOID(persistable);
+        }
+
+        mWriteContext.mStream.writeLong(oid);
     }
 
     //----------------------------------------------------------------------
     /**
      * Reads a FCO from a stream.
      *
-     * @param aContext a ReadContext object.
      * @param aPersistable the calling Persistable object (used for a Database context).
      *
      * @return the value.
      *
      * @throws IOException if an error occurs
      */
-    private static final Object readFCO(ReadContext aContext, Persistable aPersistable) throws IOException
+    private Object readFCO(Persistable aPersistable) throws IOException
     {
-       long oid = aContext.mStream.readLong();
-        if (oid == ObjectServer.NULL_OID) {
+       long oid = mReadContext.mStream.readLong();
+        if (oid == ObjectSerializer.NULL_OID) {
             // Because of the type ID, we shouldn't normally get a NULL_OID unless
             // the OID was cleared in the database. If we get a sNull_TypeID, we never
             // get to this method.
             return null;
         }
         else {
-            return aPersistable.enerj_GetDatabase().getObjectForOID(oid);
+            return aPersistable.enerj_GetPersister().getObjectForOID(oid);
         }
     }
 
@@ -338,19 +406,17 @@ public class ObjectSerializer
     /**
      * Writes all of the Objects in a Collection to a stream.
      *
-     * @param aContext a WriteContext object.
      * @param aCollection the Collection to write.
      * @param aPersistable the owner Persistable object.
      *
      * @throws IOException if an error occurs.
      */
-    private static final void writeCollection(WriteContext aContext, Collection aCollection, 
-            Persistable aPersistable) throws IOException
+    private void writeCollection(Collection aCollection, Persistable aPersistable) throws IOException
     {
-        aContext.mStream.writeInt( aCollection.size() );
+        mWriteContext.mStream.writeInt( aCollection.size() );
         Iterator iterator = aCollection.iterator();
         while (iterator.hasNext()) {
-            writeObject(aContext, iterator.next(), aPersistable);
+            writeObject(iterator.next(), aPersistable);
         }
     }
     
@@ -361,18 +427,16 @@ public class ObjectSerializer
      * read from aContext.mStream. The size value may be necessary for proper construction
      * of aCollection.
      *
-     * @param aContext a ReadContext object.
      * @param aCollection the Collection to load.
      * @param anObjectCount the number of objects to read.
      * @param aPersistable the owner Persistable object.
      *
      * @throws IOException if an error occurs.
      */
-    private static final void readCollection(ReadContext aContext, Collection aCollection, 
-            int anObjectCount, Persistable aPersistable) throws IOException
+    private void readCollection(Collection aCollection, int anObjectCount, Persistable aPersistable) throws IOException
     {
         for (int i = 0; i < anObjectCount; i++) {
-            aCollection.add( readObject(aContext, aPersistable) );
+            aCollection.add( readObject(aPersistable) );
         }
     }
     
@@ -380,21 +444,19 @@ public class ObjectSerializer
     /**
      * Writes all of the Objects in a Map to a stream.
      *
-     * @param aContext a WriteContext object.
      * @param aMap the Map to write.
      * @param aPersistable the owner Persistable object.
      *
      * @throws IOException if an error occurs.
      */
-    private static final void writeMap(WriteContext aContext, Map aMap, 
-            Persistable aPersistable) throws IOException
+    private void writeMap(Map aMap, Persistable aPersistable) throws IOException
     {
-        aContext.mStream.writeInt( aMap.size() );
+        mWriteContext.mStream.writeInt( aMap.size() );
         Iterator iterator = aMap.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry entry = (Map.Entry)iterator.next();
-            writeObject(aContext, entry.getKey(), aPersistable);
-            writeObject(aContext, entry.getValue(), aPersistable);
+            writeObject(entry.getKey(), aPersistable);
+            writeObject(entry.getValue(), aPersistable);
         }
     }
     
@@ -405,19 +467,17 @@ public class ObjectSerializer
      * read from aContext.mStream. The size value may be necessary for proper construction
      * of aMap.
      *
-     * @param aContext a ReadContext object.
      * @param aMap the Map to load.
      * @param anObjectCount the number of objects to read.
      * @param aPersistable the owner Persistable object.
      *
      * @throws IOException if an error occurs.
      */
-    private static final void readMap(ReadContext aContext, Map aMap, 
-            int anObjectCount, Persistable aPersistable) throws IOException
+    private void readMap(Map aMap, int anObjectCount, Persistable aPersistable) throws IOException
     {
         for (int i = 0; i < anObjectCount; i++) {
-            Object key = readObject(aContext, aPersistable);
-            Object value = readObject(aContext, aPersistable);
+            Object key = readObject(aPersistable);
+            Object value = readObject(aPersistable);
             aMap.put(key, value);
         }
     }
@@ -430,10 +490,11 @@ public class ObjectSerializer
     /**
      * Context used for reading objects.
      */
-    public static final class ReadContext
+    private static final class ReadContext
     {
         /** DataInput stream for reading. */
         public DataInput mStream;
+        public ObjectSerializer mSerializer;
 
         /** Array of SCOs already read from the stream. Null if zero SCOs
          * have been read. Array is ordered by the SCO Id.
@@ -441,9 +502,10 @@ public class ObjectSerializer
         private ArrayList mSCOArray = null;
         
         //----------------------------------------------------------------------
-        public ReadContext(DataInput aStream) 
+        public ReadContext(DataInput aStream, ObjectSerializer aSerializer)
         {
             mStream = aStream;
+            mSerializer = aSerializer;
         }
         
         //----------------------------------------------------------------------
@@ -473,10 +535,11 @@ public class ObjectSerializer
     /**
      * Context used for writing objects.
      */
-    public static final class WriteContext
+    private static final class WriteContext
     {
         /** DataOutput stream for writing. */
         public DataOutput mStream;
+        public ObjectSerializer mSerializer;
 
         /** IdentityHashMap of SCOs already written from the stream. Null if zero SCOs
          * have been written. Key is the SCO object, value is the SCO Id as an Integer.
@@ -484,9 +547,10 @@ public class ObjectSerializer
         private IdentityHashMap mSCOMap = null;
         
         //----------------------------------------------------------------------
-        public WriteContext(DataOutput aStream)
+        public WriteContext(DataOutput aStream, ObjectSerializer aSerializer)
         {
             mStream = aStream;
+            mSerializer = aSerializer;
         }
         
         //----------------------------------------------------------------------
@@ -1015,7 +1079,7 @@ public class ObjectSerializer
             Object[] aValue = (Object[])anObject;
             aContext.mStream.writeInt(aValue.length);
             for (int i = 0; i < aValue.length; i++) {
-                writeObject(aContext, aValue[i], anOwner);
+                aContext.mSerializer.writeObject(aValue[i], anOwner);
             }
         }
 
@@ -1034,7 +1098,7 @@ public class ObjectSerializer
             int len = aContext.mStream.readInt();
             Object[] array = (Object[])Array.newInstance(componentClass, len);
             for (int i = 0; i < len; i++) {
-                array[i] = readObject(aContext, anOwner);
+                array[i] = aContext.mSerializer.readObject(anOwner);
             }
 
             return array;
@@ -1836,7 +1900,7 @@ public class ObjectSerializer
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.ArrayList aValue = (java.util.ArrayList)anObject;
-            writeCollection(aContext, aValue, anOwner);
+            aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -1845,7 +1909,7 @@ public class ObjectSerializer
             int size = aContext.mStream.readInt();
             // Set the owner AFTER reading the collection to prevent the owner from being marked modified.
             Collection collection = new JavaUtilArrayListSCO(size, null);
-            readCollection(aContext, collection, size, anOwner);
+            aContext.mSerializer.readCollection(collection, size, anOwner);
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
         }
@@ -1883,7 +1947,7 @@ public class ObjectSerializer
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.LinkedList aValue = (java.util.LinkedList)anObject;
-            writeCollection(aContext, aValue, anOwner);
+            aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -1891,7 +1955,7 @@ public class ObjectSerializer
         {
             int size = aContext.mStream.readInt();
             Collection collection = new JavaUtilLinkedListSCO(null);
-            readCollection(aContext, collection, size, anOwner);
+            aContext.mSerializer.readCollection(collection, size, anOwner);
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
         }
@@ -1937,7 +2001,7 @@ public class ObjectSerializer
                 aContext.mStream.writeUTF( comparator.getClass().getName() );
             }
             
-            writeCollection(aContext, aValue, anOwner);
+            aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -1956,7 +2020,7 @@ public class ObjectSerializer
             
             int size = aContext.mStream.readInt();
             Collection collection = new JavaUtilTreeSetSCO(comparator, null);
-            readCollection(aContext, collection, size, anOwner);
+            aContext.mSerializer.readCollection(collection, size, anOwner);
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
         }
@@ -1994,7 +2058,7 @@ public class ObjectSerializer
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.Vector aValue = (java.util.Vector)anObject;
-            writeCollection(aContext, aValue, anOwner);
+            aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -2002,7 +2066,7 @@ public class ObjectSerializer
         {
             int size = aContext.mStream.readInt();
             Collection collection = new JavaUtilVectorSCO(size, null);
-            readCollection(aContext, collection, size, anOwner);
+            aContext.mSerializer.readCollection(collection, size, anOwner);
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
         }
@@ -2040,7 +2104,7 @@ public class ObjectSerializer
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.Stack aValue = (java.util.Stack)anObject;
-            writeCollection(aContext, aValue, anOwner);
+            aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -2048,7 +2112,7 @@ public class ObjectSerializer
         {
             int size = aContext.mStream.readInt();
             Collection collection = new JavaUtilStackSCO(null);
-            readCollection(aContext, collection, size, anOwner);
+            aContext.mSerializer.readCollection(collection, size, anOwner);
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
         }
@@ -2086,7 +2150,7 @@ public class ObjectSerializer
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.HashSet aValue = (java.util.HashSet)anObject;
-            writeCollection(aContext, aValue, anOwner);
+            aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -2094,7 +2158,7 @@ public class ObjectSerializer
         {
             int size = aContext.mStream.readInt();
             Collection collection = new JavaUtilHashSetSCO(size + (size / 3), null);
-            readCollection(aContext, collection, size, anOwner);
+            aContext.mSerializer.readCollection(collection, size, anOwner);
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
         }
@@ -2132,7 +2196,7 @@ public class ObjectSerializer
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.LinkedHashSet aValue = (java.util.LinkedHashSet)anObject;
-            writeCollection(aContext, aValue, anOwner);
+            aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -2140,7 +2204,7 @@ public class ObjectSerializer
         {
             int size = aContext.mStream.readInt();
             Collection collection = new JavaUtilLinkedHashSetSCO(size + (size / 3), null);
-            readCollection(aContext, collection, size, anOwner);
+            aContext.mSerializer.readCollection(collection, size, anOwner);
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
         }
@@ -2178,7 +2242,7 @@ public class ObjectSerializer
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.HashMap aValue = (java.util.HashMap)anObject;
-            writeMap(aContext, aValue, anOwner);
+            aContext.mSerializer.writeMap(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -2186,7 +2250,7 @@ public class ObjectSerializer
         {
             int size = aContext.mStream.readInt();
             Map map = new JavaUtilHashMapSCO(size + (size / 3), null);
-            readMap(aContext, map, size, anOwner);
+            aContext.mSerializer.readMap(map, size, anOwner);
             ((SCOTracker)map).setOwnerFCO(anOwner);
             return map;
         }
@@ -2224,7 +2288,7 @@ public class ObjectSerializer
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.Hashtable aValue = (java.util.Hashtable)anObject;
-            writeMap(aContext, aValue, anOwner);
+            aContext.mSerializer.writeMap(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -2232,7 +2296,7 @@ public class ObjectSerializer
         {
             int size = aContext.mStream.readInt();
             Map map = new JavaUtilHashtableSCO(size + (size / 3), null);
-            readMap(aContext, map, size, anOwner);
+            aContext.mSerializer.readMap(map, size, anOwner);
             ((SCOTracker)map).setOwnerFCO(anOwner);
             return map;
         }
@@ -2270,7 +2334,7 @@ public class ObjectSerializer
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.LinkedHashMap aValue = (java.util.LinkedHashMap)anObject;
-            writeMap(aContext, aValue, anOwner);
+            aContext.mSerializer.writeMap(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -2278,7 +2342,7 @@ public class ObjectSerializer
         {
             int size = aContext.mStream.readInt();
             Map map = new JavaUtilLinkedHashMapSCO(size + (size / 3), null);
-            readMap(aContext, map, size, anOwner);
+            aContext.mSerializer.readMap(map, size, anOwner);
             ((SCOTracker)map).setOwnerFCO(anOwner);
             return map;
         }
@@ -2316,7 +2380,7 @@ public class ObjectSerializer
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.Properties aValue = (java.util.Properties)anObject;
-            writeMap(aContext, aValue, anOwner);
+            aContext.mSerializer.writeMap(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -2324,7 +2388,7 @@ public class ObjectSerializer
         {
             int size = aContext.mStream.readInt();
             Map map = new JavaUtilPropertiesSCO(null);
-            readMap(aContext, map, size, anOwner);
+            aContext.mSerializer.readMap(map, size, anOwner);
             ((SCOTracker)map).setOwnerFCO(anOwner);
             return map;
         }
@@ -2370,7 +2434,7 @@ public class ObjectSerializer
                 aContext.mStream.writeUTF( comparator.getClass().getName() );
             }
             
-            writeMap(aContext, aValue, anOwner);
+            aContext.mSerializer.writeMap(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -2389,7 +2453,7 @@ public class ObjectSerializer
 
             int size = aContext.mStream.readInt();
             Map map = new JavaUtilTreeMapSCO(comparator, anOwner);
-            readMap(aContext, map, size, null);
+            aContext.mSerializer.readMap(map, size, null);
             ((SCOTracker)map).setOwnerFCO(anOwner);
             return map;
         }
@@ -2427,7 +2491,7 @@ public class ObjectSerializer
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.IdentityHashMap aValue = (java.util.IdentityHashMap)anObject;
-            writeMap(aContext, aValue, anOwner);
+            aContext.mSerializer.writeMap(aValue, anOwner);
         }
 
         //----------------------------------------------------------------------
@@ -2435,7 +2499,7 @@ public class ObjectSerializer
         {
             int size = aContext.mStream.readInt();
             Map map = new JavaUtilIdentityHashMapSCO(size + (size / 3), null);
-            readMap(aContext, map, size, anOwner);
+            aContext.mSerializer.readMap(map, size, anOwner);
             ((SCOTracker)map).setOwnerFCO(anOwner);
             return map;
         }
