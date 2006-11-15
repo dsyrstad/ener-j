@@ -169,4 +169,17 @@ class NoOpClientCache implements ClientCache
     {
         return (List<Persistable>)Collections.EMPTY_LIST;
     }
+
+
+    
+    //--------------------------------------------------------------------------------
+    /** 
+     * 
+     * {@inheritDoc}
+     * @see org.enerj.core.ClientCache#clearPrefetches()
+     */
+    public void clearPrefetches()
+    {
+    }
+    
 }

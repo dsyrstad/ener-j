@@ -457,6 +457,7 @@ public class EnerJTransaction implements Transaction
             mTransactionDatabase.getClientCache().hollowObjects();
         }
         
+        mTransactionDatabase.getClientCache().clearPrefetches();
         mTransactionDatabase.getClientCache().evictAll();
         closeCurrentTransaction();
     }
@@ -537,6 +538,7 @@ public class EnerJTransaction implements Transaction
                 mTransactionDatabase.getClientCache().hollowObjects();
             }
 
+            mTransactionDatabase.getClientCache().clearPrefetches();
             mTransactionDatabase.getMetaObjectServerSession().commitTransaction();
         }
         finally {

@@ -156,9 +156,10 @@ public class OO7Bench
 
     private void traversal(int op) throws ODMGException
     {
-        DBag mods = (DBag)mDB.lookup("Modules");
-        for (Iterator iter = mods.iterator(); iter.hasNext();)
-            traversal((Module)iter.next(), op);
+        Extent extent = mDB.getExtent(Module.class, true);
+        for (Object module : extent) {
+            traversal((Module)module, op);
+        }
     }
 
     private void query1() throws ODMGException

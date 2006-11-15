@@ -298,12 +298,7 @@ public class EnerJExtent implements Extent
 
                 long[] oids = mExtentIterator.next(DEFAULT_CHUNK_SIZE);
                 // Put the objects in the prefetch queue.
-                mObjects = new Persistable[oids.length];
-                for (int i = 0; i < oids.length; i++) {
-                    // TODO we should be able to do this in a batch from EnerJDatabase. That way all CIDs can be fetched at once.
-                    mObjects[i] = mDatabase.getObjectForOID(oids[i]);
-                }
-                
+                mObjects = mDatabase.getObjectsForOIDs(oids);
                 mObjectIdx = 0;
             }
 

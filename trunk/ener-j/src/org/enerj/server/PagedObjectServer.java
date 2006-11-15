@@ -728,25 +728,33 @@ public class PagedObjectServer implements ObjectServer
         }
 
         //----------------------------------------------------------------------
-        public long getCIDForOID(long anOID) throws ODMGException
+        public long[] getCIDsForOIDs(long[] someOIDs) throws ODMGException
         {
             if (!mAllowNontransactionalReads) {
                 // Validate txn active - interface requirement
                 getTransaction();
             }
 
-            // Check the update cache first and get CID from the store request, if there is one.
-            PagedStore.StoreObjectRequest storeRequest = mObjectServer.mUpdateCache.lookupStoreRequest(anOID);
-            if (storeRequest == null) {
-                // Get a read lock on the object otherwise the CID can change for the object after getting the CID.
-                // TODO make timeout configurable.
-                getLock(anOID, EnerJTransaction.READ, -1);
-                return mObjectServer.mPagedStore.getCIDForOID(anOID);
+            long[] cids = new long[someOIDs.length];
+            for (int i = 0; i < someOIDs.length; i++) {
+                long anOID = someOIDs[i];
+                if (anOID != ObjectServer.NULL_OID) {
+                    // Check the update cache first and get CID from the store request, if there is one.
+                    PagedStore.StoreObjectRequest storeRequest = mObjectServer.mUpdateCache.lookupStoreRequest(anOID);
+                    if (storeRequest == null) {
+                        // Get a read lock on the object otherwise the CID can change for the object after getting the CID.
+                        // TODO make timeout configurable.
+                        getLock(anOID, EnerJTransaction.READ, -1);
+                        cids[i] = mObjectServer.mPagedStore.getCIDForOID(anOID);
+                    }
+                    else {
+                        // Found an updated version of the object. Use the updated CID.
+                        cids[i] = storeRequest.mCID;
+                    }
+                }
             }
-            else {
-                // Found an updated version of the object. Use the updated CID.
-                return storeRequest.mCID;
-            }
+
+            return cids;
         }
 
         //----------------------------------------------------------------------
