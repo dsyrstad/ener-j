@@ -131,4 +131,11 @@ public interface ClientCache
      * @return a list of hollow Persistables.
      */
     List<Persistable> getAndClearPrefetches();
+    
+    
+    //--------------------------------------------------------------------------------
+    /**
+     * Clears the prefetch list.
+     */
+    void clearPrefetches();
 }

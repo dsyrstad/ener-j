@@ -462,18 +462,23 @@ public class MemoryObjectServer implements ObjectServer
         }
 
         //----------------------------------------------------------------------
-        public synchronized long getCIDForOID(long anOID) throws ODMGException
+        public synchronized long[] getCIDsForOIDs(long[] someOIDs) throws ODMGException
         {
             if (!mAllowNontransactionalReads) {
                 MemoryTxn txn = getTransaction();
             }
             
-            MemoryDBEntry entry = mDatabase.getEntry(anOID);
-            if (entry == null) {
-                return 0L;
+            long[] cids = new long[someOIDs.length];
+            for (int i = 0; i < someOIDs.length; i++) {
+                if (someOIDs[i] != ObjectServer.NULL_OID) {
+                    MemoryDBEntry entry = mDatabase.getEntry(someOIDs[i]);
+                    if (entry != null) {
+                        cids[i] = entry.getObjectCID();
+                    }
+                }
             }
-
-            return entry.getObjectCID();
+            
+            return cids;
         }
 
         //----------------------------------------------------------------------

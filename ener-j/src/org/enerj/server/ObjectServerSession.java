@@ -94,7 +94,9 @@ public interface ObjectServerSession
      * A transaction must be active on session, or non-transactional reads must be allowed.
      * A READ lock is automatically obtained if it doesn't exist already.
      *
-     * @param someOIDs an array of OIDs to get CIDs for.
+     * @param someOIDs an array of OIDs to get CIDs for. Note that if any element
+     *  of this array is {@link ObjectServer#NULL_OID}, the corresponding CID will
+     *  be {@link ObjectServer#NULL_CID}.
      *
      * @return the class Ids. A null CID will be returned if an OID doesn't exist.
      *

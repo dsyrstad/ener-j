@@ -25,10 +25,12 @@ import java.util.Random;
 
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJImplementation;
-import org.enerj.core.EnerJTransaction;
+import org.enerj.core.RegularDMap;
+import org.odmg.DMap;
 import org.odmg.Database;
 import org.odmg.Implementation;
 import org.odmg.ODMGException;
+import org.odmg.ObjectNameNotFoundException;
 import org.odmg.Transaction;
 
 public class OO7Loader
@@ -43,7 +45,7 @@ public class OO7Loader
     private Implementation mImplementation;
     private Random mRandom;
     private EnerJDatabase mDB;
-    //private DMap mAtomicPartByIDMap;
+    private DMap mAtomicPartByIDMap;
     private int mType;
     private int mSize;
     
@@ -83,7 +85,7 @@ public class OO7Loader
             result[idx] = new AtomicPart(idx + 1000, mRandom.nextInt(10000), mRandom.nextInt(), mRandom.nextInt(),
                             mRandom.nextInt());
 
-            //mAtomicPartByIDMap.put(result[idx].getId(), result[idx]);
+            mAtomicPartByIDMap.put(result[idx].getId(), result[idx]);
             mDB.makePersistent(result[idx]);
         }
         
@@ -208,6 +210,7 @@ public class OO7Loader
             catch (ObjectNameNotFoundException e) {
                 // Ignore
             }
+            */
             
             mAtomicPartByIDMap = new RegularDMap(1024*1024);
             try {
@@ -216,16 +219,14 @@ public class OO7Loader
             catch (ObjectNameNotFoundException e) {
                 // Ignore
             }
-            */
             
             for (int idx = 0; idx < size; idx++) {
-                //modules.add( buildModule() );
                 Module module = buildModule();
                 mDB.makePersistent(module);
             }
             
-            /*mDB.bind(mAtomicPartByIDMap, "AtomicPartsByID");
-            mDB.bind(modules, "Modules");*/
+            mDB.bind(mAtomicPartByIDMap, "AtomicPartsByID");
+            //mDB.bind(modules, "Modules");
     
             // Commit
             txn.commit();

@@ -96,11 +96,11 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         assertNotNull( someOIDs );
         assertTrue( someOIDs.length >= 1 );
+        long[] cids = mSession.getCIDsForOIDs(someOIDs);
         for (int i = 0; i < someOIDs.length; i++) {
             assertTrue( someOIDs[i] > ObjectServer.NULL_OID );
             
-            long cid = mSession.getCIDForOID(someOIDs[i]);
-            assertTrue( cid == ObjectServer.NULL_CID );
+            assertTrue( cids[i] == ObjectServer.NULL_CID );
         }
         
         // Verify no duplicates within the block
@@ -171,14 +171,14 @@ public abstract class AbstractObjectServerTest extends TestCase
 
         byte[][] loadedObjects = mSession.loadObjects(someOIDs);
         assertNotNull(objects);
+        long[] testCIDs = mSession.getCIDsForOIDs(someOIDs);
         for (int i = 0; i < someOIDs.length; i++) {
             byte[] obj = loadedObjects[i];
             assertTrue( obj.length == aLength );
 
-            long testCID = mSession.getCIDForOID(someOIDs[i]);
-            assertTrue( testCID == (cid + i) );
+            assertTrue( testCIDs[i] == (cid + i) );
 
-            byte[] testBytes = generateBytes(aLength, someOIDs[i], testCID);
+            byte[] testBytes = generateBytes(aLength, someOIDs[i], testCIDs[i]);
             assertTrue( Arrays.equals(testBytes, obj) );
         }
     }

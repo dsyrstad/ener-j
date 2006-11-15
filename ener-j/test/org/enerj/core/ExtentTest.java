@@ -109,7 +109,6 @@ public class ExtentTest extends TestCase
      */
     public void testViaBind() throws Exception
     {
-
         Implementation impl = EnerJImplementation.getInstance();
         EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
         

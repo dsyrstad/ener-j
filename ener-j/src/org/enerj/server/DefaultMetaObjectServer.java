@@ -35,6 +35,17 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.enerj.core.ClassVersionSchema;
+import org.enerj.core.DatabaseRoot;
+import org.enerj.core.EnerJDatabase;
+import org.enerj.core.EnerJTransaction;
+import org.enerj.core.LogicalClassSchema;
+import org.enerj.core.Schema;
+import org.enerj.core.SparseBitSet;
+import org.enerj.core.SystemCIDMap;
+import org.enerj.util.FileUtil;
+import org.enerj.util.RequestProcessor;
+import org.enerj.util.RequestProcessorProxy;
 import org.odmg.DatabaseNotFoundException;
 import org.odmg.LockNotGrantedException;
 import org.odmg.ODMGException;
@@ -42,17 +53,6 @@ import org.odmg.ODMGRuntimeException;
 import org.odmg.ObjectNameNotFoundException;
 import org.odmg.ObjectNameNotUniqueException;
 import org.odmg.ObjectNotPersistentException;
-import org.enerj.core.ClassVersionSchema;
-import org.enerj.core.DatabaseRoot;
-import org.enerj.core.LogicalClassSchema;
-import org.enerj.core.Schema;
-import org.enerj.core.SparseBitSet;
-import org.enerj.core.SystemCIDMap;
-import org.enerj.core.EnerJDatabase;
-import org.enerj.core.EnerJTransaction;
-import org.enerj.util.FileUtil;
-import org.enerj.util.RequestProcessor;
-import org.enerj.util.RequestProcessorProxy;
 
 /** 
  * Default Ener-J MetaObjectServer. Provides the standard Ener-J implementation and
@@ -301,7 +301,9 @@ public class DefaultMetaObjectServer implements MetaObjectServer
         {
             // Add new objects to extents.
             EnerJDatabase db = getClientDatabase();
-            DatabaseRoot root = (DatabaseRoot)db.getObjectForOID(DATABASE_ROOT_OID);
+            // Schema may have been changed, so evict everything at this point.
+            db.evictAll();  
+            DatabaseRoot root = (DatabaseRoot)db.getDatabaseRoot();
             Schema schema = root.getSchema();
             for (long cid : mPendingNewOIDs.keySet()) {
                 TLongArrayList oids = mPendingNewOIDs.get(cid);
@@ -381,7 +383,7 @@ public class DefaultMetaObjectServer implements MetaObjectServer
             DatabaseRoot root = (DatabaseRoot)db.getObjectForOID(DATABASE_ROOT_OID);
             ClassVersionSchema classVersion;
             try {
-                long cid = getCIDForOID(anOID);
+                long cid = getCIDsForOIDs(new long[] { anOID })[0];
                 classVersion = root.getSchema().findClassVersion(cid);
             }
             catch (ODMGException e) {
@@ -502,33 +504,33 @@ public class DefaultMetaObjectServer implements MetaObjectServer
         }
 
         //----------------------------------------------------------------------
-        public long getCIDForOID(long anOID) throws ODMGException
+        public long[] getCIDsForOIDs(long[] someOIDs) throws ODMGException
         {
-            return mDelegateSession.getCIDForOID(anOID);
+            return mDelegateSession.getCIDsForOIDs(someOIDs);
         }
 
         //----------------------------------------------------------------------
         public void storeObjects(SerializedObject[] someObjects) throws ODMGException
         {
             mDelegateSession.storeObjects(someObjects);
-            
+            EnerJDatabase db = getClientDatabase();
             for (SerializedObject object : someObjects) {
-                long anOID = object.getOID();
-                long aCID = object.getCID();
+                long oid = object.getOID();
+                long cid = object.getCID();
                 
-                // Evict this from our cache because the client has changed it.
-                getClientDatabase().evict(anOID);
-                
-                if (object.isNew() && !SystemCIDMap.isSystemCID(aCID)) {
+                // Evict these objects from our cache because the client has changed it.
+                db.evict(oid);
+
+                if (object.isNew() && !SystemCIDMap.isSystemCID(cid)) {
                     // Queue this object to be added to its extent on commit - only after delegate stores successfully.
-                    TLongArrayList oids = mPendingNewOIDs.get(aCID);
+                    TLongArrayList oids = mPendingNewOIDs.get(cid);
                     if (oids == null) {
                         // First instance of the CID to be stored in this txn, create new list.
                         oids = new TLongArrayList(1000);
-                        mPendingNewOIDs.put(aCID, oids);
+                        mPendingNewOIDs.put(cid, oids);
                     }
                     
-                    oids.add(anOID);
+                    oids.add(oid);
                 }
             }
         }
@@ -700,9 +702,9 @@ public class DefaultMetaObjectServer implements MetaObjectServer
         }
 
         //----------------------------------------------------------------------
-        public long getCIDForOID(long anOID) throws ODMGException
+        public long[] getCIDsForOIDs(long[] someOIDs) throws ODMGException
         {
-            return mPrivilegedSession.getCIDForOID(anOID);
+            return mPrivilegedSession.getCIDsForOIDs(someOIDs);
         }
 
         //----------------------------------------------------------------------

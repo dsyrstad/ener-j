@@ -46,8 +46,16 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Logger;
 
+import org.enerj.annotations.SchemaAnnotation;
+import org.enerj.server.DefaultMetaObjectServer;
+import org.enerj.server.MetaObjectServer;
+import org.enerj.server.MetaObjectServerSession;
+import org.enerj.server.ObjectServer;
+import org.enerj.server.PluginHelper;
+import org.enerj.server.SerializedObject;
+import org.enerj.util.ClassUtil;
+import org.enerj.util.URIUtil;
 import org.odmg.ClassNotPersistenceCapableException;
 import org.odmg.Database;
 import org.odmg.DatabaseClosedException;
@@ -58,15 +66,6 @@ import org.odmg.ObjectNameNotFoundException;
 import org.odmg.ObjectNameNotUniqueException;
 import org.odmg.TransactionInProgressException;
 import org.odmg.TransactionNotInProgressException;
-import org.enerj.annotations.SchemaAnnotation;
-import org.enerj.server.DefaultMetaObjectServer;
-import org.enerj.server.MetaObjectServer;
-import org.enerj.server.MetaObjectServerSession;
-import org.enerj.server.ObjectServer;
-import org.enerj.server.PluginHelper;
-import org.enerj.server.SerializedObject;
-import org.enerj.util.ClassUtil;
-import org.enerj.util.URIUtil;
 
 /**
  * Ener-J implementation of org.odmg.Database.
@@ -395,10 +394,12 @@ public class EnerJDatabase implements Database
         checkBoundTransaction(true);
 
         Persistable[] objects = new Persistable[someOIDs.length];
+        assert someCIDs.length == someOIDs.length;
+        
         long[] oidsToRetrieveCidsFor = new long[someOIDs.length];
-        int cidsIdx = 0;
+        boolean foundAllInCache = true;
+        boolean needToRetrieveCIDs = false;
         for (int i = 0; i < someOIDs.length; i++) {
-            
             // Note: If mIsServerSideDB is true, the cache will be empty.
             Persistable checkPersistable = (Persistable)mClientCache.get(someOIDs[i]);
             if (checkPersistable != null) {
@@ -411,18 +412,29 @@ public class EnerJDatabase implements Database
     
                 objects[i] = checkPersistable;
             }
-            else if (someCIDs == null || someCIDs[i] == ObjectServer.NULL_CID) {
-                oidsToRetrieveCidsFor[cidsIdx++] = someOIDs[i]; 
+            else {
+                foundAllInCache = false;
+                if (someCIDs == null || someCIDs[i] == ObjectServer.NULL_CID) {
+                    oidsToRetrieveCidsFor[i] = someOIDs[i];
+                    needToRetrieveCIDs = true;
+                }
+                else {
+                    // A CID was supplied
+                    oidsToRetrieveCidsFor[i] = ObjectServer.NULL_OID;
+                }
             }
         }
+        
+        if (foundAllInCache) {
+            return objects;
+        }
 
-        if (cidsIdx > 0) {
-            long[] oids = new long[cidsIdx];
-            System.arraycopy(oidsToRetrieveCidsFor, 0, oids, 0, cidsIdx);
+        if (needToRetrieveCIDs) {
+            // Retrieve CIDs for these objects.
             long[] cids;
             try {
                 // This obtains a READ lock on each OID.
-                cids = mMetaObjectServerSession.getCIDsForOIDs(oids);
+                cids = mMetaObjectServerSession.getCIDsForOIDs(oidsToRetrieveCidsFor);
             }
             catch (RuntimeException e) {
                 throw e;
@@ -430,61 +442,87 @@ public class EnerJDatabase implements Database
             catch (Exception e) {
                 throw new ODMGRuntimeException("Could not get CIDs for OIDs", e);
             }
+            
+            if (someCIDs == null) {
+                someCIDs = new long[someOIDs.length];
+            }
 
+            // Merge CIDs.
             for (int i = 0; i < cids.length; i++) {
-                if (cids[i] == ObjectServer.NULL_CID) {
-                    throw new ODMGRuntimeException("Cannot find CID for OID " + oids[i] + " in database");
+                if (someCIDs[i] == ObjectServer.NULL_CID) {
+                    someCIDs[i] = cids[i];
                 }
             }
         }
 
-        // Is it a system persistable?
-        String className = SystemCIDMap.getSystemClassNameForCID(aCID);
-        if (className == null) {
-            // Nope. Try to look it up in the schema.
-            // TODO Maybe this could come back with the getCIDForOID call? 
-            ClassVersionSchema classVersion = getDatabaseRoot().getSchema().findClassVersion(aCID);
-            if (classVersion == null) {
-                throw new ODMGRuntimeException("Cannot find class for CID " + aCID);
-            }
-
-            className = classVersion.getLogicalClassSchema().getClassName();
-        }        
-
-        Class oidClass;
-        try {
-            // TODO load enhanced class.
-            oidClass = Class.forName(className);
-        }
-        catch (Exception e) {
-            throw new ODMGRuntimeException("Cannot find class " + className + " for OID " + anOID);
-        }
+        assert someCIDs != null;
         
-        // Create a hollow (non-loaded) object. PersistableHelper.checkLoaded() will
-        // actually load the contents (via EnerJDatabase.loadObject) when a field is accessed.
-        try {
-            Constructor constructor = oidClass.getDeclaredConstructor(sEnerJDatabaseArgType);
-            constructor.setAccessible(true);
-            Persistable persistable = (Persistable)constructor.newInstance(sEnerJDatabaseArg);
-
-            persistable.enerj_SetDatabase(this);
-            persistable.enerj_SetPrivateOID(anOID);
-            if (isNontransactionalReadMode()) {
-                PersistableHelper.setNonTransactional(persistable);
+        // Create and cache hollow objects for any that weren't in the cache.
+        DatabaseRoot root = null;
+        Schema schema = null;
+        for (int i = 0; i < someOIDs.length; i++) {
+            if (objects[i] != null) {
+                continue;
             }
             
-            persistable.enerj_SetNew(false);
-            persistable.enerj_SetModified(false);
-            persistable.enerj_SetLoaded(false);
+            long cid = someCIDs[i];
+            long oid = someOIDs[i];
+            
+            // Is it a system persistable?
+            String className = SystemCIDMap.getSystemClassNameForCID(cid);
+            if (className == null) {
+                // Nope. Try to look it up in the schema.
+                if (root == null) {
+                    root = getDatabaseRoot();
+                    schema = root.getSchema();
+                }
 
-            // Cache it
-            mClientCache.add(anOID, persistable);
-
-            return persistable;
+                // TODO Maybe this could come back with the getCIDForOID call? 
+                ClassVersionSchema classVersion = schema.findClassVersion(cid);
+                if (classVersion == null) {
+                    throw new ODMGRuntimeException("Cannot find class for CID " + cid);
+                }
+    
+                className = classVersion.getLogicalClassSchema().getClassName();
+            }        
+    
+            Class oidClass;
+            try {
+                // TODO load enhanced class.
+                oidClass = Class.forName(className);
+            }
+            catch (Exception e) {
+                throw new ODMGRuntimeException("Cannot find class " + className + " for OID " + oid);
+            }
+            
+            // Create a hollow (non-loaded) object. PersistableHelper.checkLoaded() will
+            // actually load the contents (via EnerJDatabase.loadObject) when a field is accessed.
+            try {
+                Constructor constructor = oidClass.getDeclaredConstructor(sEnerJDatabaseArgType);
+                constructor.setAccessible(true);
+                Persistable persistable = (Persistable)constructor.newInstance(sEnerJDatabaseArg);
+    
+                persistable.enerj_SetDatabase(this);
+                persistable.enerj_SetPrivateOID(oid);
+                if (isNontransactionalReadMode()) {
+                    PersistableHelper.setNonTransactional(persistable);
+                }
+                
+                persistable.enerj_SetNew(false);
+                persistable.enerj_SetModified(false);
+                persistable.enerj_SetLoaded(false);
+    
+                // Cache it
+                mClientCache.add(oid, persistable);
+    
+                objects[i] = persistable;
+            }
+            catch (Exception e) {
+                throw new org.odmg.ODMGRuntimeException("Error creating object: " + e);
+            }
         }
-        catch (Exception e) {
-            throw new org.odmg.ODMGRuntimeException("Error creating object: " + e);
-        }
+        
+        return objects;
     }
 
     //--------------------------------------------------------------------------------
@@ -572,7 +610,7 @@ public class EnerJDatabase implements Database
      */
     public Persistable createPersistable(SerializedObject aSerializedObject)
     {
-        Persistable persistable = (Persistable)createObjectForOIDAndCID(aSerializedObject.getOID(), aSerializedObject.getCID() );
+        Persistable persistable = createObjectsForOIDsAndCIDs(new long[] { aSerializedObject.getOID() }, new long[] { aSerializedObject.getCID() } )[0];
         loadSerializedImage(persistable, aSerializedObject.getImage());
         return persistable;
     }

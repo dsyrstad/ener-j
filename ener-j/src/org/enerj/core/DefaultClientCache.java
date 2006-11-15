@@ -292,14 +292,26 @@ class DefaultClientCache implements ClientCache
         List<Persistable> prefetches = new ArrayList<Persistable>(mPrefetchList.size());
         for (CacheWeakReference ref : mPrefetchList) {
             Persistable obj = (Persistable)ref.get();
-            if (obj != null && !obj.enerj_IsLoaded()) {
+            if (obj != null && !obj.enerj_IsLoaded() && mCache.containsKey(obj.enerj_GetPrivateOID())) {
                 prefetches.add(obj);
             }
         }
         
-        mPrefetchList.clear();
+        clearPrefetches();
 
         return prefetches;
+    }
+
+    
+    //--------------------------------------------------------------------------------
+    /** 
+     * 
+     * {@inheritDoc}
+     * @see org.enerj.core.ClientCache#clearPrefetches()
+     */
+    public void clearPrefetches()
+    {
+        mPrefetchList.clear();
     }
 }
 
