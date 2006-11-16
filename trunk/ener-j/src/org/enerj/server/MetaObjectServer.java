@@ -48,12 +48,12 @@ package org.enerj.server;
  *
  * The 'someProperties' parameter contains the connection properties. Standard property keys are:<br>
  * <ul>
- * <li>vo.dbname - the database name. Required.</li>
- * <li>vo.accessmode - the database access mode. This is the integer value of the org.odmg.Database access modes. Required.</li>
- * <li>vo.username - the username for the database. Optional.</li>
- * <li>vo.password - the password for username. Optional.</li>
- * <li>vo.hostname - the host to connect to. Required for a remote connection. Does not exist for a in-client local connection.</li>
- * <li>vo.port - the port on the host to connect to. Optional. </li>
+ * <li>enerj.dbname - the database name. Required.</li>
+ * <li>enerj.accessmode - the database access mode. This is the integer value of the org.odmg.Database access modes. Required.</li>
+ * <li>enerj.username - the username for the database. Optional.</li>
+ * <li>enerj.password - the password for username. Optional.</li>
+ * <li>enerj.hostname - the host to connect to. Required for a remote connection. Does not exist for a in-client local connection.</li>
+ * <li>enerj.port - the port on the host to connect to. Optional. </li>
  * <li>enerj.dbpath - a list of database directory names, separated by File.pathSeparator. Required on non-proxy servers.</li> 
  * </ul>
  * 

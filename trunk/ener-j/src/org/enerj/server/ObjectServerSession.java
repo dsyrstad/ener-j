@@ -28,6 +28,9 @@ import org.enerj.core.ObjectSerializer;
 import org.odmg.LockNotGrantedException;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
+import org.odmg.ObjectNameNotFoundException;
+import org.odmg.ObjectNameNotUniqueException;
+import org.odmg.ObjectNotPersistentException;
 
 /**
  * Represents a session returned by a ObjectServer. Only one thread may use
@@ -213,5 +216,82 @@ public interface ObjectServerSession
     //----------------------------------------------------------------------
     // ...Transaction support.
     //----------------------------------------------------------------------
+
+    //----------------------------------------------------------------------
+    /**
+     * Associate a name with an object and make it persistent.
+     * An object instance may be bound to more than one name.
+     * Binding a previously transient object to a name makes that object persistent.
+     *
+     * @param anOID The OID of the object to be named.
+     * @param aName The name to be given to the object.
+     *
+     * @throws org.odmg.ObjectNameNotUniqueException If an attempt is made to bind a name
+     * to an object and that name is already bound to an object.
+     */
+    public void bind(long anOID, String aName) throws ObjectNameNotUniqueException;
+    
+    //----------------------------------------------------------------------
+    /**
+     * Lookup an object via its name.
+     *
+     * @param aName The name of an object.
+     *
+     * @return The OID of the object corresponding to aName.
+     *
+     * @throws ObjectNameNotFoundException If there is no object with the specified name.
+     */
+    public long lookup(String aName) throws ObjectNameNotFoundException;
+    
+    //----------------------------------------------------------------------
+    /**
+     * Disassociate a name with an object
+     *
+     * @param aName The name of an object.
+     *
+     * @throws ObjectNameNotFoundException If no object by aName exists in the database.
+     */
+    public void unbind(String aName) throws ObjectNameNotFoundException;
+
+    //----------------------------------------------------------------------
+    /**
+     * Removes an object from the extent and any indexes. Does not necessarily cause
+     * it to be garbage collected.
+     *
+     * @param anOID the OID of the object to be removed.
+     *
+     * @throws ObjectNotPersistentException if the object does not exist in the extent.
+     */
+    public void removeFromExtent(long anOID) throws ObjectNotPersistentException;
+    
+    //----------------------------------------------------------------------
+    /**
+     * Determines the number of objects in an Extent.
+     *
+     * @param aClassName the class name to iterate over. If wantSubclasses is true,
+     *  then aClassName does not have to be a persistable class.
+     *
+     * @param wantSubclasses if true, the sizes of all subclasses of aClassName are also included in the result.
+     *
+     * @return the number of objects in the Extent.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    public long getExtentSize(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException;
+    
+    //----------------------------------------------------------------------
+    /**
+     * Creates an ExtentIterator.
+     *
+     * @param aClassName the class name to iterate over. If wantSubclasses is true,
+     *  then aClassName does not have to be a persistable class.
+     *
+     * @param wantSubclasses if true, all subclasses of aClassName are also included in the iterator.
+     *
+     * @return an ExtentIterator used to iterate over the extent.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    public ExtentIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException;
 }
 
