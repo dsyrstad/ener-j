@@ -40,12 +40,12 @@ public class PersistableHelper
     /**
      * Initializes a new Persistable. Called from the top-level 
      * Persistable's constructor. NOTE: This can also get called indirectly
-     * when EnerJDatabase.getObjectByOID() is constructing the object using the
-     * &lt;init>(EnerJDatabase) constructor. EnerJDatabase.getObjectByOID() must
+     * when Persister.getObjectByOID() is constructing the object using the
+     * &lt;init>(Persister) constructor. Persister.getObjectByOID() must
      * always undo the actions of this method. 
      * <p>
-     * So if you change the behavoir this method, you MUST also undo the
-     * actions in EnerJDatabase.getObjectByOID().
+     * So if you change the behavior of this method, you MUST also undo the
+     * actions in Persister.getObjectByOID().
      *
      * @param aPersistable the Persistable being initialized.
      */
@@ -55,7 +55,7 @@ public class PersistableHelper
         aPersistable.enerj_SetModified(false);
         aPersistable.enerj_SetLoaded(false);
         aPersistable.enerj_SetPrivateOID(ObjectSerializer.NULL_OID);
-        aPersistable.enerj_SetDatabase(null);
+        aPersistable.enerj_SetPersister(null);
         aPersistable.enerj_SetLockLevel(EnerJTransaction.NO_LOCK);
 
         EnerJTransaction txn = EnerJTransaction.getCurrentTransaction();
@@ -64,7 +64,7 @@ public class PersistableHelper
             setNonTransactional(aPersistable);
         }
         // Else: Note: object is only assigned an OID and added to the transaction modified list when
-        // its OID is requested by EnerJDatabase.getOID().
+        // its OID is requested by Persister.getOID().
     }
     
     //----------------------------------------------------------------------
@@ -84,7 +84,7 @@ public class PersistableHelper
     
     //----------------------------------------------------------------------
     /**
-     * Verify that the specified object is loaded from the Database. If it 
+     * Verify that the specified object is loaded from the Persister. If it 
      * isn't loaded, it will be loaded.
      *
      * @param aPersistable the Persistable to be checked.
@@ -102,7 +102,7 @@ public class PersistableHelper
                 // If the database allows non-transactional reads, fall-thru and
                 // load the object from the database if necessary.
                 try {
-                    if ( !aPersistable.enerj_GetDatabase().getAllowNontransactionalReads()) {
+                    if ( !aPersistable.enerj_GetPersister().getAllowNontransactionalReads()) {
                         return;
                     }
                 } catch (ODMGException e) {
@@ -118,7 +118,7 @@ public class PersistableHelper
         // If anInstance not loaded from DB and not New, load it now.
         if (!aPersistable.enerj_IsLoaded() && !aPersistable.enerj_IsNew()) {
             // Actually Load the object.
-            aPersistable.enerj_GetDatabase().loadObject(aPersistable);
+            aPersistable.enerj_GetPersister().loadObject(aPersistable);
         } // end if not loaded or new
     }
 
@@ -140,11 +140,11 @@ public class PersistableHelper
     public static final void addModified(Persistable aPersistable)
     {
         if (!aPersistable.enerj_IsNew() && !aPersistable.enerj_IsModified()) {
-            // If no transaction active or already modified, just ignore this.
-            EnerJTransaction txn = EnerJTransaction.getCurrentTransaction();
-            if (txn != null) {
-                // Add to the transaction modified object list - only if a transaction is active.
-                txn.addToModifiedList(aPersistable, true);
+            // If no Persister active or already modified, just ignore this.
+            Persister persister = aPersistable.enerj_GetPersister();
+            if (persister != null) {
+                // Add to the persister's modified object list.
+                persister.addToModifiedList(aPersistable);
             }
         }
 

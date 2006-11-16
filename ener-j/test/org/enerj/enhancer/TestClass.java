@@ -175,7 +175,7 @@ class TestClass implements Cloneable
         // Write it to a Byte array
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
-        persistable.enerj_WriteObject(new ObjectSerializer.WriteContext(dos) );
+        persistable.enerj_WriteObject(new ObjectSerializer(dos) );
         
         byte[] bytes = baos.toByteArray();
         System.out.println("Wrote " + bytes.length + " bytes");
@@ -187,7 +187,7 @@ class TestClass implements Cloneable
         org.enerj.core.Persistable persistable2 = (org.enerj.core.Persistable)test2;
         persistable2.enerj_SetAllowNonTransactionalRead(true);
         persistable2.enerj_SetAllowNonTransactionalWrite(true);
-        persistable2.enerj_ReadObject( new ObjectSerializer.ReadContext(dis) );
+        persistable2.enerj_ReadObject( new ObjectSerializer(dis) );
         
         if (test2.mLong != test.mLong) {
             System.out.println("mLongs differ");

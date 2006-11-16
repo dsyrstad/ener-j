@@ -83,7 +83,7 @@ public class CallbackTest extends TestCase
 
         ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream(1000);
         DataOutputStream dataOutput = new DataOutputStream(byteOutputStream);
-        persistable.enerj_WriteObject( new ObjectSerializer.WriteContext(dataOutput) );
+        persistable.enerj_WriteObject( new ObjectSerializer(dataOutput) );
         byte[] buf  = byteOutputStream.toByteArray();
         
         assertTrue("enerjPostLoad should not have been called", !hasPostLoad || !aTestable.wasPostLoadCalled());
@@ -97,7 +97,7 @@ public class CallbackTest extends TestCase
         assertTrue("enerjPostStore should not have been called", !hasPostStore || !aTestable.wasPostStoreCalled());
         
         DataInputStream dataInput = new DataInputStream( new ByteArrayInputStream(buf) );
-        persistable.enerj_ReadObject( new ObjectSerializer.ReadContext(dataInput) );
+        persistable.enerj_ReadObject( new ObjectSerializer(dataInput) );
         
         // These should all be false right now.
         assertTrue("enerjPostLoad should have been called", !hasPostLoad || aTestable.wasPostLoadCalled());

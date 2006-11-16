@@ -211,19 +211,16 @@ public class ObjectSerializer
     
     private ReadContext mReadContext;
     private WriteContext mWriteContext;
-    private Persister mPersister;
     
     //----------------------------------------------------------------------
     /**
      * Construct a new ObjectSerializer for input.
      *
      * @param aDataInput the DataInput that provides the stream to read from.
-     * @param aPersister a Persister context to use for resolving objects.
      */
-    public ObjectSerializer(DataInput aDataInput, Persister aPersister)
+    public ObjectSerializer(DataInput aDataInput)
     {
         mReadContext = new ReadContext(aDataInput, this);
-        mPersister = aPersister;
     }
     
     //----------------------------------------------------------------------
@@ -233,10 +230,9 @@ public class ObjectSerializer
      * @param aDataInput the DataInput that provides the stream to read from.
      * @param aPersister a Persister context to use for resolving objects.
      */
-    public ObjectSerializer(DataOutput aDataOutput, Persister aPersister)
+    public ObjectSerializer(DataOutput aDataOutput)
     {
         mWriteContext = new WriteContext(aDataOutput, this);
-        mPersister = aPersister;
     }
     
     //----------------------------------------------------------------------
@@ -382,7 +378,7 @@ public class ObjectSerializer
     /**
      * Reads a FCO from a stream.
      *
-     * @param aPersistable the calling Persistable object (used for a Database context).
+     * @param aPersistable the calling Persistable object (used for a Persister context).
      *
      * @return the value.
      *
