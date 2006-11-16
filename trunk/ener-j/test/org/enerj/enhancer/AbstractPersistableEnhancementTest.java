@@ -254,7 +254,7 @@ abstract class AbstractPersistableEnhancementTest extends TestCase
         // Test writing to a Byte Buffer
         ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream(1000);
         DataOutputStream dataOutput = new DataOutputStream(byteOutputStream);
-        persistable.enerj_WriteObject( new ObjectSerializer.WriteContext(dataOutput) );
+        persistable.enerj_WriteObject( new ObjectSerializer(dataOutput) );
         
         // Check for correct size.
         byte[] buf  = byteOutputStream.toByteArray();
@@ -269,7 +269,7 @@ abstract class AbstractPersistableEnhancementTest extends TestCase
 
         ByteArrayInputStream byteInputStream = new ByteArrayInputStream(buf);
         DataInputStream dataInput = new DataInputStream(byteInputStream);
-        persistable2.enerj_ReadObject( new ObjectSerializer.ReadContext(dataInput) );
+        persistable2.enerj_ReadObject( new ObjectSerializer(dataInput) );
         int bytesRead = buf.length - byteInputStream.available();
         assertTrue("Expected to read " + aPersistentSize + " bytes, read " + bytesRead + " on object " + 
             aTestClass.getName(), aPersistentSize == bytesRead);

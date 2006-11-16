@@ -24,6 +24,10 @@
 
 package org.enerj.core;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
 
 
@@ -41,6 +45,48 @@ public interface Persister
 {
     //----------------------------------------------------------------------
     /**
+     * Loads the contents of aPersistable from the database. Other objects may be
+     * prefetched at the same time. A READ lock is returned on the object.
+     * <p>
+     * This method is intended only for Ener-J internal use.
+     *
+     * @param aPersistable the persistable to be loaded.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    void loadObject(Persistable aPersistable);
+    
+    //----------------------------------------------------------------------
+    /**
+     * Gets the Persistable object associated with anOID.
+     * <p>
+     * This method is intended only for Ener-J internal use.
+     *
+     * @param anOID the database Object ID.
+     *
+     * @return a hollow Persistable. Returns null if the OID doesn't exist.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    Persistable getObjectForOID(long anOID);
+
+    //----------------------------------------------------------------------
+    /**
+     * Gets the Persistable objects associated with someOIDs.
+     * <p>
+     * This method is intended only for Ener-J internal use.
+     *
+     * @param someOIDs the database Object IDs to be retrieved.
+     *
+     * @return an array of hollow Persistables. 
+     *  An element in the array my be null if the corresponding OID doesn't exist.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    Persistable[] getObjectsForOIDs(long[] someOIDs);
+    
+    //----------------------------------------------------------------------
+    /**
      * Gets the OID for a persistable object. All Ener-J 
      * code should call this method. Application code should use EnerJImplementation.getEnerJObjectId or
      * org.odmg.Implementation.getObjectId.
@@ -56,33 +102,45 @@ public interface Persister
      *  somehow otherwise transient. ObjectServer.NULL_OID is also returned for new/cloned objects
      *  that have a ObjectServer.NULL_OID OID if a transaction is not active.
      */
-    public long getOID(Object anObject);
+    long getOID(Object anObject);
+
+    //--------------------------------------------------------------------------------
+    /**
+     * Determines whether this persister allows non-transactional (dirty) reads.  
+     *
+     * @return true if non-transactional reads are allowed, other false if
+     *  reads must occur within a transaction.
+     *  
+     * @throws ODMGException if an error occurs.
+     */
+    boolean getAllowNontransactionalReads() throws ODMGException;
 
     //----------------------------------------------------------------------
     /**
-     * Gets the Persistable object associated with anOID.
-     * <p>
-     * This method is intended only for Ener-J internal use.
+     * Add a Persistable to the list of modified objects. The object's lock
+     * is upgraded to WRITE. If the Persister is not in a transactional context 
+     * (e.g., modified objects would never be written), the object is NOT 
+     * added to the modified list.
      *
-     * @param anOID the database Object ID.
-     *
-     * @return a Persistable. Returns null if the OID doesn't exist.
-     *
-     * @throws ODMGRuntimeException if an error occurs.
+     * @param aPersistable the object to be added.
      */
-    Persistable getObjectForOID(long anOID);
+    void addToModifiedList(Persistable aPersistable);
 
-    //----------------------------------------------------------------------
+    
+    //--------------------------------------------------------------------------------
     /**
-     * Gets the Persistable objects associated with someOIDs.
-     * <p>
-     * This method is intended only for Ener-J internal use.
+     * Gets the list of modified objects.
      *
-     * @param someOIDs the database Object IDs to be retrieved.
-     *
-     * @return an array of Persistable. An element in the array my be null if the corresponding OID doesn't exist.
-     *
-     * @throws ODMGRuntimeException if an error occurs.
+     * @return a reference to the live list of modified objects. Adding a new modified object
+     *  affects the returned List.
      */
-    Persistable[] getObjectsForOIDs(long[] someOIDs);
+    List<Persistable> getModifiedList();
+    
+    
+    //--------------------------------------------------------------------------------
+    /**
+     * Clears the list of modified objects.
+     */
+    void clearModifiedList();
+    
 }

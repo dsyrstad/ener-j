@@ -61,10 +61,6 @@ public class EnerJTransaction implements Transaction
     /** The current database for the Transaction, only while it's open */
     private EnerJDatabase mTransactionDatabase = null;
     
-    /** List of Persistable objects created or modified during this transaction. 
-     */
-    private LinkedList<Persistable> mModifiedObjects = new LinkedList<Persistable>();
-    
     /** Non-null if the transaction is in the process of flushing objects. This
      * represents the current position in mModifiedObjects. */
     private ListIterator<Persistable> mFlushIterator = null; 
@@ -292,41 +288,6 @@ public class EnerJTransaction implements Transaction
     
     //----------------------------------------------------------------------
     /**
-     * Add a Persistable to the list of modified objects. The object's lock
-     * is upgraded to WRITE. 
-     *
-     * @param aPersistable the object to be added.
-     * @param shouldSaveImage if true and getRestoreValues() is true, 
-     *  a serialzed image of aPersistable is saved in the local cache for later
-     *  restoration on rollback. Otherwise, a serialized image is not made.
-     *  If this is true, aPersistable must NOT be modified yet (modification
-     *  should occur after this call).
-     */
-    void addToModifiedList(Persistable aPersistable, boolean shouldSaveImage)
-    {
-        checkIsOpenAndOwnedByThread();
-        
-        // Make sure object is WRITE-locked.
-        lock(aPersistable, WRITE);
-
-        // If we're in the process of flushing, insert this right at the cursor.
-        // Note that if we were to just call storePersistable() here, we could get
-        // into a very deep recursion. See flushAndKeepModifiedList() for more details. 
-        if (mFlushIterator != null) {
-            mFlushIterator.add(aPersistable);
-        }
-        else {
-            // Otherwise add it to the end of the modified list. 
-            mModifiedObjects.addLast(aPersistable);
-        }
-        
-        if (shouldSaveImage && mRestoreValues) {
-            mTransactionDatabase.savePersistableImage(aPersistable);
-        }
-    }
-    
-    //----------------------------------------------------------------------
-    /**
      * Closes the current transaction. Assumes checkIsOpenAndOwnedByThread()
      * has already been called.
      */
@@ -373,7 +334,7 @@ public class EnerJTransaction implements Transaction
         }
         finally {
             // Clear out modified objects.
-            mModifiedObjects.clear();
+            getDatabase().clearModifiedList();
         }
     }
 
@@ -391,7 +352,7 @@ public class EnerJTransaction implements Transaction
             // calling storePersistable() recursively. Such recursion could become
             // very deep. The iterator allows us to insert new objects at the current
             // cursor of the iteration, essentially flattening the recursion.
-            mFlushIterator = mModifiedObjects.listIterator();
+            mFlushIterator = getDatabase().getModifiedList().listIterator();
             while (mFlushIterator.hasNext()) {
                 Persistable persistable = mFlushIterator.next();
                 int nextIndex = mFlushIterator.nextIndex();
@@ -419,6 +380,18 @@ public class EnerJTransaction implements Transaction
             mFlushIterator = null;
         }
     }
+    
+    
+    //--------------------------------------------------------------------------------
+    /**
+     * Gets the flush iterator if one exists. Only EnerJDatabase should use this method.
+     *
+     * @return the flush iterator if one exists, otherwise null.
+     */
+    ListIterator<Persistable> getFlushIterator()
+    {
+        return mFlushIterator;
+    }
 
     //----------------------------------------------------------------------
     /**
@@ -432,7 +405,7 @@ public class EnerJTransaction implements Transaction
     {
         checkIsOpenAndOwnedByThread();
         
-        for (Persistable persistable : mModifiedObjects) {
+        for (Persistable persistable : getDatabase().getModifiedList()) {
             if (mRestoreValues) {
                 // Restore (rollback) the object
                 mTransactionDatabase.restoreAndClearPersistableImage(persistable);
@@ -445,7 +418,7 @@ public class EnerJTransaction implements Transaction
             }
         }
 
-        mModifiedObjects.clear();
+        getDatabase().clearModifiedList();
         
         // See defined behavior on setRestoreValues.
         if (mRestoreValues) {
@@ -510,12 +483,12 @@ public class EnerJTransaction implements Transaction
         // Go thru the modified list and clear the persistable image. Essentially
         // a rollback after this call rolls back to this point.
         if (mRestoreValues) {
-            for (Persistable persistable : mModifiedObjects) {
+            for (Persistable persistable : getDatabase().getModifiedList()) {
                 mTransactionDatabase.clearPersistableImage(persistable);
             }
         }
 
-        mModifiedObjects.clear();
+        getDatabase().clearModifiedList();
         mTransactionDatabase.getMetaObjectServerSession().checkpointTransaction();
     }
     

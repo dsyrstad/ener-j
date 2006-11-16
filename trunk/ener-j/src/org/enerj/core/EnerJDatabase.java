@@ -63,6 +63,7 @@ import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.ObjectNameNotFoundException;
 import org.odmg.ObjectNameNotUniqueException;
+import org.odmg.Transaction;
 import org.odmg.TransactionInProgressException;
 import org.odmg.TransactionNotInProgressException;
 
@@ -73,12 +74,12 @@ import org.odmg.TransactionNotInProgressException;
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.Database
  */
-public class EnerJDatabase implements Database
+public class EnerJDatabase implements Database, Persister
 {
     /** Maximum size of mSerializedObjectQueue. TODO make this configurable */
     private static final int sMaxSerializedObjectQueueSize = 100000;
-    private static final Class[] sEnerJDatabaseArgType = { EnerJDatabase.class };
-    private static final Object[] sEnerJDatabaseArg = { null };
+    private static final Class[] sPeristerArgType = { Persister.class };
+    private static final Object[] sPersisterArg = { null };
 
     /** If true, EnerJDatabase.open() has been performed and you are in the client's JVM. */
     private static boolean sIsThisTheClientJVM = false;
@@ -96,6 +97,9 @@ public class EnerJDatabase implements Database
 
     /** Client-side object cache. */
     private ClientCache mClientCache = null;
+
+    /** List of Persistable objects created or modified during this transaction. */
+    private LinkedList<Persistable> mModifiedObjects = new LinkedList<Persistable>();
     
     /** Cache of CIDs known to be in the database. Used so that we can avoid
      * grabbing a DatabaseRoot and read-locking it. */
@@ -116,7 +120,6 @@ public class EnerJDatabase implements Database
     /** Streams/Context used to serialize an object to bytes. */
     private ByteArrayOutputStream mByteOutputStream = new ByteArrayOutputStream(1000);
     private DataOutputStream mDataOutput = new DataOutputStream(mByteOutputStream);
-    private ObjectSerializer.WriteContext mWriteContext = new ObjectSerializer.WriteContext(mDataOutput);
     
     /** 
      * Stream/Context used to unserialize bytes to an object. We need a pool of them
@@ -125,7 +128,7 @@ public class EnerJDatabase implements Database
      * while an entry is being used, it is removed from the pool. This pool is
      * not used by more than one thread at a time.
      */
-    private LinkedList mInputStreamPool = new LinkedList();
+    private LinkedList<DBByteArrayInputStream> mInputStreamPool = new LinkedList<DBByteArrayInputStream>();
     
     /** Cache of new OIDs to be used. Only available during a transaction. */
     private long[] mOIDCache = null;
@@ -273,66 +276,77 @@ public class EnerJDatabase implements Database
     // ... End of truly public EnerJ-specific methods.
     //----------------------------------------------------------------------
 
+    //--------------------------------------------------------------------------------
+    // Start of Persister interface...
+    //--------------------------------------------------------------------------------
+
+    //--------------------------------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    public boolean getAllowNontransactionalReads() throws ODMGException
+    {
+        return mAllowNontransactionalReads;
+    }
+
     //----------------------------------------------------------------------
     /**
-     * Loads the contents of aPersistable from a serialized image. 
-     * Assumes checkBoundTransaction() has already been called.
-     *
-     * @param aPersistable the persistable to be loaded.
-     * @param anImage the serialized image of the persistable.
-     *
-     * @throws ODMGRuntimeException if an error occurs.
+     * {@inheritDoc}
      */
-    public void loadSerializedImage(Persistable aPersistable, byte[] anImage)
+    public Persistable getObjectForOID(long anOID)
     {
-        // A Database can't be shared between threads at the same time, checkBoundTransaction enforces this.
-        // However, enerj_ReadObject can cause getObjectForOID to get called again (due to an FCO referencing 
-        // another FCO, which may cause this
-        // method to be invoked again recursively to load schema objects (but NOT the referenced FCO). So
-        // we use a pool of InputStreams/ReadContexts (DBByteArrayInputStream). These are reused
-        // so we don't create tons of objects. This pool shouldn't normally get larger than a couple
-        // of entries.
-        DBByteArrayInputStream byteInputStream;
-        ObjectSerializer.ReadContext readContext;
-        if (mInputStreamPool.isEmpty()) {
-            // Create a new pool entry.
-            byteInputStream = new DBByteArrayInputStream();
-            readContext = new ObjectSerializer.ReadContext( new DataInputStream(byteInputStream) );
-            byteInputStream.setReadContext(readContext);
-        }
-        else {
-            byteInputStream = (DBByteArrayInputStream)mInputStreamPool.removeFirst();
-            readContext = byteInputStream.getReadContext();
+        // TODO Any callers using this method should be checked carefully for possible use of the plural method.
+        return getObjectsForOIDs(new long[] { anOID } )[0];
+    }
+
+    //----------------------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    public Persistable[] getObjectsForOIDs(long[] someOIDs)
+    {
+        return createObjectsForOIDsAndCIDs(someOIDs, null);
+    }
+
+    //----------------------------------------------------------------------
+    /**
+     * {@inheritDoc}
+     */
+    public long getOID(Object anObject)
+    {
+        if ( !(anObject instanceof Persistable)) {
+            return ObjectSerializer.NULL_OID;
         }
         
-        try {
-            readContext.reset();
-            byteInputStream.setByteArray(anImage);
-            aPersistable.enerj_ReadObject(readContext);
-
-            aPersistable.enerj_SetDatabase(this);
-            aPersistable.enerj_SetLoaded(true);
-            aPersistable.enerj_SetModified(false);
+        Persistable persistable = (Persistable)anObject;
+        EnerJDatabase persistableDatabase = (EnerJDatabase)persistable.enerj_GetPersister();
+        
+        // Get the real current transaction here - not the one associated with this
+        // database. Its database should match this database if the object is not being used
+        // out of context.
+        EnerJTransaction currentTxn = EnerJTransaction.getCurrentTransaction();
+        EnerJDatabase currentTxnDatabase = null;
+        if (currentTxn != null) {
+            currentTxnDatabase = currentTxn.getDatabase();
         }
-        catch (Exception e) {
-            throw new ODMGRuntimeException("Error loading object for OID " + getOID(aPersistable), e);
+        
+        if (persistableDatabase != null && 
+            (persistableDatabase != this || 
+             (currentTxnDatabase != null && currentTxnDatabase != persistableDatabase)) ) {
+            throw new ODMGRuntimeException("Persistable object does not belong to this database");
         }
-        finally {
-            // Put the stream back into the pool
-            mInputStreamPool.add(byteInputStream);
+        
+        long oid = persistable.enerj_GetPrivateOID();
+        if (oid == ObjectSerializer.NULL_OID && persistable.enerj_IsNew() && mBoundToTransaction != null) {
+            oid = addNewPersistable(persistable);
         }
+        
+        return oid;
     }
-    
+
     //----------------------------------------------------------------------
     /**
-     * Loads the contents of aPersistable from the database. Other objects may be
-     * prefetched at the same time.
-     * <p>
-     * This method is intended only for Ener-J internal use.
-     *
-     * @param aPersistable the persistable to be loaded.
-     *
-     * @throws ODMGRuntimeException if an error occurs.
+     * {@inheritDoc}
      */
     public void loadObject(Persistable aPersistable)
     {
@@ -345,7 +359,6 @@ public class EnerJDatabase implements Database
 
         List<Persistable> prefetches = mClientCache.getAndClearPrefetches();
         long[] oids = new long[prefetches.size()];
-        //if (oids.length > 1) System.out.println("Prefetching " + oids.length + " objects");
         int idx = 0;
         for (Persistable prefetch : prefetches) {
             oids[idx++] = getOID(prefetch);
@@ -371,6 +384,119 @@ public class EnerJDatabase implements Database
                 // loadObject() obtains a READ lock.
                 prefetch.enerj_SetLockLevel(EnerJTransaction.READ);
             }
+        }
+    }
+    
+    //--------------------------------------------------------------------------------
+    /** 
+     * 
+     * {@inheritDoc}
+     * @see org.enerj.core.Persister#addToModifiedList(org.enerj.core.Persistable)
+     */
+    public void addToModifiedList(Persistable aPersistable)
+    {
+        EnerJTransaction txn = getTransaction(); 
+        if (txn == null) {
+            return; // Ignore if txn not active.
+        }
+
+        // Make sure object is WRITE-locked.
+        // TODO Another singleton call to server...
+        txn.lock(aPersistable, Transaction.WRITE);
+
+        // If we're in the process of flushing, insert this right at the cursor.
+        // Note that if we were to just call storePersistable() here, we could get
+        // into a very deep recursion. See flushAndKeepModifiedList() for more details.
+        if (txn.getFlushIterator() != null) {
+            txn.getFlushIterator().add(aPersistable);
+        }
+        else {
+            // Otherwise add it to the end of the modified list. 
+            mModifiedObjects.addLast(aPersistable);
+        }
+        
+        if (!aPersistable.enerj_IsNew() && txn.getRestoreValues()) {
+            savePersistableImage(aPersistable);
+        }
+    }
+
+    
+    //--------------------------------------------------------------------------------
+    /** 
+     * 
+     * {@inheritDoc}
+     * @see org.enerj.core.Persister#clearModifiedList()
+     */
+    public void clearModifiedList()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    
+    //--------------------------------------------------------------------------------
+    /** 
+     * 
+     * {@inheritDoc}
+     * @see org.enerj.core.Persister#getModifiedList()
+     */
+    public List<Persistable> getModifiedList()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    //--------------------------------------------------------------------------------
+    // ...End of Persister interface.
+    //--------------------------------------------------------------------------------
+
+    //----------------------------------------------------------------------
+    /**
+     * Loads the contents of aPersistable from a serialized image. 
+     * Assumes checkBoundTransaction() has already been called.
+     *
+     * @param aPersistable the persistable to be loaded.
+     * @param anImage the serialized image of the persistable.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    public void loadSerializedImage(Persistable aPersistable, byte[] anImage)
+    {
+        // A Database can't be shared between threads at the same time, checkBoundTransaction enforces this.
+        // However, enerj_ReadObject can cause getObjectForOID to get called again (due to an FCO referencing 
+        // another FCO, which may cause this
+        // method to be invoked again recursively to load schema objects (but NOT the referenced FCO). So
+        // we use a pool of InputStreams/ReadContexts (DBByteArrayInputStream). These are reused
+        // so we don't create tons of objects. This pool shouldn't normally get larger than a couple
+        // of entries.
+        DBByteArrayInputStream byteInputStream;
+        ObjectSerializer readContext;
+        if (mInputStreamPool.isEmpty()) {
+            // Create a new pool entry.
+            byteInputStream = new DBByteArrayInputStream();
+        }
+        else {
+            byteInputStream = (DBByteArrayInputStream)mInputStreamPool.removeFirst();
+        }
+        
+        readContext = new ObjectSerializer( new DataInputStream(byteInputStream) );
+        byteInputStream.setReadContext(readContext);
+
+        try {
+            byteInputStream.setByteArray(anImage);
+            aPersistable.enerj_SetPersister(this);
+
+            aPersistable.enerj_ReadObject(readContext);
+
+            aPersistable.enerj_SetLoaded(true);
+            aPersistable.enerj_SetModified(false);
+        }
+        catch (Exception e) {
+            throw new ODMGRuntimeException("Error loading object for OID " + getOID(aPersistable), e);
+        }
+        finally {
+            // Put the stream back into the pool
+            mInputStreamPool.add(byteInputStream);
         }
     }
     
@@ -495,13 +621,13 @@ public class EnerJDatabase implements Database
             }
             
             // Create a hollow (non-loaded) object. PersistableHelper.checkLoaded() will
-            // actually load the contents (via EnerJDatabase.loadObject) when a field is accessed.
+            // actually load the contents (via Persister.loadObject) when a field is accessed.
             try {
-                Constructor constructor = oidClass.getDeclaredConstructor(sEnerJDatabaseArgType);
+                Constructor constructor = oidClass.getDeclaredConstructor(sPeristerArgType);
                 constructor.setAccessible(true);
-                Persistable persistable = (Persistable)constructor.newInstance(sEnerJDatabaseArg);
+                Persistable persistable = (Persistable)constructor.newInstance(sPersisterArg);
     
-                persistable.enerj_SetDatabase(this);
+                persistable.enerj_SetPersister(this);
                 persistable.enerj_SetPrivateOID(oid);
                 if (isNontransactionalReadMode()) {
                     PersistableHelper.setNonTransactional(persistable);
@@ -546,55 +672,6 @@ public class EnerJDatabase implements Database
         mAllowNontransactionalReads = isNontransactional;
     }
     
-    //--------------------------------------------------------------------------------
-    /**
-     * Determines whether this database instance allows non-transactional (dirty) reads.  
-     *
-     * @return true if non-transactional reads are allowed, other false if
-     *  reads must occur within a transaction.
-     *  
-     * @throws ODMGException if an error occurs.
-     */
-    public boolean getAllowNontransactionalReads() throws ODMGException
-    {
-        return mAllowNontransactionalReads;
-    }
-
-    //----------------------------------------------------------------------
-    /**
-     * Gets the Persistable object associated with anOID.
-     * <p>
-     * This method is intended only for Ener-J internal use.
-     *
-     * @param anOID the database Object ID.
-     *
-     * @return a Persistable. Returns null if the OID doesn't exist.
-     *
-     * @throws ODMGRuntimeException if an error occurs.
-     */
-    public Persistable getObjectForOID(long anOID)
-    {
-        // TODO Any callers using this method should be checked carefully for possible use of the plural method.
-        return getObjectsForOIDs(new long[] { anOID } )[0];
-    }
-
-    //----------------------------------------------------------------------
-    /**
-     * Gets the Persistable objects associated with someOIDs.
-     * <p>
-     * This method is intended only for Ener-J internal use.
-     *
-     * @param someOIDs the database Object IDs to be retrieved.
-     *
-     * @return an array of Persistable. An element in the array my be null if the corresponding OID doesn't exist.
-     *
-     * @throws ODMGRuntimeException if an error occurs.
-     */
-    public Persistable[] getObjectsForOIDs(long[] someOIDs)
-    {
-        return createObjectsForOIDsAndCIDs(someOIDs, null);
-    }
-
     //----------------------------------------------------------------------
     /**
      * Creates a loaded Persistable object associated based on aSerializedObject.
@@ -626,14 +703,14 @@ public class EnerJDatabase implements Database
      * 
      * @throws ODMGRuntimeException if an error occurs.
      */
-    byte[] createSerializedImage(Persistable aPersistable)
+    private byte[] createSerializedImage(Persistable aPersistable)
     {
         // A Database can't be shared between threads at the same time, checkBoundTransaction enforces this.
         // So it is ok to reuse mByteOutputStream and mDataOutput.
         try {
             mByteOutputStream.reset();
-            mWriteContext.reset();
-            aPersistable.enerj_WriteObject(mWriteContext);
+            ObjectSerializer writeContext = new ObjectSerializer(mDataOutput);
+            aPersistable.enerj_WriteObject(writeContext);
             mDataOutput.flush();
         }
         catch (IOException e) {
@@ -668,19 +745,17 @@ public class EnerJDatabase implements Database
         long cid = aPersistable.enerj_GetClassId();
         long oid = getOID(aPersistable);
 
-        //Logger.global.finest("Storing object: " + aPersistable.getClass().getName() + " oid=" + oid + " cid=" + cid);
-
         // Error if object is not loaded or not new at this point.
         if ( !aPersistable.enerj_IsLoaded() && !aPersistable.enerj_IsNew()) {
             throw new ODMGRuntimeException("INTERNAL: Attempted to store a persistable object that is not loaded or not new. OID=" + oid + " CID=" + cid);
         }
 
 
-        // Force database to be set if it currently null. If it's not null, it must match.
-        Database currentDatabase = aPersistable.enerj_GetDatabase();
-        if (currentDatabase != this) {
-            if (currentDatabase == null) {
-                aPersistable.enerj_SetDatabase(this);
+        // Force persister to be set if it currently null. If it's not null, it must match.
+        Persister currentPersister = aPersistable.enerj_GetPersister();
+        if (currentPersister != this) {
+            if (currentPersister == null) {
+                aPersistable.enerj_SetPersister(this);
             }
             else {
                 throw new ODMGRuntimeException("A persistable object jumped between owner databases. OID=" + oid + " CID=" + cid);
@@ -910,56 +985,6 @@ public class EnerJDatabase implements Database
         return mClientCache;
     }
     
-    //----------------------------------------------------------------------
-    /**
-     * Gets the OID for a persistable object. All Ener-J 
-     * code should call this method. Application code should use EnerJImplementation.getEnerJObjectId or
-     * org.odmg.Implementation.getObjectId.
-     * to get the OID. The OID for new and cloned persistable objects is lazily
-     * initialized. A call to this method implies that a new or cloned object has been 
-     * tied to the persistable object graph and hence an OID should be assigned to it.
-     * <p>
-     * Code must NOT call Persistable.enerj_GetPrivateOID.
-     *
-     * @param anObject an Object that is a Persistable (a FCO).
-     *
-     * @return an OID, or ObjectServer.NULL_OID if the object is not persistable, null, or
-     *  somehow otherwise transient. ObjectServer.NULL_OID is also returned for new/cloned objects
-     *  that have a ObjectServer.NULL_OID OID if a transaction is not active.
-     */
-    public long getOID(Object anObject)
-    {
-        if ( !(anObject instanceof Persistable)) {
-            return ObjectSerializer.NULL_OID;
-        }
-        
-        Persistable persistable = (Persistable)anObject;
-        Database persistableDatabase = persistable.enerj_GetDatabase();
-        
-        // Get the real current transaction here - not the one associated with this
-        // database. Its database should match this database if the object is not being used
-        // out of context.
-        EnerJTransaction currentTxn = EnerJTransaction.getCurrentTransaction();
-        EnerJDatabase currentTxnDatabase = null;
-        if (currentTxn != null) {
-            currentTxnDatabase = currentTxn.getDatabase();
-        }
-        
-        if (persistableDatabase != null && 
-            (persistableDatabase != this || 
-             (currentTxnDatabase != null && currentTxnDatabase != persistableDatabase)) ) {
-            throw new ODMGRuntimeException("Persistable object does not belong to this database");
-        }
-        
-        long oid = persistable.enerj_GetPrivateOID();
-        if (oid == ObjectSerializer.NULL_OID && persistable.enerj_IsNew() && mBoundToTransaction != null) {
-            oid = addNewPersistable(persistable);
-        }
-        
-        return oid;
-    }
-
-    
     //--------------------------------------------------------------------------------
     /**
      * Gets the open transaction that is bound to this database.
@@ -1006,11 +1031,10 @@ public class EnerJDatabase implements Database
     
     //----------------------------------------------------------------------
     /**
-     * Adds a new Persistable to the database (locally).
-     * The Persistable's database and new OID are set. The EnerJTransaction's
-     * modified list is updated. The Persistable is added to the local database cache.
+     * Adds a new Persistable to the Persister's modified list.
+     * The Persistable's database and new OID are set. 
+     * The Persistable is added to the local database cache, if any.
      * The database schema is updated if aPersistable's class is not known to the database.
-     * 
      *
      * @param aPersistable the new Persistable.
      *
@@ -1020,16 +1044,15 @@ public class EnerJDatabase implements Database
     {
         checkBoundTransaction();
 
-        aPersistable.enerj_SetDatabase(this);
+        aPersistable.enerj_SetPersister(this);
         long oid = getNewOID();
-        //Logger.global.finest("Assigning OID " + oid + " to " + aPersistable.getClass() +  " cid " + aPersistable.enerj_GetClassId());
         aPersistable.enerj_SetPrivateOID(oid);
 
         // Make sure that the schema has this persistable's CID.
         updateSchema(aPersistable);
 
-        // Add it to Transaction modified list. Must be done _after_ OID is set.
-        mBoundToTransaction.addToModifiedList(aPersistable, false);
+        // Add it to modified list. Must be done _after_ OID is set.
+        addToModifiedList(aPersistable);
         
         // Cache it
         mClientCache.add(oid, aPersistable);
@@ -1049,6 +1072,8 @@ public class EnerJDatabase implements Database
      * @param aRoot a DatabaseRoot object.
      *
      * @return returns the object's new OID.
+     * 
+     * TODO This method has to go.
      */
     public void setDatabaseRoot(DatabaseRoot aRoot)
     {
@@ -1057,11 +1082,11 @@ public class EnerJDatabase implements Database
         
         Persistable persistable = (Persistable)aRoot;
 
-        persistable.enerj_SetDatabase(this);
+        persistable.enerj_SetPersister(this);
         persistable.enerj_SetPrivateOID(ObjectSerializer.DATABASE_ROOT_OID);
 
-        // Add it to Transaction modified list. Must be done _after_ OID is set.
-        mBoundToTransaction.addToModifiedList(persistable, false);
+        // Add it to modified list. Must be done _after_ OID is set.
+        addToModifiedList(persistable);
         
         // Cache it
         mClientCache.add(ObjectSerializer.DATABASE_ROOT_OID, persistable);
@@ -1475,7 +1500,7 @@ public class EnerJDatabase implements Database
      */
     private static final class DBByteArrayInputStream extends ByteArrayInputStream
     {
-        private ObjectSerializer.ReadContext mReadContext;
+        private ObjectSerializer mReadContext;
         
         //----------------------------------------------------------------------
         DBByteArrayInputStream()
@@ -1492,13 +1517,13 @@ public class EnerJDatabase implements Database
         }
 
         //----------------------------------------------------------------------
-        ObjectSerializer.ReadContext getReadContext()
+        ObjectSerializer getReadContext()
         {
             return mReadContext;
         }
 
         //----------------------------------------------------------------------
-        void setReadContext(ObjectSerializer.ReadContext aReadContext)
+        void setReadContext(ObjectSerializer aReadContext)
         {
             mReadContext = aReadContext;
         }

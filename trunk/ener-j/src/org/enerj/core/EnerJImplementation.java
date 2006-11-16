@@ -24,9 +24,15 @@
 
 package org.enerj.core;
 
-import org.odmg.*;
-
-import org.enerj.server.*;
+import org.odmg.DArray;
+import org.odmg.DBag;
+import org.odmg.DList;
+import org.odmg.DMap;
+import org.odmg.DSet;
+import org.odmg.Database;
+import org.odmg.Implementation;
+import org.odmg.OQLQuery;
+import org.odmg.Transaction;
 
 /**
  * Ener-J implementation of org.odmg.Implementation.
@@ -77,17 +83,20 @@ public class EnerJImplementation implements Implementation
     {
         if (anObject instanceof Persistable) {
             Persistable persistable = (Persistable)anObject;
-            EnerJDatabase db = persistable.enerj_GetDatabase();
-            if (db == null) {
-                EnerJTransaction txn = EnerJTransaction.getCurrentTransaction();
-                if (txn == null) {
-                    return ObjectSerializer.NULL_OID; // Transient
+            Persister persister = persistable.enerj_GetPersister();
+            if (persister == null || persister instanceof EnerJDatabase) {
+                EnerJDatabase db = (EnerJDatabase)persister; 
+                if (db == null) {
+                    EnerJTransaction txn = EnerJTransaction.getCurrentTransaction();
+                    if (txn == null) {
+                        return ObjectSerializer.NULL_OID; // Transient
+                    }
+                    
+                    db = txn.getDatabase();
                 }
                 
-                db = txn.getDatabase();
+                return db.getOID(anObject);
             }
-            
-            return db.getOID(anObject);
         }
         
         return ObjectSerializer.NULL_OID;
@@ -106,7 +115,10 @@ public class EnerJImplementation implements Implementation
     public static final EnerJDatabase getEnerJDatabase(Object obj)
     {
         if (obj instanceof Persistable) {
-            return ((Persistable)obj).enerj_GetDatabase();
+            Persister persister = ((Persistable)obj).enerj_GetPersister();
+            if (persister instanceof EnerJDatabase) {
+                return (EnerJDatabase)persister;
+            }
         }
 
         return null;
@@ -185,7 +197,7 @@ public class EnerJImplementation implements Implementation
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final OQLQuery newOQLQuery()
     {
-        return null; /**  TODO  */
+        return new EnerJOQLQuery();
     }
 
     //----------------------------------------------------------------------
