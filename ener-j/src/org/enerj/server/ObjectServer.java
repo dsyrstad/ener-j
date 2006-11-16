@@ -38,7 +38,20 @@ package org.enerj.server;
  * public static ObjectServerSession connect(Properties someProperties) throws ODMGException;<p>
  *
  * Parameters:<br> someProperties - a map of properties which define how to connect to the ObjectServer.<p>
- *
+ * Standard property keys are:<br>
+ * <ul>
+ * <li>enerj.dbname - the database name. Required.</li>
+ * <li>enerj.accessmode - the database access mode. This is the integer value of the org.odmg.Database access modes. Required.</li>
+ * <li>enerj.username - the username for the database. Optional.</li>
+ * <li>enerj.password - the password for username. Optional.</li>
+ * <li>enerj.hostname - the host to connect to. Required for a remote connection. Does not exist for a in-client local connection.</li>
+ * <li>enerj.port - the port on the host to connect to. Optional. </li>
+ * <li>enerj.dbpath - a list of database directory names, separated by File.pathSeparator. Required on non-proxy servers.</li> 
+ * </ul>
+ * 
+ * These are also statically defined by this interface.
+ * <p>
+ * 
  * Throws: ODMGException in the event of an error. These errors include, but are not limited to:
  *  DatabaseNotFoundException if the database doesn't exist;  DatabaseIsReadOnlyException if the 
  *  database is read-only (e.g., on a read-only filesystem), but OPEN_READ_ONLY was not specified
@@ -56,6 +69,23 @@ package org.enerj.server;
  */
 public interface ObjectServer
 {
+    // Property keys.
+    /** The database name. Required. */
+    public static final String ENERJ_DBNAME_PROP = "enerj.dbname";
+    /** The database access mode. This is the integer value of the org.odmg.Database access modes. Required. */
+    public static final String ENERJ_ACCESS_MODE_PROP = "enerj.accessmode";
+    /** The username for the database. Optional. */
+    public static final String ENERJ_USERNAME_PROP = "enerj.username";
+    /** The password for username. Optional. */
+    public static final String ENERJ_PASSWORD_PROP = "enerj.password"; 
+    /** The host to connect to. Required for a remote connection. Must not exist for a in-client local connection. */
+    public static final String ENERJ_HOSTNAME_PROP = "enerj.hostname";
+    /** The port on the host to connect to. Optional. */
+    public static final String ENERJ_PORT_PROP = "enerj.port"; 
+    /** A list of database directory names, separated by File.pathSeparator. */
+    public static final String ENERJ_DBPATH_PROP = "enerj.dbpath";
+    /** The directory where the database configuration was found. */
+    public static final String ENERJ_DBDIR_PROP = "enerj.dbdir";
 
 }
 
