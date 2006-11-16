@@ -258,20 +258,7 @@ public class EnerJDatabase implements Database, Persister
     {
         return mIsOpen;
     }
-    
-    //----------------------------------------------------------------------
-    /**
-     * Gets the database root for the database. Must be called 
-     * from within a transaction.
-     *
-     * @return the DatabaseRoot.
-     */
-    public DatabaseRoot getDatabaseRoot()
-    {
-        // The following method calls checkBoundTransaction().
-        return (DatabaseRoot)getObjectForOID(ObjectSerializer.DATABASE_ROOT_OID);
-    }
-    
+
     //----------------------------------------------------------------------
     // ... End of truly public EnerJ-specific methods.
     //----------------------------------------------------------------------
