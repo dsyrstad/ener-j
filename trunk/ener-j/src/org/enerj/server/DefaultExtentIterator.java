@@ -29,11 +29,11 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.odmg.ODMGRuntimeException;
 import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.Schema;
 import org.enerj.core.SparseBitSet;
+import org.odmg.ODMGRuntimeException;
 
 /**
  * Ener-J's default ExtentIterator implementation.
@@ -47,7 +47,7 @@ public class DefaultExtentIterator implements ExtentIterator
     private LinkedList mClassQueue = new LinkedList();
     private SparseBitSet.Iterator mCurrentIterator = null;
     private boolean mIsOpen = true;
-    private MetaObjectServerSession mSession;
+    private ObjectServerSession mSession;
 
     //----------------------------------------------------------------------
     /**
@@ -57,12 +57,12 @@ public class DefaultExtentIterator implements ExtentIterator
      *  then aClassName does not have to be a persistable class.
      * @param wantSubclasses if true, all subclasses of aClassName are also included in the iterator.
      * @param aSchema the Schema from the database in question.
-     * @param aSession the MetaObjectServerSession associated with this iterator.
+     * @param aSession the ObjectServerSession associated with this iterator.
      *
      * @throws ODMGRuntimeException if an error occurs.
      */
     public DefaultExtentIterator(String aClassName, boolean wantSubclasses, Schema aSchema,
-                                 MetaObjectServerSession aSession) throws ODMGRuntimeException
+                                 ObjectServerSession aSession) throws ODMGRuntimeException
     {
         mSession = aSession;
         LogicalClassSchema candidateClassSchema = aSchema.findLogicalClass(aClassName);
