@@ -27,7 +27,10 @@ package org.enerj.server;
 import gnu.trove.TLongArrayList;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
+import org.enerj.core.Persistable;
 import org.enerj.core.Persister;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
@@ -60,6 +63,10 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     private HashMap<Long, TLongArrayList> mPendingNewOIDs = null;
     /** Our shutdown hook. */
     private Thread mShutdownHook = null;
+    /** True if session is connected. */
+    private boolean mConnected = false;
+    /** List of Persistable objects created or modified during this transaction. */
+    private LinkedList<Persistable> mModifiedObjects = new LinkedList<Persistable>();
 
     /**
      * Construct a new BaseObjectServerSession.
@@ -71,8 +78,28 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         // Register a shutdown hook for this session.
         mShutdownHook = new ShutdownHook(this);
         Runtime.getRuntime().addShutdownHook(mShutdownHook);
+
+        mConnected = true;
     }
 
+    /**
+     * Determines whether the session is connected.
+     *
+     * @return true if it is, false if not.
+     */
+    boolean isConnected()
+    {
+        return mConnected;
+    }
+    
+    /**
+     * Marks this session as disconnected.
+     */
+    void setDisconnected()
+    {
+        mConnected = false;
+    }
+    
     /**
      * Flush pending extent updates out to the extents.
      *
@@ -105,6 +132,18 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         
         mPendingNewOIDs.clear();
     }
+    
+    
+    /**
+     * Flushes modified objects using {@link #storeObjects(SerializedObject[])}. 
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    protected void flushModifiedObjects()
+    {
+        List<Persistable> modifiedObjects = getModifiedList();
+        // TODO
+    }
 
     //----------------------------------------------------------------------
     // Start of ObjectServerSession interface methods...
@@ -125,8 +164,10 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void bind(long anOID, String aName) throws ObjectNameNotUniqueException
     {
+        // TODO Check if txn exists.
         Bindery bindery = (Bindery)getObjectForOID(BINDERY_OID);
         bindery.bind(anOID, aName);
+        flushModifiedObjects();
     }
 
     /** 
@@ -145,8 +186,10 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void unbind(String aName) throws ObjectNameNotFoundException
     {
+        // TODO Check if txn exists.
         Bindery bindery = (Bindery)getObjectForOID(BINDERY_OID);
         bindery.unbind(aName);
+        flushModifiedObjects();
     }
     
     /** 
@@ -227,6 +270,8 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void disconnect() throws ODMGException 
     {
+        //  TODO  - write disconnect/session info in log.
+        setDisconnected();
     }
 
     /** 
@@ -235,6 +280,10 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void shutdown() throws ODMGException
     {
+        if (isConnected()) {
+            disconnect();
+        }
+
         try {
             Runtime.getRuntime().removeShutdownHook(mShutdownHook);
         }
@@ -242,7 +291,6 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             // Ignore - shutdown may be in progress.
         }
 
-        disconnect();
     }
 
     /** 
@@ -264,11 +312,13 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     }
 
     /** 
-     * {@inheritDoc}
+     * {@inheritDoc}.  Subclass should call super.storeObjects() after to doing its work.
      * @see org.enerj.server.ObjectServerSession#storeObjects(org.enerj.server.SerializedObject[])
      */
     public void storeObjects(SerializedObject[] someObjects) throws ODMGException
     {
+        // TODO Check if txn exists.
+
         for (SerializedObject object : someObjects) {
             long oid = object.getOID();
             long cid = object.getCID();
@@ -288,11 +338,13 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     }
 
     /** 
-     * {@inheritDoc}
+     * {@inheritDoc}. Subclass should call super.beginTransaction() prior to doing its work.
      * @see org.enerj.server.ObjectServerSession#beginTransaction()
      */
     public void beginTransaction() throws ODMGRuntimeException 
     {
+        // TODO Check that no txn exists.
+
         if (mPendingNewOIDs == null) {
             mPendingNewOIDs = new HashMap<Long, TLongArrayList>(128);
         }
@@ -302,30 +354,104 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     }
 
     /** 
-     * {@inheritDoc}
+     * {@inheritDoc}.  Subclass should call super.checkpointTransaction() prior to doing its work.
      * @see org.enerj.server.ObjectServerSession#checkpointTransaction()
      */
     public void checkpointTransaction() throws ODMGRuntimeException 
     {
+        // TODO Check if txn exists.
         updateExtents();
     }
 
     /** 
-     * {@inheritDoc}
+     * {@inheritDoc}. Subclass should call super.commitTransaction() prior to doing its work.
      * @see org.enerj.server.ObjectServerSession#commitTransaction()
      */
     public void commitTransaction() throws ODMGRuntimeException 
     {
+        // TODO Check if txn exists.
         updateExtents();
     }
 
     /** 
-     * {@inheritDoc}
+     * {@inheritDoc}. Subclass should call super.rollbackTransaction() prior to doing its work.
      * @see org.enerj.server.ObjectServerSession#rollbackTransaction()
      */
     public void rollbackTransaction() throws ODMGRuntimeException 
     {
+        // TODO Check if txn exists.
         mPendingNewOIDs.clear();
+    }
+
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.core.Persister#addToModifiedList(org.enerj.core.Persistable)
+     */
+    public void addToModifiedList(Persistable aPersistable)
+    {
+        // TODO if no txn exists, ignore.
+
+        mModifiedObjects.addLast(aPersistable);
+    }
+    
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.core.Persister#clearModifiedList()
+     */
+    public void clearModifiedList()
+    {
+        mModifiedObjects.clear();
+    }
+    
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.core.Persister#getModifiedList()
+     */
+    public List<Persistable> getModifiedList()
+    {
+        return mModifiedObjects;
+    }
+    
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.core.Persister#getObjectForOID(long)
+     */
+    public Persistable getObjectForOID(long anOID)
+    {
+        return getObjectsForOIDs(new long[] { anOID } )[0];
+    }
+    
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.core.Persister#getObjectsForOIDs(long[])
+     */
+    public Persistable[] getObjectsForOIDs(long[] someOIDs)
+    {
+        // TODO - Have to check if object is in the modified list. We need a modifiedlist object.
+
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.core.Persister#getOID(java.lang.Object)
+     */
+    public long getOID(Object anObject)
+    {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+    
+    /** 
+     * 
+     * {@inheritDoc}
+     * @see org.enerj.core.Persister#loadObject(org.enerj.core.Persistable)
+     */
+    public void loadObject(Persistable aPersistable)
+    {
+        // TODO Auto-generated method stub
+        
     }
 
     //----------------------------------------------------------------------

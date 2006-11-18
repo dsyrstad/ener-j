@@ -24,6 +24,8 @@
 
 package org.enerj.server;
 
+import org.odmg.ODMGException;
+
 
 /**
  * Ener-J Object Server interface. All things that serve objects to clients
@@ -86,6 +88,14 @@ public interface ObjectServer
     public static final String ENERJ_DBPATH_PROP = "enerj.dbpath";
     /** The directory where the database configuration was found. */
     public static final String ENERJ_DBDIR_PROP = "enerj.dbdir";
+
+    
+    /**
+     * Instructs the server to shutdown.
+     *
+     * @throws ODMGException if an error occurs.
+     */
+    public void shutdown() throws ODMGException;
 
 }
 

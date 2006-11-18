@@ -32,11 +32,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJTransaction;
 import org.enerj.core.ObjectSerializer;
+import org.enerj.core.Persistable;
 import org.enerj.server.logentry.BeginTransactionLogEntry;
 import org.enerj.server.logentry.CheckpointTransactionLogEntry;
 import org.enerj.server.logentry.CommitTransactionLogEntry;
@@ -67,7 +69,7 @@ import org.odmg.TransactionNotInProgressException;
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see ObjectServer
  */
-public class PagedObjectServer implements ObjectServer
+public class PagedObjectServer extends BaseObjectServer
 {
     /** HashMap of database names to PagedObjectServers. */
     private static HashMap<String, PagedObjectServer> sCurrentServers = new HashMap<String, PagedObjectServer>(20);
@@ -103,13 +105,13 @@ public class PagedObjectServer implements ObjectServer
     private long mLastCheckpointTime = 0L;
 
     /** The Update Cache. Caches updates prior to committing a transaction. */
-    private UpdateCache mUpdateCache = null;
+    private UpdateCache mServerUpdateCache = null;
     
     /** Synchronization lock for transaction-oriented methods. */
     private Object mTransactionLock = new Object();
     
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a PagedObjectServer.
      *
@@ -126,9 +128,9 @@ public class PagedObjectServer implements ObjectServer
         
         int maxUpdateCacheSize = getRequiredIntProperty(someProperties, "PagedObjectServer.MaxUpdateCacheSize");
         int updateCacheInitialHashSize = getRequiredIntProperty(someProperties, "PagedObjectServer.UpdateCacheInitialHashSize");
-        mUpdateCache = new UpdateCache(maxUpdateCacheSize, updateCacheInitialHashSize);
+        mServerUpdateCache = new UpdateCache(maxUpdateCacheSize, updateCacheInitialHashSize);
         
-        mDBName = getRequiredProperty(someProperties, MetaObjectServer.ENERJ_DBNAME_PROP);
+        mDBName = getRequiredProperty(someProperties, ObjectServer.ENERJ_DBNAME_PROP);
         
         try {
             mRedoLogServer = (RedoLogServer)PluginHelper.connect(logServerClassName, someProperties);
@@ -171,7 +173,7 @@ public class PagedObjectServer implements ObjectServer
         Runtime.getRuntime().addShutdownHook(mShutdownHook);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets a required property from the specified properties.
      *
@@ -192,7 +194,7 @@ public class PagedObjectServer implements ObjectServer
         return value;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets a required property as an int from the specified properties.
      *
@@ -215,7 +217,7 @@ public class PagedObjectServer implements ObjectServer
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates a new database on disk. The "enerj.dbpath" system property must be set.
      *
@@ -236,7 +238,7 @@ public class PagedObjectServer implements ObjectServer
         Properties props = new Properties( System.getProperties() );
 
         String propFileName = aDBName + File.separatorChar + aDBName + ".properties";
-        String dbPath = getRequiredProperty(props, MetaObjectServer.ENERJ_DBPATH_PROP);
+        String dbPath = getRequiredProperty(props, ObjectServer.ENERJ_DBPATH_PROP);
         File propFile = FileUtil.findFileOnPath(propFileName, dbPath);
         if (propFile == null) {
             throw new DatabaseNotFoundException("Cannot find " + propFileName + " in any of the directories " + dbPath); 
@@ -266,7 +268,7 @@ public class PagedObjectServer implements ObjectServer
         createDatabase(aDescription, aDBName, aMaximumSize, aPreAllocatedSize, props, propFile);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Creates a new database on disk. The "enerj.dbpath" system property must be set.
      *
@@ -286,7 +288,7 @@ public class PagedObjectServer implements ObjectServer
 	private static void createDatabase(String aDescription, String aDBName, long aMaximumSize, long aPreAllocatedSize, 
 			Properties someDBProps, File aDBDir) throws ODMGException {
 		
-		someDBProps.setProperty(MetaObjectServer.ENERJ_DBDIR_PROP, aDBDir.getParent() );
+		someDBProps.setProperty(ObjectServer.ENERJ_DBDIR_PROP, aDBDir.getParent() );
         String volumeFileName = StringUtil.substituteMacros( getRequiredProperty(someDBProps, FilePageServer.VOLUME_PROP), someDBProps);
         int pageSize = getRequiredIntProperty(someDBProps, FilePageServer.PAGE_SIZE_PROP);
 
@@ -366,7 +368,7 @@ public class PagedObjectServer implements ObjectServer
         }
 	}
 
-    //----------------------------------------------------------------------
+
     /**
      * Handles an unmonitored storage exception from the PagedStore's processing thread.
      *
@@ -381,7 +383,7 @@ public class PagedObjectServer implements ObjectServer
         System.exit(1); //  TODO  Do NOT do this.
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Handles the completion of an unmonitored StoreObjectRequest.
      *
@@ -390,10 +392,10 @@ public class PagedObjectServer implements ObjectServer
     void completeStoreObjectRequest(PagedStore.StoreObjectRequest aRequest)
     {
         // This request is now in the database - we can stop caching it.
-        mUpdateCache.removeStoreRequest(aRequest);
+        mServerUpdateCache.removeStoreRequest(aRequest);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Start a database checkpoint if one is not in progress.
      *
@@ -428,7 +430,7 @@ public class PagedObjectServer implements ObjectServer
         mCheckpointInProgress = true;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Removes aTransaction from the active transaction list, checks if
      * a database checkpoint should be performed, and notifies all waiters
@@ -453,7 +455,7 @@ public class PagedObjectServer implements ObjectServer
         mTransactionLock.notifyAll();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Called from the PagedStore request thread to finalize an EndDatabaseCheckpoint.
      *
@@ -468,11 +470,11 @@ public class PagedObjectServer implements ObjectServer
         mRedoLogServer.append(logEntry);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Shuts down this server.
      */
-    void shutdown() throws ODMGException
+    public void shutdown() throws ODMGException
     {
         //  TODO  quiesce the system . stop new connections and txns. shutdown when all txns closed.
         //  TODO  NEED THIS NOW!
@@ -528,11 +530,11 @@ public class PagedObjectServer implements ObjectServer
         }
     }
 
-    //----------------------------------------------------------------------
-    // Start of ObjectServer interface methods...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of ObjectServer interface methods...
+
+
+
     /**
      * Connects to a database.
      *
@@ -567,7 +569,7 @@ public class PagedObjectServer implements ObjectServer
         // See if there is already a ObjectServer for this database.
         // Synchronize on sCurrentServers during the get/put process so that another thread
         // cannot create one at the same time.
-        String dbName = getRequiredProperty(someProperties, MetaObjectServer.ENERJ_DBNAME_PROP);
+        String dbName = getRequiredProperty(someProperties, ObjectServer.ENERJ_DBNAME_PROP);
         synchronized (sCurrentServers) {
             Session session;
             PagedObjectServer server = (PagedObjectServer)sCurrentServers.get(dbName);
@@ -587,56 +589,31 @@ public class PagedObjectServer implements ObjectServer
         
     }
 
-    //----------------------------------------------------------------------
+
     // ...End of ObjectServer interface methods.
-    //----------------------------------------------------------------------
 
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
+
     /**
      * The ObjectServerSession object returned by this server.
      */
-    private static final class Session implements ObjectServerSession
+    private final class Session extends BaseObjectServerSession
     {
-        private PagedObjectServer mObjectServer;
-        private boolean mConnected;
         private Transaction mTxn = null;
-        private boolean mAllowNontransactionalReads = false;
-        
-        //----------------------------------------------------------------------
+
         /**
          * Constructs a new Session in a connected state.
          *
-         * @param aObjectServer the PagedObjectServer to associate with the session.
+         * @param anObjectServer the PagedObjectServer to associate with the session.
          */
-        Session(PagedObjectServer aObjectServer)
+        Session(PagedObjectServer anObjectServer)
         {
-            mObjectServer = aObjectServer;
-            mConnected = true;
+            super(anObjectServer);
         }
         
-        //----------------------------------------------------------------------
-        /**
-         * Determines whether the session is connected.
-         *
-         * @return true if it is, false if not.
-         */
-        boolean isConnected()
-        {
-            return mConnected;
-        }
-        
-        //----------------------------------------------------------------------
-        /**
-         * Marks this session as disconnected.
-         */
-        void setDisconnected()
-        {
-            mConnected = false;
-        }
-        
-        //----------------------------------------------------------------------
+
         /**
          * Gets the transaction associated with this session.
          *
@@ -653,7 +630,7 @@ public class PagedObjectServer implements ObjectServer
             return mTxn;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Gets the transaction associated with this session.
          *
@@ -664,7 +641,7 @@ public class PagedObjectServer implements ObjectServer
             return mTxn;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Sets the transaction associated with this session.
          *
@@ -675,17 +652,11 @@ public class PagedObjectServer implements ObjectServer
             mTxn = aTransaction;
         }
         
-        //----------------------------------------------------------------------
+
         // Start of ObjectServerSession interface methods...
-        //----------------------------------------------------------------------
 
-        //----------------------------------------------------------------------
-        public ObjectServer getObjectServer()
-        {
-            return mObjectServer;
-        }
 
-        //----------------------------------------------------------------------
+
         public void disconnect() throws ODMGException 
         {
             if (!isConnected()) {
@@ -699,39 +670,24 @@ public class PagedObjectServer implements ObjectServer
                 rollbackTransaction();
             }
 
-            //  TODO  - write disconnect/session info in log.
-            setDisconnected();
+            super.disconnect();
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * @{inheritDoc}
          */
         public void shutdown() throws ODMGException
         {
-            if (isConnected()) {
-                disconnect();
-            }
-
-            mObjectServer.shutdown();
+            super.shutdown();
+            
+            getObjectServer().shutdown();
         }
 
-        //----------------------------------------------------------------------
-        public boolean getAllowNontransactionalReads() throws ODMGException
-        {
-            return mAllowNontransactionalReads;
-        }
 
-        //----------------------------------------------------------------------
-        public void setAllowNontransactionalReads(boolean isNontransactional) throws ODMGException
-        {
-            mAllowNontransactionalReads = isNontransactional;
-        }
-
-        //----------------------------------------------------------------------
         public long[] getCIDsForOIDs(long[] someOIDs) throws ODMGException
         {
-            if (!mAllowNontransactionalReads) {
+            if (!getAllowNontransactionalReads()) {
                 // Validate txn active - interface requirement
                 getTransaction();
             }
@@ -741,12 +697,12 @@ public class PagedObjectServer implements ObjectServer
                 long anOID = someOIDs[i];
                 if (anOID != ObjectSerializer.NULL_OID) {
                     // Check the update cache first and get CID from the store request, if there is one.
-                    PagedStore.StoreObjectRequest storeRequest = mObjectServer.mUpdateCache.lookupStoreRequest(anOID);
+                    PagedStore.StoreObjectRequest storeRequest = mServerUpdateCache.lookupStoreRequest(anOID);
                     if (storeRequest == null) {
                         // Get a read lock on the object otherwise the CID can change for the object after getting the CID.
                         // TODO make timeout configurable.
                         getLock(anOID, EnerJTransaction.READ, -1);
-                        cids[i] = mObjectServer.mPagedStore.getCIDForOID(anOID);
+                        cids[i] = mPagedStore.getCIDForOID(anOID);
                     }
                     else {
                         // Found an updated version of the object. Use the updated CID.
@@ -758,9 +714,11 @@ public class PagedObjectServer implements ObjectServer
             return cids;
         }
 
-        //----------------------------------------------------------------------
+
         public void storeObjects(SerializedObject[] someObjects) throws ODMGException
         {
+            // TODO - SerializedObject should contain the version #. We should compare the object's version
+            // to the current version before writing.
             for (SerializedObject object : someObjects) {
                 long anOID = object.getOID();
                 long aCID = object.getCID();
@@ -771,20 +729,22 @@ public class PagedObjectServer implements ObjectServer
                 Transaction txn = getTransaction();
     
                 StoreObjectLogEntry logEntry = new StoreObjectLogEntry( txn.getLogTransactionId(), anOID, aCID, object.getImage());
-                mObjectServer.mRedoLogServer.append(logEntry);
+                mRedoLogServer.append(logEntry);
     
-                PagedStore.StoreObjectRequest request = mObjectServer.mPagedStore.new StoreObjectRequest(aCID, anOID, object.getImage());
+                PagedStore.StoreObjectRequest request = mPagedStore.new StoreObjectRequest(aCID, anOID, object.getImage());
                 request.mLogEntryPosition = logEntry.getLogPosition();
     
                 // Throw update into the cache. It doesn't hit the database (PagedStore) until checkpoint or commit.
-                mObjectServer.mUpdateCache.cacheUpdateRequest(request, txn);
+                mServerUpdateCache.cacheUpdateRequest(request, txn);
             }
+            
+            super.storeObjects(someObjects);
         }
 
-        //----------------------------------------------------------------------
+
         public byte[][] loadObjects(long[] someOIDs) throws ODMGException
         {
-            if (!mAllowNontransactionalReads) {
+            if (!getAllowNontransactionalReads()) {
                 // Validate txn active - interface requirement
                 getTransaction();
             }
@@ -793,13 +753,13 @@ public class PagedObjectServer implements ObjectServer
             int idx = 0;
             for (long oid : someOIDs) {
                 // Check the update cache first and get the object from the store request, if there is one.
-                PagedStore.StoreObjectRequest storeRequest = mObjectServer.mUpdateCache.lookupStoreRequest(oid);
+                PagedStore.StoreObjectRequest storeRequest = mServerUpdateCache.lookupStoreRequest(oid);
                 if (storeRequest == null) {
                     // Get a READ lock. 
                     // TODO Configurable timeout?
                     getLock(oid, EnerJTransaction.READ, -1);
                     // Not found - load object from PagedStore.
-                    objects[idx++] = mObjectServer.mPagedStore.loadObject(oid); // TODO Make PagedStore take a array of oids.
+                    objects[idx++] = mPagedStore.loadObject(oid); // TODO Make PagedStore take a array of oids.
                 }
                 else {
                     // Found in update cache. use updated object.
@@ -810,24 +770,25 @@ public class PagedObjectServer implements ObjectServer
             return objects;
         }
 
-        //----------------------------------------------------------------------
+
         public long[] getNewOIDBlock() throws ODMGException
         {
             // Validate txn active - interface requirement
             getTransaction();
 
-            return mObjectServer.mPagedStore.getNewOIDBlock();
+            return mPagedStore.getNewOIDBlock();
         }
 
-        //----------------------------------------------------------------------
+
         public void beginTransaction() throws ODMGRuntimeException 
         {
+            super.beginTransaction();
 
-            synchronized (mObjectServer.mTransactionLock) {
+            synchronized (mTransactionLock) {
                 // Wait if the server is quiescent.
-                while (mObjectServer.mQuiescent) {
+                while (mQuiescent) {
                     try {
-                        mObjectServer.mTransactionLock.wait();
+                        mTransactionLock.wait();
                     }
                     catch (InterruptedException e) {
                         // Ignore
@@ -837,12 +798,12 @@ public class PagedObjectServer implements ObjectServer
                 try {
                     BeginTransactionLogEntry logEntry = new BeginTransactionLogEntry();
                     // This append gives us the transaction id too.
-                    mObjectServer.mRedoLogServer.append(logEntry);
+                    mRedoLogServer.append(logEntry);
 
-                    LockServerTransaction lockTxn = mObjectServer.mLockServer.startTransaction();
+                    LockServerTransaction lockTxn = mLockServer.startTransaction();
                     Transaction txn = new Transaction(this, lockTxn, logEntry.getLogPosition(), logEntry.getTransactionId() );
                     setTransaction(txn);
-                    mObjectServer.mActiveTransactions.add(txn);
+                    mActiveTransactions.add(txn);
                 }
                 catch (ODMGRuntimeException e) {
                     throw e;
@@ -853,19 +814,20 @@ public class PagedObjectServer implements ObjectServer
             } // ...end synchronized (mTransactionLock).
         }
 
-        //----------------------------------------------------------------------
+
         public void checkpointTransaction() throws ODMGRuntimeException 
         {
-
             Transaction txn = getTransaction();
 
-            synchronized (mObjectServer.mTransactionLock) {
+            super.checkpointTransaction();
+
+            synchronized (mTransactionLock) {
                 // Basically a commit without releasing locks or closing the transaction.
                 try {
                     CheckpointTransactionLogEntry logEntry = new CheckpointTransactionLogEntry( txn.getLogTransactionId() );
-                    mObjectServer.mRedoLogServer.append(logEntry);
+                    mRedoLogServer.append(logEntry);
 
-                    txn.prepareTransaction(mObjectServer.mPagedStore);
+                    txn.prepareTransaction(mPagedStore);
                 }
                 catch (ODMGRuntimeException e) {
                     throw e;
@@ -876,18 +838,19 @@ public class PagedObjectServer implements ObjectServer
             } // ...end synchronized (mTransactionLock).
         }
 
-        //----------------------------------------------------------------------
+
         public void commitTransaction() throws ODMGRuntimeException 
         {
-
             Transaction txn = getTransaction();
+            
+            super.commitTransaction();
 
-            synchronized (mObjectServer.mTransactionLock) {
+            synchronized (mTransactionLock) {
                 try {
                     CommitTransactionLogEntry logEntry = new CommitTransactionLogEntry( txn.getLogTransactionId() );
-                    mObjectServer.mRedoLogServer.append(logEntry);
+                    mRedoLogServer.append(logEntry);
 
-                    txn.prepareTransaction(mObjectServer.mPagedStore);
+                    txn.prepareTransaction(mPagedStore);
                 }
                 catch (ODMGRuntimeException e) {
                     throw e;
@@ -896,7 +859,7 @@ public class PagedObjectServer implements ObjectServer
                     throw new ODMGRuntimeException("Error committing transaction: " + e, e);
                 }
 
-                mObjectServer.endTransactionAndCheckpoint(txn);
+                endTransactionAndCheckpoint(txn);
             } // ...end synchronized (mTransactionLock).
 
             // Release all locks.
@@ -906,15 +869,17 @@ public class PagedObjectServer implements ObjectServer
             setTransaction(null);
         }
 
-        //----------------------------------------------------------------------
+
         public void rollbackTransaction() throws ODMGRuntimeException 
         {
             Transaction txn = getTransaction();
 
-            synchronized (mObjectServer.mTransactionLock) {
+            super.rollbackTransaction();
+            
+            synchronized (mTransactionLock) {
                 try {
                     RollbackTransactionLogEntry logEntry = new RollbackTransactionLogEntry( txn.getLogTransactionId() );
-                    mObjectServer.mRedoLogServer.append(logEntry);
+                    mRedoLogServer.append(logEntry);
                 }
                 catch (ODMGRuntimeException  e) {
                     throw e;
@@ -923,14 +888,14 @@ public class PagedObjectServer implements ObjectServer
                     throw new ODMGRuntimeException("Error rolling back transaction: " + e, e);
                 }
 
-                mObjectServer.endTransactionAndCheckpoint(txn);
+                endTransactionAndCheckpoint(txn);
             } // ...end synchronized (mTransactionLock).
 
             // Dump the update list.
             PagedStore.UpdateRequest request = txn.getFirstUpdateRequest();
             for (; request != null; request = request.mNext) {
                 if (request instanceof PagedStore.StoreObjectRequest) {
-                    mObjectServer.mUpdateCache.removeStoreRequest((PagedStore.StoreObjectRequest)request);
+                    mServerUpdateCache.removeStoreRequest((PagedStore.StoreObjectRequest)request);
                 }
             }
 
@@ -943,10 +908,10 @@ public class PagedObjectServer implements ObjectServer
             setTransaction(null);
         }
 
-        //----------------------------------------------------------------------
+
         public void getLock(long anOID, int aLockLevel, long aWaitTime) throws LockNotGrantedException 
         {
-            if (mAllowNontransactionalReads && aLockLevel == org.odmg.Transaction.READ) {
+            if (getAllowNontransactionalReads() && aLockLevel == org.odmg.Transaction.READ) {
                 // Don't bother to check for a txn or get read locks if we're doing non-transactional reads.
                 return;
             }
@@ -978,14 +943,11 @@ public class PagedObjectServer implements ObjectServer
             txn.getLockServerTransaction().lock(lockObj, lockMode, aWaitTime);
         }
 
-        //----------------------------------------------------------------------
         // ...End of ObjectServerSession interface methods.
-        //----------------------------------------------------------------------
-
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Our JVM ShutdownHook thread.
      */
@@ -993,13 +955,13 @@ public class PagedObjectServer implements ObjectServer
     {
         private PagedObjectServer mObjectServer;
         
-        //----------------------------------------------------------------------
+
         ShutdownHook(PagedObjectServer anObjectServer)
         {
             mObjectServer = anObjectServer;
         }
         
-        //----------------------------------------------------------------------
+
         public void run()
         {
             // TODO log shutdown hook invoked.
@@ -1015,8 +977,8 @@ public class PagedObjectServer implements ObjectServer
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Internal Transaction representation.
      * This class is <em>not</em> thread-safe - it doesn't need to be.
@@ -1034,7 +996,7 @@ public class PagedObjectServer implements ObjectServer
         /** Head of Update request list. New requests are added to the tail. */
         private PagedStore.UpdateRequest mUpdateRequestTail;
         
-        //----------------------------------------------------------------------
+
         /**
          * Constructs a new Transaction.
          *
@@ -1052,7 +1014,7 @@ public class PagedObjectServer implements ObjectServer
             mLogTransactionId = aLogTransactionId;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Gets the Session of this transaction.
          *
@@ -1063,7 +1025,7 @@ public class PagedObjectServer implements ObjectServer
             return mSession;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Gets the LockServerTransaction of this transaction.
          *
@@ -1074,7 +1036,7 @@ public class PagedObjectServer implements ObjectServer
             return mLockTransaction;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Gets the log transaction id. This id is unique across runs of the server
          * for a particular log.
@@ -1086,7 +1048,7 @@ public class PagedObjectServer implements ObjectServer
             return mLogTransactionId;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Gets the log position of the BeginTransactionLogEntry, or last CheckpointTransactionLogEntry.
          *
@@ -1097,7 +1059,7 @@ public class PagedObjectServer implements ObjectServer
             return mLogStartPosition;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Sets the log position of the last CheckpointTransactionLogEntry.
          *
@@ -1108,7 +1070,7 @@ public class PagedObjectServer implements ObjectServer
             mLogStartPosition = aLogPosition;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Gets the first update request. The requests are in FIFO order.
          *
@@ -1119,7 +1081,7 @@ public class PagedObjectServer implements ObjectServer
             return mUpdateRequestHead;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Adds an update request to the tail of the list of updates.
          *
@@ -1140,7 +1102,7 @@ public class PagedObjectServer implements ObjectServer
             mUpdateRequestTail = anUpdateRequest;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Removes an update request from the list of updates.
          *
@@ -1169,7 +1131,7 @@ public class PagedObjectServer implements ObjectServer
             anUpdateRequest.mPrev = null;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Clears the entire update request list.
          */
@@ -1179,7 +1141,7 @@ public class PagedObjectServer implements ObjectServer
             mUpdateRequestTail = null;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Prepare to checkpoint or commit this transaction. The transaction's updates
          * are moved to aPagedStore's queue (without waiting for them to be processed)
@@ -1202,8 +1164,8 @@ public class PagedObjectServer implements ObjectServer
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * The Update Cache.
      * This class is thread-safe.
@@ -1214,14 +1176,14 @@ public class PagedObjectServer implements ObjectServer
         private HashMap mHashMap;
         private int mUsedCacheSize = 0;
         
-        //----------------------------------------------------------------------
+
         UpdateCache(int aMaxCacheSize, int aHashMapSize)
         {
             mMaxCacheSize = aMaxCacheSize;
             mHashMap = new HashMap(aHashMapSize, 1.0F);
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Attempts to find a PagedStore.StoreObjectRequest in the cache.
          *
@@ -1237,7 +1199,7 @@ public class PagedObjectServer implements ObjectServer
             }
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Removes a PagedStore.StoreObjectRequest from the cache. The supplied request
          * and the request in the cache must be the same object in order to be
@@ -1268,7 +1230,7 @@ public class PagedObjectServer implements ObjectServer
             }
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Adds an UpdateRequest to this UpdateCache and the specified Transaction.
          * UpdateRequest.mLogEntryPosition must be set prior to calling this method.
