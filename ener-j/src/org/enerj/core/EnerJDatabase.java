@@ -387,10 +387,6 @@ public class EnerJDatabase implements Database, Persister
             return; // Ignore if txn not active.
         }
 
-        // Make sure object is WRITE-locked.
-        // TODO Another singleton call to server...
-        txn.lock(aPersistable, Transaction.WRITE);
-
         // If we're in the process of flushing, insert this right at the cursor.
         // Note that if we were to just call storePersistable() here, we could get
         // into a very deep recursion. See flushAndKeepModifiedList() for more details.
@@ -514,6 +510,7 @@ public class EnerJDatabase implements Database, Persister
         for (int i = 0; i < someOIDs.length; i++) {
             // Note: If mIsServerSideDB is true, the cache will be empty.
             Persistable checkPersistable = (Persistable)mClientCache.get(someOIDs[i]);
+            // TODO FIXME SERIOUS! Object may have fallen off of cache, but still be in ModifiedList. We'd want the one in the modified list.
             if (checkPersistable != null) {
                 if (isNontransactionalReadMode()) {
                     // If we're in non-transactional read mode and this object was
