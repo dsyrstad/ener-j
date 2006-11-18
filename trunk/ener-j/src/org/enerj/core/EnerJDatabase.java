@@ -99,7 +99,7 @@ public class EnerJDatabase implements Database, Persister
     private ClientCache mClientCache = null;
 
     /** List of Persistable objects created or modified during this transaction. */
-    private LinkedList<Persistable> mModifiedObjects = new LinkedList<Persistable>();
+    private ModifiedPersistableList mModifiedObjects = new ModifiedPersistableList();
     
     /** Cache of CIDs known to be in the database. Used so that we can avoid
      * grabbing a DatabaseRoot and read-locking it. */
@@ -395,7 +395,7 @@ public class EnerJDatabase implements Database, Persister
         }
         else {
             // Otherwise add it to the end of the modified list. 
-            mModifiedObjects.addLast(aPersistable);
+            mModifiedObjects.addToModifiedList(aPersistable);
         }
         
         if (!aPersistable.enerj_IsNew() && txn.getRestoreValues()) {
@@ -419,14 +419,12 @@ public class EnerJDatabase implements Database, Persister
     
     //--------------------------------------------------------------------------------
     /** 
-     * 
      * {@inheritDoc}
      * @see org.enerj.core.Persister#getModifiedList()
      */
-    public List<Persistable> getModifiedList()
+    public Iterator<Persistable> getModifiedListIterator()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return mModifiedObjects.getIterator();
     }
 
     //--------------------------------------------------------------------------------
@@ -698,7 +696,7 @@ public class EnerJDatabase implements Database, Persister
             mDataOutput.flush();
         }
         catch (IOException e) {
-            throw new org.odmg.ODMGRuntimeException("Error writing object: " + e);
+            throw new ODMGRuntimeException("Error writing object: " + e);
         }
         
         return mByteOutputStream.toByteArray();
