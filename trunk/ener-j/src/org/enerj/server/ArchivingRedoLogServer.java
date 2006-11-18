@@ -250,7 +250,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
      * <p>
      * 
      * @version $Id: $
-     * @author <a href="mailto:dsyrstad@vitamin-o.org">Dan Syrstad </a>
+     * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
      */
     private static final class BufferedRandomAccessLogFile extends RandomAccessFile
     {

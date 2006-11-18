@@ -27,19 +27,8 @@ package org.enerj.server;
 import gnu.trove.TLongArrayList;
 
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
-import org.enerj.core.ClassVersionSchema;
-import org.enerj.core.DatabaseRoot;
-import org.enerj.core.EnerJDatabase;
-import org.enerj.core.LogicalClassSchema;
-import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persister;
-import org.enerj.core.Schema;
-import org.enerj.core.SparseBitSet;
-import org.enerj.core.SystemCIDMap;
-import org.enerj.util.RequestProcessorProxy;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.ObjectNameNotFoundException;
@@ -54,6 +43,17 @@ import org.odmg.ObjectNotPersistentException;
  */
 abstract public class BaseObjectServerSession implements ObjectServerSession, Persister
 {
+    /** First available user OID. */
+    public static final long FIRST_USER_OID = 1000L;
+    /** Last available system CID. CIDs from 1 to this value are reserved for pre-enhanced system classes. */
+    public static final long LAST_SYSTEM_CID = 10000L;
+    /** System OID: the Schema. */
+    public static final long SCHEMA_OID = 1L;
+    /** System OID: the Bindery. */
+    public static final long BINDERY_OID = 2L;
+    /** System OID: the Class Extents. */
+    public static final long EXTENTS_OID = 3L;
+
     private ObjectServer mObjectServer;
     private boolean mAllowNontransactionalReads = false;
     /** New OIDs that need to be added to their extents on commit. Key is CID, value is a list of OIDs. */
@@ -61,7 +61,6 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     /** Our shutdown hook. */
     private Thread mShutdownHook = null;
 
-    //--------------------------------------------------------------------------------
     /**
      * Construct a new BaseObjectServerSession.
      */
@@ -74,13 +73,13 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         Runtime.getRuntime().addShutdownHook(mShutdownHook);
     }
 
-    //--------------------------------------------------------------------------------
     /**
      * Flush pending extent updates out to the extents.
      *
      */
     private void updateExtents()
     {
+        /*
         // Add new objects to extents.
         EnerJDatabase db = getClientDatabase();
         // Schema may have been changed, so evict everything at this point.
@@ -102,6 +101,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                 }
             }
         }
+        */
         
         mPendingNewOIDs.clear();
     }
@@ -110,57 +110,52 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     // Start of ObjectServerSession interface methods...
     //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#getObjectServer()
+     */
     public ObjectServer getObjectServer()
     {
-        return mProxiedObjectServer;
+        return mObjectServer;
     }
     
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#bind(long, java.lang.String)
+     */
     public void bind(long anOID, String aName) throws ObjectNameNotUniqueException
     {
-        DatabaseRoot root = (DatabaseRoot)getClientDatabase().getObjectForOID(ObjectSerializer.DATABASE_ROOT_OID);
-        // TODO this is nasty because we read lock and write lock the bindery here. this needs better concurrency
-        Map bindery = root.getBindery();
-        if (bindery.containsKey(aName)) {
-            throw new ObjectNameNotUniqueException(aName);
-        }
-
-        bindery.put(aName, new Long(anOID));
+        Bindery bindery = (Bindery)getObjectForOID(BINDERY_OID);
+        bindery.bind(anOID, aName);
     }
 
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#lookup(java.lang.String)
+     */
     public long lookup(String aName) throws ObjectNameNotFoundException
     {
-        EnerJDatabase db = getClientDatabase();
-        DatabaseRoot root = (DatabaseRoot)db.getObjectForOID(ObjectSerializer.DATABASE_ROOT_OID);
-        // TODO this is nasty because we read lock and write lock the bindery here. this needs better concurrency
-        Map bindery = root.getBindery();
-        Long oid = (Long)bindery.get(aName);
-        if (oid == null) {
-            throw new ObjectNameNotFoundException(aName);
-        }
-
-        return oid.longValue();
+        Bindery bindery = (Bindery)getObjectForOID(BINDERY_OID);
+        return bindery.lookup(aName);
     }
 
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#unbind(java.lang.String)
+     */
     public void unbind(String aName) throws ObjectNameNotFoundException
     {
-        EnerJDatabase db = getClientDatabase();
-        DatabaseRoot root = (DatabaseRoot)db.getObjectForOID(ObjectSerializer.DATABASE_ROOT_OID);
-        // TODO this is nasty because we read lock and write lock the bindery here. this needs better concurrency
-        Map bindery = root.getBindery();
-        if (!bindery.containsKey(aName)) {
-            throw new ObjectNameNotFoundException(aName);
-        }
-
-        bindery.remove(aName);
+        Bindery bindery = (Bindery)getObjectForOID(BINDERY_OID);
+        bindery.unbind(aName);
     }
-
-    //----------------------------------------------------------------------
+    
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#removeFromExtent(long)
+     */
     public void removeFromExtent(long anOID) throws ObjectNotPersistentException
     {
+        /*
         EnerJDatabase db = getClientDatabase();
         DatabaseRoot root = (DatabaseRoot)db.getObjectForOID(ObjectSerializer.DATABASE_ROOT_OID);
         ClassVersionSchema classVersion;
@@ -178,14 +173,18 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         
         SparseBitSet extent = classVersion.getLogicalClassSchema().getExtentBitSet();
         extent.set(anOID, false);
-
+        */
         // TODO remove from indexes
     }
 
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#getExtentSize(java.lang.String, boolean)
+     */
     public long getExtentSize(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
     {
         long result = 0;
+        /*
         Schema schema = mDatabase.getDatabaseRoot().getSchema();
         LogicalClassSchema candidateClassSchema = schema.findLogicalClass(aClassName);
         if (candidateClassSchema != null) {
@@ -198,13 +197,17 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                 result += classVersion.getLogicalClassSchema().getExtentBitSet().getNumBitsSet();
             }
         }
-        
+        */
         return result;
     }
 
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#createExtentIterator(java.lang.String, boolean)
+     */
     public ExtentIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
     {
+        /*
         // TODO What about objects added during txn? Flush from client first?
         Schema schema = mDatabase.getDatabaseRoot().getSchema();
         ExtentIterator extentIterator = new DefaultExtentIterator(aClassName, wantSubclasses, schema, this);
@@ -214,14 +217,22 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
 
         return extentIterator;
+        */ return null;
     }
 
-    //----------------------------------------------------------------------
+    
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#disconnect()
+     */
     public void disconnect() throws ODMGException 
     {
     }
 
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#shutdown()
+     */
     public void shutdown() throws ODMGException
     {
         try {
@@ -234,35 +245,35 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         disconnect();
     }
 
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#getAllowNontransactionalReads()
+     */
     public boolean getAllowNontransactionalReads() throws ODMGException
     {
         return mAllowNontransactionalReads;
     }
 
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#setAllowNontransactionalReads(boolean)
+     */
     public void setAllowNontransactionalReads(boolean isNontransactional) throws ODMGException
     {
         mAllowNontransactionalReads = isNontransactional;
     }
 
-    //----------------------------------------------------------------------
-    public long[] getCIDsForOIDs(long[] someOIDs) throws ODMGException
-    {
-    }
-
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#storeObjects(org.enerj.server.SerializedObject[])
+     */
     public void storeObjects(SerializedObject[] someObjects) throws ODMGException
     {
-        EnerJDatabase db = getClientDatabase();
         for (SerializedObject object : someObjects) {
             long oid = object.getOID();
             long cid = object.getCID();
-            
-            // Evict these objects from our cache because the client has changed it.
-            db.evict(oid);
 
-            if (object.isNew() && !SystemCIDMap.isSystemCID(cid)) {
+            if (object.isNew()) {
                 // Queue this object to be added to its extent on commit - only after delegate stores successfully.
                 TLongArrayList oids = mPendingNewOIDs.get(cid);
                 if (oids == null) {
@@ -276,17 +287,10 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
     }
 
-    //----------------------------------------------------------------------
-    public byte[][] loadObjects(long[] someOIDs) throws ODMGException
-    {
-    }
-
-    //----------------------------------------------------------------------
-    public long[] getNewOIDBlock() throws ODMGException
-    {
-    }
-
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#beginTransaction()
+     */
     public void beginTransaction() throws ODMGRuntimeException 
     {
         if (mPendingNewOIDs == null) {
@@ -297,18 +301,28 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
     }
 
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#checkpointTransaction()
+     */
     public void checkpointTransaction() throws ODMGRuntimeException 
     {
+        updateExtents();
     }
 
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#commitTransaction()
+     */
     public void commitTransaction() throws ODMGRuntimeException 
     {
         updateExtents();
     }
 
-    //----------------------------------------------------------------------
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#rollbackTransaction()
+     */
     public void rollbackTransaction() throws ODMGRuntimeException 
     {
         mPendingNewOIDs.clear();
@@ -327,13 +341,11 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     {
         private ObjectServerSession mSession;
         
-        //----------------------------------------------------------------------
         ShutdownHook(ObjectServerSession aSession)
         {
             mSession = aSession;
         }
         
-        //----------------------------------------------------------------------
         public void run()
         {
             // TODO log shutdown hook invoked.

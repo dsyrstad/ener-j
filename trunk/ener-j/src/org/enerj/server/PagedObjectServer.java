@@ -34,7 +34,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
 
-import org.enerj.core.DatabaseRoot;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJTransaction;
 import org.enerj.core.ObjectSerializer;
@@ -45,6 +44,7 @@ import org.enerj.server.logentry.EndDatabaseCheckpointLogEntry;
 import org.enerj.server.logentry.RollbackTransactionLogEntry;
 import org.enerj.server.logentry.StartDatabaseCheckpointLogEntry;
 import org.enerj.server.logentry.StoreObjectLogEntry;
+import org.enerj.server.schema.DatabaseRoot;
 import org.enerj.util.FileUtil;
 import org.enerj.util.RequestProcessor;
 import org.enerj.util.StringUtil;

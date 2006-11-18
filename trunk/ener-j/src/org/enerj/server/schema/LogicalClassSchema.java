@@ -18,16 +18,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
-// Ener-J
-// Copyright 2002 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/LogicalClassSchema.java,v 1.5 2006/05/05 13:47:14 dsyrstad Exp $
 
-package org.enerj.core;
+package org.enerj.server.schema;
 
 import java.util.ArrayList;
 import java.util.Date;
 
 import org.enerj.annotations.Persist;
+import org.enerj.core.EnerJDatabase;
+import org.enerj.core.EnerJImplementation;
+import org.enerj.core.Extent;
+import org.enerj.core.SparseBitSet;
 
 /**
  * Schema for a logical class in a Ener-J ODBMS.
@@ -40,6 +42,8 @@ import org.enerj.annotations.Persist;
 @Persist
 public class LogicalClassSchema
 {
+    // Note: All object references should be org.enerj.server.schema objects, or SCOs.
+
     /** The Schema which contains this class. */
     private Schema mSchema;
     
@@ -53,13 +57,7 @@ public class LogicalClassSchema
     private String mClassName;
 
     /** The versions of the class. In order of earliest to latest. This is an array of ClassVersionSchema. */
-    private ArrayList mClassVersions;
-
-    /** The extent (all objects of this class). Index to the bitset is the OID. */
-    private SparseBitSet mExtent;
-    
-    /** Transiently cached extent - lazily constructed. */
-    transient private Extent mCachedExtent = null; 
+    private ArrayList<ClassVersionSchema> mClassVersions;
 
     //----------------------------------------------------------------------
     /**
@@ -78,10 +76,7 @@ public class LogicalClassSchema
         mClassName = aClassName;
         mCreateDate = new Date();
         setDescription(aDescription);
-        mClassVersions = new ArrayList();
-        //  TODO  make the node size configurable based on how many objects you want to store.
-        mExtent = new SparseBitSet(1024);
-        // TODO  mIndexes = new ArrayList();
+        mClassVersions = new ArrayList<ClassVersionSchema>();
     }
     
     //----------------------------------------------------------------------
@@ -237,39 +232,6 @@ public class LogicalClassSchema
         ClassVersionSchema[] versions = new ClassVersionSchema[ mClassVersions.size() ];
         mClassVersions.toArray(versions);
         return versions;
-    }
-
-    //----------------------------------------------------------------------
-    /**
-     * Gets the mutable extent for this class.
-     *
-     * @return the extent as a SparseBitSet whose index is an OID.
-     */
-    public SparseBitSet getExtentBitSet()
-    {
-        return mExtent;
-    }
-    
-    
-    //--------------------------------------------------------------------------------
-    /**
-     * Returns the Extent for this class and it's subclasses.
-     *
-     * @return an Extent. Returns null if the class cannot be found.
-     */
-    public Extent getExtent()
-    {
-        if (mCachedExtent == null) {
-            EnerJDatabase db = EnerJImplementation.getEnerJDatabase(this);
-            try {
-                mCachedExtent = db.getExtent(Class.forName(getClassName()), true);
-            }
-            catch (ClassNotFoundException e) {
-                return null;
-            }
-        }
-        
-        return mCachedExtent;
     }
 
     //----------------------------------------------------------------------

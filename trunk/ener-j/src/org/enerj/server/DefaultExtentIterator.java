@@ -29,10 +29,10 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.enerj.core.ClassVersionSchema;
-import org.enerj.core.LogicalClassSchema;
-import org.enerj.core.Schema;
 import org.enerj.core.SparseBitSet;
+import org.enerj.server.schema.ClassVersionSchema;
+import org.enerj.server.schema.LogicalClassSchema;
+import org.enerj.server.schema.Schema;
 import org.odmg.ODMGRuntimeException;
 
 /**

@@ -22,19 +22,19 @@
 // Copyright 2002 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/Schema.java,v 1.7 2006/05/14 02:43:16 dsyrstad Exp $
 
-package org.enerj.core;
+package org.enerj.server.schema;
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
-import org.odmg.DMap;
-import org.odmg.ODMGException;
 import org.enerj.annotations.Persist;
+import org.enerj.core.RegularDSet;
+import org.odmg.ODMGException;
 
 /**
  * Schema root for a Ener-J ODBMS.
@@ -45,9 +45,15 @@ import org.enerj.annotations.Persist;
 @Persist
 public class Schema 
 {
+    private static final int CURRENT_DATABASE_VERSION = 1;
     private static final int CURRENT_SCHEMA_VERSION = 1;
     
     private static final Set EMPTY_SET = new HashSet(1);
+
+    // Note: All object references should be org.enerj.server.schema objects, or SCOs.
+    
+    /** This database's version. */
+    private int mDatabaseVersion = CURRENT_DATABASE_VERSION;
 
     /** The version of this schema.  */
     private int mSchemaVersion = CURRENT_SCHEMA_VERSION;
@@ -63,13 +69,13 @@ public class Schema
     private LinkedHashMap<String, LogicalClassSchema> mClassMap;
     
     /** Map of class ids to ClassVersionSchema. Key is Long(CID). Value is ClassVersionSchema. */
-    private HashMap mClassIdMap;
+    private Map<Long, ClassVersionSchema> mClassIdMap;
     
     /** Maps possibly non-Persistable class or interface name to a set of Persistable subclasses for that name. 
      * Key is fully-qualified dot-form class or interface name, value is a Set of ClassVersionSchema.
      */
-    private DMap mSubclassMap;
-    
+    private Map<String, Set<ClassVersionSchema>> mSubclassMap;
+     
     //  TODO  EnerJUsers object for user login validation. 
     //  TODO  Add permissions object to each logical class
 
@@ -86,26 +92,9 @@ public class Schema
     {
         mCreateDate = new Date();
         mDescription = (aDescription == null ? "" : aDescription);
-        mClassMap = new LinkedHashMap(1024);
-        mClassIdMap = new HashMap(2048);
-        mSubclassMap = new RegularDMap(2048);
-        
-        // Bootstrap with DatabaseRoot and Schema classes.
-        byte[] zeroBytes = new byte[0];
-        String[] zeroFieldNames = new String[0];
-        String[] superTypeNames = { "java.lang.Object" };
-        
-        // Bootstrap with system classes.
-        Iterator<String> iter = SystemCIDMap.getSystemClassNames();
-        while (iter.hasNext()) {
-            String className = iter.next();
-
-            LogicalClassSchema logicalSchema = new LogicalClassSchema(this, className, "System Class");
-            ClassVersionSchema classVersion = new ClassVersionSchema(logicalSchema, SystemCIDMap.getSystemCIDForClassName(className), 
-                superTypeNames, zeroBytes, zeroBytes, zeroFieldNames, zeroFieldNames);
-            logicalSchema.addVersion(classVersion);
-            this.addLogicalClass(logicalSchema);
-        }
+        mClassMap = new LinkedHashMap<String, LogicalClassSchema>(1024);
+        mClassIdMap = new HashMap<Long, ClassVersionSchema>(2048);
+        mSubclassMap = new HashMap<String, Set<ClassVersionSchema>>(2048);
     }
 
     //----------------------------------------------------------------------
@@ -285,7 +274,7 @@ public class Schema
      */
     void addClassVersion(ClassVersionSchema aClassVersionSchema) throws org.odmg.ObjectNameNotUniqueException
     {
-        Long cidKey = new Long( aClassVersionSchema.getClassId() );
+        long cidKey = aClassVersionSchema.getClassId();
         if (mClassIdMap.containsKey(cidKey)) {
             throw new org.odmg.ObjectNameNotUniqueException("Class id " + cidKey + " is already in the schema. Try modifying your class to produce a different Id.");
         }
@@ -353,7 +342,7 @@ public class Schema
             removeFromSubclassMap(superTypeNames[i], classVersionSchema);
         }
 
-        mClassIdMap.remove( new Long(aCID) );
+        mClassIdMap.remove(aCID);
     }
 
     //----------------------------------------------------------------------
@@ -367,7 +356,29 @@ public class Schema
      */
     public ClassVersionSchema findClassVersion(long aCID)
     {
-        return (ClassVersionSchema)mClassIdMap.get( new Long(aCID) );
+        return (ClassVersionSchema)mClassIdMap.get(aCID);
+    }
+
+    //--------------------------------------------------------------------------------
+    /**
+     * Gets the Database Version.
+     *
+     * @return the database version number.
+     */
+    public int getDatabaseVersion()
+    {
+        return mDatabaseVersion;
+    }
+
+    //--------------------------------------------------------------------------------
+    /**
+     * Gets the Schema Version.
+     *
+     * @return the schema version number.
+     */
+    public int getSchemaVersion()
+    {
+        return mSchemaVersion;
     }
 
 }

@@ -41,10 +41,10 @@ import org.odmg.LockNotGrantedException;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.TransactionNotInProgressException;
-import org.enerj.core.DatabaseRoot;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJTransaction;
 import org.enerj.core.ObjectSerializer;
+import org.enerj.server.schema.DatabaseRoot;
 
 /**
  * In-memory ObjectServer.
