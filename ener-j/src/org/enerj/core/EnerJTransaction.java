@@ -24,6 +24,7 @@
 
 package org.enerj.core;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
@@ -63,7 +64,7 @@ public class EnerJTransaction implements Transaction
     
     /** Non-null if the transaction is in the process of flushing objects. This
      * represents the current position in mModifiedObjects. */
-    private ListIterator<Persistable> mFlushIterator = null; 
+    private Iterator<Persistable> mFlushIterator = null; 
     
     /** True if values of objects should be retained on commit (instead of hollowing the object). */
     private boolean mRetainValues = false;
@@ -141,6 +142,7 @@ public class EnerJTransaction implements Transaction
             throw new TransactionInProgressException("Another Transaction is already in progress on this thread");
         }
         
+        // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
         EnerJDatabase voDatabase = (EnerJDatabase)aDatabase;
         if (aDatabase == null || !voDatabase.isOpen()) {
             throw new DatabaseClosedException("Database is not open yet.");
@@ -264,6 +266,7 @@ public class EnerJTransaction implements Transaction
     {
         sCurrentTransactionForThread.remove();
 
+        // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
         mIsOpen = false;
         if (mTransactionDatabase != null) {
             mTransactionDatabase.setTransaction(null);
@@ -321,10 +324,12 @@ public class EnerJTransaction implements Transaction
             // calling storePersistable() recursively. Such recursion could become
             // very deep. The iterator allows us to insert new objects at the current
             // cursor of the iteration, essentially flattening the recursion.
-            mFlushIterator = getDatabase().getModifiedList().listIterator();
+            mFlushIterator = getDatabase().getModifiedListIterator();
             while (mFlushIterator.hasNext()) {
                 Persistable persistable = mFlushIterator.next();
                 int nextIndex = mFlushIterator.nextIndex();
+                
+                // TODO I think I can remove the need to insert into the list. We can just append now. We should have no schema problems.
                 
                 // This can indirectly insert objects into the list due to
                 // ObjectSerializer.
@@ -349,18 +354,6 @@ public class EnerJTransaction implements Transaction
             mFlushIterator = null;
         }
     }
-    
-    
-    //--------------------------------------------------------------------------------
-    /**
-     * Gets the flush iterator if one exists. Only EnerJDatabase should use this method.
-     *
-     * @return the flush iterator if one exists, otherwise null.
-     */
-    ListIterator<Persistable> getFlushIterator()
-    {
-        return mFlushIterator;
-    }
 
     //----------------------------------------------------------------------
     /**
@@ -374,7 +367,9 @@ public class EnerJTransaction implements Transaction
     {
         checkIsOpenAndOwnedByThread();
         
-        for (Persistable persistable : getDatabase().getModifiedList()) {
+        // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
+        for (Iterator<Persistable> iter = getDatabase().getModifiedListIterator(); iter.hasNext(); ) {
+            Persistable persistable = iter.next();
             if (mRestoreValues) {
                 // Restore (rollback) the object
                 mTransactionDatabase.restoreAndClearPersistableImage(persistable);
@@ -411,9 +406,10 @@ public class EnerJTransaction implements Transaction
     public void abort() 
     {
         checkIsOpenAndOwnedByThread();
+        // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
         try {
-            if (mTransactionDatabase != null && mTransactionDatabase.getMetaObjectServerSession() != null) {
-                mTransactionDatabase.getMetaObjectServerSession().rollbackTransaction();
+            if (mTransactionDatabase != null && mTransactionDatabase.getObjectServerSession() != null) {
+                mTransactionDatabase.getObjectServerSession().rollbackTransaction();
             }
 
             // Rollback modified objects and clear new objects.
@@ -446,19 +442,21 @@ public class EnerJTransaction implements Transaction
     {
         checkIsOpenAndOwnedByThread();
 
+        // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
+
         // Go thru the modified list and store the objects.
         flushAndKeepModifiedList();
 
         // Go thru the modified list and clear the persistable image. Essentially
         // a rollback after this call rolls back to this point.
         if (mRestoreValues) {
-            for (Persistable persistable : getDatabase().getModifiedList()) {
-                mTransactionDatabase.clearPersistableImage(persistable);
+            for (Iterator<Persistable> iter = getDatabase().getModifiedListIterator(); iter.hasNext(); ) {
+                mTransactionDatabase.clearPersistableImage(iter.next());
             }
         }
 
         getDatabase().clearModifiedList();
-        mTransactionDatabase.getMetaObjectServerSession().checkpointTransaction();
+        mTransactionDatabase.getObjectServerSession().checkpointTransaction();
     }
     
     //----------------------------------------------------------------------
@@ -466,6 +464,7 @@ public class EnerJTransaction implements Transaction
     {
         checkIsOpenAndOwnedByThread();
 
+        // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
         try {
             // Flush pending modified objects out to server.
             flush();
@@ -480,7 +479,7 @@ public class EnerJTransaction implements Transaction
             }
 
             mTransactionDatabase.getClientCache().clearPrefetches();
-            mTransactionDatabase.getMetaObjectServerSession().commitTransaction();
+            mTransactionDatabase.getObjectServerSession().commitTransaction();
         }
         finally {
             closeCurrentTransaction();
@@ -542,7 +541,7 @@ public class EnerJTransaction implements Transaction
         }       
 
         //  TODO  allow lock timeout to be set on database or transaction. -1L means wait til we get it.
-        mTransactionDatabase.getMetaObjectServerSession().getLock(mTransactionDatabase.getOID(persistable), lockMode, -1L);
+        mTransactionDatabase.getObjectServerSession().getLock(mTransactionDatabase.getOID(persistable), lockMode, -1L);
 
         persistable.enerj_SetLockLevel(lockMode);
     }
@@ -571,7 +570,7 @@ public class EnerJTransaction implements Transaction
 
         try {
             // Don't wait for lock.
-            mTransactionDatabase.getMetaObjectServerSession().getLock(mTransactionDatabase.getOID(persistable), lockMode, 0L);
+            mTransactionDatabase.getObjectServerSession().getLock(mTransactionDatabase.getOID(persistable), lockMode, 0L);
             persistable.enerj_SetLockLevel(lockMode);
         }
         catch (LockNotGrantedException e) {

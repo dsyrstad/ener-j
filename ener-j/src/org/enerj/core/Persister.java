@@ -24,6 +24,7 @@
 
 package org.enerj.core;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -131,10 +132,9 @@ public interface Persister
     /**
      * Gets the list of modified objects.
      *
-     * @return a reference to the live list of modified objects. Adding a new modified object
-     *  affects the returned List.
+     * @return the list of modified objects.
      */
-    List<Persistable> getModifiedList();
+    Iterator<Persistable> getModifiedListIterator();
     
     
     //--------------------------------------------------------------------------------

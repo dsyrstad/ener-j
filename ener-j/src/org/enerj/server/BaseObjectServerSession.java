@@ -27,9 +27,11 @@ package org.enerj.server;
 import gnu.trove.TLongArrayList;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.enerj.core.ModifiedPersistableList;
 import org.enerj.core.Persistable;
 import org.enerj.core.Persister;
 import org.odmg.ODMGException;
@@ -66,7 +68,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     /** True if session is connected. */
     private boolean mConnected = false;
     /** List of Persistable objects created or modified during this transaction. */
-    private LinkedList<Persistable> mModifiedObjects = new LinkedList<Persistable>();
+    private ModifiedPersistableList mModifiedObjects = new ModifiedPersistableList();
 
     /**
      * Construct a new BaseObjectServerSession.
@@ -141,7 +143,9 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     protected void flushModifiedObjects()
     {
-        List<Persistable> modifiedObjects = getModifiedList();
+        for (Iterator<Persistable> iter = getModifiedListIterator(); iter.hasNext(); ) {
+            
+        }
         // TODO
     }
 
@@ -405,9 +409,9 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     
     /** 
      * {@inheritDoc}
-     * @see org.enerj.core.Persister#getModifiedList()
+     * @see org.enerj.core.Persister#getModifiedListIterator()
      */
-    public List<Persistable> getModifiedList()
+    public Iterator<Persistable> getModifiedListIterator()
     {
         return mModifiedObjects;
     }
