@@ -24,6 +24,8 @@
 
 package org.enerj.core;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.lang.reflect.Constructor;
 
 import org.enerj.server.ClassInfo;
@@ -230,4 +232,34 @@ public class PersistableHelper
             throw new org.odmg.ODMGRuntimeException("Error creating object for OID " + anOID, e);
         }
     }
+
+    /**
+     * Loads the contents of aPersistable from a serialized image. 
+     *
+     * @param aPersister the persister responsible for this Persistable.
+     * @param aPersistable the persistable to be loaded.
+     * @param anImage the serialized image of the persistable.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    public static void loadSerializedImage(Persister aPersister, Persistable aPersistable, byte[] anImage)
+    {
+        ObjectSerializer readContext = new ObjectSerializer( new DataInputStream( new ByteArrayInputStream(anImage) ) );
+
+        try {
+            aPersistable.enerj_SetPersister(aPersister);
+
+            aPersistable.enerj_ReadObject(readContext);
+
+            aPersistable.enerj_SetLoaded(true);
+            aPersistable.enerj_SetModified(false);
+        }
+        catch (ODMGRuntimeException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ODMGRuntimeException("Error loading object for OID " + aPersistable.enerj_GetPrivateOID(), e);
+        }
+    }
+    
 }
