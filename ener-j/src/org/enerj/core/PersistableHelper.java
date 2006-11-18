@@ -24,9 +24,12 @@
 
 package org.enerj.core;
 
-import org.odmg.*;
+import java.lang.reflect.Constructor;
 
-import org.enerj.server.*;
+import org.enerj.server.ClassInfo;
+import org.odmg.ODMGException;
+import org.odmg.ODMGRuntimeException;
+import org.odmg.TransactionNotInProgressException;
 
 /**
  * Static helper methods for Persistable.
@@ -36,7 +39,9 @@ import org.enerj.server.*;
  */
 public class PersistableHelper
 {
-    //----------------------------------------------------------------------
+    private static final Class[] sPeristerArgType = { Persister.class };
+    private static final Object[] sPersisterArg = { null };
+
     /**
      * Initializes a new Persistable. Called from the top-level 
      * Persistable's constructor. NOTE: This can also get called indirectly
@@ -67,7 +72,7 @@ public class PersistableHelper
         // its OID is requested by Persister.getOID().
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Initializes a cloned Persistable. Behaves as if the Persistable had been
      * newed. Note that if a non-top level Persistable 
@@ -82,7 +87,7 @@ public class PersistableHelper
         initPersistable(aPersistable);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Verify that the specified object is loaded from the Persister. If it 
      * isn't loaded, it will be loaded.
@@ -122,7 +127,7 @@ public class PersistableHelper
         } // end if not loaded or new
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * This method is called by a Persistable.enerj_Set_* method just prior to the
      * first modification of the object.
@@ -151,7 +156,7 @@ public class PersistableHelper
         aPersistable.enerj_SetModified(true);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Sets an object so that it can be accessed and updated outside of a transaction.
      *
@@ -167,7 +172,7 @@ public class PersistableHelper
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Complete the process of hollowing a Persistable.
      *
@@ -180,5 +185,49 @@ public class PersistableHelper
         aPersistable.enerj_SetNew(false);
         aPersistable.enerj_SetLockLevel(EnerJTransaction.NO_LOCK);
         // Leave the OID set in case we need to reload this object.
+    }
+    
+    
+    /**
+     * Creates a hollow object initialized by a ClassInfo definition.
+     *
+     * @param aClassInfo the Class information for anOID.
+     * @param anOID the oid being loaded.
+     * @param aPersister a Persister responsible for the object.
+     * 
+     * @return the Persistable.
+     * 
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    public static final Persistable createHollowPersistable(ClassInfo aClassInfo, long anOID, Persister aPersister) 
+    {
+        Class objClass;
+        try {
+            // TODO load class from ClassInfo bytes if CID does not match the loaded class' CID.
+            objClass = Class.forName(aClassInfo.getClassName());
+        }
+        catch (Exception e) {
+            throw new ODMGRuntimeException("Cannot find class " + aClassInfo.getClassName() + " for OID " + anOID, e);
+        }
+        
+        
+        // Create a hollow (non-loaded) object. PersistableHelper.checkLoaded() will
+        // actually load the contents (via Persister.loadObject) when a field is accessed.
+        try {
+            Constructor constructor = objClass.getDeclaredConstructor(sPeristerArgType);
+            constructor.setAccessible(true);
+            Persistable persistable = (Persistable)constructor.newInstance(sPersisterArg);
+
+            persistable.enerj_SetPersister(aPersister);
+            persistable.enerj_SetPrivateOID(anOID);
+            persistable.enerj_SetNew(false);
+            persistable.enerj_SetModified(false);
+            persistable.enerj_SetLoaded(false);
+            
+            return persistable;
+        }
+        catch (Exception e) {
+            throw new org.odmg.ODMGRuntimeException("Error creating object for OID " + anOID, e);
+        }
     }
 }

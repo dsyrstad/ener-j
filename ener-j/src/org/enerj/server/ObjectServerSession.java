@@ -25,6 +25,7 @@
 package org.enerj.server;
 
 import org.enerj.core.ObjectSerializer;
+import org.enerj.core.Schema;
 import org.odmg.LockNotGrantedException;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
@@ -94,19 +95,19 @@ public interface ObjectServerSession
 
     //----------------------------------------------------------------------
     /**
-     * Gets class Ids (CIDs) for the given OIDs.
+     * Gets ClassInfos for the given OIDs.
      * A transaction must be active on session, or non-transactional reads must be allowed.
      * A READ lock is automatically obtained if it doesn't exist already.
      *
-     * @param someOIDs an array of OIDs to get CIDs for. Note that if any element
-     *  of this array is {@link ObjectSerializer#NULL_OID}, the corresponding CID will
-     *  be {@link ObjectSerializer#NULL_CID}.
+     * @param someOIDs an array of OIDs to get ClassInfos for. Note that if any element
+     *  of this array is {@link ObjectSerializer#NULL_OID}, the corresponding ClassInfo will
+     *  be null.
      *
-     * @return the class Ids. A null CID will be returned if an OID doesn't exist.
+     * @return the ClassInfo. A null ClassInfo element will be returned if an OID doesn't exist.
      *
      * @throws ODMGException in the event of an error. 
      */
-    public long[] getCIDsForOIDs(long[] someOIDs) throws ODMGException;
+    public ClassInfo[] getClassInfoForOIDs(long[] someOIDs) throws ODMGException;
 
     //----------------------------------------------------------------------
     /**
@@ -145,13 +146,14 @@ public interface ObjectServerSession
      * OID by the commit of a transaction, the OID is released back to the 
      * unallocated pool. If the transaction is rolled back, all of the OIDs
      * are released.
+     * 
+     * @param anOIDCount the number of OIDs to get.
      *
-     * @return an array of unused OIDs. The number of OIDs returned is at least
-     *  one, but the maximum number is not defined.
+     * @return an array of unused OIDs.
      *
      * @throws ODMGException in the event of an error. 
      */
-    public long[] getNewOIDBlock() throws ODMGException;
+    public long[] getNewOIDBlock(int anOIDCount) throws ODMGException;
     
     //----------------------------------------------------------------------
     // Transaction support...
@@ -293,5 +295,15 @@ public interface ObjectServerSession
      * @throws ODMGRuntimeException if an error occurs.
      */
     public ExtentIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException;
+    
+    
+    /**
+     * Gets the schema for the database.
+     *
+     * @return the Schema.
+     * 
+     * @throws ODMGException if an error occurs.
+     */
+    public Schema getSchema() throws ODMGException;
 }
 

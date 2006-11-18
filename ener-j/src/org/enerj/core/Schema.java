@@ -22,7 +22,7 @@
 // Copyright 2002 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/Schema.java,v 1.7 2006/05/14 02:43:16 dsyrstad Exp $
 
-package org.enerj.server.schema;
+package org.enerj.core;
 
 import java.util.Collection;
 import java.util.Date;
@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.enerj.annotations.Persist;
-import org.enerj.core.RegularDSet;
 import org.odmg.ODMGException;
 
 /**

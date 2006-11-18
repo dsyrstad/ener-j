@@ -24,7 +24,6 @@ package org.enerj.core;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 /**
  * Tracks a list of modified Persistables. <p>
@@ -50,7 +49,7 @@ public class ModifiedPersistableList
      * @param aPersistable the object to be added. {@link Persistable#enerj_GetPrivateOID()} must
      *  be set. 
      */
-    void addToModifiedList(Persistable aPersistable)
+    public void addToModifiedList(Persistable aPersistable)
     {
         mModifiedObjects.put(aPersistable.enerj_GetPrivateOID(), aPersistable);
     }
@@ -60,7 +59,7 @@ public class ModifiedPersistableList
      *
      * @return the list of modified objects.
      */
-    Iterator<Persistable> getIterator()
+    public Iterator<Persistable> getIterator()
     {
         return mModifiedObjects.values().iterator();
     }
@@ -68,9 +67,22 @@ public class ModifiedPersistableList
     /**
      * Clears the list of modified objects.
      */
-    void clearModifiedList()
+    public void clearModifiedList()
     {
         mModifiedObjects.clear();
+    }
+    
+    
+    /**
+     * Gets a modified object based on its OID.
+     *
+     * @param anOID the OID.
+     * 
+     * @return the modified object, or null if the object does not exist.
+     */
+    public Persistable getModifiedObjectByOID(long anOID)
+    {
+        return mModifiedObjects.get(anOID);
     }
 
 }

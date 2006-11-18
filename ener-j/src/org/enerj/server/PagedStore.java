@@ -28,11 +28,11 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Properties;
 
-import org.odmg.ODMGException;
-import org.odmg.ODMGRuntimeException;
 import org.enerj.core.CorruptDatabaseException;
 import org.enerj.server.logentry.StoreObjectLogEntry;
 import org.enerj.util.RequestProcessor;
+import org.odmg.ODMGException;
+import org.odmg.ODMGRuntimeException;
 
 /** 
  * Deals with the OID list and object storage for PagedObjectServer.
@@ -686,15 +686,17 @@ class PagedStore
     //----------------------------------------------------------------------
     /**
      * Get a block of new OIDs.
+     * 
+     * @param anOIDCount the number of OIDs to get.
      *
      * @return an array of OIDs.
      *
      * @throws ODMGRuntimeException if a database storage integrity error is encountered
      */
-    public synchronized long[] getNewOIDBlock()
+    public synchronized long[] getNewOIDBlock(int anOIDCount)
     {
         try {
-            return mOIDList.allocateOIDBlock(10);
+            return mOIDList.allocateOIDBlock(anOIDCount);
         }
         catch (Exception e) {
             throw new ODMGRuntimeException("Error allocating OID Block: " + e, e);

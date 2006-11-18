@@ -68,6 +68,7 @@ public interface Persister
      * @return a hollow Persistable. Returns null if the OID doesn't exist.
      *
      * @throws ODMGRuntimeException if an error occurs.
+     * TODO Change these methods to 1) not throw ODMG exceptions and 2) not throw runtime exceptions.
      */
     Persistable getObjectForOID(long anOID);
 
@@ -97,7 +98,7 @@ public interface Persister
      * <p>
      * Code must NOT call {@link Persistable#enerj_GetPrivateOID()}.
      *
-     * @param anObject an Object that is a Persistable (a FCO).
+     * @param anObject a Persistable Object (a FCO).
      *
      * @return an OID, or ObjectServer.NULL_OID if the object is not persistable, null, or
      *  somehow otherwise transient. ObjectServer.NULL_OID is also returned for new/cloned objects

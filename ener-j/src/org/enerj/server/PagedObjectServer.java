@@ -32,13 +32,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.enerj.core.EnerJDatabase;
+import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.EnerJTransaction;
+import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
+import org.enerj.core.Schema;
+import org.enerj.core.SystemCIDMap;
 import org.enerj.server.logentry.BeginTransactionLogEntry;
 import org.enerj.server.logentry.CheckpointTransactionLogEntry;
 import org.enerj.server.logentry.CommitTransactionLogEntry;
@@ -46,11 +50,9 @@ import org.enerj.server.logentry.EndDatabaseCheckpointLogEntry;
 import org.enerj.server.logentry.RollbackTransactionLogEntry;
 import org.enerj.server.logentry.StartDatabaseCheckpointLogEntry;
 import org.enerj.server.logentry.StoreObjectLogEntry;
-import org.enerj.server.schema.DatabaseRoot;
 import org.enerj.util.FileUtil;
 import org.enerj.util.RequestProcessor;
 import org.enerj.util.StringUtil;
-import org.odmg.Database;
 import org.odmg.DatabaseClosedException;
 import org.odmg.DatabaseNotFoundException;
 import org.odmg.LockNotGrantedException;
@@ -71,6 +73,16 @@ import org.odmg.TransactionNotInProgressException;
  */
 public class PagedObjectServer extends BaseObjectServer
 {
+    private static final Logger sLogger = Logger.getLogger(PagedObjectServer.class.getName()); 
+    
+    private static final String SCHEMA_CLASS_NAME = Schema.class.getName();
+    private static final Class[] sSchemaClasses = new Class[] { 
+        Schema.class, 
+        LogicalClassSchema.class,
+        ClassVersionSchema.class,
+    };
+    private static final String[] sObjectNameArray = { Object.class.getName() };
+    
     /** HashMap of database names to PagedObjectServers. */
     private static HashMap<String, PagedObjectServer> sCurrentServers = new HashMap<String, PagedObjectServer>(20);
 
@@ -292,10 +304,8 @@ public class PagedObjectServer extends BaseObjectServer
         String volumeFileName = StringUtil.substituteMacros( getRequiredProperty(someDBProps, FilePageServer.VOLUME_PROP), someDBProps);
         int pageSize = getRequiredIntProperty(someDBProps, FilePageServer.PAGE_SIZE_PROP);
 
+        Session session = null;
         boolean completed = false;
-        EnerJDatabase db = null;
-        EnerJTransaction txn = null;
-
         try {
             // Generate a database Id.
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream(1024);
@@ -333,18 +343,27 @@ public class PagedObjectServer extends BaseObjectServer
             
             pageServer.disconnect();
             
-            // Init the database root.
-            db = new EnerJDatabase();
-            // Open in local mode, exclusive.
-            db.open("enerj://root:root@-/" + aDBName, Database.OPEN_EXCLUSIVE);
+            session = (Session)connect(someDBProps, true);
+            session.beginTransaction();
+
+            Schema schema = new Schema(aDescription);
+            // Special OID for schema.
+            Persistable schemaPersistable = (Persistable)schema;
+            schemaPersistable.enerj_SetPrivateOID(BaseObjectServerSession.SCHEMA_OID);
+            session.addToModifiedList(schemaPersistable);
             
-            txn = new EnerJTransaction();
-            txn.begin(db);
+            // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
+            for (Class schemaClass : sSchemaClasses) {
+                String schemaClassName = schemaClass.getName();
+                LogicalClassSchema classSchema = new LogicalClassSchema(schema, schemaClassName, null);
+                long cid = SystemCIDMap.getSystemCIDForClassName(schemaClassName);
+                new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);
+            }
             
-            DatabaseRoot root = new DatabaseRoot(aDescription);
-            db.setDatabaseRoot(root);
+            session.flushModifiedObjects();
             
-            txn.commit();
+            session.commitTransaction();
+            
             completed = true;
         }
         catch (ODMGException e) {
@@ -354,12 +373,13 @@ public class PagedObjectServer extends BaseObjectServer
             throw new ODMGException("Error creating database: " + e, e);
         }
         finally {
-            if (txn != null && txn.isOpen()) {
-                txn.abort();
-            }
-            
-            if (db != null && db.isOpen()) {
-                db.close();
+            if (session != null) {
+                if (!completed) {
+                    session.rollbackTransaction();
+                }
+                
+                session.disconnect();
+                session.shutdown(); // Shuts down the PagedObjectServer for the database.
             }
 
             if (!completed) {
@@ -378,9 +398,7 @@ public class PagedObjectServer extends BaseObjectServer
     void handleStorageException(RequestProcessor.Request aRequest, Exception anException)
     {
         //  TODO  alot of work to be done here.....
-        System.err.println("---> STORAGE EXCEPTION:");
-        anException.printStackTrace(System.err);
-        System.exit(1); //  TODO  Do NOT do this.
+        sLogger.log(Level.SEVERE, "STORAGE EXCEPTION", anException); 
     }
     
 
@@ -476,8 +494,7 @@ public class PagedObjectServer extends BaseObjectServer
      */
     public void shutdown() throws ODMGException
     {
-        //  TODO  quiesce the system . stop new connections and txns. shutdown when all txns closed.
-        //  TODO  NEED THIS NOW!
+        // Quiesce the system. Stops new connections and txns. 
         mQuiescent = true;
 
         // Transaction list must be clear. This is really an assertion.
@@ -566,6 +583,14 @@ public class PagedObjectServer extends BaseObjectServer
      */
     public static ObjectServerSession connect(Properties someProperties) throws ODMGException 
     {
+        return connect(someProperties, false);
+    }
+    
+    /**
+     * Helper for {@link PagedObjectServer#connect(Properties)}. 
+     */
+    private static ObjectServerSession connect(Properties someProperties, boolean isSchemaSession) throws ODMGException 
+    {
         // See if there is already a ObjectServer for this database.
         // Synchronize on sCurrentServers during the get/put process so that another thread
         // cannot create one at the same time.
@@ -583,7 +608,7 @@ public class PagedObjectServer extends BaseObjectServer
             }
         
             //  TODO  - write connect/session info in log.
-            session = new Session(server);
+            session = server.new Session(server, isSchemaSession);
             return session;
         } // End synchronized (sCurrentServers)
         
@@ -602,15 +627,18 @@ public class PagedObjectServer extends BaseObjectServer
     private final class Session extends BaseObjectServerSession
     {
         private Transaction mTxn = null;
+        /** If true, this is a privileged session that may update the schema. */
+        private boolean mIsSchemaSession = false;
 
         /**
          * Constructs a new Session in a connected state.
          *
          * @param anObjectServer the PagedObjectServer to associate with the session.
          */
-        Session(PagedObjectServer anObjectServer)
+        Session(PagedObjectServer anObjectServer, boolean isSchemaSession)
         {
             super(anObjectServer);
+            mIsSchemaSession = isSchemaSession;
         }
         
 
@@ -685,33 +713,53 @@ public class PagedObjectServer extends BaseObjectServer
         }
 
 
-        public long[] getCIDsForOIDs(long[] someOIDs) throws ODMGException
+        public ClassInfo[] getClassInfoForOIDs(long[] someOIDs) throws ODMGException
         {
             if (!getAllowNontransactionalReads()) {
                 // Validate txn active - interface requirement
                 getTransaction();
             }
 
-            long[] cids = new long[someOIDs.length];
+            ClassInfo[] classInfo = new ClassInfo[someOIDs.length];
             for (int i = 0; i < someOIDs.length; i++) {
                 long anOID = someOIDs[i];
-                if (anOID != ObjectSerializer.NULL_OID) {
+                if (anOID == SCHEMA_OID) {
+                    long cid = SystemCIDMap.getSystemCIDForClassName(SCHEMA_CLASS_NAME);
+                    classInfo[i] = new ClassInfo(cid, SCHEMA_CLASS_NAME);
+                }
+                else if (anOID != ObjectSerializer.NULL_OID) {
                     // Check the update cache first and get CID from the store request, if there is one.
                     PagedStore.StoreObjectRequest storeRequest = mServerUpdateCache.lookupStoreRequest(anOID);
+                    long cid;
                     if (storeRequest == null) {
                         // Get a read lock on the object otherwise the CID can change for the object after getting the CID.
                         // TODO make timeout configurable.
                         getLock(anOID, EnerJTransaction.READ, -1);
-                        cids[i] = mPagedStore.getCIDForOID(anOID);
+                        // TODO Make PagedStore get multiple CIDs at a time.
+                        cid = mPagedStore.getCIDForOID(anOID);
                     }
                     else {
                         // Found an updated version of the object. Use the updated CID.
-                        cids[i] = storeRequest.mCID;
+                        cid = storeRequest.mCID;
+                    }
+                    
+                    // Resolve the class name. Try system CIDs first.
+                    String className = SystemCIDMap.getSystemClassNameForCID(cid);
+                    if (className == null) {
+                        Schema schema = getSchema();
+                        ClassVersionSchema version = schema.findClassVersion(cid);
+                        if (version != null) {
+                            className = version.getLogicalClassSchema().getClassName();
+                        }
+                    }
+                    
+                    if (cid != ObjectSerializer.NULL_CID && className != null) {
+                        classInfo[i] = new ClassInfo(cid, className);
                     }
                 }
             }
 
-            return cids;
+            return classInfo;
         }
 
 
@@ -719,9 +767,15 @@ public class PagedObjectServer extends BaseObjectServer
         {
             // TODO - SerializedObject should contain the version #. We should compare the object's version
             // to the current version before writing.
+
             for (SerializedObject object : someObjects) {
                 long anOID = object.getOID();
                 long aCID = object.getCID();
+
+                // Prevent system cids from being stored unless this is the schema session.
+                if (!mIsSchemaSession && aCID <= ObjectSerializer.LAST_SYSTEM_CID) {
+                    throw new ODMGException("Client is not allowed to update schema via object modification.");
+                }
                 
                 // Make sure the object is WRITE locked.
                 getLock(anOID, EnerJTransaction.WRITE, -1);
@@ -771,12 +825,12 @@ public class PagedObjectServer extends BaseObjectServer
         }
 
 
-        public long[] getNewOIDBlock() throws ODMGException
+        public long[] getNewOIDBlock(int anOIDCount) throws ODMGException
         {
             // Validate txn active - interface requirement
             getTransaction();
 
-            return mPagedStore.getNewOIDBlock();
+            return mPagedStore.getNewOIDBlock(anOIDCount);
         }
 
 

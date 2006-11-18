@@ -22,7 +22,7 @@
 // Copyright 2002 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/ClassVersionSchema.java,v 1.4 2006/05/05 13:47:14 dsyrstad Exp $
 
-package org.enerj.server.schema;
+package org.enerj.core;
 
 import java.util.*;
 

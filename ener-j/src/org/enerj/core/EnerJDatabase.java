@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.enerj.annotations.SchemaAnnotation;
+import org.enerj.server.ClassInfo;
 import org.enerj.server.ObjectServer;
 import org.enerj.server.ObjectServerSession;
 import org.enerj.server.PagedObjectServer;
@@ -78,12 +79,7 @@ public class EnerJDatabase implements Database, Persister
 {
     /** Maximum size of mSerializedObjectQueue. TODO make this configurable */
     private static final int sMaxSerializedObjectQueueSize = 100000;
-    private static final Class[] sPeristerArgType = { Persister.class };
-    private static final Object[] sPersisterArg = { null };
 
-    /** If true, EnerJDatabase.open() has been performed and you are in the client's JVM. */
-    private static boolean sIsThisTheClientJVM = false;
-    
     /** Current Open Database for JVM. Used when no curent open thread database exists. (i.e.,
      * Database was opened in a thread, but now the thread is gone). Entry exists until
      * the database is closed, even if the app has no reference to it.
@@ -191,18 +187,6 @@ public class EnerJDatabase implements Database, Persister
     //----------------------------------------------------------------------
 
     //----------------------------------------------------------------------
-    /**
-     * Determines whether this is the JVM used by the client. Primarily used
-     * by servers to determine if they're running locally.
-     *
-     * @return true if this is the client JVM (i.e., EnerJDatabse.open() has been performed).
-     */
-    public static boolean isThisTheClientJVM()
-    {
-        return sIsThisTheClientJVM;
-    }
-    
-    //----------------------------------------------------------------------
     /** 
      * Gets the current open database for the process. This is initially set to
      * the first database opened by the process. When this database is closed, it
@@ -292,7 +276,74 @@ public class EnerJDatabase implements Database, Persister
      */
     public Persistable[] getObjectsForOIDs(long[] someOIDs)
     {
-        return createObjectsForOIDsAndCIDs(someOIDs, null);
+        // TODO This method is an opportunity to have a queue of hollow objects to be loaded. They can be loaded by loadObject en masse.
+        checkBoundTransaction(true);
+
+        Persistable[] objects = new Persistable[someOIDs.length];
+        long[] oidsToRetrieveClassInfoFor = new long[someOIDs.length];
+        boolean foundAllInCache = true;
+        for (int i = 0; i < someOIDs.length; i++) {
+            // Note: If mIsServerSideDB is true, the cache will be empty.
+            Persistable checkPersistable = (Persistable)mClientCache.get(someOIDs[i]);
+            
+            // Object may have fallen off of cache, but still be in ModifiedList.
+            if (checkPersistable == null) {
+                checkPersistable = mModifiedObjects.getModifiedObjectByOID(someOIDs[i]);
+            }
+            
+            if (checkPersistable != null) {
+                if (isNontransactionalReadMode()) {
+                    // If we're in non-transactional read mode and this object was
+                    // never loaded, make sure that we can load it later by setting it
+                    // to be non-transactional.
+                    PersistableHelper.setNonTransactional(checkPersistable);
+                }
+    
+                objects[i] = checkPersistable;
+            }
+            else {
+                foundAllInCache = false;
+                oidsToRetrieveClassInfoFor[i] = someOIDs[i];
+            }
+        }
+        
+        if (foundAllInCache) {
+            return objects;
+        }
+
+        // Retrieve ClassInfo for these OIDs.
+        ClassInfo[] classInfos;
+        try {
+            // This obtains a READ lock on each OID.
+            classInfos = mObjectServerSession.getClassInfoForOIDs(oidsToRetrieveClassInfoFor);
+        }
+        catch (RuntimeException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ODMGRuntimeException("Could not get CIDs for OIDs", e);
+        }
+
+        for (int i = 0; i < someOIDs.length; i++) {
+            if (objects[i] != null) {
+                continue;
+            }
+            
+            ClassInfo classInfo = classInfos[i];
+            long oid = someOIDs[i];
+            
+            Persistable persistable = PersistableHelper.createHollowPersistable(classInfo, oid, this);
+            if (isNontransactionalReadMode()) {
+                PersistableHelper.setNonTransactional(persistable);
+            }
+            
+            // Cache it
+            mClientCache.add(oid, persistable);
+
+            objects[i] = persistable;
+        }
+        
+        return objects;
     }
 
     //----------------------------------------------------------------------
@@ -387,16 +438,9 @@ public class EnerJDatabase implements Database, Persister
             return; // Ignore if txn not active.
         }
 
-        // If we're in the process of flushing, insert this right at the cursor.
         // Note that if we were to just call storePersistable() here, we could get
-        // into a very deep recursion. See flushAndKeepModifiedList() for more details.
-        if (txn.getFlushIterator() != null) {
-            txn.getFlushIterator().add(aPersistable);
-        }
-        else {
-            // Otherwise add it to the end of the modified list. 
-            mModifiedObjects.addToModifiedList(aPersistable);
-        }
+        // into a very deep recursion. See EnerJTransaction.flushAndKeepModifiedList() for more details.
+        mModifiedObjects.addToModifiedList(aPersistable);
         
         if (!aPersistable.enerj_IsNew() && txn.getRestoreValues()) {
             savePersistableImage(aPersistable);
@@ -412,8 +456,7 @@ public class EnerJDatabase implements Database, Persister
      */
     public void clearModifiedList()
     {
-        // TODO Auto-generated method stub
-        
+        mModifiedObjects.clearModifiedList();
     }
 
     
@@ -481,157 +524,6 @@ public class EnerJDatabase implements Database, Persister
         }
     }
     
-    //----------------------------------------------------------------------
-    /**
-     * Gets the Persistable objects associated with someOIDs and someCIDs.
-     * The Persistable returned is hollow (not loaded yet).
-     *
-     * @param someOIDs the database Object IDs to be retrieved.
-     * @param someCIDs the CIDs corresponding to someOIDs. If this is null, the CID is
-     *  found by its OID from the server. If this is non-null, it must be the same size as someOIDs.
-     *
-     * @return an array of hollow Persistables. An element of the array may be null if the OID doesn't exist.
-     *
-     * @throws ODMGRuntimeException if an error occurs.
-     */
-    private Persistable[] createObjectsForOIDsAndCIDs(long[] someOIDs, long[] someCIDs)
-    {
-        // TODO This method is an opportunity to have a queue of hollow objects to be loaded. They can be loaded by loadObject en masse.
-        checkBoundTransaction(true);
-
-        Persistable[] objects = new Persistable[someOIDs.length];
-        assert someCIDs.length == someOIDs.length;
-        
-        long[] oidsToRetrieveCidsFor = new long[someOIDs.length];
-        boolean foundAllInCache = true;
-        boolean needToRetrieveCIDs = false;
-        for (int i = 0; i < someOIDs.length; i++) {
-            // Note: If mIsServerSideDB is true, the cache will be empty.
-            Persistable checkPersistable = (Persistable)mClientCache.get(someOIDs[i]);
-            // TODO FIXME SERIOUS! Object may have fallen off of cache, but still be in ModifiedList. We'd want the one in the modified list.
-            if (checkPersistable != null) {
-                if (isNontransactionalReadMode()) {
-                    // If we're in non-transactional read mode and this object was
-                    // never loaded, make sure that we can load it later by setting it
-                    // to be non-transactional.
-                    PersistableHelper.setNonTransactional(checkPersistable);
-                }
-    
-                objects[i] = checkPersistable;
-            }
-            else {
-                foundAllInCache = false;
-                if (someCIDs == null || someCIDs[i] == ObjectSerializer.NULL_CID) {
-                    oidsToRetrieveCidsFor[i] = someOIDs[i];
-                    needToRetrieveCIDs = true;
-                }
-                else {
-                    // A CID was supplied
-                    oidsToRetrieveCidsFor[i] = ObjectSerializer.NULL_OID;
-                }
-            }
-        }
-        
-        if (foundAllInCache) {
-            return objects;
-        }
-
-        if (needToRetrieveCIDs) {
-            // Retrieve CIDs for these objects.
-            long[] cids;
-            try {
-                // This obtains a READ lock on each OID.
-                cids = mObjectServerSession.getCIDsForOIDs(oidsToRetrieveCidsFor);
-            }
-            catch (RuntimeException e) {
-                throw e;
-            }
-            catch (Exception e) {
-                throw new ODMGRuntimeException("Could not get CIDs for OIDs", e);
-            }
-            
-            if (someCIDs == null) {
-                someCIDs = new long[someOIDs.length];
-            }
-
-            // Merge CIDs.
-            for (int i = 0; i < cids.length; i++) {
-                if (someCIDs[i] == ObjectSerializer.NULL_CID) {
-                    someCIDs[i] = cids[i];
-                }
-            }
-        }
-
-        assert someCIDs != null;
-        
-        // Create and cache hollow objects for any that weren't in the cache.
-        DatabaseRoot root = null;
-        Schema schema = null;
-        for (int i = 0; i < someOIDs.length; i++) {
-            if (objects[i] != null) {
-                continue;
-            }
-            
-            long cid = someCIDs[i];
-            long oid = someOIDs[i];
-            
-            // Is it a system persistable?
-            String className = SystemCIDMap.getSystemClassNameForCID(cid);
-            if (className == null) {
-                // Nope. Try to look it up in the schema.
-                if (root == null) {
-                    root = getDatabaseRoot();
-                    schema = root.getSchema();
-                }
-
-                // TODO Maybe this could come back with the getCIDForOID call? 
-                ClassVersionSchema classVersion = schema.findClassVersion(cid);
-                if (classVersion == null) {
-                    throw new ODMGRuntimeException("Cannot find class for CID " + cid);
-                }
-    
-                className = classVersion.getLogicalClassSchema().getClassName();
-            }        
-    
-            Class oidClass;
-            try {
-                // TODO load enhanced class.
-                oidClass = Class.forName(className);
-            }
-            catch (Exception e) {
-                throw new ODMGRuntimeException("Cannot find class " + className + " for OID " + oid);
-            }
-            
-            // Create a hollow (non-loaded) object. PersistableHelper.checkLoaded() will
-            // actually load the contents (via Persister.loadObject) when a field is accessed.
-            try {
-                Constructor constructor = oidClass.getDeclaredConstructor(sPeristerArgType);
-                constructor.setAccessible(true);
-                Persistable persistable = (Persistable)constructor.newInstance(sPersisterArg);
-    
-                persistable.enerj_SetPersister(this);
-                persistable.enerj_SetPrivateOID(oid);
-                if (isNontransactionalReadMode()) {
-                    PersistableHelper.setNonTransactional(persistable);
-                }
-                
-                persistable.enerj_SetNew(false);
-                persistable.enerj_SetModified(false);
-                persistable.enerj_SetLoaded(false);
-    
-                // Cache it
-                mClientCache.add(oid, persistable);
-    
-                objects[i] = persistable;
-            }
-            catch (Exception e) {
-                throw new org.odmg.ODMGRuntimeException("Error creating object: " + e);
-            }
-        }
-        
-        return objects;
-    }
-
     //--------------------------------------------------------------------------------
     /**
      * Sets whether this database instance allows non-transactional (dirty) reads.  
@@ -652,25 +544,6 @@ public class EnerJDatabase implements Database, Persister
         }
         
         mAllowNontransactionalReads = isNontransactional;
-    }
-    
-    //----------------------------------------------------------------------
-    /**
-     * Creates a loaded Persistable object associated based on aSerializedObject.
-     * <p>
-     * This method is intended only for Ener-J internal use.
-     *
-     * @param aSerializedObject the serialized image of the object.
-     *
-     * @return a loaded Persistable.
-     *
-     * @throws ODMGRuntimeException if an error occurs.
-     */
-    public Persistable createPersistable(SerializedObject aSerializedObject)
-    {
-        Persistable persistable = createObjectsForOIDsAndCIDs(new long[] { aSerializedObject.getOID() }, new long[] { aSerializedObject.getCID() } )[0];
-        loadSerializedImage(persistable, aSerializedObject.getImage());
-        return persistable;
     }
 
     //----------------------------------------------------------------------
@@ -835,6 +708,8 @@ public class EnerJDatabase implements Database, Persister
         if (mKnownSchemaCIDs.contains(cid)) {
             return;
         }
+        
+        // TODO Ask if server if CID exists in schema. If not, tell server to store it.
         
         DatabaseRoot root = getDatabaseRoot();
         Schema schema = root.getSchema();
@@ -1044,38 +919,6 @@ public class EnerJDatabase implements Database, Persister
 
     //----------------------------------------------------------------------
     /**
-     * Sets the DatabaseRoot. 
-     * For Ener-J internal use only. Operates like addNewPersistable.
-     * DatabaseRoot is rooted at OID DATABASE_ROOT_OID.
-     * The Persistable's database and new OID are set. The EnerJTransaction's
-     * modified list is updated. The Persistable is added to the local database cache.
-     * Used when initializing the database.
-     *
-     * @param aRoot a DatabaseRoot object.
-     *
-     * @return returns the object's new OID.
-     * 
-     * TODO This method has to go.
-     */
-    public void setDatabaseRoot(DatabaseRoot aRoot)
-    {
-        //  TODO  No way! User could wipe out schema enforce this in ObjectServer. Only allow DatabaseRoot OID to be set if it hasn't been stored yet.
-        checkBoundTransaction();
-        
-        Persistable persistable = (Persistable)aRoot;
-
-        persistable.enerj_SetPersister(this);
-        persistable.enerj_SetPrivateOID(ObjectSerializer.DATABASE_ROOT_OID);
-
-        // Add it to modified list. Must be done _after_ OID is set.
-        addToModifiedList(persistable);
-        
-        // Cache it
-        mClientCache.add(ObjectSerializer.DATABASE_ROOT_OID, persistable);
-    }
-
-    //----------------------------------------------------------------------
-    /**
      * Checks that the database is open, it currently bound to a transaction,
      * and that the transaction is current for the caller's thread.
      *
@@ -1215,9 +1058,6 @@ public class EnerJDatabase implements Database, Persister
         if (mIsOpen) {
             throw new DatabaseOpenException("Database is already open");
         }
-
-        // Set this so that servers can determine whether they were started within the client JVM.
-        sIsThisTheClientJVM = true;
 
         // Make properties from the URI
         // Copy the system properties as defaults.
