@@ -499,10 +499,13 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void loadObject(Persistable aPersistable)
     {
-        move EnerJDatabase loadFromSerialized to PersistableHelper.
-        x
-        // TODO Auto-generated method stub
-        
+        try {
+            byte[] image = loadObjects( new long[] { aPersistable.enerj_GetPrivateOID() } )[0];
+            PersistableHelper.loadSerializedImage(this, aPersistable, image);
+        }
+        catch (ODMGException e) {
+            throw new ODMGRuntimeException(e);
+        }
     }
 
     //----------------------------------------------------------------------

@@ -117,19 +117,9 @@ public class EnerJDatabase implements Database, Persister
     private ByteArrayOutputStream mByteOutputStream = new ByteArrayOutputStream(1000);
     private DataOutputStream mDataOutput = new DataOutputStream(mByteOutputStream);
     
-    /** 
-     * Stream/Context used to unserialize bytes to an object. We need a pool of them
-     * because unserialization can be lightly recursive. This is a LinkedList of 
-     * of DBByteArrayInputStream. Entries in this pool are available for use.
-     * while an entry is being used, it is removed from the pool. This pool is
-     * not used by more than one thread at a time.
-     */
-    private LinkedList<DBByteArrayInputStream> mInputStreamPool = new LinkedList<DBByteArrayInputStream>();
-    
     /** Cache of new OIDs to be used. Only available during a transaction. */
     private long[] mOIDCache = null;
     private int mOIDCachePosition = 0;
-    private boolean mIsServerSideDB = false;
     
     /** Queue of serialized objects waiting to be flushed to database. */
     private List<SerializedObject> mSerializedObjectQueue = new ArrayList<SerializedObject>(100);
@@ -144,24 +134,6 @@ public class EnerJDatabase implements Database, Persister
     {
         init();
     }
-    
-    //----------------------------------------------------------------------
-    /**
-     * Ener-J Server use only. Construct a EnerJDatabase that is connected to
-     * an opened session and ObjectServer. Exists primarly for servers
-     * that want to use the API and participate in the client's transaction.
-     *
-     * @param aSession a ObjectServerSession.
-     * @param aServer a ObjectServer.
-     */
-    public EnerJDatabase(ObjectServerSession aSession, ObjectServer aServer)
-    {
-        mObjectServerSession = aSession;
-        mIsServerSideDB = true;
-        init();
-        initOpenDatabase();
-    }
-    
     
     //--------------------------------------------------------------------------------
     /**
@@ -283,7 +255,6 @@ public class EnerJDatabase implements Database, Persister
         long[] oidsToRetrieveClassInfoFor = new long[someOIDs.length];
         boolean foundAllInCache = true;
         for (int i = 0; i < someOIDs.length; i++) {
-            // Note: If mIsServerSideDB is true, the cache will be empty.
             Persistable checkPersistable = (Persistable)mClientCache.get(someOIDs[i]);
             
             // Object may have fallen off of cache, but still be in ModifiedList.
@@ -416,7 +387,7 @@ public class EnerJDatabase implements Database, Persister
 
         idx = 0;
         for (Persistable prefetch : prefetches) {
-            loadSerializedImage(prefetch, objects[idx++]);
+            PersistableHelper.loadSerializedImage(this, prefetch, objects[idx++]);
 
             if ( !isNontransactionalReadMode() && !EnerJTransaction.isAtLockLevel(prefetch, EnerJTransaction.READ)) {
                 // loadObject() obtains a READ lock.
@@ -474,56 +445,6 @@ public class EnerJDatabase implements Database, Persister
     // ...End of Persister interface.
     //--------------------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
-    /**
-     * Loads the contents of aPersistable from a serialized image. 
-     * Assumes checkBoundTransaction() has already been called.
-     *
-     * @param aPersistable the persistable to be loaded.
-     * @param anImage the serialized image of the persistable.
-     *
-     * @throws ODMGRuntimeException if an error occurs.
-     */
-    public void loadSerializedImage(Persistable aPersistable, byte[] anImage)
-    {
-        // A Database can't be shared between threads at the same time, checkBoundTransaction enforces this.
-        // However, enerj_ReadObject can cause getObjectForOID to get called again (due to an FCO referencing 
-        // another FCO, which may cause this
-        // method to be invoked again recursively to load schema objects (but NOT the referenced FCO). So
-        // we use a pool of InputStreams/ReadContexts (DBByteArrayInputStream). These are reused
-        // so we don't create tons of objects. This pool shouldn't normally get larger than a couple
-        // of entries.
-        DBByteArrayInputStream byteInputStream;
-        ObjectSerializer readContext;
-        if (mInputStreamPool.isEmpty()) {
-            // Create a new pool entry.
-            byteInputStream = new DBByteArrayInputStream();
-        }
-        else {
-            byteInputStream = (DBByteArrayInputStream)mInputStreamPool.removeFirst();
-        }
-        
-        readContext = new ObjectSerializer( new DataInputStream(byteInputStream) );
-        byteInputStream.setReadContext(readContext);
-
-        try {
-            byteInputStream.setByteArray(anImage);
-            aPersistable.enerj_SetPersister(this);
-
-            aPersistable.enerj_ReadObject(readContext);
-
-            aPersistable.enerj_SetLoaded(true);
-            aPersistable.enerj_SetModified(false);
-        }
-        catch (Exception e) {
-            throw new ODMGRuntimeException("Error loading object for OID " + getOID(aPersistable), e);
-        }
-        finally {
-            // Put the stream back into the pool
-            mInputStreamPool.add(byteInputStream);
-        }
-    }
-    
     //--------------------------------------------------------------------------------
     /**
      * Sets whether this database instance allows non-transactional (dirty) reads.  
@@ -539,10 +460,7 @@ public class EnerJDatabase implements Database, Persister
             throw new DatabaseClosedException("Database has not been opened");
         }
         
-        if (!mIsServerSideDB) {
-            mObjectServerSession.setAllowNontransactionalReads(isNontransactional);
-        }
-        
+        mObjectServerSession.setAllowNontransactionalReads(isNontransactional);
         mAllowNontransactionalReads = isNontransactional;
     }
 
@@ -789,7 +707,7 @@ public class EnerJDatabase implements Database, Persister
         
         byte[] image = mClientCache.getAndClearSavedImage(oid);
         if (image != null) {
-            loadSerializedImage(aPersistable, image);
+            PersistableHelper.loadSerializedImage(this, aPersistable, image);
         }
     }
 
@@ -991,7 +909,7 @@ public class EnerJDatabase implements Database, Persister
     {
         if (mOIDCache == null || mOIDCachePosition >= mOIDCache.length) {
             try {
-                mOIDCache = mObjectServerSession.getNewOIDBlock();
+                mOIDCache = mObjectServerSession.getNewOIDBlock(10);
             }
             catch (RuntimeException e) {
                 throw e;
@@ -1314,41 +1232,5 @@ public class EnerJDatabase implements Database, Persister
     //----------------------------------------------------------------------
     // ...End of org.odmg.Database interface methods.
     //----------------------------------------------------------------------
-
-    //----------------------------------------------------------------------
-    /**
-     * Subclass ByteArrayInputStream so that we can substitute a new array
-     * of bytes without creating a new object each time.
-     */
-    private static final class DBByteArrayInputStream extends ByteArrayInputStream
-    {
-        private ObjectSerializer mReadContext;
-        
-        //----------------------------------------------------------------------
-        DBByteArrayInputStream()
-        {
-            super(new byte[0]);
-        }
-
-        //----------------------------------------------------------------------
-        void setByteArray(byte[] aByteArray)
-        {
-            buf = aByteArray;
-            pos = 0;
-            count = buf.length;
-        }
-
-        //----------------------------------------------------------------------
-        ObjectSerializer getReadContext()
-        {
-            return mReadContext;
-        }
-
-        //----------------------------------------------------------------------
-        void setReadContext(ObjectSerializer aReadContext)
-        {
-            mReadContext = aReadContext;
-        }
-    }
 }
 
