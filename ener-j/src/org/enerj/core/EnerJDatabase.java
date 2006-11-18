@@ -24,12 +24,12 @@
 
 package org.enerj.core;
 
-import static org.enerj.server.MetaObjectServer.ENERJ_ACCESS_MODE_PROP;
-import static org.enerj.server.MetaObjectServer.ENERJ_DBNAME_PROP;
-import static org.enerj.server.MetaObjectServer.ENERJ_HOSTNAME_PROP;
-import static org.enerj.server.MetaObjectServer.ENERJ_PASSWORD_PROP;
-import static org.enerj.server.MetaObjectServer.ENERJ_PORT_PROP;
-import static org.enerj.server.MetaObjectServer.ENERJ_USERNAME_PROP;
+import static org.enerj.server.ObjectServer.ENERJ_ACCESS_MODE_PROP;
+import static org.enerj.server.ObjectServer.ENERJ_DBNAME_PROP;
+import static org.enerj.server.ObjectServer.ENERJ_HOSTNAME_PROP;
+import static org.enerj.server.ObjectServer.ENERJ_PASSWORD_PROP;
+import static org.enerj.server.ObjectServer.ENERJ_PORT_PROP;
+import static org.enerj.server.ObjectServer.ENERJ_USERNAME_PROP;
 import gnu.trove.TLongHashSet;
 
 import java.io.ByteArrayInputStream;
@@ -48,9 +48,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.enerj.annotations.SchemaAnnotation;
-import org.enerj.server.DefaultMetaObjectServer;
-import org.enerj.server.MetaObjectServer;
-import org.enerj.server.MetaObjectServerSession;
+import org.enerj.server.ObjectServer;
+import org.enerj.server.ObjectServerSession;
+import org.enerj.server.PagedObjectServer;
 import org.enerj.server.PluginHelper;
 import org.enerj.server.SerializedObject;
 import org.enerj.util.ClassUtil;
@@ -114,8 +114,8 @@ public class EnerJDatabase implements Database, Persister
     /** True if this instance allows non-transactional reads. */
     private boolean mAllowNontransactionalReads = false;
     
-    /** MetaObjectServerSession we're bound to. */
-    private MetaObjectServerSession mMetaObjectServerSession = null;
+    /** ObjectServerSession we're bound to. */
+    private ObjectServerSession mObjectServerSession = null;
 
     /** Streams/Context used to serialize an object to bytes. */
     private ByteArrayOutputStream mByteOutputStream = new ByteArrayOutputStream(1000);
@@ -152,15 +152,15 @@ public class EnerJDatabase implements Database, Persister
     //----------------------------------------------------------------------
     /**
      * Ener-J Server use only. Construct a EnerJDatabase that is connected to
-     * an opened session and MetaObjectServer. Exists primarly for servers
+     * an opened session and ObjectServer. Exists primarly for servers
      * that want to use the API and participate in the client's transaction.
      *
-     * @param aSession a MetaObjectServerSession.
-     * @param aServer a MetaObjectServer.
+     * @param aSession a ObjectServerSession.
+     * @param aServer a ObjectServer.
      */
-    public EnerJDatabase(MetaObjectServerSession aSession, MetaObjectServer aServer)
+    public EnerJDatabase(ObjectServerSession aSession, ObjectServer aServer)
     {
-        mMetaObjectServerSession = aSession;
+        mObjectServerSession = aSession;
         mIsServerSideDB = true;
         init();
         initOpenDatabase();
@@ -354,7 +354,7 @@ public class EnerJDatabase implements Database, Persister
         // Look it up in the DB.
         byte[][] objects;
         try {
-            objects = mMetaObjectServerSession.loadObjects(oids);
+            objects = mObjectServerSession.loadObjects(oids);
         }
         catch (RuntimeException e) {
             throw e;
@@ -546,7 +546,7 @@ public class EnerJDatabase implements Database, Persister
             long[] cids;
             try {
                 // This obtains a READ lock on each OID.
-                cids = mMetaObjectServerSession.getCIDsForOIDs(oidsToRetrieveCidsFor);
+                cids = mObjectServerSession.getCIDsForOIDs(oidsToRetrieveCidsFor);
             }
             catch (RuntimeException e) {
                 throw e;
@@ -653,7 +653,7 @@ public class EnerJDatabase implements Database, Persister
         }
         
         if (!mIsServerSideDB) {
-            mMetaObjectServerSession.setAllowNontransactionalReads(isNontransactional);
+            mObjectServerSession.setAllowNontransactionalReads(isNontransactional);
         }
         
         mAllowNontransactionalReads = isNontransactional;
@@ -814,7 +814,7 @@ public class EnerJDatabase implements Database, Persister
     {
         SerializedObject[] objects = mSerializedObjectQueue.toArray(new SerializedObject[ mSerializedObjectQueue.size() ]);
         try {
-            mMetaObjectServerSession.storeObjects(objects);
+            mObjectServerSession.storeObjects(objects);
         }
         catch (RuntimeException e) {
             throw new ODMGException("Could not store object.", e);
@@ -1007,13 +1007,13 @@ public class EnerJDatabase implements Database, Persister
 
     //----------------------------------------------------------------------
     /**
-     * Gets the MetaObjectServerSession associated with this database.
+     * Gets the ObjectServerSession associated with this database.
      *
-     * @return the MetaObjectServerSession, or null if the database is closed.
+     * @return the ObjectServerSession, or null if the database is closed.
      */
-    MetaObjectServerSession getMetaObjectServerSession()
+    ObjectServerSession getObjectServerSession()
     {
-        return mMetaObjectServerSession;
+        return mObjectServerSession;
     }
     
     //----------------------------------------------------------------------
@@ -1064,7 +1064,7 @@ public class EnerJDatabase implements Database, Persister
      */
     public void setDatabaseRoot(DatabaseRoot aRoot)
     {
-        //  TODO  No way! User could wipe out schema enforce this in MetaObjectServer. Only allow DatabaseRoot OID to be set if it hasn't been stored yet.
+        //  TODO  No way! User could wipe out schema enforce this in ObjectServer. Only allow DatabaseRoot OID to be set if it hasn't been stored yet.
         checkBoundTransaction();
         
         Persistable persistable = (Persistable)aRoot;
@@ -1153,7 +1153,7 @@ public class EnerJDatabase implements Database, Persister
     {
         if (mOIDCache == null || mOIDCachePosition >= mOIDCache.length) {
             try {
-                mOIDCache = mMetaObjectServerSession.getNewOIDBlock();
+                mOIDCache = mObjectServerSession.getNewOIDBlock();
             }
             catch (RuntimeException e) {
                 throw e;
@@ -1204,13 +1204,13 @@ public class EnerJDatabase implements Database, Persister
      * not specified, the default Ener-J plug-ins are used.<p> 
      * <i>dbname</i> -- a server
      * is instantiated in the client's JVM using the default Ener-J plug-ins and the database is opened locally.
-     * However, if the <code>vo.dburi</code> system property is set, it is used as the base URI and dbname is
+     * However, if the <code>enerj.dburi</code> system property is set, it is used as the base URI and dbname is
      * appended to it.<p> 
      * <i>dbname@hostname[:port]</i> -- connects to the
      * database server at 'hostname' serving database 'dbname' using the default Ener-J plug-ins.<p> 
      * </code><p>
      * 
-     * The system property <code>vo.plugins</code>, if set, represents a colon-separated list of 
+     * The system property <code>enerj.plugins</code>, if set, represents a colon-separated list of 
      * plug-in class names which register subprotocols. If set, these classes are loaded and their static initializers 
      * are called to register new subprotocols. This allows new plug-ins to be referenced via the subprotocol on
      * the URI.<p>
@@ -1238,7 +1238,7 @@ public class EnerJDatabase implements Database, Persister
             }
             else {
                 // "dbname"
-                uriString = System.getenv("vo.dburi");
+                uriString = System.getenv("enerj.dburi");
                 if (uriString == null) {
                     uriString = "enerj://-";
                 }
@@ -1291,17 +1291,17 @@ public class EnerJDatabase implements Database, Persister
         String pluginClassName;
         if (scheme.equals("enerj")) {
             if (host == null || host.length() == 0 || host.equals("-")) {
-                // Local connection.
+                // Local connection with PagedObjectServer - default.
                 host = null;
-                pluginClassName = DefaultMetaObjectServer.class.getName();
+                pluginClassName = PagedObjectServer.class.getName();
             }
             else {
                 // TODO --  no remote plug-in yet...
-                pluginClassName = DefaultMetaObjectServer.class.getName();
+                pluginClassName = PagedObjectServer.class.getName();
             }
         }
         else if (scheme.startsWith("enerj.")) {
-            // TODO handle sub-protocols. Use PluginHelper to resolve. PluginHelper registers plugins via system prop vo.plugins
+            // TODO handle sub-protocols. Use PluginHelper to resolve. PluginHelper registers plugins via system prop enerj.plugins
             String subprotocol = scheme.substring("enerj.".length() );
             throw new ODMGException("Unknown subprotocol '" + subprotocol + "': " + uriString);
         }
@@ -1309,7 +1309,7 @@ public class EnerJDatabase implements Database, Persister
             throw new ODMGException("Malformed URI, must have scheme of 'enerj': " + uriString);
         }
 
-        // Set MetaObjectServer properties
+        // Set ObjectServer properties
         props.setProperty(ENERJ_DBNAME_PROP, dbname);
         props.setProperty(ENERJ_ACCESS_MODE_PROP, String.valueOf(accessMode) );
 
@@ -1335,7 +1335,7 @@ public class EnerJDatabase implements Database, Persister
             URIUtil.parseQuery(query, false, props);
         }
         
-        mMetaObjectServerSession = (MetaObjectServerSession)PluginHelper.connect(pluginClassName, props);
+        mObjectServerSession = (ObjectServerSession)PluginHelper.connect(pluginClassName, props);
 
         initOpenDatabase();
     }
@@ -1352,10 +1352,10 @@ public class EnerJDatabase implements Database, Persister
         }
         
         try {
-            mMetaObjectServerSession.disconnect();
+            mObjectServerSession.disconnect();
         }
         finally {
-            mMetaObjectServerSession = null;
+            mObjectServerSession = null;
             mIsOpen = false;
         
             // Clear any current database.
@@ -1378,14 +1378,14 @@ public class EnerJDatabase implements Database, Persister
             throw new ClassNotPersistenceCapableException("Object is not persistable");
         }
         
-        mMetaObjectServerSession.bind(getOID(object), name);
+        mObjectServerSession.bind(getOID(object), name);
     }
     
     //----------------------------------------------------------------------
     public void unbind(String name) throws ObjectNameNotFoundException 
     {
         checkBoundTransaction();
-        mMetaObjectServerSession.unbind(name);
+        mObjectServerSession.unbind(name);
     }
     
     //----------------------------------------------------------------------
@@ -1393,7 +1393,7 @@ public class EnerJDatabase implements Database, Persister
     {
         checkBoundTransaction(true);
 
-        long oid = mMetaObjectServerSession.lookup(name);
+        long oid = mObjectServerSession.lookup(name);
         return getObjectForOID(oid);
     }
     
@@ -1459,7 +1459,7 @@ public class EnerJDatabase implements Database, Persister
         }
         */
         // For now... Just remove from extent. Not quite the correct semantics, but it'll do.
-        mMetaObjectServerSession.removeFromExtent( getOID(persistable) );
+        mObjectServerSession.removeFromExtent( getOID(persistable) );
     }
     
     //--------------------------------------------------------------------------------

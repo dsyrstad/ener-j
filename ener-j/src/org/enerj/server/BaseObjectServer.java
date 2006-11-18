@@ -18,57 +18,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
-//Ener-J
-//Copyright 2000-2006 Visual Systems Corporation
 //$Header: $
 
-package org.enerj.util.asm;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.FieldVisitor;
+package org.enerj.server;
 
 /**
- * Represents an ASM field Node. Used by ClassReflector <p>
+ * A base ObjectServer that may be used by ObjectServer implementations. <p>
  * 
  * @version $Id: $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
-public class FieldNode implements FieldVisitor
+abstract public class BaseObjectServer implements ObjectServer
 {
-    private String mName;
-    private List<AnnotationNode> mAnnotations = new ArrayList<AnnotationNode>();
 
-    public FieldNode(String aName) 
-    { 
-        mName = aName;
-    }
-
-    public AnnotationVisitor visitAnnotation(String aDesc, boolean anVisible)
+    /**
+     * Construct a BaseObjectServer. 
+     */
+    protected BaseObjectServer()
     {
-        AnnotationNode anno = new AnnotationNode(aDesc);
-        mAnnotations.add(anno);
-        return anno;
+        // TODO Auto-generated constructor stub
     }
 
-    public void visitAttribute(Attribute attr)
-    {
-    }
-
-    public void visitEnd()
-    {
-    }
-
-    public List<AnnotationNode> getAnnotations()
-    {
-        return mAnnotations;
-    }
-
-    public String getName()
-    {
-        return mName;
-    }
 }

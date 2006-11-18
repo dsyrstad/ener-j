@@ -22,7 +22,7 @@
 // Copyright 2002 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/ClassVersionSchema.java,v 1.4 2006/05/05 13:47:14 dsyrstad Exp $
 
-package org.enerj.core;
+package org.enerj.server.schema;
 
 import java.util.*;
 
@@ -39,6 +39,8 @@ import org.enerj.annotations.Persist;
 @Persist
 public class ClassVersionSchema 
 {
+    // Note: All object references should be org.enerj.server.schema objects, or SCOs.
+
     /** The LogicalClassSchema which contains this class. */
     private LogicalClassSchema mLogicalClassSchema;
     

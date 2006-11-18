@@ -83,19 +83,6 @@ public class EnerJTransaction implements Transaction
 
     //----------------------------------------------------------------------
     /**
-     * Ener-J Server use only. Construct a EnerJTransaction that is connected to
-     * an MetaObjectServer. Exists primarly for servers
-     * that want to use the API and participate in the client's transaction.
-     *
-     * @param aDatabase a EnerJDatabase whose transaction has already been started.
-     */
-    public EnerJTransaction(EnerJDatabase aDatabase)
-    {
-        begin(aDatabase, false);
-    }
-    
-    //----------------------------------------------------------------------
-    /**
      * Gets the current transaction for the caller's thread. There can be at most
      * one Transaction open per thread at any given time.
      *
@@ -140,26 +127,11 @@ public class EnerJTransaction implements Transaction
     //----------------------------------------------------------------------
     /**
      * Alternate form of begin which allows a transaction to be associated
-     * explicityly with a Database.
-     *
-     * @param aDatabase the Database the transaction is being performed on.
-     */
-    public void begin(Database aDatabase)
-    {
-        begin(aDatabase, true);
-    }
-    
-    //----------------------------------------------------------------------
-    /**
-     * Alternate form of begin which allows a transaction to be associated
      * explicitly with a Database.
      *
      * @param aDatabase the Database the transaction is being performed on.
-     * @param clientSideTxn if true, the transaction will be started on the server.
-     *  Use false if the transaction is already started on the server and you just
-     *  need to initialize the this EnerJTransaction. 
      */
-    private void begin(Database aDatabase, boolean clientSideTxn)
+    private void begin(Database aDatabase)
     {
         if (mIsOpen) {
             throw new TransactionInProgressException("Transaction already started");
@@ -179,15 +151,12 @@ public class EnerJTransaction implements Transaction
         // Database is already bound to a transaction.
         voDatabase.setTransaction(this);
         
-        if (clientSideTxn) {
-            try {
-                voDatabase.getMetaObjectServerSession().beginTransaction();
-            }
-            catch (RuntimeException e) {
-                voDatabase.setTransaction(null);
-                throw e;
-            }
-
+        try {
+            voDatabase.getObjectServerSession().beginTransaction();
+        }
+        catch (RuntimeException e) {
+            voDatabase.setTransaction(null);
+            throw e;
         }
 
         // After successful begin, store current transaction for thread.
