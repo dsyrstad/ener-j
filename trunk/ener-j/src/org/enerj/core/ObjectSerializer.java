@@ -64,6 +64,10 @@ import org.enerj.sco.SCOTracker;
  */
 public class ObjectSerializer
 {
+    /** First available user OID. */
+    public static final long FIRST_USER_OID = 1000L;
+    /** Last available system CID. CIDs from 1 to this value are reserved for pre-enhanced system classes. */
+    public static final long LAST_SYSTEM_CID = 1000L;
     /** System OID: the null OID. */
     public static final long NULL_OID = 0L;
     /** Null Class Id (CID). */

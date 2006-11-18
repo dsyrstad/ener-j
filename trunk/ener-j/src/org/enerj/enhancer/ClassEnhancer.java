@@ -49,8 +49,8 @@ import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
 import org.enerj.core.PersistentAware;
-import org.enerj.core.SystemCIDMap;
 import org.enerj.core.Persister;
+import org.enerj.core.SystemCIDMap;
 
 /**
  * Class file enhancer/ASM vistor. An instance enhances a single class.
@@ -174,7 +174,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
             mSuperClassName = mSuperClassNameSlashed.replace('/', '.');
             mIsTopLevelPersistable = mIsPersistable && !mMetaData.isClassAFCO(mSuperClassName);
     
-            // Determine the class' CID. Special cases: DatabaseRoot and Schema.
+            // Determine the class' CID. Special cases: Schema classes.
             mClassId = SystemCIDMap.getSystemCIDForClassName(mClassName);
             if (mClassId == ObjectSerializer.NULL_CID) {
                 mClassId = generateClassId(mOriginalClassBytes);

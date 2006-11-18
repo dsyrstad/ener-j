@@ -28,12 +28,13 @@ import gnu.trove.TLongArrayList;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.enerj.core.ModifiedPersistableList;
+import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
+import org.enerj.core.PersistableHelper;
 import org.enerj.core.Persister;
+import org.enerj.core.Schema;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.ObjectNameNotFoundException;
@@ -48,10 +49,6 @@ import org.odmg.ObjectNotPersistentException;
  */
 abstract public class BaseObjectServerSession implements ObjectServerSession, Persister
 {
-    /** First available user OID. */
-    public static final long FIRST_USER_OID = 1000L;
-    /** Last available system CID. CIDs from 1 to this value are reserved for pre-enhanced system classes. */
-    public static final long LAST_SYSTEM_CID = 10000L;
     /** System OID: the Schema. */
     public static final long SCHEMA_OID = 1L;
     /** System OID: the Bindery. */
@@ -268,6 +265,17 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     }
 
     
+    
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#getSchema()
+     */
+    public Schema getSchema() throws ODMGException
+    {
+        // TODO this should call the schema session so we don't lock it.
+        return (Schema)getObjectForOID(SCHEMA_OID);
+    }
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.server.ObjectServerSession#disconnect()
@@ -301,7 +309,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      * {@inheritDoc}
      * @see org.enerj.server.ObjectServerSession#getAllowNontransactionalReads()
      */
-    public boolean getAllowNontransactionalReads() throws ODMGException
+    public boolean getAllowNontransactionalReads()
     {
         return mAllowNontransactionalReads;
     }
@@ -310,7 +318,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      * {@inheritDoc}
      * @see org.enerj.server.ObjectServerSession#setAllowNontransactionalReads(boolean)
      */
-    public void setAllowNontransactionalReads(boolean isNontransactional) throws ODMGException
+    public void setAllowNontransactionalReads(boolean isNontransactional)
     {
         mAllowNontransactionalReads = isNontransactional;
     }
@@ -395,7 +403,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     {
         // TODO if no txn exists, ignore.
 
-        mModifiedObjects.addLast(aPersistable);
+        mModifiedObjects.addToModifiedList(aPersistable);
     }
     
     /** 
@@ -404,7 +412,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void clearModifiedList()
     {
-        mModifiedObjects.clear();
+        mModifiedObjects.clearModifiedList();
     }
     
     /** 
@@ -413,7 +421,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public Iterator<Persistable> getModifiedListIterator()
     {
-        return mModifiedObjects;
+        return mModifiedObjects.getIterator();
     }
     
     /** 
@@ -431,10 +439,27 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public Persistable[] getObjectsForOIDs(long[] someOIDs)
     {
-        // TODO - Have to check if object is in the modified list. We need a modifiedlist object.
+        ClassInfo[] classInfo;
+        try {
+            classInfo = getClassInfoForOIDs(someOIDs);
+        }
+        catch (ODMGException e) {
+            throw new ODMGRuntimeException(e);
+        }
+        
+        Persistable[] objects = new Persistable[someOIDs.length];
+        int idx = 0;
+        for (long oid : someOIDs) {
+            // Check if object is in the modified list first. If not, let server load it.
+            Persistable persistable = mModifiedObjects.getModifiedObjectByOID(oid);
+            if (persistable == null && classInfo[idx] != null) {
+                persistable = PersistableHelper.createHollowPersistable(classInfo[idx], oid, this);
+            }
 
-        // TODO Auto-generated method stub
-        return null;
+            objects[idx++] = persistable;
+        }
+
+        return objects;
     }
     
     /** 
@@ -443,17 +468,39 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public long getOID(Object anObject)
     {
-        // TODO Auto-generated method stub
-        return 0;
+        if ( !(anObject instanceof Persistable)) {
+            return ObjectSerializer.NULL_OID;
+        }
+
+        Persistable persistable = (Persistable)anObject;
+        long oid = persistable.enerj_GetPrivateOID();
+        if (oid != ObjectSerializer.NULL_OID) {
+            return oid;
+        }
+        
+        if (persistable.enerj_IsNew()) {
+            try {
+                // Allocate one new oid.
+                oid = getNewOIDBlock(1)[0];
+            }
+            catch (ODMGException e) {
+                throw new ODMGRuntimeException(e);
+            }
+            
+            addToModifiedList(persistable);
+        }
+        
+        return oid;
     }
     
     /** 
-     * 
      * {@inheritDoc}
      * @see org.enerj.core.Persister#loadObject(org.enerj.core.Persistable)
      */
     public void loadObject(Persistable aPersistable)
     {
+        move EnerJDatabase loadFromSerialized to PersistableHelper.
+        x
         // TODO Auto-generated method stub
         
     }

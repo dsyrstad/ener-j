@@ -20,16 +20,12 @@
  *******************************************************************************/
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/LogicalClassSchema.java,v 1.5 2006/05/05 13:47:14 dsyrstad Exp $
 
-package org.enerj.server.schema;
+package org.enerj.core;
 
 import java.util.ArrayList;
 import java.util.Date;
 
 import org.enerj.annotations.Persist;
-import org.enerj.core.EnerJDatabase;
-import org.enerj.core.EnerJImplementation;
-import org.enerj.core.Extent;
-import org.enerj.core.SparseBitSet;
 
 /**
  * Schema for a logical class in a Ener-J ODBMS.

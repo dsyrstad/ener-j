@@ -129,9 +129,10 @@ public class OIDList
         long head = mBuffer.getLong(PTR_SIZE);
 
         // We always have at least one OID which is the null OID.
-        // We also don't want to return the DATABASE_ROOT_OID (1).
+        // We also don't want to return the System OIDs. E.g., SCHEMA_OID (1). So start this 
+        // at the first user OID.
         if (mNumOIDs == 0) {
-            mNumOIDs = 2;
+            mNumOIDs = ObjectSerializer.FIRST_USER_OID;
         }
 
         int numOIDPages = (int)((mNumOIDs + mOIDsPerPage - 1) / mOIDsPerPage);
