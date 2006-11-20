@@ -92,7 +92,7 @@ public class EnerJDatabase implements Database, Persister
     private static IdentityHashMap sCurrentThreadDatabaseMap = new IdentityHashMap();
 
     /** Client-side object cache. */
-    private ClientCache mClientCache = null;
+    private PersistableObjectCache mClientCache = null;
 
     /** List of Persistable objects created or modified during this transaction. */
     private ModifiedPersistableList mModifiedObjects = new ModifiedPersistableList();
@@ -113,10 +113,6 @@ public class EnerJDatabase implements Database, Persister
     /** ObjectServerSession we're bound to. */
     private ObjectServerSession mObjectServerSession = null;
 
-    /** Streams/Context used to serialize an object to bytes. */
-    private ByteArrayOutputStream mByteOutputStream = new ByteArrayOutputStream(1000);
-    private DataOutputStream mDataOutput = new DataOutputStream(mByteOutputStream);
-    
     /** Cache of new OIDs to be used. Only available during a transaction. */
     private long[] mOIDCache = null;
     private int mOIDCachePosition = 0;
@@ -141,7 +137,7 @@ public class EnerJDatabase implements Database, Persister
      */
     private void init()
     {
-        mClientCache = new DefaultClientCache(5000);
+        mClientCache = new DefaultPersistableObjectCache(5000);
 
         // Initialize CID map with known system CIDs.
         // This is so we don't try to update the schema with system CIDs, since they
@@ -466,35 +462,6 @@ public class EnerJDatabase implements Database, Persister
 
     //----------------------------------------------------------------------
     /**
-     * Creates a serialized image of the object. Assumes checkBoundTransaction
-     * has already been called. Note that this can cause new objects to be added 
-     * to the transaction's modified list.
-     *
-     * @param aPersistable a persistable object.
-     *
-     * @return a newly allocated byte array representing the serialized image of aPersistable.
-     * 
-     * @throws ODMGRuntimeException if an error occurs.
-     */
-    private byte[] createSerializedImage(Persistable aPersistable)
-    {
-        // A Database can't be shared between threads at the same time, checkBoundTransaction enforces this.
-        // So it is ok to reuse mByteOutputStream and mDataOutput.
-        try {
-            mByteOutputStream.reset();
-            ObjectSerializer writeContext = new ObjectSerializer(mDataOutput);
-            aPersistable.enerj_WriteObject(writeContext);
-            mDataOutput.flush();
-        }
-        catch (IOException e) {
-            throw new ODMGRuntimeException("Error writing object: " + e);
-        }
-        
-        return mByteOutputStream.toByteArray();
-    }
-    
-    //----------------------------------------------------------------------
-    /**
      * Store a Persistable object whose modified or new flags are set to true. 
      * Afterwards, the object's new and modified flags are set to
      * false. The loaded flag is set to true (in case the object was new). Also ensures
@@ -539,7 +506,7 @@ public class EnerJDatabase implements Database, Persister
             throw new ODMGRuntimeException("OID for object " + aPersistable.getClass() + " is null. CID=" + cid);
         }
 
-        byte[] objectBytes = createSerializedImage(aPersistable);
+        byte[] objectBytes = PersistableHelper.createSerializedImage(aPersistable);
         try {
             addToSerializedObjectQueue(cid, oid, objectBytes, aPersistable.enerj_IsNew() );
             // This will be write-locked by the server.
@@ -680,7 +647,7 @@ public class EnerJDatabase implements Database, Persister
     {
         checkBoundTransaction();
         
-        byte[] objectBytes = createSerializedImage(aPersistable);
+        byte[] objectBytes = PersistableHelper.createSerializedImage(aPersistable);
         long oid = getOID(aPersistable);
         if (oid == ObjectSerializer.NULL_OID) {
             throw new org.odmg.ODMGRuntimeException("OID for object " + aPersistable.getClass() + " is null");
@@ -749,13 +716,28 @@ public class EnerJDatabase implements Database, Persister
         mClientCache.evict(anOID);
     }
     
+    /**
+     * Resolve the object's entire object graph recursively until all instances are fully loaded.
+     * This allows the object's entire graph to be used without a dependence on the database.
+     *
+     * @param anObject the object to be resolved.
+     * @param shouldDisassociate if true, the object tree will be disassociated from 
+     *  its Persister.
+     *
+     * @throws IOException if an error occurs
+     */
+    public void resolveObject(Object anObject, boolean shouldDisassociate) throws IOException
+    {
+        PersistableHelper.resolveObject((Persistable)anObject, shouldDisassociate);
+    }
+    
     //----------------------------------------------------------------------
     /** 
      * Gets the client-side cache for this database.
      *
      * @return a ClientCache.
      */
-    ClientCache getClientCache()
+    PersistableObjectCache getClientCache()
     {
         return mClientCache;
     }

@@ -176,8 +176,8 @@ public class DatabaseClassLoader extends ClassLoader
 
             //  TODO  this is nasty because we read lock some of the schema here. this needs 
             //  TODO  to be pushed to the objectserver/schemaserver
-            Schema schema = database.getDatabaseRoot().getSchema();
-            ClassVersionSchema classVersion = schema.findClassVersion(cid);
+            Schema schema = null;// = database.getDatabaseRoot().getSchema();
+            ClassVersionSchema classVersion = null;// = schema.findClassVersion(cid);
             if (classVersion == null) {
                 throw new ClassNotFoundException("Could not find class " + aClassName + 
                     ", CID " + cid + " in database schema");

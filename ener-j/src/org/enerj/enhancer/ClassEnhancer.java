@@ -35,6 +35,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.enerj.annotations.SchemaAnnotation;
+import org.enerj.core.ObjectSerializer;
+import org.enerj.core.Persistable;
+import org.enerj.core.PersistableHelper;
+import org.enerj.core.PersistentAware;
+import org.enerj.core.Persister;
+import org.enerj.core.SystemCIDMap;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassVisitor;
@@ -44,13 +51,6 @@ import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.enerj.annotations.SchemaAnnotation;
-import org.enerj.core.ObjectSerializer;
-import org.enerj.core.Persistable;
-import org.enerj.core.PersistableHelper;
-import org.enerj.core.PersistentAware;
-import org.enerj.core.Persister;
-import org.enerj.core.SystemCIDMap;
 
 /**
  * Class file enhancer/ASM vistor. An instance enhances a single class.
@@ -86,7 +86,8 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
     private static final String sSerializableClassNameSlashed = Type.getInternalName(Serializable.class);
     
     private static final String sPersisterConstructorSignature = '(' + Type.getDescriptor(Persister.class) + ")V";
-    private static final String sReadWriteObjectMethodSignature = '(' + sObjectInputStreamClassNameSlashed + ")V";
+    private static final String sReadWriteObjectMethodSignature = '(' + sObjectSerializerClassNameSlashed + ")V";
+    private static final String sResolveObjectMethodSignature = '(' + sObjectSerializerClassNameSlashed + ";Z)V";
 
     private byte[] mOriginalClassBytes;
     private MetaData mMetaData;
@@ -377,8 +378,10 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
             // Emit constructor used to instantiate objects from the databse.
             emitSpecialConstructor();
 
-            // Generate enerj_ReadObject and enerj_WriteObject methods.
-            emitReadWriteObject(mPersistentFields);
+            // Generate enerj_ReadObject, enerj_WriteObject, and enerj_ResolveObject methods.
+            emitReadObject(mPersistentFields);
+            emitWriteObject(mPersistentFields);
+            emitResolveObject(mPersistentFields);
 
             emitHollow(mPersistentFields);
 
@@ -925,18 +928,14 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitEnd();
     }
 
-    //----------------------------------------------------------------------
     /**
-     * Generate the enerj_ReadObject and enerj_WriteObject methods.
+     * Emits the enerj_ReadObject method.
      *
      * @param someFields a list of the persistent fields for this class (not including
      *  super-class fields).
-     *
-     * @throws EnhancerException in the event of an error.
      */
-    private void emitReadWriteObject(ArrayList<Field> someFields) throws EnhancerException
+    private void emitReadObject(ArrayList<Field> someFields)
     {
-        // enerj_ReadObject
         MethodVisitor mv = cv.visitMethod(ACC_PUBLIC, "enerj_ReadObject", sReadWriteObjectMethodSignature, null, new String[] { "java/io/IOException" });
 
         mv.visitCode();
@@ -1006,13 +1005,20 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitLocalVariable("stream", "Ljava/io/DataInput;", null, startLabel, endLabel, 2);
         mv.visitMaxs(0, 0);
         mv.visitEnd();
+    }
 
-        //---------------------------------------
-        // enerj_WriteObject
-        mv = cv.visitMethod(ACC_PUBLIC, "enerj_WriteObject", sReadWriteObjectMethodSignature, null, new String[] { "java/io/IOException" });
+    /**
+     * Emits enerj_WriteObject.
+     *
+     * @param someFields a list of the persistent fields for this class (not including
+     *  super-class fields).
+     */
+    private void emitWriteObject(ArrayList<Field> someFields)
+    {
+        MethodVisitor mv = cv.visitMethod(ACC_PUBLIC, "enerj_WriteObject", sReadWriteObjectMethodSignature, null, new String[] { "java/io/IOException" });
 
         mv.visitCode();
-        startLabel = new Label();
+        Label startLabel = new Label();
         mv.visitLabel(startLabel);
 
         mv.visitVarInsn(ALOAD, 1);
@@ -1061,12 +1067,6 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
                                     "(" + sigChar + ")V");
             }
             else {
-                mv.visitVarInsn(ALOAD, 1);
-                mv.visitVarInsn(ALOAD, 0);
-                mv.visitFieldInsn(GETFIELD, "org/enerj/enhancer/templates/EnhancerTemplateSubClass_Enhanced", "mByteObj", "Ljava/lang/Byte;");
-                mv.visitVarInsn(ALOAD, 0);
-                mv.visitMethodInsn(INVOKEVIRTUAL, "org/enerj/core/ObjectSerializer", "writeObject", "(Ljava/lang/Object;Lorg/enerj/core/Persistable;)V");
-
                 // Write instructions for a SCO or FCO...
                 // WriteContext - write method param 1
                 mv.visitVarInsn(ALOAD, 1);
@@ -1090,11 +1090,65 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         
         mv.visitInsn(RETURN);
 
-        endLabel = new Label();
+        Label endLabel = new Label();
         mv.visitLabel(endLabel);
         mv.visitLocalVariable("this", mThisClassDescr, null, startLabel, endLabel, 0);
         mv.visitLocalVariable("aContext", sObjectSerializerClassDescr, null, startLabel, endLabel, 1);
         mv.visitLocalVariable("stream", "Ljava/io/DataOutput;", null, startLabel, endLabel, 2);
+        mv.visitMaxs(3, 3);
+        mv.visitEnd();
+    }
+
+    /**
+     * Emits enerj_ResolveObject.
+     *
+     * @param someFields a list of the persistent fields for this class (not including
+     *  super-class fields).
+     */
+    private void emitResolveObject(ArrayList<Field> someFields)
+    {
+        MethodVisitor mv = cv.visitMethod(ACC_PUBLIC, "enerj_ResolveObject", sResolveObjectMethodSignature, null, new String[] { "java/io/IOException" });
+
+        mv.visitCode();
+        Label startLabel = new Label();
+        mv.visitLabel(startLabel);
+
+        if (!mIsTopLevelPersistable) {
+            // Call super write if not a top-level persistable
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitVarInsn(ILOAD, 2);
+            mv.visitMethodInsn(INVOKESPECIAL, mSuperClassNameSlashed, "enerj_ResolveObject", sResolveObjectMethodSignature);
+        }
+
+        for (Field field: someFields) {
+            String fieldName = field.getName();
+            String fieldType = field.getDescriptor();
+
+            // This will return null if the type is not a primitive.
+            String dataInOutSuffix = MetaData.getPrimitiveDataInOutSuffix(fieldType);
+            // Only need to resolve objects, not primitive types.
+            if (dataInOutSuffix == null) { 
+                // Write instructions for a SCO or FCO...
+                // WriteContext - write method param 1
+                mv.visitVarInsn(ALOAD, 1);
+                // this - for getfield
+                mv.visitVarInsn(ALOAD, 0);
+                // getfield value - write method param 2
+                mv.visitFieldInsn(GETFIELD, mThisClassNameSlashed, fieldName, fieldType);
+                // this - write method param 2
+                mv.visitVarInsn(ILOAD, 2);
+                mv.visitMethodInsn(INVOKEVIRTUAL, sObjectSerializerClassNameSlashed, "resolveObject", "(Ljava/lang/Object;Z)V");
+            }
+        }
+        
+        mv.visitInsn(RETURN);
+
+        Label endLabel = new Label();
+        mv.visitLabel(endLabel);
+        mv.visitLocalVariable("this", mThisClassDescr, null, startLabel, endLabel, 0);
+        mv.visitLocalVariable("aContext", sObjectSerializerClassDescr, null, startLabel, endLabel, 1);
+        mv.visitLocalVariable("shouldDisassociate", "Z", null, startLabel, endLabel, 2);
         mv.visitMaxs(3, 3);
         mv.visitEnd();
     }

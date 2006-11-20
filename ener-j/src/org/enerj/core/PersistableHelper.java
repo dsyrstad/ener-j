@@ -25,7 +25,10 @@
 package org.enerj.core;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 
 import org.enerj.server.ClassInfo;
@@ -262,4 +265,70 @@ public class PersistableHelper
         }
     }
     
+    /**
+     * Creates a serialized image of the object. Note that this can cause new objects to be added 
+     * to the Persister's modified list.
+     *
+     * @param aPersistable a persistable object.
+     *
+     * @return a newly allocated byte array representing the serialized image of aPersistable.
+     * 
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    public static byte[] createSerializedImage(Persistable aPersistable)
+    {
+        // TODOLOW Maybe have a shared pool of these later?
+        ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream(1000);
+        DataOutputStream dataOutput = new DataOutputStream(byteOutputStream);
+        
+        try {
+            byteOutputStream.reset();
+            ObjectSerializer writeContext = new ObjectSerializer(dataOutput);
+            aPersistable.enerj_WriteObject(writeContext);
+            dataOutput.flush();
+        }
+        catch (IOException e) {
+            throw new ODMGRuntimeException("Error writing object: " + e);
+        }
+        
+        return byteOutputStream.toByteArray();
+    }
+    
+    /**
+     * Resolve the object's entire object graph recursively until all instances are fully loaded.
+     * This allows the object's entire graph to be used without a dependence on the persister (i.e.,
+     * {@link Persistable#enerj_GetPersister()} will return null.
+     *
+     * @param anObject the object to be resolved (a FCO).
+     * @param shouldDisassociate if true, the object tree will be disassociated from 
+     *  its Persister.
+     *
+     * @throws IOException if an error occurs
+     */
+    public static void resolveObject(Persistable anObject, boolean shouldDisassociate) throws IOException
+    {
+        resolveObject(new ObjectSerializer(), anObject, shouldDisassociate);
+    }
+    
+    /**
+     * Resolve the object's entire object graph recursively until all instances are fully loaded.
+     * This allows the object's entire graph to be used without a dependence on the persister (i.e.,
+     * {@link Persistable#enerj_GetPersister()} will return null.
+     *
+     * @param anObjectSerializer the object serializer.
+     * @param anObject the object to be resolved (a FCO).
+     * @param shouldDisassociate if true, the object tree will be disassociated from 
+     *  its Persister.
+     *
+     * @throws IOException if an error occurs
+     */
+    public static void resolveObject(ObjectSerializer anObjectSerializer, Persistable anObject, boolean shouldDisassociate) throws IOException
+    {
+        checkLoaded(anObject, false);
+        anObject.enerj_ResolveObject(anObjectSerializer, shouldDisassociate);
+        if (shouldDisassociate) {
+            anObject.enerj_SetPersister(null);
+            setNonTransactional(anObject);
+        }
+    }
 }

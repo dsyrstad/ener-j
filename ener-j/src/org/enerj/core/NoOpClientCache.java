@@ -33,7 +33,7 @@ import java.util.List;
  * @version $Id: NoOpClientCache.java,v 1.1 2006/05/13 21:51:08 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
-class NoOpClientCache implements ClientCache
+class NoOpClientCache implements PersistableObjectCache
 {
 
     //--------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#setTransaction(org.enerj.core.EnerJTransaction)
+     * @see org.enerj.core.PersistableObjectCache#setTransaction(org.enerj.core.EnerJTransaction)
      */
     public void setTransaction(EnerJTransaction aTxn)
     {
@@ -60,7 +60,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#add(long, java.lang.Object)
+     * @see org.enerj.core.PersistableObjectCache#add(long, java.lang.Object)
      */
     public void add(long anOID, Persistable aPersistable)
     {
@@ -70,7 +70,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#findEntry(long)
+     * @see org.enerj.core.PersistableObjectCache#findEntry(long)
      */
     public CacheWeakReference findEntry(long anOID)
     {
@@ -81,7 +81,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#get(long)
+     * @see org.enerj.core.PersistableObjectCache#get(long)
      */
     public Persistable get(long anOID)
     {
@@ -92,7 +92,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#evict(long)
+     * @see org.enerj.core.PersistableObjectCache#evict(long)
      */
     public void evict(long anOID)
     {
@@ -102,7 +102,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#evictAll()
+     * @see org.enerj.core.PersistableObjectCache#evictAll()
      */
     public void evictAll()
     {
@@ -112,7 +112,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#setSavedImage(long, byte[])
+     * @see org.enerj.core.PersistableObjectCache#setSavedImage(long, byte[])
      */
     public void setSavedImage(long anOID, byte[] anImage)
     {
@@ -122,7 +122,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#getAndClearSavedImage(long)
+     * @see org.enerj.core.PersistableObjectCache#getAndClearSavedImage(long)
      */
     public byte[] getAndClearSavedImage(long anOID)
     {
@@ -133,7 +133,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#hollowObjects()
+     * @see org.enerj.core.PersistableObjectCache#hollowObjects()
      */
     public void hollowObjects()
     {
@@ -143,7 +143,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#makeObjectsNonTransactional()
+     * @see org.enerj.core.PersistableObjectCache#makeObjectsNonTransactional()
      */
     public void makeObjectsNonTransactional()
     {
@@ -153,7 +153,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#cleanup()
+     * @see org.enerj.core.PersistableObjectCache#cleanup()
      */
     public void cleanup()
     {
@@ -163,7 +163,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#getAndClearPrefetches()
+     * @see org.enerj.core.PersistableObjectCache#getAndClearPrefetches()
      */
     public List<Persistable> getAndClearPrefetches()
     {
@@ -176,7 +176,7 @@ class NoOpClientCache implements ClientCache
     /** 
      * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#clearPrefetches()
+     * @see org.enerj.core.PersistableObjectCache#clearPrefetches()
      */
     public void clearPrefetches()
     {

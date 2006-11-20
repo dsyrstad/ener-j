@@ -216,7 +216,6 @@ public class ClassVersionSchema
         return mTransientFields;
     }
 
-
     //----------------------------------------------------------------------
     /**
      * Two ClassVersionSchema's are equal if their class Ids are equal.

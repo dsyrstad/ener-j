@@ -24,10 +24,10 @@ import java.util.List;
 
 
 /**
- * Client-side object cache. Used by EnerJDatabase.
- * This is an LRU cache. Objects fall off the cache if they've
+ * Persistable object cache.
+ * This is not an LRU cache. Objects fall off the cache if they've
  * been GCed or the maximum size is reached.
- * EnerJTransaction takes care of holding strong references to objects that 
+ * The Persister takes care of holding strong references to objects that 
  * have been modified before they are stored in the database. This prevents modified objects
  * from being GCed before they are stored. 
  * This cache only holds weak references to the cached objects. As a cached object is
@@ -37,7 +37,7 @@ import java.util.List;
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.Database
  */
-public interface ClientCache
+public interface PersistableObjectCache
 {
     //--------------------------------------------------------------------------------
     /**

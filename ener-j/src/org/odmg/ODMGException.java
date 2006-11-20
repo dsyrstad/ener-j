@@ -14,6 +14,7 @@ public class ODMGException extends Exception {
     public ODMGException() {
         super();
     }
+
     /**
      * Construct an <code>ODMGException</code> object with an error message.
      * @param msg	The error message associated with this exception.
@@ -23,7 +24,6 @@ public class ODMGException extends Exception {
         super(msg);
     }
 
-    //--------------------------------------------------------------------------
     /**
      * Construct with an error message and a cause.
      * @param msg	The error message associated with this exception.
@@ -32,6 +32,16 @@ public class ODMGException extends Exception {
     public ODMGException(String msg, Throwable cause) 
     {
         super(msg, cause);
+    }
+
+    /**
+     * Construct with an error message and a cause.
+     *
+     * @param cause the original cause.
+     */
+    public ODMGException(Throwable cause) 
+    {
+        super(cause);
     }
 }
 

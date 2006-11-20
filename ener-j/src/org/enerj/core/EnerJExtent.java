@@ -32,7 +32,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.enerj.server.ExtentIterator;
-import org.enerj.server.MetaObjectServerSession;
+import org.enerj.server.ObjectServerSession;
 import org.odmg.ODMGRuntimeException;
 
 
@@ -154,7 +154,7 @@ public class EnerJExtent implements Extent
     public int size()
     {
         if (mSize < 0) {
-            long size = mDatabase.getMetaObjectServerSession().getExtentSize(mCandidateClass.getName(), mHasSubclasses);
+            long size = mDatabase.getObjectServerSession().getExtentSize(mCandidateClass.getName(), mHasSubclasses);
             if (size > Integer.MAX_VALUE) {
                 throw new ArrayIndexOutOfBoundsException("Extent size of " + size + " exceeds size of int");
             }
@@ -251,7 +251,7 @@ public class EnerJExtent implements Extent
         //----------------------------------------------------------------------
         EnerJExtentIterator()
         {
-            MetaObjectServerSession session = mDatabase.getMetaObjectServerSession();
+            ObjectServerSession session = mDatabase.getObjectServerSession();
             mExtentIterator = session.createExtentIterator(mCandidateClass.getName(), mHasSubclasses);
         }
         
