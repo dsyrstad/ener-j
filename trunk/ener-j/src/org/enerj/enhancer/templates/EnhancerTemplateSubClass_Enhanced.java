@@ -346,6 +346,26 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
     }
 
     //----------------------------------------------------------------------
+    public void enerj_ResolveObject(ObjectSerializer aContext, boolean shouldDisassociate) throws IOException
+    {
+        super.enerj_ResolveObject(aContext, shouldDisassociate);
+        
+        aContext.resolveObject(mByteObj, shouldDisassociate);
+        aContext.resolveObject(mBooleanObj, shouldDisassociate);
+        aContext.resolveObject(mCharObj, shouldDisassociate);
+        aContext.resolveObject(mShortObj, shouldDisassociate);
+        aContext.resolveObject(mIntObj, shouldDisassociate);
+        aContext.resolveObject(mLongObj, shouldDisassociate);
+        aContext.resolveObject(mFloatObj, shouldDisassociate);
+        aContext.resolveObject(mDoubleObj, shouldDisassociate);
+        aContext.resolveObject(mString, shouldDisassociate);
+        aContext.resolveObject(mObject, shouldDisassociate);
+        aContext.resolveObject(mIntArray, shouldDisassociate);
+        aContext.resolveObject(m2dArray, shouldDisassociate);
+        aContext.resolveObject(mObjArray, shouldDisassociate);
+    }
+
+    //----------------------------------------------------------------------
     /** Clear the object's persistent fields. Only persistent fields which
      * refer to Objects are cleared (i.e., primitive field values are not touched).
      */

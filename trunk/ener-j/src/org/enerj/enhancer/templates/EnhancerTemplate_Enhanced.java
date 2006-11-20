@@ -641,6 +641,24 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         aContext.writeObject(mObjArray, this);
     }
 
+    //----------------------------------------------------------------------
+    public void enerj_ResolveObject(ObjectSerializer aContext, boolean shouldDisassociate) throws IOException
+    {
+        aContext.resolveObject(mByteObj, shouldDisassociate);
+        aContext.resolveObject(mBooleanObj, shouldDisassociate);
+        aContext.resolveObject(mCharObj, shouldDisassociate);
+        aContext.resolveObject(mShortObj, shouldDisassociate);
+        aContext.resolveObject(mIntObj, shouldDisassociate);
+        aContext.resolveObject(mLongObj, shouldDisassociate);
+        aContext.resolveObject(mFloatObj, shouldDisassociate);
+        aContext.resolveObject(mDoubleObj, shouldDisassociate);
+        aContext.resolveObject(mString, shouldDisassociate);
+        aContext.resolveObject(mObject, shouldDisassociate);
+        aContext.resolveObject(mIntArray, shouldDisassociate);
+        aContext.resolveObject(m2dArray, shouldDisassociate);
+        aContext.resolveObject(mObjArray, shouldDisassociate);
+    }
+
     
     //----------------------------------------------------------------------
     /** Clear the object's persistent fields. Only persistent fields which

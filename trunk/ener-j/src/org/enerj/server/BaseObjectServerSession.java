@@ -26,13 +26,18 @@ package org.enerj.server;
 
 import gnu.trove.TLongArrayList;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Logger;
 
+import org.enerj.core.DefaultPersistableObjectCache;
 import org.enerj.core.ModifiedPersistableList;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
+import org.enerj.core.PersistableObjectCache;
 import org.enerj.core.Persister;
 import org.enerj.core.Schema;
 import org.odmg.ODMGException;
@@ -49,14 +54,9 @@ import org.odmg.ObjectNotPersistentException;
  */
 abstract public class BaseObjectServerSession implements ObjectServerSession, Persister
 {
-    /** System OID: the Schema. */
-    public static final long SCHEMA_OID = 1L;
-    /** System OID: the Bindery. */
-    public static final long BINDERY_OID = 2L;
-    /** System OID: the Class Extents. */
-    public static final long EXTENTS_OID = 3L;
-
-    private ObjectServer mObjectServer;
+    private static Logger mLogger = Logger.getLogger( BaseObjectServerSession.class.getName() ); 
+    
+    private BaseObjectServer mObjectServer;
     private boolean mAllowNontransactionalReads = false;
     /** New OIDs that need to be added to their extents on commit. Key is CID, value is a list of OIDs. */
     private HashMap<Long, TLongArrayList> mPendingNewOIDs = null;
@@ -64,13 +64,15 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     private Thread mShutdownHook = null;
     /** True if session is connected. */
     private boolean mConnected = false;
+    /** Cache of loaded objects. This cache lasts only during the duration of a transaction. */
+    private PersistableObjectCache mObjectCache = new DefaultPersistableObjectCache(1000);
     /** List of Persistable objects created or modified during this transaction. */
     private ModifiedPersistableList mModifiedObjects = new ModifiedPersistableList();
 
     /**
      * Construct a new BaseObjectServerSession.
      */
-    protected BaseObjectServerSession(ObjectServer anObjectServer)
+    protected BaseObjectServerSession(BaseObjectServer anObjectServer)
     {
         mObjectServer = anObjectServer;
 
@@ -79,6 +81,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         Runtime.getRuntime().addShutdownHook(mShutdownHook);
 
         mConnected = true;
+        mLogger.info("Session " + this + " is connected.");
     }
 
     /**
@@ -140,10 +143,24 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     protected void flushModifiedObjects()
     {
+        List<SerializedObject> images = new ArrayList<SerializedObject>(1000); 
         for (Iterator<Persistable> iter = getModifiedListIterator(); iter.hasNext(); ) {
-            
+            Persistable persistable = iter.next();
+            byte[] image = PersistableHelper.createSerializedImage(persistable);
+            images.add( new SerializedObject(persistable.enerj_GetPrivateOID(), persistable.enerj_GetClassId(), 
+                            image, persistable.enerj_IsNew()) );
         }
-        // TODO
+        
+        if (!images.isEmpty()) {
+            SerializedObject[] objs = new SerializedObject[images.size()];
+            objs = images.toArray(objs);
+            try {
+                storeObjects(objs);
+            }
+            catch (ODMGException e) {
+                throw new ODMGRuntimeException(e);
+            }
+        }
     }
 
     //----------------------------------------------------------------------
@@ -166,7 +183,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     public void bind(long anOID, String aName) throws ObjectNameNotUniqueException
     {
         // TODO Check if txn exists.
-        Bindery bindery = (Bindery)getObjectForOID(BINDERY_OID);
+        Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
         bindery.bind(anOID, aName);
         flushModifiedObjects();
     }
@@ -177,7 +194,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public long lookup(String aName) throws ObjectNameNotFoundException
     {
-        Bindery bindery = (Bindery)getObjectForOID(BINDERY_OID);
+        Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
         return bindery.lookup(aName);
     }
 
@@ -188,7 +205,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     public void unbind(String aName) throws ObjectNameNotFoundException
     {
         // TODO Check if txn exists.
-        Bindery bindery = (Bindery)getObjectForOID(BINDERY_OID);
+        Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
         bindery.unbind(aName);
         flushModifiedObjects();
     }
@@ -263,8 +280,6 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         return extentIterator;
         */ return null;
     }
-
-    
     
     /** 
      * {@inheritDoc}
@@ -272,8 +287,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public Schema getSchema() throws ODMGException
     {
-        // TODO this should call the schema session so we don't lock it.
-        return (Schema)getObjectForOID(SCHEMA_OID);
+        return mObjectServer.getSchema();
     }
 
     /** 
@@ -282,6 +296,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void disconnect() throws ODMGException 
     {
+        mLogger.info("Session " + this + " is disconnecting.");
         //  TODO  - write disconnect/session info in log.
         setDisconnected();
     }
@@ -357,6 +372,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     {
         // TODO Check that no txn exists.
 
+        mObjectCache.evictAll();
         if (mPendingNewOIDs == null) {
             mPendingNewOIDs = new HashMap<Long, TLongArrayList>(128);
         }
@@ -383,6 +399,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     {
         // TODO Check if txn exists.
         updateExtents();
+        mObjectCache.evictAll();
     }
 
     /** 
@@ -393,10 +410,11 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     {
         // TODO Check if txn exists.
         mPendingNewOIDs.clear();
+        mObjectCache.evictAll();
     }
 
     /** 
-     * {@inheritDoc}
+     * {@inheritDoc} Also ensures that the object in in the cache.
      * @see org.enerj.core.Persister#addToModifiedList(org.enerj.core.Persistable)
      */
     public void addToModifiedList(Persistable aPersistable)
@@ -404,6 +422,8 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         // TODO if no txn exists, ignore.
 
         mModifiedObjects.addToModifiedList(aPersistable);
+        // Make sure that it's cached.
+        mObjectCache.add(aPersistable.enerj_GetPrivateOID(), aPersistable);
     }
     
     /** 
@@ -450,8 +470,13 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         Persistable[] objects = new Persistable[someOIDs.length];
         int idx = 0;
         for (long oid : someOIDs) {
-            // Check if object is in the modified list first. If not, let server load it.
-            Persistable persistable = mModifiedObjects.getModifiedObjectByOID(oid);
+            // Is object in the cache?
+            Persistable persistable = mObjectCache.get(oid);
+            // If not, check if object is in the modified list. If not, let server load it.
+            if (persistable == null) {
+                persistable = mModifiedObjects.getModifiedObjectByOID(oid);
+            }
+            
             if (persistable == null && classInfo[idx] != null) {
                 persistable = PersistableHelper.createHollowPersistable(classInfo[idx], oid, this);
             }
@@ -487,6 +512,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                 throw new ODMGRuntimeException(e);
             }
             
+            // This call adds the object to the cache too.
             addToModifiedList(persistable);
         }
         
@@ -499,8 +525,12 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void loadObject(Persistable aPersistable)
     {
+        long oid = getOID(aPersistable);
+        // Ensure the object is in the cache.
+        mObjectCache.add(oid, aPersistable);
+        
         try {
-            byte[] image = loadObjects( new long[] { aPersistable.enerj_GetPrivateOID() } )[0];
+            byte[] image = loadObjects( new long[] { oid } )[0];
             PersistableHelper.loadSerializedImage(this, aPersistable, image);
         }
         catch (ODMGException e) {

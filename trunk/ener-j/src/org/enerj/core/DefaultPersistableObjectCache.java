@@ -26,16 +26,15 @@ package org.enerj.core;
 
 import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Client-side object cache. Used by EnerJDatabase.
- * This is an LRU cache. Objects fall off the cache if they've
- * been GCed or the maximum size is reached.
- * EnerJTransaction takes care of holding strong references to objects that 
+ * Persistable object cache.
+ * This is not an LRU cache. Objects fall off the cache only if they've
+ * been GCed. This is a requirement so that objects with the same OID resolve to the 
+ * same instance.
+ * The Persister takes care of holding strong references to objects that 
  * have been modified before they are stored in the database. This prevents modified objects
  * from being GCed before they are stored. 
  * This cache only holds weak references to the cached objects. As a cached object is
@@ -45,7 +44,7 @@ import java.util.Map;
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.Database
  */
-class DefaultClientCache implements ClientCache 
+public class DefaultPersistableObjectCache implements PersistableObjectCache 
 {
     /** Client-side Object Cache. Key is Long(oid), value is CacheWeakReference (whose referent is a 
      * Persistable). List order is by most recently accessed. 
@@ -63,27 +62,21 @@ class DefaultClientCache implements ClientCache
     
     /** Transaction registered with this cache, if any. */
     private EnerJTransaction mTxn = null;
-    private int mMaxSize;
-    /** Number of cache items to drop-off when we reach the max. */
-    private int mDropSize;
 
     //----------------------------------------------------------------------
     /**
      * Constructs a new client-side object cache of the specified size.
      *
-     * @param aMaxSize the initial number of objects that the cache can hold.
+     * @param anInitialSize the initial number of objects that the cache can hold.
      *  The cache will grow if more than this many objects are added. The growth
      *  behaviour is the same as java.util.HashMap.
      */
-    DefaultClientCache(int aMaxSize)
+    public DefaultPersistableObjectCache(int anInitialSize)
     {
-        mMaxSize = aMaxSize;
-        mDropSize = mMaxSize / 10; // Drop 10% at a time. 
-        
         // The calculation below is to offset the effect of the load factor.
-        mCache = new LinkedHashMap<Long, CacheWeakReference>(mMaxSize + (mMaxSize / 3), .75F, true);
+        mCache = new LinkedHashMap<Long, CacheWeakReference>(anInitialSize + (anInitialSize / 3), .75F, true);
 
-        mPrefetchList = new ArrayList<CacheWeakReference>(mMaxSize / 4); 
+        mPrefetchList = new ArrayList<CacheWeakReference>(anInitialSize / 4); 
     }
     
     //--------------------------------------------------------------------------------
@@ -100,9 +93,8 @@ class DefaultClientCache implements ClientCache
     
     //--------------------------------------------------------------------------------
     /** 
-     * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#add(long, java.lang.Object)
+     * @see org.enerj.core.PersistableObjectCache#add(long, java.lang.Object)
      */
     public void add(long anOID, Persistable aPersistable)
     {
@@ -114,20 +106,6 @@ class DefaultClientCache implements ClientCache
             if (!aPersistable.enerj_IsNew() && !aPersistable.enerj_IsLoaded()) {
                 // Non-new Persistable that has not been loaded yet. It is a prefetch candidate.
                 mPrefetchList.add(weakRef);
-            }
-        }
-
-        if (mCache.size() >= mMaxSize) {
-            if (mTxn != null) {
-                // Make sure all modified objects are written out so we can drop one.
-                mTxn.flush();
-            }
-            
-            // Remove mDropSize LRU entries. We drop more than one so we don't thrash on flush().
-            Iterator<Map.Entry<Long,CacheWeakReference>> iter = mCache.entrySet().iterator();
-            for (int i = 0; i < mDropSize && iter.hasNext(); i++) {
-                iter.next();
-                iter.remove();
             }
         }
     }
@@ -149,9 +127,8 @@ class DefaultClientCache implements ClientCache
 
     //--------------------------------------------------------------------------------
     /** 
-     * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#get(long)
+     * @see org.enerj.core.PersistableObjectCache#get(long)
      */
     public Persistable get(long anOID)
     {
@@ -172,9 +149,8 @@ class DefaultClientCache implements ClientCache
     
     //--------------------------------------------------------------------------------
     /** 
-     * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#evict(long)
+     * @see org.enerj.core.PersistableObjectCache#evict(long)
      */
     public void evict(long anOID)
     {
@@ -184,9 +160,8 @@ class DefaultClientCache implements ClientCache
     
     //--------------------------------------------------------------------------------
     /** 
-     * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#evictAll()
+     * @see org.enerj.core.PersistableObjectCache#evictAll()
      */
     public void evictAll()
     {
@@ -195,9 +170,8 @@ class DefaultClientCache implements ClientCache
     
     //--------------------------------------------------------------------------------
     /** 
-     * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#setSavedImage(long, byte[])
+     * @see org.enerj.core.PersistableObjectCache#setSavedImage(long, byte[])
      */
     public void setSavedImage(long anOID, byte[] anImage)
     {
@@ -211,9 +185,8 @@ class DefaultClientCache implements ClientCache
 
     //--------------------------------------------------------------------------------
     /** 
-     * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#getAndClearSavedImage(long)
+     * @see org.enerj.core.PersistableObjectCache#getAndClearSavedImage(long)
      */
     public byte[] getAndClearSavedImage(long anOID)
     {
@@ -229,9 +202,8 @@ class DefaultClientCache implements ClientCache
 
     //--------------------------------------------------------------------------------
     /** 
-     * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#hollowObjects()
+     * @see org.enerj.core.PersistableObjectCache#hollowObjects()
      */
     public void hollowObjects()
     {
@@ -247,9 +219,8 @@ class DefaultClientCache implements ClientCache
 
     //--------------------------------------------------------------------------------
     /** 
-     * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#makeObjectsNonTransactional()
+     * @see org.enerj.core.PersistableObjectCache#makeObjectsNonTransactional()
      */
     public void makeObjectsNonTransactional()
     {
@@ -266,9 +237,8 @@ class DefaultClientCache implements ClientCache
     
     //--------------------------------------------------------------------------------
     /** 
-     * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#cleanup()
+     * @see org.enerj.core.PersistableObjectCache#cleanup()
      */
     public void cleanup()
     {
@@ -282,9 +252,8 @@ class DefaultClientCache implements ClientCache
     
     //--------------------------------------------------------------------------------
     /** 
-     * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#getAndClearPrefetches()
+     * @see org.enerj.core.PersistableObjectCache#getAndClearPrefetches()
      */
     public List<Persistable> getAndClearPrefetches()
     {
@@ -302,12 +271,10 @@ class DefaultClientCache implements ClientCache
         return prefetches;
     }
 
-    
     //--------------------------------------------------------------------------------
     /** 
-     * 
      * {@inheritDoc}
-     * @see org.enerj.core.ClientCache#clearPrefetches()
+     * @see org.enerj.core.PersistableObjectCache#clearPrefetches()
      */
     public void clearPrefetches()
     {

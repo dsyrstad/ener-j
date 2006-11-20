@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.enerj.sco.JavaSqlDateSCO;
 import org.enerj.sco.JavaSqlTimeSCO;
@@ -210,6 +211,14 @@ public class ObjectSerializer
     
     //----------------------------------------------------------------------
     /**
+     * Construct a new ObjectSerializer for resolving objects.
+     */
+    public ObjectSerializer()
+    {
+    }
+    
+    //----------------------------------------------------------------------
+    /**
      * Construct a new ObjectSerializer for input.
      *
      * @param aDataInput the DataInput that provides the stream to read from.
@@ -307,6 +316,82 @@ public class ObjectSerializer
         }
     }
 
+    /**
+     * Resolve the object's entire object graph recursively until all instances are fully loaded.
+     * This allows the object's entire graph to be used without a dependence on the persister (i.e.,
+     * {@link Persistable#enerj_GetPersister()} will return null.
+     *
+     * @param anObject the object to be resolved (either a SCO or FCO).
+     * @param shouldDisassociate if true, the object tree will be disassociated from 
+     *  its Persister.
+     *
+     * @throws IOException if an error occurs
+     */
+    public void resolveObject(Object anObject, boolean shouldDisassociate) throws IOException
+    {
+        if (anObject == null) {
+            return;
+        }
+        else if (anObject instanceof Persistable) {
+            PersistableHelper.resolveObject(this, (Persistable)anObject, shouldDisassociate);
+        }
+        else {
+            // Is it a SCO
+            Class valueClass = anObject.getClass();
+            Serializer serializer = (Serializer)sClassToSerializer.get(valueClass);
+            if (serializer == null) {
+                if (valueClass.isArray()) {
+                    // If we still have an array, it must be an array of Objects ("[L...;" or "[[...").
+                    // Because of the variability of these classes, these class types are not in the 
+                    // sClassToSerializer HashMap. Just set it up here.
+                    serializer = sObjectArraySerializer;
+                }
+                else {
+                    throw new org.odmg.ClassNotPersistenceCapableException("A persistent field of " + anObject.getClass() + " does not refer to a FCO nor SCO. Rather it refers to " + valueClass);
+                }
+            }
+
+            serializer.resolve(this, anObject, shouldDisassociate);
+        }
+    }
+
+    /**
+     * Resolve the collection's entire object graph recursively until all instances are fully loaded.
+     * This allows the collection's entire graph to be used without a dependence on the persister (i.e.,
+     * {@link Persistable#enerj_GetPersister()} will return null.
+     *
+     * @param aCollection the collection to be resolved.
+     * @param shouldDisassociate if true, the object tree will be disassociated from 
+     *  its Persister.
+     *
+     * @throws IOException if an error occurs
+     */
+    public void resolveCollection(Collection aCollection, boolean shouldDisassociate) throws IOException
+    {
+        for (Object obj : aCollection) {
+            resolveObject(obj, shouldDisassociate);
+        }
+    }
+    
+    /**
+     * Resolve the map's entire object graph recursively until all instances are fully loaded.
+     * This allows the map's entire graph to be used without a dependence on the persister (i.e.,
+     * {@link Persistable#enerj_GetPersister()} will return null.
+     *
+     * @param aMap the map to be resolved.
+     * @param shouldDisassociate if true, the object tree will be disassociated from 
+     *  its Persister.
+     *
+     * @throws IOException if an error occurs
+     */
+    public void resolveMap(Map aMap, boolean shouldDisassociate) throws IOException
+    {
+        for (Map.Entry entry : (Set<Map.Entry>)aMap.entrySet()) {
+            resolveObject(entry.getKey(), shouldDisassociate);
+            resolveObject(entry.getValue(), shouldDisassociate);
+        }
+    }
+    
     //----------------------------------------------------------------------
     /**
      * Reads a Object from a stream.
@@ -626,6 +711,20 @@ public class ObjectSerializer
          * @throws IOException if an error occurs
          */
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException;
+        
+        /**
+         * Resolve the object's entire object graph recursively until all instances are fully loaded.
+         * This allows the object's entire graph to be used without a dependence on the persister (i.e.,
+         * {@link Persistable#enerj_GetPersister()} will return null.
+         *
+         * @param anObjectSerializer the ObjectSerializer invoking this method. 
+         * @param anObject the object to be resolved (either a SCO or FCO).
+         * @param shouldDisassociate if true, the object tree will be disassociated from 
+         *  its Persister.
+         *
+         * @throws IOException if an error occurs
+         */
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException;
     }
 
     //----------------------------------------------------------------------
@@ -671,6 +770,11 @@ public class ObjectSerializer
             byte[] array = new byte[len];
             aContext.mStream.readFully(array);
             return array;
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
         }
     }
 
@@ -723,6 +827,11 @@ public class ObjectSerializer
 
             return array;
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -773,6 +882,11 @@ public class ObjectSerializer
             }
 
             return array;
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
         }
     }
 
@@ -825,6 +939,11 @@ public class ObjectSerializer
 
             return array;
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -875,6 +994,11 @@ public class ObjectSerializer
             }
 
             return array;
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
         }
     }
 
@@ -927,6 +1051,11 @@ public class ObjectSerializer
 
             return array;
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -978,6 +1107,11 @@ public class ObjectSerializer
 
             return array;
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1028,6 +1162,11 @@ public class ObjectSerializer
             }
 
             return array;
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
         }
     }
 
@@ -1095,6 +1234,13 @@ public class ObjectSerializer
 
             return array;
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            for (Object aValue : (Object[])anObject) {
+                anObjectSerializer.resolveObject(aValue, shouldDisassociate);
+            }
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1137,6 +1283,11 @@ public class ObjectSerializer
         {
             byte value = aContext.mStream.readByte();
             return new Byte(value);
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
         }
     }
 
@@ -1181,6 +1332,11 @@ public class ObjectSerializer
             boolean value = aContext.mStream.readBoolean();
             return (value ? Boolean.TRUE : Boolean.FALSE);
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1223,6 +1379,11 @@ public class ObjectSerializer
         {
             char value = aContext.mStream.readChar();
             return new Character(value);
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
         }
     }
 
@@ -1267,6 +1428,11 @@ public class ObjectSerializer
             short value = aContext.mStream.readShort();
             return new Short(value);
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1309,6 +1475,11 @@ public class ObjectSerializer
         {
             int value = aContext.mStream.readInt();
             return new Integer(value);
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
         }
     }
 
@@ -1353,6 +1524,11 @@ public class ObjectSerializer
             long value = aContext.mStream.readLong();
             return new Long(value);
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1396,6 +1572,11 @@ public class ObjectSerializer
             float value = aContext.mStream.readFloat();
             return new Float(value);
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1438,6 +1619,11 @@ public class ObjectSerializer
         {
             double value = aContext.mStream.readDouble();
             return new Double(value);
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
         }
     }
 
@@ -1485,6 +1671,11 @@ public class ObjectSerializer
             byte[] bytes = new byte[len];
             aContext.mStream.readFully(bytes);
             return new String(bytes, "UTF8");
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
         }
     }
 
@@ -1539,6 +1730,11 @@ public class ObjectSerializer
                 throw new IOException("Cannot find class " + className);
             }
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1589,6 +1785,11 @@ public class ObjectSerializer
             java.math.BigInteger bigInt = (java.math.BigInteger)sBigIntegerSerializer.read(aContext, anOwner);
             return new java.math.BigDecimal(bigInt, scale);
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1637,6 +1838,11 @@ public class ObjectSerializer
             aContext.mStream.readFully(bytes);
             return new java.math.BigInteger(bytes);
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1684,6 +1890,11 @@ public class ObjectSerializer
             String variant = aContext.mStream.readUTF();
             return new java.util.Locale(language, country, variant);
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1726,6 +1937,11 @@ public class ObjectSerializer
         {
             long value = aContext.mStream.readLong();
             return new JavaUtilDateSCO(value, anOwner);
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
         }
     }
 
@@ -1770,6 +1986,11 @@ public class ObjectSerializer
             long value = aContext.mStream.readLong();
             return new JavaSqlDateSCO(value, anOwner);
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1812,6 +2033,11 @@ public class ObjectSerializer
         {
             long value = aContext.mStream.readLong();
             return new JavaSqlTimeSCO(value, anOwner);
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
         }
     }
 
@@ -1857,6 +2083,11 @@ public class ObjectSerializer
             long value = aContext.mStream.readLong();
             int nanos = aContext.mStream.readInt();
             return new JavaSqlTimestampSCO(value, nanos, anOwner);
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
         }
     }
 
@@ -1905,6 +2136,11 @@ public class ObjectSerializer
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            // Nothing to do.
+        }
     }
 
     //----------------------------------------------------------------------
@@ -1950,6 +2186,11 @@ public class ObjectSerializer
             aContext.mSerializer.readCollection(collection, size, anOwner);
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            anObjectSerializer.resolveCollection((Collection)anObject, shouldDisassociate);
         }
     }
 
@@ -2016,6 +2257,11 @@ public class ObjectSerializer
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            anObjectSerializer.resolveCollection((Collection)anObject, shouldDisassociate);
+        }
     }
 
     //----------------------------------------------------------------------
@@ -2061,6 +2307,11 @@ public class ObjectSerializer
             aContext.mSerializer.readCollection(collection, size, anOwner);
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            anObjectSerializer.resolveCollection((Collection)anObject, shouldDisassociate);
         }
     }
 
@@ -2108,6 +2359,11 @@ public class ObjectSerializer
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            anObjectSerializer.resolveCollection((Collection)anObject, shouldDisassociate);
+        }
     }
 
     //----------------------------------------------------------------------
@@ -2153,6 +2409,11 @@ public class ObjectSerializer
             aContext.mSerializer.readCollection(collection, size, anOwner);
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            anObjectSerializer.resolveCollection((Collection)anObject, shouldDisassociate);
         }
     }
 
@@ -2200,6 +2461,11 @@ public class ObjectSerializer
             ((SCOTracker)collection).setOwnerFCO(anOwner);
             return collection;
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            anObjectSerializer.resolveCollection((Collection)anObject, shouldDisassociate);
+        }
     }
 
     //----------------------------------------------------------------------
@@ -2245,6 +2511,11 @@ public class ObjectSerializer
             aContext.mSerializer.readMap(map, size, anOwner);
             ((SCOTracker)map).setOwnerFCO(anOwner);
             return map;
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            anObjectSerializer.resolveMap((Map)anObject, shouldDisassociate);
         }
     }
 
@@ -2292,6 +2563,11 @@ public class ObjectSerializer
             ((SCOTracker)map).setOwnerFCO(anOwner);
             return map;
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            anObjectSerializer.resolveMap((Map)anObject, shouldDisassociate);
+        }
     }
 
     //----------------------------------------------------------------------
@@ -2338,6 +2614,11 @@ public class ObjectSerializer
             ((SCOTracker)map).setOwnerFCO(anOwner);
             return map;
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            anObjectSerializer.resolveMap((Map)anObject, shouldDisassociate);
+        }
     }
 
     //----------------------------------------------------------------------
@@ -2383,6 +2664,11 @@ public class ObjectSerializer
             aContext.mSerializer.readMap(map, size, anOwner);
             ((SCOTracker)map).setOwnerFCO(anOwner);
             return map;
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            anObjectSerializer.resolveMap((Map)anObject, shouldDisassociate);
         }
     }
 
@@ -2449,6 +2735,11 @@ public class ObjectSerializer
             ((SCOTracker)map).setOwnerFCO(anOwner);
             return map;
         }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            anObjectSerializer.resolveMap((Map)anObject, shouldDisassociate);
+        }
     }
 
     //----------------------------------------------------------------------
@@ -2494,6 +2785,11 @@ public class ObjectSerializer
             aContext.mSerializer.readMap(map, size, anOwner);
             ((SCOTracker)map).setOwnerFCO(anOwner);
             return map;
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            anObjectSerializer.resolveMap((Map)anObject, shouldDisassociate);
         }
     }
 

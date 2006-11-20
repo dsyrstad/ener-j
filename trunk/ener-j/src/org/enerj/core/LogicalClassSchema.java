@@ -255,4 +255,5 @@ public class LogicalClassSchema
     {
         return mClassName.hashCode();
     }
+
 }

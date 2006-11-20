@@ -379,5 +379,4 @@ public class Schema
     {
         return mSchemaVersion;
     }
-
 }

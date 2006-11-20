@@ -222,6 +222,20 @@ public interface Persistable
 
     //----------------------------------------------------------------------
     /**
+     * Resolve the object's entire object graph recursively until all instances are fully loaded.
+     * This allows the object's entire graph to be used without a dependence on the persister (i.e.,
+     * {@link #enerj_GetPersister()} will return null.
+     *
+     * @param aContext an ObjectSerializer.
+     * @param shouldDisassociate if true, the object tree will be disassociated from 
+     *  its Persister.
+     *
+     * @throws IOException if an error occurs.
+     */
+    public void enerj_ResolveObject(ObjectSerializer aContext, boolean shouldDisassociate) throws IOException;
+
+    //----------------------------------------------------------------------
+    /**
      * Clear the object's persistent fields. Only persistent fields which
      * refer to Objects are cleared (i.e., primitive field values are not touched).
      */

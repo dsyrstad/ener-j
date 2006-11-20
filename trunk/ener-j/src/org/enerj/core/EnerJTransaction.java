@@ -132,7 +132,7 @@ public class EnerJTransaction implements Transaction
      *
      * @param aDatabase the Database the transaction is being performed on.
      */
-    private void begin(Database aDatabase)
+    public void begin(Database aDatabase)
     {
         if (mIsOpen) {
             throw new TransactionInProgressException("Transaction already started");

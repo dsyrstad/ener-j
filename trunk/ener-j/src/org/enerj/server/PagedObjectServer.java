@@ -133,6 +133,8 @@ public class PagedObjectServer extends BaseObjectServer
      */
     private PagedObjectServer(Properties someProperties) throws ODMGException  
     {
+        super(someProperties);
+        
         // This get is here just to require the property. It is actually used by PagedStore. 
         getRequiredProperty(someProperties, "PagedObjectServer.PageServerClass");
         String lockServerClassName = getRequiredProperty(someProperties, "PagedObjectServer.LockServerClass");
@@ -185,51 +187,6 @@ public class PagedObjectServer extends BaseObjectServer
         Runtime.getRuntime().addShutdownHook(mShutdownHook);
     }
     
-
-    /**
-     * Gets a required property from the specified properties.
-     *
-     * @param someProperties the properties.
-     * @param aKey the property key.
-     *
-     * @return the String value.
-     *
-     * @throws ODMGException if the property was not found.
-     */
-    private static String getRequiredProperty(Properties someProperties, String aKey) throws ODMGException
-    {
-        String value = someProperties.getProperty(aKey);
-        if (value == null) {
-            throw new ODMGException(aKey + " was not specified");
-        }
-        
-        return value;
-    }
-    
-
-    /**
-     * Gets a required property as an int from the specified properties.
-     *
-     * @param someProperties the properties.
-     * @param aKey the property key.
-     *
-     * @return the int value.
-     *
-     * @throws ODMGException if the property was not found or the 
-     *  value is not a number.
-     */
-    private static int getRequiredIntProperty(Properties someProperties, String aKey) throws ODMGException
-    {
-        String value = getRequiredProperty(someProperties, aKey);
-        try {
-            return Integer.parseInt(value);
-        }
-        catch (NumberFormatException e) {
-            throw new ODMGException("Value '" + value + " for key " + aKey + " is not an integer");
-        }
-    }
-    
-
     /**
      * Creates a new database on disk. The "enerj.dbpath" system property must be set.
      *
@@ -349,7 +306,7 @@ public class PagedObjectServer extends BaseObjectServer
             Schema schema = new Schema(aDescription);
             // Special OID for schema.
             Persistable schemaPersistable = (Persistable)schema;
-            schemaPersistable.enerj_SetPrivateOID(BaseObjectServerSession.SCHEMA_OID);
+            schemaPersistable.enerj_SetPrivateOID(BaseObjectServer.SCHEMA_OID);
             session.addToModifiedList(schemaPersistable);
             
             // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
@@ -583,7 +540,7 @@ public class PagedObjectServer extends BaseObjectServer
      */
     public static ObjectServerSession connect(Properties someProperties) throws ODMGException 
     {
-        return connect(someProperties, false);
+        return connect(someProperties, getBooleanProperty(someProperties, ENERJ_SCHEMA_SESSION_PROPERTY));
     }
     
     /**
@@ -723,7 +680,7 @@ public class PagedObjectServer extends BaseObjectServer
             ClassInfo[] classInfo = new ClassInfo[someOIDs.length];
             for (int i = 0; i < someOIDs.length; i++) {
                 long anOID = someOIDs[i];
-                if (anOID == SCHEMA_OID) {
+                if (anOID == BaseObjectServer.SCHEMA_OID) {
                     long cid = SystemCIDMap.getSystemCIDForClassName(SCHEMA_CLASS_NAME);
                     classInfo[i] = new ClassInfo(cid, SCHEMA_CLASS_NAME);
                 }
