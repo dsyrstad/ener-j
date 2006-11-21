@@ -32,24 +32,17 @@ import static org.enerj.server.ObjectServer.ENERJ_PORT_PROP;
 import static org.enerj.server.ObjectServer.ENERJ_USERNAME_PROP;
 import gnu.trove.TLongHashSet;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
 import org.enerj.annotations.SchemaAnnotation;
 import org.enerj.server.ClassInfo;
-import org.enerj.server.ObjectServer;
 import org.enerj.server.ObjectServerSession;
 import org.enerj.server.PagedObjectServer;
 import org.enerj.server.PluginHelper;
@@ -64,7 +57,6 @@ import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.ObjectNameNotFoundException;
 import org.odmg.ObjectNameNotUniqueException;
-import org.odmg.Transaction;
 import org.odmg.TransactionInProgressException;
 import org.odmg.TransactionNotInProgressException;
 
@@ -587,50 +579,29 @@ public class EnerJDatabase implements Database, Persister
     void updateSchema(Persistable aPersistable)
     {
         long cid = aPersistable.enerj_GetClassId();
-        //Logger.global.warning("Checking schema for cid " + cid + ' ' + aPersistable.getClass());
 
         // Check if we already know that the database has this CID in the schema.
         if (mKnownSchemaCIDs.contains(cid)) {
             return;
         }
-        
-        // TODO Ask if server if CID exists in schema. If not, tell server to store it.
-        
-        DatabaseRoot root = getDatabaseRoot();
-        Schema schema = root.getSchema();
-        // Does it exist in the schema already?
-        if (schema.findClassVersion(cid) == null) {
-            // Not in schema, add it.
-            String className = aPersistable.getClass().getName();
 
-            //Logger.global.warning("Adding schema for cid " + cid + ' ' + aPersistable.getClass());
-    
-            try {
-                // Add the logical class if it doesn't exist yet.
-                LogicalClassSchema logicalClass = schema.findLogicalClass(className);
-                if (logicalClass == null) {
-                    logicalClass = new LogicalClassSchema(schema, className, "");
-                    schema.addLogicalClass(logicalClass);
-                }
-        
-                SchemaAnnotation schemaAnn = aPersistable.getClass().getAnnotation(SchemaAnnotation.class);
-                if (schemaAnn == null) {
-                    throw new ODMGRuntimeException("Cannot find SchemaAnnotation on " + aPersistable.getClass() + ". Class was not previously enhanced.");
-                }
-    
-                String[] persistentFieldNames = schemaAnn.persistentFieldNames();
-                String[] transientFieldNames = schemaAnn.transientFieldNames();
-                String[] superTypeNames = ClassUtil.getAllSuperTypeNames(aPersistable.getClass());
-                byte[] originalClassBytes = schemaAnn.originalByteCodes();
-        
-                ClassVersionSchema classVersion = 
-                    new ClassVersionSchema(logicalClass, cid, superTypeNames, originalClassBytes,
-                                null/*someEnhancedClassBytes*/, persistentFieldNames, transientFieldNames);
-                logicalClass.addVersion(classVersion);
-            }
-            catch (ODMGException e) {
-                throw new ODMGRuntimeException("Error adding new ClassVersionSchema", e);
-            }
+        // Try to add this to schema, even if it might already exist.
+        SchemaAnnotation schemaAnn = aPersistable.getClass().getAnnotation(SchemaAnnotation.class);
+        if (schemaAnn == null) {
+            throw new ODMGRuntimeException("Cannot find SchemaAnnotation on " + aPersistable.getClass() + ". Class was not previously enhanced.");
+        }
+
+        String[] persistentFieldNames = schemaAnn.persistentFieldNames();
+        String[] transientFieldNames = schemaAnn.transientFieldNames();
+        String[] superTypeNames = ClassUtil.getAllSuperTypeNames(aPersistable.getClass());
+        byte[] originalClassBytes = schemaAnn.originalByteCodes();
+
+        try {
+            mObjectServerSession.addClassVersionToSchema(aPersistable.getClass().getName(), cid, 
+                            superTypeNames, originalClassBytes, persistentFieldNames, transientFieldNames);
+        }
+        catch (ODMGException e) {
+            throw new ODMGRuntimeException("Error adding new ClassVersionSchema", e);
         }
         
         // Cache the fact that it is known in the schema.

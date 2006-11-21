@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.DefaultPersistableObjectCache;
 import org.enerj.core.ModifiedPersistableList;
 import org.enerj.core.ObjectSerializer;
@@ -288,6 +289,33 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     public Schema getSchema() throws ODMGException
     {
         return mObjectServer.getSchema();
+    }
+    
+    
+    /** 
+     * 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#addClassVersionToSchema(java.lang.String, long, java.lang.String[], byte[], java.lang.String[], java.lang.String[])
+     */
+    public void addClassVersionToSchema(String aClassName, long aCID, String[] someSuperTypeNames, byte[] anOriginalByteCodeDef, String[] somePersistentFieldNames, String[] someTransientFieldNames) throws ODMGException
+    {
+        Schema schema = getSchema();
+        
+        // CID already in schema?
+        ClassVersionSchema version = schema.findClassVersion(aCID);
+        if (version != null) {
+            String existingClassName = version.getLogicalClassSchema().getClassName();
+            if (!existingClassName.equals(aClassName)) {
+                throw new ODMGException("Given class name " + aClassName + " does not match existing class name " + existingClassName
+                                + " for CID " + aCID);
+            }
+
+            // Already exists, just return.
+            return;
+        }
+        
+        mObjectServer.addClassVersionToSchema(aClassName, aCID, someSuperTypeNames, anOriginalByteCodeDef,
+                        somePersistentFieldNames, someTransientFieldNames);
     }
 
     /** 

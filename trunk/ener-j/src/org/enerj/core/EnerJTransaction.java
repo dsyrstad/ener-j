@@ -25,8 +25,6 @@
 package org.enerj.core;
 
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.ListIterator;
 
 import org.odmg.ClassNotPersistenceCapableException;
 import org.odmg.Database;
@@ -143,21 +141,21 @@ public class EnerJTransaction implements Transaction
         }
         
         // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
-        EnerJDatabase voDatabase = (EnerJDatabase)aDatabase;
-        if (aDatabase == null || !voDatabase.isOpen()) {
+        EnerJDatabase enerjDatabase = (EnerJDatabase)aDatabase;
+        if (aDatabase == null || !enerjDatabase.isOpen()) {
             throw new DatabaseClosedException("Database is not open yet.");
         }
 
         // On error, this must be cleared.
         // This must be called prior to begin logic because it may throw saying that the
         // Database is already bound to a transaction.
-        voDatabase.setTransaction(this);
+        enerjDatabase.setTransaction(this);
         
         try {
-            voDatabase.getObjectServerSession().beginTransaction();
+            enerjDatabase.getObjectServerSession().beginTransaction();
         }
         catch (RuntimeException e) {
-            voDatabase.setTransaction(null);
+            enerjDatabase.setTransaction(null);
             throw e;
         }
 
@@ -165,7 +163,7 @@ public class EnerJTransaction implements Transaction
         sCurrentTransactionForThread.set(this);
         
         mIsOpen = true;
-        mTransactionDatabase = voDatabase;
+        mTransactionDatabase = enerjDatabase;
         mTransactionDatabase.getClientCache().setTransaction(this);
     }
 
@@ -319,30 +317,19 @@ public class EnerJTransaction implements Transaction
     {
         checkIsOpenAndOwnedByThread();
         
+        // TODO Should move to EnerJDatabase.
         try {
             // Note that we start an iterator each item. We do this instead of
             // calling storePersistable() recursively. Such recursion could become
-            // very deep. The iterator allows us to insert new objects at the current
-            // cursor of the iteration, essentially flattening the recursion.
+            // very deep. The iterator allows us to append new objects, 
+            // essentially flattening the recursion.
             mFlushIterator = getDatabase().getModifiedListIterator();
             while (mFlushIterator.hasNext()) {
                 Persistable persistable = mFlushIterator.next();
-                int nextIndex = mFlushIterator.nextIndex();
-                
-                // TODO I think I can remove the need to insert into the list. We can just append now. We should have no schema problems.
                 
                 // This can indirectly insert objects into the list due to
                 // ObjectSerializer.
                 mTransactionDatabase.storePersistable(persistable);
-                
-                // Objects could have been inserted into the list before
-                // the cursor. We have to back up to the point just after the last
-                // object we retrieved to start processing the list there.
-                // Note that on the next iteration, more objects could be inserted
-                // before these, effectively reproducing recursion.
-                for (int i = mFlushIterator.nextIndex() - nextIndex; i > 0; --i) {
-                    mFlushIterator.previous();
-                }
             }
             
             mTransactionDatabase.flushSerializedObjectQueue();
