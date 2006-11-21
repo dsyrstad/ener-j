@@ -8,3 +8,5 @@
 - ObjectServer should have server-wide object write-thru cache. Looks up objects by OID. Updated on commit.
 
 - Most all of EnerJTransaction can move to EnerJDatabase. Then it just because a wrapper for the EJDB.
+
+- Needs tests for Persister and new ObjectServerSession methods.

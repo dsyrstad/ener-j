@@ -218,6 +218,11 @@ abstract public class BaseObjectServer implements ObjectServer
                         new ClassVersionSchema(logicalClass, aCID, someSuperTypeNames, anOriginalByteCodeDef,
                                     null, somePersistentFieldNames, someTransientFieldNames);
                     logicalClass.addVersion(classVersion);
+                    
+                    // Create an extent for the class.
+                    // TODOLOW maybe this should be optional?
+                    ExtentMap extentMap = (ExtentMap)schemaSession.getObjectForOID(EXTENTS_OID);
+                    extentMap.createExtentForClassName(aClassName);
 
                     schemaSession.flushModifiedObjects();
                     schemaSession.commitTransaction();

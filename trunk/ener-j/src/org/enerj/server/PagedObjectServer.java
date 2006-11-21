@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.enerj.core.ClassVersionSchema;
+import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJTransaction;
 import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.ObjectSerializer;
@@ -52,6 +53,7 @@ import org.enerj.server.logentry.StartDatabaseCheckpointLogEntry;
 import org.enerj.server.logentry.StoreObjectLogEntry;
 import org.enerj.util.FileUtil;
 import org.enerj.util.RequestProcessor;
+import org.enerj.util.RequestProcessorProxy;
 import org.enerj.util.StringUtil;
 import org.odmg.DatabaseClosedException;
 import org.odmg.DatabaseNotFoundException;
@@ -101,7 +103,7 @@ public class PagedObjectServer extends BaseObjectServer
     /** List of active transactions. List of PagedObjectServer.Transaction. Synchronized
      * around mTransactionLock.
      */
-    private LinkedList mActiveTransactions = new LinkedList();
+    private LinkedList<Transaction> mActiveTransactions = new LinkedList<Transaction>();
     
     /** True if the server should become quiescent, i.e. don't allow new transactions to 
      * start. 
@@ -116,7 +118,8 @@ public class PagedObjectServer extends BaseObjectServer
     /** Time of last database checkpoint (System.currentTimeInMillis()). */
     private long mLastCheckpointTime = 0L;
 
-    /** The Update Cache. Caches updates prior to committing a transaction. */
+    /** The Update Cache. Caches updates <strong>for all transactions</em> prior to committing a transaction. */
+    // TODO Should this be server-wide?
     private UpdateCache mServerUpdateCache = null;
     
     /** Synchronization lock for transaction-oriented methods. */
@@ -299,23 +302,35 @@ public class PagedObjectServer extends BaseObjectServer
             }
             
             pageServer.disconnect();
-            
+
+            // Create a session so that we can initialize the schema.
             session = (Session)connect(someDBProps, true);
             session.beginTransaction();
 
             Schema schema = new Schema(aDescription);
-            // Special OID for schema.
-            Persistable schemaPersistable = (Persistable)schema;
-            schemaPersistable.enerj_SetPrivateOID(BaseObjectServer.SCHEMA_OID);
-            session.addToModifiedList(schemaPersistable);
-            
+            // Create Extent map.
+            ExtentMap extentMap = new ExtentMap();
+
             // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
             for (Class schemaClass : sSchemaClasses) {
                 String schemaClassName = schemaClass.getName();
                 LogicalClassSchema classSchema = new LogicalClassSchema(schema, schemaClassName, null);
                 long cid = SystemCIDMap.getSystemCIDForClassName(schemaClassName);
                 new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);
+                
+                // Create an extent for this class.
+                extentMap.createExtentForClassName(schemaClassName);
             }
+            
+            // Special OID for schema.
+            Persistable schemaPersistable = (Persistable)schema;
+            schemaPersistable.enerj_SetPrivateOID(BaseObjectServer.SCHEMA_OID);
+            session.addToModifiedList(schemaPersistable);
+            
+            // Special OID for ExtentMap.
+            Persistable extentMapPersistable = (Persistable)extentMap;
+            extentMapPersistable.enerj_SetPrivateOID(BaseObjectServer.EXTENTS_OID);
+            session.addToModifiedList(extentMapPersistable);
             
             session.flushModifiedObjects();
             
@@ -553,7 +568,6 @@ public class PagedObjectServer extends BaseObjectServer
         // cannot create one at the same time.
         String dbName = getRequiredProperty(someProperties, ObjectServer.ENERJ_DBNAME_PROP);
         synchronized (sCurrentServers) {
-            Session session;
             PagedObjectServer server = (PagedObjectServer)sCurrentServers.get(dbName);
             if (server == null) {
                 server = new PagedObjectServer(someProperties);
@@ -564,8 +578,16 @@ public class PagedObjectServer extends BaseObjectServer
                 throw new ODMGException("Cannot connect. System in quiescent state.");
             }
         
-            //  TODO  - write connect/session info in log.
-            session = server.new Session(server, isSchemaSession);
+            ObjectServerSession session = server.new Session(server, isSchemaSession);
+
+            if (EnerJDatabase.isThisTheClientJVM()) {
+                // Server is running locally. We need to run session in another thread. Create a proxy per session.
+                // TODO pool these?
+                RequestProcessor requestProcessor = new RequestProcessor("Local PagedObjectServer Thread", true);
+                ((BaseObjectServerSession)session).setRequestProcessor(requestProcessor);
+                session = (ObjectServerSession)RequestProcessorProxy.newInstance(session, requestProcessor);
+            }
+
             return session;
         } // End synchronized (sCurrentServers)
         
@@ -604,12 +626,12 @@ public class PagedObjectServer extends BaseObjectServer
          *
          * @return a Transaction.
          *
-         * @throws TransactionNotInProgressException if transaction is null.
+         * @throws TransactionNotInProgressException if transaction is not in progress.
          */
         Transaction getTransaction() throws TransactionNotInProgressException
         {
             if (mTxn == null) {
-                throw new TransactionNotInProgressException("Transaction not active on session");
+                throw new TransactionNotInProgressException("Transaction not in progress.");
             }
 
             return mTxn;
@@ -635,6 +657,7 @@ public class PagedObjectServer extends BaseObjectServer
         void setTransaction(Transaction aTransaction)
         {
             mTxn = aTransaction;
+            setTransactionActive(mTxn != null);
         }
         
 
@@ -828,13 +851,12 @@ public class PagedObjectServer extends BaseObjectServer
 
         public void checkpointTransaction() throws ODMGRuntimeException 
         {
-            Transaction txn = getTransaction();
-
             super.checkpointTransaction();
 
             synchronized (mTransactionLock) {
                 // Basically a commit without releasing locks or closing the transaction.
                 try {
+                    Transaction txn = getTransaction();
                     CheckpointTransactionLogEntry logEntry = new CheckpointTransactionLogEntry( txn.getLogTransactionId() );
                     mRedoLogServer.append(logEntry);
 
@@ -852,10 +874,10 @@ public class PagedObjectServer extends BaseObjectServer
 
         public void commitTransaction() throws ODMGRuntimeException 
         {
-            Transaction txn = getTransaction();
-            
             super.commitTransaction();
 
+            Transaction txn = getTransaction();
+            
             synchronized (mTransactionLock) {
                 try {
                     CommitTransactionLogEntry logEntry = new CommitTransactionLogEntry( txn.getLogTransactionId() );
@@ -883,10 +905,10 @@ public class PagedObjectServer extends BaseObjectServer
 
         public void rollbackTransaction() throws ODMGRuntimeException 
         {
-            Transaction txn = getTransaction();
-
             super.rollbackTransaction();
             
+            Transaction txn = getTransaction();
+
             synchronized (mTransactionLock) {
                 try {
                     RollbackTransactionLogEntry logEntry = new RollbackTransactionLogEntry( txn.getLogTransactionId() );
@@ -919,15 +941,12 @@ public class PagedObjectServer extends BaseObjectServer
             setTransaction(null);
         }
 
-
         public void getLock(long anOID, int aLockLevel, long aWaitTime) throws LockNotGrantedException 
         {
             if (getAllowNontransactionalReads() && aLockLevel == org.odmg.Transaction.READ) {
                 // Don't bother to check for a txn or get read locks if we're doing non-transactional reads.
                 return;
             }
-
-            Transaction txn = getTransaction();
 
             //  TODO  check granularity here...
             Object lockObj = new Long(anOID);
@@ -951,7 +970,7 @@ public class PagedObjectServer extends BaseObjectServer
                 throw new LockNotGrantedException("Invalid lock mode: " + aLockLevel);
             }
 
-            txn.getLockServerTransaction().lock(lockObj, lockMode, aWaitTime);
+            getTransaction().getLockServerTransaction().lock(lockObj, lockMode, aWaitTime);
         }
 
         // ...End of ObjectServerSession interface methods.

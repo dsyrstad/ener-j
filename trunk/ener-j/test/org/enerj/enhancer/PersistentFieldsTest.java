@@ -42,9 +42,9 @@ import junit.framework.TestSuite;
  */
 public class PersistentFieldsTest extends TestCase
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/PF1TestDB?DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
-    private static final String DATABASE2_URI = "enerj://root:root@-/PF2TestDB?DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
-    private static final String DATABASE3_URI = "enerj://root:root@-/PF3TestDB?DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj://root:root@-/PF1TestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE2_URI = "enerj://root:root@-/PF2TestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE3_URI = "enerj://root:root@-/PF3TestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
     
     //----------------------------------------------------------------------
     public PersistentFieldsTest(String aTestName) 

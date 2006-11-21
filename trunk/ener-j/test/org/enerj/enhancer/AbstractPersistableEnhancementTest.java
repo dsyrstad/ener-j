@@ -296,7 +296,7 @@ abstract class AbstractPersistableEnhancementTest extends TestCase
         System.out.println("Testing checkClone on " + aTestClass);
 
         EnerJDatabase database = (EnerJDatabase)EnerJImplementation.getInstance().newDatabase();
-        database.open("enerj://root:root@-/TestDB?DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer", EnerJDatabase.OPEN_READ_WRITE);
+        database.open("enerj://root:root@-/TestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer", EnerJDatabase.OPEN_READ_WRITE);
         
         org.odmg.Transaction txn = EnerJImplementation.getInstance().newTransaction();
         txn.begin();

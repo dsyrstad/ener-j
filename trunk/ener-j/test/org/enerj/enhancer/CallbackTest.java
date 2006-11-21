@@ -47,7 +47,7 @@ import org.enerj.core.PersistableHelper;
  */
 public class CallbackTest extends TestCase 
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/CallbackTestDB?DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj://root:root@-/CallbackTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
 
     private static boolean sEnhanced = false;
     

@@ -31,7 +31,7 @@ import java.util.NoSuchElementException;
 
 /**
  * Ener-J ExtentIterator interface. Instances of this type are created and maintained
- * by a MetaObjectServerSession.
+ * by a ObjectServerSession.
  *
  * @version $Id: ExtentIterator.java,v 1.5 2006/01/17 02:41:09 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>

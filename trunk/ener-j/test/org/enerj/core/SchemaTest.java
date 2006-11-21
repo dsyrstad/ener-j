@@ -43,7 +43,7 @@ import java.util.Iterator;
  */
 public class SchemaTest extends TestCase
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/SchemaTestDB?DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj://root:root@-/SchemaTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
     
     //----------------------------------------------------------------------
     public SchemaTest(String aTestName) 

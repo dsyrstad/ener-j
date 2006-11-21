@@ -162,9 +162,9 @@ public class MemoryObjectServer extends BaseObjectServer
      */
     public static ObjectServerSession connect(Properties someProperties) throws ODMGException 
     {
-        String dbName = someProperties.getProperty(MetaObjectServer.ENERJ_DBNAME_PROP);
+        String dbName = someProperties.getProperty(ObjectServer.ENERJ_DBNAME_PROP);
         if (dbName ==  null) {
-            throw new DatabaseNotFoundException(MetaObjectServer.ENERJ_DBNAME_PROP + " parameter expected");
+            throw new DatabaseNotFoundException(ObjectServer.ENERJ_DBNAME_PROP + " parameter expected");
         }
 
         String fileName = someProperties.getProperty("MemoryObjectServer.file");
@@ -200,7 +200,7 @@ public class MemoryObjectServer extends BaseObjectServer
             try {
                 // Open database locally
                 String uri = "enerj://root:root@-/" + mDatabase.mDatabaseName + 
-                    "?DefaultMetaObjectServer.ObjectServerClass=" + this.getClass().getName();
+                    "?DefaultObjectServer.ObjectServerClass=" + this.getClass().getName();
                 EnerJDatabase enerj = new EnerJDatabase();
                 enerj.open(uri, EnerJDatabase.OPEN_READ_WRITE);
                 EnerJTransaction txn = new EnerJTransaction();

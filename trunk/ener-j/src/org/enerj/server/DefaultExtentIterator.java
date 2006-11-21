@@ -24,14 +24,9 @@
 
 package org.enerj.server;
 
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
-import org.enerj.core.ClassVersionSchema;
-import org.enerj.core.LogicalClassSchema;
-import org.enerj.core.Schema;
 import org.enerj.core.SparseBitSet;
 import org.odmg.ODMGRuntimeException;
 
@@ -43,41 +38,22 @@ import org.odmg.ODMGRuntimeException;
  */
 public class DefaultExtentIterator implements ExtentIterator
 {
-    /** LinkedList/Queue of LogicalClassSchema representing the extents to iterate over. */
-    private LinkedList mClassQueue = new LinkedList();
+    /** List of extents to iterate over. */
+    private List<SparseBitSet> mExtents;
     private SparseBitSet.Iterator mCurrentIterator = null;
     private boolean mIsOpen = true;
-    private ObjectServerSession mSession;
 
     //----------------------------------------------------------------------
     /**
      * Constructs a DefaultExtentIterator.
      *
-     * @param aClassName the class name to iterate over. If wantSubclasses is true,
-     *  then aClassName does not have to be a persistable class.
-     * @param wantSubclasses if true, all subclasses of aClassName are also included in the iterator.
-     * @param aSchema the Schema from the database in question.
-     * @param aSession the ObjectServerSession associated with this iterator.
+     * @param someExtents the extents to iterate over.
      *
      * @throws ODMGRuntimeException if an error occurs.
      */
-    public DefaultExtentIterator(String aClassName, boolean wantSubclasses, Schema aSchema,
-                                 ObjectServerSession aSession) throws ODMGRuntimeException
+    public DefaultExtentIterator(List<SparseBitSet> someExtents) throws ODMGRuntimeException
     {
-        mSession = aSession;
-        LogicalClassSchema candidateClassSchema = aSchema.findLogicalClass(aClassName);
-        if (candidateClassSchema != null) {
-            mClassQueue.add(candidateClassSchema);
-        }
-
-        if (wantSubclasses) {
-            Set subclasses = aSchema.getPersistableSubclasses(aClassName);
-            Iterator iter = subclasses.iterator();
-            while (iter.hasNext()) {
-                ClassVersionSchema classVersion = (ClassVersionSchema)iter.next();
-                mClassQueue.add( classVersion.getLogicalClassSchema() );
-            }
-        }
+        mExtents = someExtents;
     }
 
     //----------------------------------------------------------------------
@@ -104,9 +80,10 @@ public class DefaultExtentIterator implements ExtentIterator
         checkOpen();
         if (mCurrentIterator == null || !mCurrentIterator.hasNext()) {
             mCurrentIterator = null;
-            while ( !mClassQueue.isEmpty()) {
-                LogicalClassSchema classSchema = (LogicalClassSchema)mClassQueue.removeFirst();
-                SparseBitSet.Iterator iterator = classSchema.getExtentBitSet().getIterator();
+            while ( !mExtents.isEmpty() ) {
+                // Pop an extent from the head.
+                SparseBitSet extent = mExtents.remove(0);
+                SparseBitSet.Iterator iterator = extent.getIterator();
                 if (iterator.hasNext()) {
                     mCurrentIterator = iterator;
                     break;
@@ -135,6 +112,7 @@ public class DefaultExtentIterator implements ExtentIterator
      */
     public long[] next(int aMaxNumObjects) throws ODMGRuntimeException, NoSuchElementException
     {
+        // TODO This should return SerializedObjects, or at least oid and ClassInfo
         if (aMaxNumObjects < 1) {
             throw new IllegalArgumentException("Maximum Number of objects must be >= 1");
         }
@@ -147,7 +125,7 @@ public class DefaultExtentIterator implements ExtentIterator
         long[] oids = new long[aMaxNumObjects];
         int numObjs;
         for (numObjs = 0; numObjs < aMaxNumObjects && hasNext(); numObjs++) {
-            // TODO we must unlock a bitset node after getting it. Unlocked nodes must not be kept in the client cache.
+            // TODO we must unlock a bitset node after getting it. Unlocked nodes must not be kept in the object cache.
             oids[numObjs] = mCurrentIterator.next();
         }
 

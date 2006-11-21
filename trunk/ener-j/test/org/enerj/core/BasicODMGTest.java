@@ -42,7 +42,7 @@ import org.enerj.annotations.Persist;
  */
 public class BasicODMGTest extends TestCase
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/BasicODMGTestDB?DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj://root:root@-/BasicODMGTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
     
     //----------------------------------------------------------------------
     public BasicODMGTest(String aTestName) 
