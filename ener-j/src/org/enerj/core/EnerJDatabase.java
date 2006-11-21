@@ -71,6 +71,9 @@ public class EnerJDatabase implements Database, Persister
 {
     /** Maximum size of mSerializedObjectQueue. TODO make this configurable */
     private static final int sMaxSerializedObjectQueueSize = 100000;
+    
+    /** If true, this indicates to the server that the server is running in the client's JVM. */
+    private static boolean sIsThisTheClientJVM = false;
 
     /** Current Open Database for JVM. Used when no curent open thread database exists. (i.e.,
      * Database was opened in a thread, but now the thread is gone). Entry exists until
@@ -724,6 +727,16 @@ public class EnerJDatabase implements Database, Persister
         return mBoundToTransaction;
     }
     
+    /**
+     * For server use only. 
+     * 
+     * @return true if the server is running in the client's JVM.
+     */
+    public static boolean isThisTheClientJVM() 
+    {
+        return sIsThisTheClientJVM;
+    }
+    
     //----------------------------------------------------------------------
     /**
      * Sets the current transaction for the database.
@@ -930,6 +943,9 @@ public class EnerJDatabase implements Database, Persister
             throw new DatabaseOpenException("Database is already open");
         }
 
+        // This won't be true if EnerJDatabase is accessed without a prior call to open(). 
+        sIsThisTheClientJVM = true;
+        
         // Make properties from the URI
         // Copy the system properties as defaults.
         Properties props = new Properties( System.getProperties() );

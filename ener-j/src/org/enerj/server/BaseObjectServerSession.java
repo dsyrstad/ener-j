@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.enerj.core.ClassVersionSchema;
@@ -41,11 +42,16 @@ import org.enerj.core.PersistableHelper;
 import org.enerj.core.PersistableObjectCache;
 import org.enerj.core.Persister;
 import org.enerj.core.Schema;
+import org.enerj.core.SparseBitSet;
+import org.enerj.util.RequestProcessor;
+import org.enerj.util.RequestProcessorProxy;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.ObjectNameNotFoundException;
 import org.odmg.ObjectNameNotUniqueException;
 import org.odmg.ObjectNotPersistentException;
+import org.odmg.TransactionInProgressException;
+import org.odmg.TransactionNotInProgressException;
 
 /**
  * Implements common code that can be used by an ObjectServerSession implementation.
@@ -65,10 +71,16 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     private Thread mShutdownHook = null;
     /** True if session is connected. */
     private boolean mConnected = false;
+    /** True if a transaction is active. */
+    private boolean mTransactionActive = false;
     /** Cache of loaded objects. This cache lasts only during the duration of a transaction. */
     private PersistableObjectCache mObjectCache = new DefaultPersistableObjectCache(1000);
     /** List of Persistable objects created or modified during this transaction. */
     private ModifiedPersistableList mModifiedObjects = new ModifiedPersistableList();
+    /** If we're running locally within the client JVM, will have a RequestProcessor setup to proxy requests.
+     * Otherwise this will be null. */
+    private RequestProcessor mRequestProcessor = null;
+    
 
     /**
      * Construct a new BaseObjectServerSession.
@@ -104,35 +116,56 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     }
     
     /**
+     * @return the current RequestProcessor if the session is running in the client's JVM, else null.
+     */
+    RequestProcessor getRequestProcessor()
+    {
+        return mRequestProcessor;
+    }
+    
+    /**
+     * Sets the RequestProcessor that is the proxy to this session.
+     * 
+     * @param aRequestProcessor the RequestProcessor if the session is running in the client's JVM, else null.
+     */
+    void setRequestProcessor(RequestProcessor aRequestProcessor)
+    {
+        mRequestProcessor = aRequestProcessor;
+    }
+    
+    /**
      * Flush pending extent updates out to the extents.
-     *
      */
     private void updateExtents()
     {
-        /*
-        // Add new objects to extents.
-        EnerJDatabase db = getClientDatabase();
-        // Schema may have been changed, so evict everything at this point.
-        db.evictAll();  
-        DatabaseRoot root = (DatabaseRoot)db.getDatabaseRoot();
-        Schema schema = root.getSchema();
+        Schema schema;
+        try {
+            schema = getSchema();
+        }
+        catch (ODMGException e) {
+            throw new ODMGRuntimeException(e);
+        }
+
+        ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
         for (long cid : mPendingNewOIDs.keySet()) {
             TLongArrayList oids = mPendingNewOIDs.get(cid);
             if (oids != null) {
-                ClassVersionSchema classVersion = schema.findClassVersion(cid);
-                if (classVersion != null) {
-                    SparseBitSet extent = classVersion.getLogicalClassSchema().getExtentBitSet();
-                    int size = oids.size();
-                    for (int i = 0; i < size; i++) {
-                        // TODO We need to track the extent size. Do this with a delta that is updated right
-                        // TODO at commit time.
-                        extent.set(oids.get(i), true);
+                ClassVersionSchema version = schema.findClassVersion(cid);
+                if (version != null) {
+                    SparseBitSet extent = extentMap.getExtent( version.getLogicalClassSchema().getClassName() );
+                    if (extent != null) {
+                        int size = oids.size();
+                        for (int i = 0; i < size; i++) {
+                            // TODO We need to track the extent size. Do this with a delta that is updated right
+                            // TODO at commit time.
+                            extent.set(oids.get(i), true);
+                        }
                     }
                 }
             }
         }
-        */
         
+        flushModifiedObjects();
         mPendingNewOIDs.clear();
     }
     
@@ -176,14 +209,14 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     {
         return mObjectServer;
     }
-    
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.server.ObjectServerSession#bind(long, java.lang.String)
      */
     public void bind(long anOID, String aName) throws ObjectNameNotUniqueException
     {
-        // TODO Check if txn exists.
+        checkTransactionActive();
         Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
         bindery.bind(anOID, aName);
         flushModifiedObjects();
@@ -205,7 +238,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void unbind(String aName) throws ObjectNameNotFoundException
     {
-        // TODO Check if txn exists.
+        checkTransactionActive();
         Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
         bindery.unbind(aName);
         flushModifiedObjects();
@@ -217,26 +250,34 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void removeFromExtent(long anOID) throws ObjectNotPersistentException
     {
-        /*
-        EnerJDatabase db = getClientDatabase();
-        DatabaseRoot root = (DatabaseRoot)db.getObjectForOID(ObjectSerializer.DATABASE_ROOT_OID);
-        ClassVersionSchema classVersion;
+        checkTransactionActive();
+        
+        ClassInfo classInfo;
+        Schema schema; 
         try {
-            long cid = getCIDsForOIDs(new long[] { anOID })[0];
-            classVersion = root.getSchema().findClassVersion(cid);
+            classInfo = getClassInfoForOIDs(new long[] { anOID })[0];
+            schema = getSchema();
         }
         catch (ODMGException e) {
             throw new ObjectNotPersistentException("Object is not persistent", e);
         }
 
-        if (classVersion == null) {
+        if (classInfo == null) {
             throw new ObjectNotPersistentException("Object is not persistent");
         }
         
-        SparseBitSet extent = classVersion.getLogicalClassSchema().getExtentBitSet();
-        extent.set(anOID, false);
-        */
+        ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
+        ClassVersionSchema version = schema.findClassVersion( classInfo.getCID() );
+        if (version != null) {
+            SparseBitSet extent = extentMap.getExtent( version.getLogicalClassSchema().getClassName() );
+            if (extent != null) {
+                extent.set(anOID, false);
+            }
+        }
+
         // TODO remove from indexes
+
+        flushModifiedObjects();
     }
 
     /** 
@@ -245,21 +286,31 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public long getExtentSize(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
     {
+        Schema schema;
+        try {
+            schema = getSchema();
+        }
+        catch (ODMGException e) {
+            throw new ODMGRuntimeException(e);
+        }
+
+        ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
+        SparseBitSet extent = extentMap.getExtent(aClassName);
         long result = 0;
-        /*
-        Schema schema = mDatabase.getDatabaseRoot().getSchema();
-        LogicalClassSchema candidateClassSchema = schema.findLogicalClass(aClassName);
-        if (candidateClassSchema != null) {
-            result += candidateClassSchema.getExtentBitSet().getNumBitsSet();
+        if (extent != null) {
+            result += extent.getNumBitsSet();
         }
 
         if (wantSubclasses) {
             Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
             for (ClassVersionSchema classVersion : subclasses) {
-                result += classVersion.getLogicalClassSchema().getExtentBitSet().getNumBitsSet();
+                extent = extentMap.getExtent( classVersion.getLogicalClassSchema().getClassName() );
+                if (extent != null) {
+                    result += extent.getNumBitsSet();
+                }
             }
         }
-        */
+
         return result;
     }
 
@@ -269,17 +320,39 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public ExtentIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
     {
-        /*
-        // TODO What about objects added during txn? Flush from client first?
-        Schema schema = mDatabase.getDatabaseRoot().getSchema();
-        ExtentIterator extentIterator = new DefaultExtentIterator(aClassName, wantSubclasses, schema, this);
-        // Proxy iterator if running locally on client.
-        if (mObjectServer.mRequestProcessor != null) {
-            extentIterator = (ExtentIterator)RequestProcessorProxy.newInstance(extentIterator, mObjectServer.mRequestProcessor);
+        // TODO What about objects added during txn? Flush from client first? I think we're OK. Flush updates extents.
+        Schema schema;
+        try {
+            schema = getSchema();
+        }
+        catch (ODMGException e) {
+            throw new ODMGRuntimeException(e);
+        }
+
+        List<SparseBitSet> extents = new ArrayList<SparseBitSet>();
+        ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
+        SparseBitSet extent = extentMap.getExtent(aClassName);
+        if (extent != null) {
+            extents.add(extent);
+        }
+
+        if (wantSubclasses) {
+            Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
+            for (ClassVersionSchema classVersion : subclasses) {
+                extent = extentMap.getExtent( classVersion.getLogicalClassSchema().getClassName() );
+                if (extent != null) {
+                    extents.add(extent);
+                }
+            }
+        }
+
+        ExtentIterator extentIterator = new DefaultExtentIterator(extents);
+        // Proxy iterator using Session's RequestProcessor if running locally in the client's JVM.
+        if (mRequestProcessor != null) {
+            extentIterator = (ExtentIterator)RequestProcessorProxy.newInstance(extentIterator, mRequestProcessor);
         }
 
         return extentIterator;
-        */ return null;
     }
     
     /** 
@@ -325,7 +398,6 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     public void disconnect() throws ODMGException 
     {
         mLogger.info("Session " + this + " is disconnecting.");
-        //  TODO  - write disconnect/session info in log.
         setDisconnected();
     }
 
@@ -372,7 +444,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void storeObjects(SerializedObject[] someObjects) throws ODMGException
     {
-        // TODO Check if txn exists.
+        checkTransactionActive();
 
         for (SerializedObject object : someObjects) {
             long oid = object.getOID();
@@ -391,6 +463,28 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             }
         }
     }
+    
+    /**
+     * Sets whether the transaction is active.
+     * 
+     * @param isTransactionActive true if a transaction is active.
+     */
+    public void setTransactionActive(boolean isTransactionActive)
+    {
+        mTransactionActive = isTransactionActive;
+    }
+    
+    /**
+     * Checks that a transaction is in progress.
+     * 
+     * @throws TransactionNotInProgressException if no transaction is in progress.
+     */
+    public void checkTransactionActive() throws TransactionNotInProgressException
+    {
+        if (!mTransactionActive) {
+            throw new TransactionNotInProgressException("Transaction not in progress.");
+        }
+    }
 
     /** 
      * {@inheritDoc}. Subclass should call super.beginTransaction() prior to doing its work.
@@ -398,7 +492,9 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void beginTransaction() throws ODMGRuntimeException 
     {
-        // TODO Check that no txn exists.
+        if (mTransactionActive) { 
+            throw new TransactionInProgressException("Transaction already in progress.");
+        }
 
         mObjectCache.evictAll();
         if (mPendingNewOIDs == null) {
@@ -415,7 +511,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void checkpointTransaction() throws ODMGRuntimeException 
     {
-        // TODO Check if txn exists.
+        checkTransactionActive();
         updateExtents();
     }
 
@@ -425,7 +521,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void commitTransaction() throws ODMGRuntimeException 
     {
-        // TODO Check if txn exists.
+        checkTransactionActive();
         updateExtents();
         mObjectCache.evictAll();
     }
@@ -436,7 +532,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void rollbackTransaction() throws ODMGRuntimeException 
     {
-        // TODO Check if txn exists.
+        checkTransactionActive();
         mPendingNewOIDs.clear();
         mObjectCache.evictAll();
     }
@@ -447,7 +543,10 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void addToModifiedList(Persistable aPersistable)
     {
-        // TODO if no txn exists, ignore.
+        // If no txn exists, ignore.
+        if (!mTransactionActive) {
+            return;
+        }
 
         mModifiedObjects.addToModifiedList(aPersistable);
         // Make sure that it's cached.

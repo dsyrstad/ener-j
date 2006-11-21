@@ -41,7 +41,7 @@ import org.enerj.core.PersistableHelper;
  */
 public class TopLevelPersistableEnhancementTest extends AbstractPersistableEnhancementTest 
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/TLPETestDB?DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj://root:root@-/TLPETestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
     
     //----------------------------------------------------------------------
     public TopLevelPersistableEnhancementTest(String aTestName) 

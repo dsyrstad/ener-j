@@ -251,7 +251,7 @@ public class Schema
      * @return a Set of ClassVersionSchema representing the subclasses. An empty set
      *  is return if no persistable subclasses exist.
      */
-    public Set getPersistableSubclasses(String aClassName)
+    public Set<ClassVersionSchema> getPersistableSubclasses(String aClassName)
     {
         Set subclasses = (Set)mSubclassMap.get(aClassName);
         if (subclasses == null) {

@@ -41,7 +41,7 @@ import org.enerj.annotations.Persist;
  */
 public class EnerJTransactionTest extends TestCase
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/EnerJTransactionTestDB?DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj://root:root@-/EnerJTransactionTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
 
     private Exception mThreadException;
     

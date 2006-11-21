@@ -90,10 +90,10 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
         getLogFile().delete();
         
         Properties props = getObjectServerProperties();
-        props.setProperty("DefaultMetaObjectServer.ObjectServerClass", getObjectServerClassName());
+        props.setProperty("DefaultObjectServer.ObjectServerClass", getObjectServerClassName());
         
         File dbdir = getPageFile().getParentFile();
-        System.setProperty(MetaObjectServer.ENERJ_DBPATH_PROP, dbdir.getAbsolutePath());
+        System.setProperty(ObjectServer.ENERJ_DBPATH_PROP, dbdir.getAbsolutePath());
         dbdir = new File(dbdir, DB_NAME);
         dbdir.mkdir();
         
@@ -113,7 +113,7 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
     protected Properties getObjectServerProperties()
     {
         Properties props = new Properties( System.getProperties() );
-        props.setProperty(MetaObjectServer.ENERJ_DBNAME_PROP, DB_NAME);
+        props.setProperty(ObjectServer.ENERJ_DBNAME_PROP, DB_NAME);
         props.setProperty("PagedObjectServer.PageServerClass", CachedPageServer.class.getName() );
         props.setProperty("PagedObjectServer.LockServerClass", LockScheduler.class.getName() );
         props.setProperty("PagedObjectServer.RedoLogServerClass", ArchivingRedoLogServer.class.getName() );

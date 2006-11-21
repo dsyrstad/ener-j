@@ -40,7 +40,7 @@ import org.enerj.core.PersistableHelper;
  */
 public class NonTLPersistableEnhancementTest extends AbstractPersistableEnhancementTest 
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/NTLPETestDB?DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj://root:root@-/NTLPETestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
 
     //----------------------------------------------------------------------
     public NonTLPersistableEnhancementTest(String aTestName) 
