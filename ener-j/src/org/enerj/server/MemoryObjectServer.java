@@ -55,7 +55,7 @@ import org.enerj.server.schema.DatabaseRoot;
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see ObjectServer
  */
-public class MemoryObjectServer implements ObjectServer
+public class MemoryObjectServer extends BaseObjectServer
 {
     /** HashMap of database names to MemoryObjectServers. */
     private static HashMap sCurrentServers = new HashMap(20);
@@ -348,7 +348,7 @@ public class MemoryObjectServer implements ObjectServer
     /**
      * The ObjectServerSession object returned by this server.
      */
-    private static final class Session implements ObjectServerSession
+    private static final class Session extends BaseObjectServerSession
     {
         private MemoryObjectServer mObjectServer;
         private boolean mConnected;

@@ -24,6 +24,7 @@
 
 package org.enerj.server;
 
+import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Schema;
 import org.odmg.LockNotGrantedException;
@@ -296,7 +297,6 @@ public interface ObjectServerSession
      */
     public ExtentIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException;
     
-    
     /**
      * Gets the schema for the database.
      *
@@ -305,5 +305,22 @@ public interface ObjectServerSession
      * @throws ODMGException if an error occurs.
      */
     public Schema getSchema() throws ODMGException;
+    
+    /**
+     * Adds a new ClassVersion to the schema if it doesn't already exist.
+     * 
+     * @param aClassName
+     * @param aCID the class Id of this class.
+     * @param someSuperTypeNames  Array of superclass and superinterface names that go all of the way up the hierarchy.
+     *  Class names might not be Persistable in our schema.
+     * @param anOriginalBytecodeDef the original, unenhanced bytecodes for the class.
+     * @param somePersistentFieldNames the names of the persistent fields of the class.
+     * @param someTransientFieldNames the names of the transient fields of the class.
+     * 
+     * @throws ODMGException if an error occurs.
+     */
+    public void addClassVersionToSchema(String aClassName, long aCID, String[] someSuperTypeNames, 
+                    byte[] anOriginalByteCodeDef, String[] somePersistentFieldNames, 
+                    String[] someTransientFieldNames) throws ODMGException;
 }
 

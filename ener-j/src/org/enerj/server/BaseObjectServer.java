@@ -25,6 +25,8 @@ package org.enerj.server;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.enerj.core.ClassVersionSchema;
+import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
 import org.enerj.core.Schema;
@@ -180,4 +182,57 @@ abstract public class BaseObjectServer implements ObjectServer
         }
     }
 
+    
+    /**
+     * Adds a new ClassVersion to the schema if it doesn't already exist.
+     * 
+     * @param aClassName
+     * @param aCID the class Id of this class.
+     * @param someSuperTypeNames  Array of superclass and superinterface names that go all of the way up the hierarchy.
+     *  Class names might not be Persistable in our schema.
+     * @param anOriginalBytecodeDef the original, unenhanced bytecodes for the class.
+     * @param somePersistentFieldNames the names of the persistent fields of the class.
+     * @param someTransientFieldNames the names of the transient fields of the class.
+     * 
+     * @throws ODMGException if an error occurs.
+     */
+    void addClassVersionToSchema(String aClassName, long aCID, String[] someSuperTypeNames, 
+                    byte[] anOriginalByteCodeDef, String[] somePersistentFieldNames, 
+                    String[] someTransientFieldNames) throws ODMGException
+    {
+        synchronized (mSchemaLock) {
+            if (mCachedSchema != null) {
+                BaseObjectServerSession schemaSession = getSchemaSession();
+                schemaSession.beginTransaction();
+                boolean success = false;
+                try {
+                    Schema schema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
+
+                    LogicalClassSchema logicalClass = schema.findLogicalClass(aClassName);
+                    if (logicalClass == null) {
+                        logicalClass = new LogicalClassSchema(schema, aClassName, "");
+                        schema.addLogicalClass(logicalClass);
+                    }
+                    
+                    ClassVersionSchema classVersion = 
+                        new ClassVersionSchema(logicalClass, aCID, someSuperTypeNames, anOriginalByteCodeDef,
+                                    null, somePersistentFieldNames, someTransientFieldNames);
+                    logicalClass.addVersion(classVersion);
+
+                    schemaSession.flushModifiedObjects();
+                    schemaSession.commitTransaction();
+                    // Force cached schema to be re-read.
+                    mCachedSchema = null;
+                    success = true;
+                }
+                finally {
+                    if (!success) {
+                        schemaSession.rollbackTransaction();
+                    }
+                }
+            }
+
+        }
+        
+    }
 }

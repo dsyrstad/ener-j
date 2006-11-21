@@ -330,6 +330,10 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         stream.writeByte(mByte);
     }
 
+    //----------------------------------------------------------------------
+    public void enerj_ResolveObject(ObjectSerializer aContext, boolean shouldDisassociate) throws IOException
+    {
+    }
     
     //----------------------------------------------------------------------
     /** Clear the object's persistent fields. Only persistent fields which

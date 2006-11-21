@@ -1,15 +1,10 @@
 11/15/2006 - Persister/ObjectServer/Schema Refactoring
 --------------------------------------------------------
 
-- Single ObjectServerSession used for schema updates. Runs its own txns.
-
 - Create Database should move to ObjectServer.
 
 - Extents and indexes handled outside of schema.
 
-- New ObjectServer methods: isCIDInSchema() (to check class enhancement schema updates). Add LogicalClass and 
-ClassVersion. getClassInfoForOID - gets CID, class name, etc.
-
 - ObjectServer should have server-wide object write-thru cache. Looks up objects by OID. Updated on commit.
 
-
+- Most all of EnerJTransaction can move to EnerJDatabase. Then it just because a wrapper for the EJDB.
