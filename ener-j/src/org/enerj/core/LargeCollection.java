@@ -38,7 +38,7 @@ import org.odmg.*;
  */
 public interface LargeCollection extends java.util.Collection
 {
-    //----------------------------------------------------------------------
+
     /**
      * Like Collection.size(), but returns the size of the array as a long, which is
      * necessary for very large arrays.
@@ -47,7 +47,7 @@ public interface LargeCollection extends java.util.Collection
      */
     public long sizeAsLong();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the modification count for this collection. This is used primarily
      * for testing for concurrent modification on iterators. The modification

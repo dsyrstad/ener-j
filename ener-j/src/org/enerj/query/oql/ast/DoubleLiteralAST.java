@@ -39,7 +39,7 @@ public class DoubleLiteralAST extends BaseAST
 {
     private double mValue;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a DoubleLiteralAST. 
      *
@@ -50,7 +50,7 @@ public class DoubleLiteralAST extends BaseAST
         mValue = aValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mValue.
      *
@@ -61,7 +61,7 @@ public class DoubleLiteralAST extends BaseAST
         return mValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -70,7 +70,7 @@ public class DoubleLiteralAST extends BaseAST
         return Double.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

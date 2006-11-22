@@ -37,7 +37,7 @@ import org.odmg.QueryException;
  */
 public interface AST
 {
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the the type that this AST will evaluate to.
      * 
@@ -48,7 +48,7 @@ public interface AST
      */
     public Class getType() throws QueryException;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Recursively resolves references and validates non-synctactical rules. Also creates
      * a unary functor that can be used to execute the expression.

@@ -37,25 +37,25 @@ import org.odmg.*;
  */
 public class PageServerException extends ODMGException
 {
-    //----------------------------------------------------------------------
+
     public PageServerException()
     {
         super();
     }
 
-    //----------------------------------------------------------------------
+
     public PageServerException(String aMessage)
     {
         super(aMessage);
     }
 
-    //----------------------------------------------------------------------
+
     public PageServerException(String aMessage, Throwable aCause)
     {
         super(aMessage, aCause);
     }
 
-    //----------------------------------------------------------------------
+
     public PageServerException(Throwable aCause)
     {
         super(aCause.getMessage(), aCause);

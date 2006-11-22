@@ -48,7 +48,7 @@ public class ConversionExprAST extends BaseAST
     private TokenType mOp;
     private AST mExpr;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ConversionExprAST. 
      *
@@ -63,7 +63,7 @@ public class ConversionExprAST extends BaseAST
         mExpr = anExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Expr that is a parameter to this conversion.
      *
@@ -74,7 +74,7 @@ public class ConversionExprAST extends BaseAST
         return mExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the operation.
      *
@@ -85,7 +85,7 @@ public class ConversionExprAST extends BaseAST
         return mOp;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -140,7 +140,7 @@ public class ConversionExprAST extends BaseAST
         throw new QueryException("Invalid operator '" + mOp.getName() + "'");
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

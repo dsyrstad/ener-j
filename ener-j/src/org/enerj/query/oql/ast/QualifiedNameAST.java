@@ -37,7 +37,7 @@ public class QualifiedNameAST extends BaseAST
     /** List of String - name components. */ 
     private List mComponents;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a new QualifiedNameAST. 
      * 
@@ -50,7 +50,7 @@ public class QualifiedNameAST extends BaseAST
         mComponents = someNameComponents;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the components of the qualified name.
      * 
@@ -61,7 +61,7 @@ public class QualifiedNameAST extends BaseAST
         return (List<String>)mComponents;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the fully-qualified name as a String.
      *

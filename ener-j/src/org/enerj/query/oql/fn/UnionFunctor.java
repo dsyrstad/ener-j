@@ -44,7 +44,7 @@ public class UnionFunctor extends BinaryFunctor
     /** Singleton instance of this functor. */
     public static final UnionFunctor INSTANCE = new UnionFunctor();
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a UnionFunctor functor.
      */
@@ -52,7 +52,7 @@ public class UnionFunctor extends BinaryFunctor
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg0, Object arg1)
     {
         if (arg0 == null) {
@@ -79,7 +79,7 @@ public class UnionFunctor extends BinaryFunctor
         throw new IllegalArgumentException("Both arguments must be a Collection or a Set");
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(UnionFunctor)</code> method, if it implements
@@ -90,14 +90,14 @@ public class UnionFunctor extends BinaryFunctor
             ((UnionFunctor.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "UnionFunctor";
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>UnionFunctor</b> functor.
      */

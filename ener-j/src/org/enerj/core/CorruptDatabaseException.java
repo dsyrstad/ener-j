@@ -36,7 +36,7 @@ import org.odmg.*;
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
 public class CorruptDatabaseException extends ODMGRuntimeException {
-    //--------------------------------------------------------------------------
+
     /**
      * Construct an instance of the exception.
      */
@@ -45,7 +45,7 @@ public class CorruptDatabaseException extends ODMGRuntimeException {
         super();
     }
     
-    //--------------------------------------------------------------------------
+
     /**
      * Construct an instance of the exception with a descriptive message.
      * @param	msg	A description of the exception.
@@ -55,7 +55,7 @@ public class CorruptDatabaseException extends ODMGRuntimeException {
         super(msg);
     }
 
-    //--------------------------------------------------------------------------
+
     /**
      * Construct with an error message and a cause.
      * @param msg	The error message associated with this exception.

@@ -41,7 +41,7 @@ public class StringLiteralAST extends BaseAST
 {
     private String mValue;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a StringLiteralAST. 
      *
@@ -52,7 +52,7 @@ public class StringLiteralAST extends BaseAST
         mValue = aValue;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Value.
      *
@@ -63,7 +63,7 @@ public class StringLiteralAST extends BaseAST
         return mValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -72,7 +72,7 @@ public class StringLiteralAST extends BaseAST
         return String.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

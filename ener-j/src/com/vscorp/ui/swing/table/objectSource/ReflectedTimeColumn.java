@@ -21,7 +21,7 @@ public class ReflectedTimeColumn extends ReflectedDateTimeColumn
     /** The reflected field to use as a value */
     private Field mField;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column configured by the specified arguments. This
      * constructor form is common to all of the "reflected" column types and is
@@ -50,7 +50,7 @@ public class ReflectedTimeColumn extends ReflectedDateTimeColumn
             anObjectClass, anAttributeName);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -72,7 +72,7 @@ public class ReflectedTimeColumn extends ReflectedDateTimeColumn
         this("", true, anObjectClass, anAttributeName);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable. This method
      * fails fast by throwing an AWTError if anAttributeName does not exist.
@@ -94,7 +94,7 @@ public class ReflectedTimeColumn extends ReflectedDateTimeColumn
         this(aColumnTitle, anEditingFlag, null, anObjectClass, anAttributeName);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable. This method
      * fails fast by throwing an AWTError if anAttributeName does not exist.

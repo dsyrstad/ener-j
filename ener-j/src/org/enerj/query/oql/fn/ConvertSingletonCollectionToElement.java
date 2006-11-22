@@ -40,7 +40,7 @@ public class ConvertSingletonCollectionToElement extends UnaryFunctor
     private static final long serialVersionUID = 8657175538708835699L;
     public static final ConvertSingletonCollectionToElement INSTANCE = new ConvertSingletonCollectionToElement();
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ConvertSingletonCollectionToElement functor.
      */
@@ -48,7 +48,7 @@ public class ConvertSingletonCollectionToElement extends UnaryFunctor
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         // If null, return the argument.
@@ -68,7 +68,7 @@ public class ConvertSingletonCollectionToElement extends UnaryFunctor
         return collection.iterator().next();
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(ConvertSingletonCollectionToElement)</code> method, if it implements
@@ -79,14 +79,14 @@ public class ConvertSingletonCollectionToElement extends UnaryFunctor
             ((ConvertSingletonCollectionToElement.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "ConvertSingletonCollectionToElement()";
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>ConvertSingletonCollectionToElement</b> functor.
      */

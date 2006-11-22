@@ -37,7 +37,7 @@ import org.enerj.query.oql.ParserException;
 public class TemplateAST extends BaseAST
 {
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a new TemplateAST. 
      */
@@ -45,7 +45,7 @@ public class TemplateAST extends BaseAST
     {
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -64,5 +64,5 @@ public class TemplateAST extends BaseAST
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
 }

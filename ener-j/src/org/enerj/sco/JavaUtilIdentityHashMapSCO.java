@@ -38,7 +38,7 @@ public class JavaUtilIdentityHashMapSCO extends java.util.IdentityHashMap implem
 {
     private Persistable mOwnerFCO;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct an empty collection using the specified initial capacity and 
      * owner FCO.
@@ -52,21 +52,21 @@ public class JavaUtilIdentityHashMapSCO extends java.util.IdentityHashMap implem
         mOwnerFCO = anOwnerFCO;
     }
 
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public Persistable getOwnerFCO()
     {
         return mOwnerFCO;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerFCO(Persistable anOwner)
     {
         mOwnerFCO = anOwner;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerModified() 
     {
@@ -75,7 +75,7 @@ public class JavaUtilIdentityHashMapSCO extends java.util.IdentityHashMap implem
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns a clone without the owner set.
      *
@@ -88,11 +88,11 @@ public class JavaUtilIdentityHashMapSCO extends java.util.IdentityHashMap implem
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // Overridden mutator methods from java.util.IdentityHashMap.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Overridden mutator methods from java.util.IdentityHashMap.
+
+
+
     // java.util.Map
     public Object put(Object key, Object value) 
     {
@@ -101,7 +101,7 @@ public class JavaUtilIdentityHashMapSCO extends java.util.IdentityHashMap implem
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Map
     public void putAll(Map t) 
     {
@@ -109,7 +109,7 @@ public class JavaUtilIdentityHashMapSCO extends java.util.IdentityHashMap implem
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Map
     public void clear() 
     {
@@ -117,7 +117,7 @@ public class JavaUtilIdentityHashMapSCO extends java.util.IdentityHashMap implem
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Map
     public Object remove(Object key) 
     {

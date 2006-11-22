@@ -47,7 +47,7 @@ class ODMGMetaDataParser
     private FileReader fileReader;
     private MetaData mMetaData;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ODMGMetaDataParser. 
      *
@@ -99,7 +99,7 @@ class ODMGMetaDataParser
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Parse the property file into our model.
      *
@@ -123,7 +123,7 @@ class ODMGMetaDataParser
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Generate a error message via an exception.
      */
@@ -132,7 +132,7 @@ class ODMGMetaDataParser
         return new MetaDataException("Error: " + mFileName + " at line " + mTokenizer.lineno() + ": " + aMsg);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Expects to parse a series of "class" sections.
      */
@@ -150,7 +150,7 @@ class ODMGMetaDataParser
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Having parsed a "class" token, parse the rest of the section.
      */
@@ -226,7 +226,7 @@ class ODMGMetaDataParser
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Parse zero or more "field" sections.
      */
@@ -286,7 +286,7 @@ class ODMGMetaDataParser
         return fieldDefArray;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Parse a set of key/value pairs until we see "class" or "field".
      *
@@ -320,8 +320,8 @@ class ODMGMetaDataParser
         return pairs;
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * A key/value pair.
      */
@@ -330,7 +330,7 @@ class ODMGMetaDataParser
         String mKey;
         String mValue;
 
-        //----------------------------------------------------------------------
+
         Pair(String aKey, String aValue) 
         {
             mKey = aKey;

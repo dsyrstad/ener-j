@@ -41,7 +41,7 @@ public class BooleanLiteralAST extends BaseAST
 {
     private boolean mValue;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a BooleanLiteralAST. 
      *
@@ -52,7 +52,7 @@ public class BooleanLiteralAST extends BaseAST
         mValue = aValue;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mValue.
      *
@@ -63,7 +63,7 @@ public class BooleanLiteralAST extends BaseAST
         return mValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -72,7 +72,7 @@ public class BooleanLiteralAST extends BaseAST
         return Boolean.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

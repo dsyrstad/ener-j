@@ -58,7 +58,7 @@ public class RegularDMap implements org.odmg.DMap, Cloneable
     /** The delegate map. This is treated as an SCO when this FCO is persisted. */
     private HashMap mHashMap;
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new RegularDMap with the specified initial capacity. 
      * 
@@ -70,7 +70,7 @@ public class RegularDMap implements org.odmg.DMap, Cloneable
         mHashMap = new HashMap(anInitialCapacity);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new RegularDMap with an initial capacity of 100. 
      */
@@ -79,111 +79,111 @@ public class RegularDMap implements org.odmg.DMap, Cloneable
         this(100);
     }
     
-    //----------------------------------------------------------------------
-    // Start of Interfaces: org.odmg.DMap, java.util.Map...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of Interfaces: org.odmg.DMap, java.util.Map...
+
+
+
     public void clear()
     {
         mHashMap.clear();
     }
     
-    //----------------------------------------------------------------------
+
     public boolean isEmpty() 
     {
         return mHashMap.isEmpty();
     }
     
-    //----------------------------------------------------------------------
+
     public Object remove(Object anObject) 
     {
         return mHashMap.remove(anObject);
     }
     
-    //----------------------------------------------------------------------
+
     public int size() 
     {
         return mHashMap.size();
     }
     
-    //----------------------------------------------------------------------
+
     public boolean containsKey(Object aKey)
     {
         return mHashMap.containsKey(aKey);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean containsValue(Object aValue)
     {
         return mHashMap.containsValue(aValue);
     }
     
-    //----------------------------------------------------------------------
+
     public Set entrySet()
     {
         return mHashMap.entrySet();
     }
     
-    //----------------------------------------------------------------------
+
     public Object get(Object aKey)
     {
         return mHashMap.get(aKey);
     }
     
-    //----------------------------------------------------------------------
+
     public Set keySet()
     {
         return mHashMap.keySet();
     }
     
-    //----------------------------------------------------------------------
+
     public Object put(Object aKey, Object aValue)
     {
         return mHashMap.put(aKey, aValue);
     }
     
-    //----------------------------------------------------------------------
+
     public void putAll(Map aMap)
     {
         mHashMap.putAll(aMap);
     }
     
-    //----------------------------------------------------------------------
+
     public Collection values() 
     {
         return mHashMap.values();
     }
     
-    //----------------------------------------------------------------------
+
     public java.util.Iterator select(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public boolean existsElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public org.odmg.DCollection query(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public Object selectElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -192,7 +192,7 @@ public class RegularDMap implements org.odmg.DMap, Cloneable
         return mHashMap.hashCode();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -201,7 +201,7 @@ public class RegularDMap implements org.odmg.DMap, Cloneable
         return mHashMap.equals(anObject);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -210,7 +210,7 @@ public class RegularDMap implements org.odmg.DMap, Cloneable
         return mHashMap.toString();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -221,7 +221,7 @@ public class RegularDMap implements org.odmg.DMap, Cloneable
         return clone;
     }
     
-    //----------------------------------------------------------------------
+
     // ...End of Interfaces: org.odmg.DMap, java.util.Map.
-    //----------------------------------------------------------------------
+
 }

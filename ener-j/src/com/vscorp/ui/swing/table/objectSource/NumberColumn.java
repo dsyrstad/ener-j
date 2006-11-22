@@ -34,7 +34,7 @@ abstract public class NumberColumn extends ObjectSourceTableColumn
     private JTable mEditingJTable = null;
     private NumberFormat mNumberFormat;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -47,7 +47,7 @@ abstract public class NumberColumn extends ObjectSourceTableColumn
         this("", true);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable. Default integer
      * format is used.
@@ -61,7 +61,7 @@ abstract public class NumberColumn extends ObjectSourceTableColumn
         this(aColumnTitle, anEditingFlag, null);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable. Default integer
      * format is used.
@@ -100,7 +100,7 @@ abstract public class NumberColumn extends ObjectSourceTableColumn
         } );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the NumberFormat set on this column.
      */
@@ -109,7 +109,7 @@ abstract public class NumberColumn extends ObjectSourceTableColumn
         return mNumberFormat;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the column's value from the specified object.
      *
@@ -119,7 +119,7 @@ abstract public class NumberColumn extends ObjectSourceTableColumn
      */
     protected abstract Number getColumnValue(Object anObject);
 
-    //----------------------------------------------------------------------
+
     /**
      * Set the column's value on the specified object.
      *
@@ -132,7 +132,7 @@ abstract public class NumberColumn extends ObjectSourceTableColumn
      */
     protected abstract boolean setColumnValue(Object anObject, Number aValue);
 
-    //----------------------------------------------------------------------
+
     /**
      * Calculates the preferred width of the TableColumn using the specified JTable.
      * Modifies the TableColumn's preferredWidth.
@@ -147,7 +147,7 @@ abstract public class NumberColumn extends ObjectSourceTableColumn
         calculatePreferredWidth(aTable, component);
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellRenderer
     public Component getTableCellRendererComponent(JTable aTable,
                 Object aValue, boolean aSelectedFlag, boolean aFocusFlag,
@@ -188,7 +188,7 @@ abstract public class NumberColumn extends ObjectSourceTableColumn
         return component;
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellEditor...
     public Component getTableCellEditorComponent(JTable aTable, Object aValue,
                         boolean isSelected, int aRow, int aColumn)
@@ -207,7 +207,7 @@ abstract public class NumberColumn extends ObjectSourceTableColumn
         return mEditorTextField;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the column value from the editor's value.
      *
@@ -257,7 +257,7 @@ abstract public class NumberColumn extends ObjectSourceTableColumn
         return setColumnValue( getEditorValue(), number);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Called when the editor field changes value. We update the table's
      * object immediately so that we can work around the focus bug 4249803.
@@ -273,7 +273,7 @@ abstract public class NumberColumn extends ObjectSourceTableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     // From CellEditor...
     public boolean stopCellEditing()
     {

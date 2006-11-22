@@ -38,7 +38,7 @@ public class JavaSqlTimeSCO extends java.sql.Time implements SCOTracker
 {
     private Persistable mOwnerFCO;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct an empty collection using the specified initial capacity and 
      * owner FCO.
@@ -52,21 +52,21 @@ public class JavaSqlTimeSCO extends java.sql.Time implements SCOTracker
         mOwnerFCO = anOwnerFCO;
     }
 
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public Persistable getOwnerFCO()
     {
         return mOwnerFCO;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerFCO(Persistable anOwner)
     {
         mOwnerFCO = anOwner;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerModified() 
     {
@@ -75,7 +75,7 @@ public class JavaSqlTimeSCO extends java.sql.Time implements SCOTracker
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns a clone without the owner set.
      *
@@ -88,11 +88,11 @@ public class JavaSqlTimeSCO extends java.sql.Time implements SCOTracker
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // Overridden mutator methods from java.sql.Time.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Overridden mutator methods from java.sql.Time.
+
+
+
     // java.sql.Time
     public void setTime(long time)
     {

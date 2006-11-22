@@ -35,7 +35,7 @@ import java.util.Collection;
  */
 abstract public class BaseSelectCollection implements Collection
 {
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a BaseSelectCollection that is unfiltered. 
      */
@@ -43,29 +43,29 @@ abstract public class BaseSelectCollection implements Collection
     {
     }
     
-    //--------------------------------------------------------------------------------
-    // Collection Interface...
-    //--------------------------------------------------------------------------------
 
-    //--------------------------------------------------------------------------------
+    // Collection Interface...
+
+
+
     public boolean add(Object anObject)
     {
         throw new UnsupportedOperationException("Collection is immutable");
     }
 
-    //--------------------------------------------------------------------------------
+
     public boolean addAll(Collection aCollection)
     {
         throw new UnsupportedOperationException("Collection is immutable");
     }
 
-    //--------------------------------------------------------------------------------
+
     public void clear()
     {
         throw new UnsupportedOperationException("Collection is immutable");
     }
 
-    //--------------------------------------------------------------------------------
+
     public boolean contains(Object anObject)
     {
         for (Object target : this) {
@@ -85,7 +85,7 @@ abstract public class BaseSelectCollection implements Collection
         return false;
     }
 
-    //--------------------------------------------------------------------------------
+
     public boolean containsAll(Collection aCollection)
     {
         for (Object target : aCollection) {
@@ -97,31 +97,31 @@ abstract public class BaseSelectCollection implements Collection
         return true;
     }
 
-    //--------------------------------------------------------------------------------
+
     public boolean isEmpty()
     {
         return !iterator().hasNext();
     }
 
-    //--------------------------------------------------------------------------------
+
     public boolean remove(Object anO)
     {
         throw new UnsupportedOperationException("Collection is immutable");
     }
 
-    //--------------------------------------------------------------------------------
+
     public boolean removeAll(Collection anC)
     {
         throw new UnsupportedOperationException("Collection is immutable");
     }
 
-    //--------------------------------------------------------------------------------
+
     public boolean retainAll(Collection anC)
     {
         throw new UnsupportedOperationException("Collection is immutable");
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object[] toArray()
     {
         Collection coll = new ArrayList();
@@ -129,7 +129,7 @@ abstract public class BaseSelectCollection implements Collection
         return coll.toArray();
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object[] toArray(Object[] a)
     {
         Collection coll = new ArrayList();
@@ -137,8 +137,8 @@ abstract public class BaseSelectCollection implements Collection
         return coll.toArray(a);
     }
 
-    //--------------------------------------------------------------------------------
+
     // ...Collection Interface.
-    //--------------------------------------------------------------------------------
+
 
 }

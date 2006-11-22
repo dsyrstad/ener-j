@@ -37,7 +37,7 @@ public class UndefinedExprAST extends BaseAST
     private TokenType mOp;
     private AST mExpr;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a UndefinedExprAST. 
      *
@@ -50,7 +50,7 @@ public class UndefinedExprAST extends BaseAST
         mExpr = anExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Expr.
      *
@@ -61,7 +61,7 @@ public class UndefinedExprAST extends BaseAST
         return mExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Op.
      *

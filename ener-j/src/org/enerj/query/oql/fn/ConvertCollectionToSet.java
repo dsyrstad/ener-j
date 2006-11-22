@@ -43,7 +43,7 @@ public class ConvertCollectionToSet extends UnaryFunctor
 
     public static final ConvertCollectionToSet INSTANCE = new ConvertCollectionToSet();
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ConvertCollectionToSet functor.
      */
@@ -51,7 +51,7 @@ public class ConvertCollectionToSet extends UnaryFunctor
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         // If null or already a Set, return the argument.
@@ -66,7 +66,7 @@ public class ConvertCollectionToSet extends UnaryFunctor
         return new HashSet((Collection)arg);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(ConvertCollectionToSet)</code> method, if it implements
@@ -77,14 +77,14 @@ public class ConvertCollectionToSet extends UnaryFunctor
             ((ConvertCollectionToSet.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "ConvertCollectionToSet()";
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>ConvertCollectionToSet</b> functor.
      */

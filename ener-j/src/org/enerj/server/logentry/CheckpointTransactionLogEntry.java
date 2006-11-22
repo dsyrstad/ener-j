@@ -38,7 +38,7 @@ import java.io.*;
  */
 public class CheckpointTransactionLogEntry extends LogEntry
 {
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an empty CheckpointTransactionLogEntry.
      */
@@ -46,7 +46,7 @@ public class CheckpointTransactionLogEntry extends LogEntry
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a CheckpointTransactionLogEntry with the given transaction id.
      *
@@ -58,7 +58,7 @@ public class CheckpointTransactionLogEntry extends LogEntry
         setTransactionId(aTransactionId);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the entry type of this log entry.
      *
@@ -69,7 +69,7 @@ public class CheckpointTransactionLogEntry extends LogEntry
         return CHECKPOINT_TXN_ENTRY_TYPE;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -78,7 +78,7 @@ public class CheckpointTransactionLogEntry extends LogEntry
         return 0;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

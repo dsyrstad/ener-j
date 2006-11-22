@@ -69,7 +69,7 @@ public class Bindery
         mBinderyMap.put(aName, anOID);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Lookup an object via its name.
      *
@@ -89,7 +89,7 @@ public class Bindery
         return oid;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Disassociate a name with an object
      *

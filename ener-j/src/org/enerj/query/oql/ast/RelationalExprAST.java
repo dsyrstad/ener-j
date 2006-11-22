@@ -83,7 +83,7 @@ public class RelationalExprAST extends BaseAST
     private TokenType mOp;  // TOK_LT, LE, GT, GE, EQ, NE, LIKE
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a RelationalExprAST. 
      *
@@ -110,7 +110,7 @@ public class RelationalExprAST extends BaseAST
         mOp = anOp;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mCompositePredicate.
      *
@@ -121,7 +121,7 @@ public class RelationalExprAST extends BaseAST
         return mCompositePredicate;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mLeftExpr.
      *
@@ -132,7 +132,7 @@ public class RelationalExprAST extends BaseAST
         return mLeftExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mOp.
      *
@@ -143,7 +143,7 @@ public class RelationalExprAST extends BaseAST
         return mOp;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mRightExpr.
      *
@@ -154,7 +154,7 @@ public class RelationalExprAST extends BaseAST
         return mRightExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -163,7 +163,7 @@ public class RelationalExprAST extends BaseAST
         return Boolean.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

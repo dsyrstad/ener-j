@@ -76,7 +76,7 @@ public class TypeAST extends BaseAST
     /** Value type for dictionary.  May be null. */
     private TypeAST mSubType2;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a new TypeAST.
      *  
@@ -96,7 +96,7 @@ public class TypeAST extends BaseAST
         mSubType2 = aSubType2;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * First identifier for enum, or user-defined type name. May be null. 
      * 
@@ -107,7 +107,7 @@ public class TypeAST extends BaseAST
         return mIdent1;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Second identifier for enum. May be null. 
      * 
@@ -118,7 +118,7 @@ public class TypeAST extends BaseAST
         return mIdent2;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Subtype for collections, key type for dictionary.  May be null.
      * 
@@ -130,7 +130,7 @@ public class TypeAST extends BaseAST
     }
     /**
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * Gets the value type for dictionary.  May be null.
      * 
@@ -141,7 +141,7 @@ public class TypeAST extends BaseAST
         return mSubType2;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * The token type reflecting the actual type. 
      * 
@@ -152,7 +152,7 @@ public class TypeAST extends BaseAST
         return mTokenType;
     }
 
-    //--------------------------------------------------------------------------------
+
     protected Class getType0() throws QueryException
     {
         if (mTokenType == TOK_UNSIGNED_SHORT) {

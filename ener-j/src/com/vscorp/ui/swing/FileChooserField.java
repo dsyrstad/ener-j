@@ -44,7 +44,7 @@ public class FileChooserField extends ChooserField
     private JFileChooser mJFileChooser;
     private Component mOwnerComponent;
 
-    //----------------------------------------------------------------------
+
     /**
      * Create a new FileChooserField with no text and the default FileChooser
      * created by "new JFileChooser()".
@@ -54,7 +54,7 @@ public class FileChooserField extends ChooserField
        this(anOwnerComponent, "", new JFileChooser() );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Create a new FileChooserField using the specified text (a pathname) and
      * JFileChooser.
@@ -83,7 +83,7 @@ public class FileChooserField extends ChooserField
         setPopupButton(button);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the text of this field. Equivalent to getTextField().getText().
      *
@@ -94,7 +94,7 @@ public class FileChooserField extends ChooserField
         return super.getText();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the text of this field. Equivalent to getTextField().setText(s).
      *
@@ -105,7 +105,7 @@ public class FileChooserField extends ChooserField
         super.setText(aString);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Verifies the content of the field. Default implementation returns true.
      * Also fires a ChangeEvent if field has changed.
@@ -118,7 +118,7 @@ public class FileChooserField extends ChooserField
         return true;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Opens the popup if it is closed.
      */
@@ -130,7 +130,7 @@ public class FileChooserField extends ChooserField
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Closes the popup if it is open.
      */

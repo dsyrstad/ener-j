@@ -42,7 +42,7 @@ public class StructureFunctor extends UnaryFunctor
     private String[] mMemberNames;
     private UnaryFunctor[] mValueFunctors;
    
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a StructureFunctor.
      * 
@@ -55,7 +55,7 @@ public class StructureFunctor extends UnaryFunctor
         mValueFunctors = someValueFunctors;
     }
     
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         Object[] values = new Object[ mValueFunctors.length ];
@@ -66,7 +66,7 @@ public class StructureFunctor extends UnaryFunctor
         return new Structure(mMemberNames, values);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(StructureFunctor)</code> method, if it implements
@@ -77,7 +77,7 @@ public class StructureFunctor extends UnaryFunctor
             ((StructureFunctor.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "StructureFunctor[names=" + StringUtil.toString(mMemberNames, false, false) + ", valueFunctors=" +
                 StringUtil.toString(mValueFunctors, false, true) + ']';
@@ -85,7 +85,7 @@ public class StructureFunctor extends UnaryFunctor
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>StructureFunctor</b> functor.
      */

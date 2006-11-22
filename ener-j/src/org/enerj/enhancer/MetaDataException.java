@@ -33,7 +33,7 @@ package org.enerj.enhancer;
 class MetaDataException extends Exception
 {
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new MetaDataException.
      * 
@@ -45,7 +45,7 @@ class MetaDataException extends Exception
         super(aMsg, aCause);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new MetaDataException.
      * 
@@ -56,7 +56,7 @@ class MetaDataException extends Exception
         super(aMsg);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new MetaDataException.
      * 

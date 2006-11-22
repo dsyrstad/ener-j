@@ -39,7 +39,7 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
 {
     private Persistable mOwnerFCO;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct an empty collection using the specified initial capacity and 
      * owner FCO.
@@ -53,21 +53,21 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         mOwnerFCO = anOwnerFCO;
     }
 
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public Persistable getOwnerFCO()
     {
         return mOwnerFCO;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerFCO(Persistable anOwner)
     {
         mOwnerFCO = anOwner;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerModified() 
     {
@@ -76,7 +76,7 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns a clone without the owner set.
      *
@@ -89,11 +89,11 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // Overridden mutator methods from java.util.ArrayList.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Overridden mutator methods from java.util.ArrayList.
+
+
+
     // java.util.Collection
     public boolean add(Object o) 
     {
@@ -102,7 +102,7 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean addAll(Collection c) 
     {
@@ -111,7 +111,7 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public void clear() 
     {
@@ -119,7 +119,7 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean remove(Object o) 
     {
@@ -128,7 +128,7 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean removeAll(Collection c) 
     {
@@ -137,7 +137,7 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean retainAll(Collection c) 
     {
@@ -146,7 +146,7 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.List
     public Object set(int index, Object element) 
     {
@@ -155,7 +155,7 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.List
     public Object remove(int index) 
     {
@@ -164,7 +164,7 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.List
     public boolean addAll(int index, Collection c) 
     {
@@ -173,7 +173,7 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.List
     public void add(int index, Object element) 
     {
@@ -181,7 +181,7 @@ public class JavaUtilArrayListSCO extends java.util.ArrayList
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.AbstractList
     protected void removeRange(int fromIndex, int toIndex)
     {

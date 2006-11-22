@@ -18,7 +18,7 @@ abstract public class IconColumn extends TextColumn
 {
     private static final JLabel sRenderer = new JLabel();
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -30,7 +30,7 @@ abstract public class IconColumn extends TextColumn
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable.
      *
@@ -42,7 +42,7 @@ abstract public class IconColumn extends TextColumn
         super(aColumnTitle, anEditingFlag);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the column's icon based on the specified object.
      *
@@ -53,7 +53,7 @@ abstract public class IconColumn extends TextColumn
      */
     protected abstract Icon getColumnIcon(Object anObject);
 
-    //----------------------------------------------------------------------
+
     // From TableCellRenderer
     public Component getTableCellRendererComponent(JTable aTable,
                 Object aValue, boolean aSelectedFlag, boolean aFocusFlag,

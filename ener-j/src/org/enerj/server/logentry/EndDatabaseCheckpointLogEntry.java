@@ -40,7 +40,7 @@ import org.enerj.server.RedoLogServer;
 public class EndDatabaseCheckpointLogEntry extends LogEntry
 {
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an empty EndDatabaseCheckpointLogEntry.
      */
@@ -48,7 +48,7 @@ public class EndDatabaseCheckpointLogEntry extends LogEntry
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the entry type of this log entry.
      *
@@ -59,7 +59,7 @@ public class EndDatabaseCheckpointLogEntry extends LogEntry
         return END_DB_CHECKPOINT_ENTRY_TYPE;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -68,7 +68,7 @@ public class EndDatabaseCheckpointLogEntry extends LogEntry
         return 0;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

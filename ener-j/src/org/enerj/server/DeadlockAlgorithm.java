@@ -40,13 +40,13 @@ public final class DeadlockAlgorithm
 
     private String mName;
 
-    //----------------------------------------------------------------------
+
     private DeadlockAlgorithm(String aName)
     {
         mName = aName;
     }
 
-    //----------------------------------------------------------------------
+
     public String toString()
     {
         return mName;

@@ -33,7 +33,7 @@ package org.enerj.enhancer;
 class EnhancerException extends RuntimeException
 {
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new EnhancerException.
      * 

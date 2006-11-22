@@ -13,7 +13,7 @@ package org.odmg;
  */
 public interface QueryableCollection
 {
-    //----------------------------------------------------------------------
+
     /**
      * Selects the single element of the collection for which the provided OQL query
      * predicate is true.
@@ -24,7 +24,7 @@ public interface QueryableCollection
      */
     public Object selectElement(String predicate) throws QueryInvalidException;
     
-    //----------------------------------------------------------------------
+
     /**
      * Access all of the elements of the collection that evaluate to true for the
      * provided query predicate.
@@ -34,7 +34,7 @@ public interface QueryableCollection
      */
     public java.util.Iterator select(String predicate) throws QueryInvalidException;
     
-    //----------------------------------------------------------------------
+
     /**
      * Evaluate the boolean query predicate for each element of the collection and
      * return a new collection that contains each element that evaluated to true.
@@ -44,7 +44,7 @@ public interface QueryableCollection
      */
     public DCollection query(String predicate) throws QueryInvalidException;
     
-    //----------------------------------------------------------------------
+
     /**
      * Determines whether there is an element of the collection that evaluates to true
      * for the predicate.

@@ -38,7 +38,7 @@ public class JavaUtilLinkedHashSetSCO extends java.util.LinkedHashSet implements
 {
     private Persistable mOwnerFCO;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct an empty collection using the specified initial capacity and 
      * owner FCO.
@@ -52,21 +52,21 @@ public class JavaUtilLinkedHashSetSCO extends java.util.LinkedHashSet implements
         mOwnerFCO = anOwnerFCO;
     }
 
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public Persistable getOwnerFCO()
     {
         return mOwnerFCO;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerFCO(Persistable anOwner)
     {
         mOwnerFCO = anOwner;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerModified() 
     {
@@ -75,7 +75,7 @@ public class JavaUtilLinkedHashSetSCO extends java.util.LinkedHashSet implements
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns a clone without the owner set.
      *
@@ -88,11 +88,11 @@ public class JavaUtilLinkedHashSetSCO extends java.util.LinkedHashSet implements
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // Overridden mutator methods from java.util.LinkedHashSet.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Overridden mutator methods from java.util.LinkedHashSet.
+
+
+
     // java.util.Collection
     public boolean add(Object o) 
     {
@@ -101,7 +101,7 @@ public class JavaUtilLinkedHashSetSCO extends java.util.LinkedHashSet implements
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean addAll(Collection c) 
     {
@@ -110,7 +110,7 @@ public class JavaUtilLinkedHashSetSCO extends java.util.LinkedHashSet implements
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public void clear() 
     {
@@ -118,7 +118,7 @@ public class JavaUtilLinkedHashSetSCO extends java.util.LinkedHashSet implements
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean remove(Object o) 
     {
@@ -127,7 +127,7 @@ public class JavaUtilLinkedHashSetSCO extends java.util.LinkedHashSet implements
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean removeAll(Collection c) 
     {
@@ -136,7 +136,7 @@ public class JavaUtilLinkedHashSetSCO extends java.util.LinkedHashSet implements
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean retainAll(Collection c) 
     {

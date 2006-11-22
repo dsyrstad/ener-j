@@ -24,7 +24,7 @@ public class QueryParameterCountInvalidException extends QueryException {
         super(msg);
     }
 
-    //--------------------------------------------------------------------------
+
     /**
      * Construct with an error message and a cause.
      * @param msg	The error message associated with this exception.

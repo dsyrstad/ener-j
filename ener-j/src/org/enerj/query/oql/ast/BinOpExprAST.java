@@ -94,7 +94,7 @@ public class BinOpExprAST extends BaseAST
     private TokenType mOp;
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a BinOpExprAST. 
      *
@@ -114,7 +114,7 @@ public class BinOpExprAST extends BaseAST
         mOp = anOp;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Left Expr.
      *
@@ -125,7 +125,7 @@ public class BinOpExprAST extends BaseAST
         return mLeftExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Op.
      *
@@ -136,7 +136,7 @@ public class BinOpExprAST extends BaseAST
         return mOp;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Right Expr.
      *
@@ -147,7 +147,7 @@ public class BinOpExprAST extends BaseAST
         return mRightExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -198,7 +198,7 @@ public class BinOpExprAST extends BaseAST
         throw new QueryException("Invalid operands to operator '" + mOp.getName() + "': left operand is " + leftType.getName() + ", right operand is " + rightType.getName());
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

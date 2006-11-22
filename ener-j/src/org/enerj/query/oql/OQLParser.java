@@ -95,7 +95,7 @@ public class OQLParser
     /** True if debugging is on. */
     private boolean mDebug = false;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Constructs a new OQLParser.
      * 
@@ -106,7 +106,7 @@ public class OQLParser
         mLexer = aLexer;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Logs a debug message if debug is on.
      * 
@@ -119,7 +119,7 @@ public class OQLParser
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets whether debugging is on or off.
      * 
@@ -130,7 +130,7 @@ public class OQLParser
         mDebug = aDebugFlag;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Parses the input via the OQLLexer and returns an ASTNode.
      * 
@@ -163,7 +163,7 @@ public class OQLParser
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Create a parser exception based on the offending token.
      * 
@@ -174,7 +174,7 @@ public class OQLParser
         return createParserException(aMsg, null);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Create a parser exception based on the offending token.
      * 
@@ -193,7 +193,7 @@ public class OQLParser
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Expects anAST to be non-null. If so, anAST is returned. Otherwise,
      * ParserException is thrown with the given error message.
@@ -212,7 +212,7 @@ public class OQLParser
         return anAST;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Expects aTokenType to be the next token in the stream. If so, the token
      * is removed off the stream. Otherwise, ParserException is thrown with the
@@ -235,7 +235,7 @@ public class OQLParser
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Expects aKeyword to be the next token in the stream. If so, the token
      * is removed off the stream. Otherwise, ParserException is thrown with the
@@ -257,7 +257,7 @@ public class OQLParser
         return mLexer.getNextToken();
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Trys parsing the rule contained in the RuleParser functor.
      * 
@@ -287,11 +287,11 @@ public class OQLParser
         return result;
     }
 
-    //--------------------------------------------------------------------------------
-    // Rules...
-    //--------------------------------------------------------------------------------
 
-    //--------------------------------------------------------------------------------
+    // Rules...
+
+
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -336,7 +336,7 @@ public class OQLParser
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -371,7 +371,7 @@ public class OQLParser
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -408,7 +408,7 @@ public class OQLParser
         return new ImportAST(qualifiedName, alias);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -457,7 +457,7 @@ public class OQLParser
         return new DefineQueryAST(name, params, query, isPersistent);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -492,7 +492,7 @@ public class OQLParser
         return new ParameterListAST(types, names);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -520,7 +520,7 @@ public class OQLParser
         return new UndefineQueryAST( expect(OQLTokens.TOK_IDENT, "Expected Identifier").getValue() );
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -566,7 +566,7 @@ public class OQLParser
         return new QualifiedNameAST(names);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -596,7 +596,7 @@ public class OQLParser
         return new QueryAST(node);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -637,7 +637,7 @@ public class OQLParser
         return new SelectExprAST(isDistinct, projectionAttributes, from, where, group, order);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -663,7 +663,7 @@ public class OQLParser
         return new ProjectionAttributesAST(list);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -693,7 +693,7 @@ public class OQLParser
         return new ProjectionListAST(projections);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -733,7 +733,7 @@ public class OQLParser
         return new ProjectionAST(expr, alias);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -766,7 +766,7 @@ public class OQLParser
         return new FromClauseAST(iterDefs);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -814,7 +814,7 @@ public class OQLParser
         return new IteratorDefAST(expr, alias);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -836,7 +836,7 @@ public class OQLParser
         return expect(parseExpr(), "Expected expression");
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -863,7 +863,7 @@ public class OQLParser
         return new GroupClauseAST(fieldList, having);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -885,7 +885,7 @@ public class OQLParser
         return expect(parseExpr(), "Expected expression");
     }
    
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -909,7 +909,7 @@ public class OQLParser
         return expect(parseSortCriteria(), "Expected sort criteriea");
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -939,7 +939,7 @@ public class OQLParser
         return new SortCriteriaAST(criteria);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -970,7 +970,7 @@ public class OQLParser
         return new SortCriterionAST(expr, ascending);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1134,7 +1134,7 @@ public class OQLParser
         return new TypeAST(tokenType, ident1, ident2, subType1, subType2);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1151,7 +1151,7 @@ public class OQLParser
         return parseCastExpr();
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1180,7 +1180,7 @@ public class OQLParser
         return expr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1208,7 +1208,7 @@ public class OQLParser
         return null;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1237,7 +1237,7 @@ public class OQLParser
         return leftExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1266,7 +1266,7 @@ public class OQLParser
         return leftExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1295,7 +1295,7 @@ public class OQLParser
         return leftExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1334,7 +1334,7 @@ public class OQLParser
         return new QuantifierExprAST(inClause, expr, isUniversal);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1359,7 +1359,7 @@ public class OQLParser
         return new InClauseAST(ident, expr);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1388,7 +1388,7 @@ public class OQLParser
         return leftExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1426,7 +1426,7 @@ public class OQLParser
         return leftExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1458,7 +1458,7 @@ public class OQLParser
         return leftExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns a TokenType. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1490,7 +1490,7 @@ public class OQLParser
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1531,7 +1531,7 @@ public class OQLParser
         return leftExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1570,7 +1570,7 @@ public class OQLParser
         return leftExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1599,7 +1599,7 @@ public class OQLParser
         return leftExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1637,7 +1637,7 @@ public class OQLParser
         return parsePostfixExpr();
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1683,7 +1683,7 @@ public class OQLParser
         return expr; 
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1725,7 +1725,7 @@ public class OQLParser
         return expr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1755,7 +1755,7 @@ public class OQLParser
         return valueList;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1828,7 +1828,7 @@ public class OQLParser
         return parseParenthesizedQuery(); // May return null which indicates our rule didn't match.
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Parse a parenthesized query.<p>
      * 
@@ -1851,7 +1851,7 @@ public class OQLParser
         return null;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1897,7 +1897,7 @@ public class OQLParser
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -1945,7 +1945,7 @@ public class OQLParser
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2007,7 +2007,7 @@ public class OQLParser
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2045,7 +2045,7 @@ public class OQLParser
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2070,7 +2070,7 @@ public class OQLParser
         return new IdentifierWithArgumentsAST(className, fieldList);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2095,7 +2095,7 @@ public class OQLParser
         return new StructConstructionAST(fieldList);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2126,7 +2126,7 @@ public class OQLParser
         return new FieldListAST(fields);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2151,7 +2151,7 @@ public class OQLParser
         return new FieldAST(fieldName, expr);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2211,7 +2211,7 @@ public class OQLParser
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2242,7 +2242,7 @@ public class OQLParser
         return new ValueListAST(values);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2267,7 +2267,7 @@ public class OQLParser
         return new ListRangeAST(startExpr, endExpr);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2290,7 +2290,7 @@ public class OQLParser
         return new QueryParamAST(index);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2364,7 +2364,7 @@ public class OQLParser
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2386,7 +2386,7 @@ public class OQLParser
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2415,7 +2415,7 @@ public class OQLParser
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2444,7 +2444,7 @@ public class OQLParser
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2473,7 +2473,7 @@ public class OQLParser
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2496,7 +2496,7 @@ public class OQLParser
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2519,7 +2519,7 @@ public class OQLParser
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * This method parses the rule from the current point in the lexer and returns an AST. If the
      * rule is not matched, null is returned. If an error occurs while parsing the rule, ParserException
@@ -2542,8 +2542,8 @@ public class OQLParser
         return null;
     }
 
-    //--------------------------------------------------------------------------------
-    //--------------------------------------------------------------------------------
+
+
     /**
      * A functor for calling rules. 
      */

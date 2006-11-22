@@ -44,7 +44,7 @@ public class SelectCollectionFunctor extends UnaryFunctor
     private UnaryFunctor mFilterFunctor = null;
     private UnaryFunctor mProjectionFunctor = null;
    
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a SelectCollectionFunctor.
      * 
@@ -61,7 +61,7 @@ public class SelectCollectionFunctor extends UnaryFunctor
         mProjectionFunctor = aProjectionFunctor;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Set the Functor to perform filtering. Must be set before the collection is used or else
      * the collection will give inconsistent results.
@@ -73,7 +73,7 @@ public class SelectCollectionFunctor extends UnaryFunctor
         mFilterFunctor = aFilter;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Set the Functor to perform projection. Must be set before the collection is used or else
      * the collection will give inconsistent results.
@@ -86,7 +86,7 @@ public class SelectCollectionFunctor extends UnaryFunctor
         mProjectionFunctor = aProjectionFunctor;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         if (arg == null || !(arg instanceof Collection)) {
@@ -96,7 +96,7 @@ public class SelectCollectionFunctor extends UnaryFunctor
         return new SelectCollection((Collection)arg, mFilterFunctor, mProjectionFunctor, mTrackedValueFunctor);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(SelectCollectionFunctor)</code> method, if it implements
@@ -107,14 +107,14 @@ public class SelectCollectionFunctor extends UnaryFunctor
             ((SelectCollectionFunctor.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "SelectCollectionFunctor[filter=" + mFilterFunctor + ", projection=" + mProjectionFunctor + ", trackedValueFunctor=" + mTrackedValueFunctor + ']';
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>SelectCollectionFunctor</b> functor.
      */

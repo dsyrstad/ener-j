@@ -60,7 +60,7 @@ public class ObjectLinkColumn extends ObjectSourceTableColumn
     private Method mReadMethod;
     private int mStructIndex = -1;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. 
      *
@@ -93,7 +93,7 @@ public class ObjectLinkColumn extends ObjectSourceTableColumn
         init();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column for viewing a member of a Structure.
      *
@@ -109,7 +109,7 @@ public class ObjectLinkColumn extends ObjectSourceTableColumn
         mStructIndex = aStructIndex;
     }
     
-    //----------------------------------------------------------------------
+
     private void init()
     {
         if (sRenderer == null) {
@@ -119,7 +119,7 @@ public class ObjectLinkColumn extends ObjectSourceTableColumn
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Calculates the preferred width of the TableColumn using the specified JTable.
      * Modifies the TableColumn's preferredWidth.
@@ -132,7 +132,7 @@ public class ObjectLinkColumn extends ObjectSourceTableColumn
         calculatePreferredWidth(aTable, component);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the column's string value from the specified object.
      *
@@ -151,7 +151,7 @@ public class ObjectLinkColumn extends ObjectSourceTableColumn
         return mReadMethod.invoke(anObject, NO_ARGS);
     }
 
-    //----------------------------------------------------------------------
+
     public Component getTableCellRendererComponent(JTable aTable,
                 Object aValue, boolean aSelectedFlag, boolean aFocusFlag,
                 int aRow, int aColumn)
@@ -198,7 +198,7 @@ public class ObjectLinkColumn extends ObjectSourceTableColumn
         return sRenderer;
     }
 
-    //----------------------------------------------------------------------
+
     public Component getTableCellEditorComponent(JTable aTable, Object aValue,
                         boolean isSelected, int aRow, int aColumn)
     {
@@ -220,13 +220,13 @@ public class ObjectLinkColumn extends ObjectSourceTableColumn
         return new JLabel("Selecting..."); 
     }
 
-    //----------------------------------------------------------------------
+
     public boolean shouldSelectCell(EventObject anEvent)
     {
         return true;
     }
 
-    //----------------------------------------------------------------------
+
     public boolean stopCellEditing()
     {
         fireEditingStopped();

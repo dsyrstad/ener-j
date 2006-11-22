@@ -33,7 +33,7 @@ package org.enerj.enhancer;
 class AlreadyEnhancedException extends EnhancerException
 {
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new AlreadyEnhancedException.
      * 

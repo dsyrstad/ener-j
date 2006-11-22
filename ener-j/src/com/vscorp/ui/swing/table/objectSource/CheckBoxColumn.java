@@ -24,7 +24,7 @@ abstract public class CheckBoxColumn extends ObjectSourceTableColumn
     /** The JTable that is currently using this column to edit */
     private JTable mEditingJTable = null;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -36,7 +36,7 @@ abstract public class CheckBoxColumn extends ObjectSourceTableColumn
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column that may be edited with a JCheckBox.
      * Column is optionally editable.
@@ -49,7 +49,7 @@ abstract public class CheckBoxColumn extends ObjectSourceTableColumn
         super(aColumnTitle, anEditingFlag);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the value for the cell.
      *
@@ -59,7 +59,7 @@ abstract public class CheckBoxColumn extends ObjectSourceTableColumn
      */
     protected abstract Boolean getColumnValue(Object anObject);
 
-    //----------------------------------------------------------------------
+
     /**
      * Set the value for the cell.
      *
@@ -71,7 +71,7 @@ abstract public class CheckBoxColumn extends ObjectSourceTableColumn
      */
     protected abstract boolean setColumnValue(Object anObject, Boolean aValue);
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the column's Boolean value from the specified object. A valid Boolean
      * is always returned regarless if anObject or the column's value is null.
@@ -97,7 +97,7 @@ abstract public class CheckBoxColumn extends ObjectSourceTableColumn
         return value;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Calculates the preferred width of the TableColumn using the specified JTable.
      * Modifies the TableColumn's preferredWidth.
@@ -111,7 +111,7 @@ abstract public class CheckBoxColumn extends ObjectSourceTableColumn
         calculatePreferredWidth(aTable, component);
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellRenderer
     public Component getTableCellRendererComponent(JTable aTable,
                 Object aValue, boolean aSelectedFlag, boolean aFocusFlag,
@@ -134,7 +134,7 @@ abstract public class CheckBoxColumn extends ObjectSourceTableColumn
         return mRendererJCheckBox;
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellEditor...
     public Component getTableCellEditorComponent(JTable aTable, Object aValue,
                         boolean isSelected, int aRow, int aColumn)
@@ -161,7 +161,7 @@ abstract public class CheckBoxColumn extends ObjectSourceTableColumn
         return mEditorJCheckBox;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Called when the editor field changes value. We update the table's
      * object immediately so that we can work around the focus bug 4249803.
@@ -176,7 +176,7 @@ abstract public class CheckBoxColumn extends ObjectSourceTableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     // From CellEditor...
     public boolean stopCellEditing()
     {

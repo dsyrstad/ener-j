@@ -14,7 +14,7 @@ import com.vscorp.ui.swing.table.EditableSortableTableColumn;
 abstract public class ObjectSourceTableColumn extends EditableSortableTableColumn
 {
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -26,7 +26,7 @@ abstract public class ObjectSourceTableColumn extends EditableSortableTableColum
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable. A single click is
      * required to start editing.

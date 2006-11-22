@@ -44,7 +44,7 @@ import org.odmg.ODMGRuntimeException;
  */
 public interface Persister
 {
-    //----------------------------------------------------------------------
+
     /**
      * Loads the contents of aPersistable from the database. Other objects may be
      * prefetched at the same time. A READ lock is returned on the object.
@@ -57,7 +57,7 @@ public interface Persister
      */
     void loadObject(Persistable aPersistable);
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the Persistable object associated with anOID.
      * <p>
@@ -72,7 +72,7 @@ public interface Persister
      */
     Persistable getObjectForOID(long anOID);
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the Persistable objects associated with someOIDs.
      * <p>
@@ -87,7 +87,7 @@ public interface Persister
      */
     Persistable[] getObjectsForOIDs(long[] someOIDs);
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the OID for a persistable object. All Ener-J 
      * code should call this method. Application code should use EnerJImplementation.getEnerJObjectId or
@@ -106,7 +106,7 @@ public interface Persister
      */
     long getOID(Object anObject);
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines whether this persister allows non-transactional (dirty) reads.  
      *
@@ -117,7 +117,7 @@ public interface Persister
      */
     boolean getAllowNontransactionalReads() throws ODMGException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Add a Persistable to the list of modified objects. The object's lock
      * is upgraded to WRITE. If the Persister is not in a transactional context 
@@ -129,7 +129,7 @@ public interface Persister
     void addToModifiedList(Persistable aPersistable);
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the list of modified objects.
      *
@@ -138,7 +138,7 @@ public interface Persister
     Iterator<Persistable> getModifiedListIterator();
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Clears the list of modified objects.
      */

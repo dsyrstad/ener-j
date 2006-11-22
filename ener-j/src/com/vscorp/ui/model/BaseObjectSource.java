@@ -16,21 +16,21 @@ abstract public class BaseObjectSource implements ObjectSource
     private javax.swing.event.EventListenerList mListenerList =
                 new javax.swing.event.EventListenerList();
 
-    //----------------------------------------------------------------------
+
     // From ObjectSource...
     public void addObjectSourceListener(ObjectSourceListener aListener)
     {
         mListenerList.add(ObjectSourceListener.class, aListener);
     }
 
-    //----------------------------------------------------------------------
+
     // From ObjectSource...
     public void removeObjectSourceListener(ObjectSourceListener aListener)
     {
         mListenerList.remove(ObjectSourceListener.class, aListener);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Fires the specified event to all ObjectSourceListeners in the list.
      * Listeners are fired starting with the last one added.
@@ -49,7 +49,7 @@ abstract public class BaseObjectSource implements ObjectSource
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tells all ObjectSourceListeners in the list that the ObjectSource's
      * contents have changed.
@@ -59,7 +59,7 @@ abstract public class BaseObjectSource implements ObjectSource
         fireObjectSourceChanged( new ObjectSourceEvent(this) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tells all ObjectSourceListeners in the list that a range of objects in the
      * ObjectSource have changed.
@@ -75,7 +75,7 @@ abstract public class BaseObjectSource implements ObjectSource
                                     anEndIndex) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tells all ObjectSourceListeners in the list that a range of objects in the
      * ObjectSource have been added.
@@ -91,7 +91,7 @@ abstract public class BaseObjectSource implements ObjectSource
                                     anEndIndex) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tells all ObjectSourceListeners in the list that a range of objects in the
      * ObjectSource have been removed.
@@ -107,7 +107,7 @@ abstract public class BaseObjectSource implements ObjectSource
                                     anEndIndex) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tells all ObjectSourceListeners in the list that an object in the
      * ObjectSource has changed.
@@ -120,7 +120,7 @@ abstract public class BaseObjectSource implements ObjectSource
                                     ObjectSourceEvent.OBJECT_CHANGED, anObjectId) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tells all ObjectSourceListeners in the list that an object in the
      * ObjectSource has been added.
@@ -133,7 +133,7 @@ abstract public class BaseObjectSource implements ObjectSource
                                     ObjectSourceEvent.OBJECT_ADDED, anObjectId) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tells all ObjectSourceListeners in the list that an object in the
      * ObjectSource has been deleted.

@@ -37,25 +37,25 @@ import org.odmg.*;
  */
 public class PageServerNotConnectedException extends PageServerException
 {
-    //----------------------------------------------------------------------
+
     public PageServerNotConnectedException()
     {
         super();
     }
 
-    //----------------------------------------------------------------------
+
     public PageServerNotConnectedException(String aMessage)
     {
         super(aMessage);
     }
 
-    //----------------------------------------------------------------------
+
     public PageServerNotConnectedException(String aMessage, Throwable aCause)
     {
         super(aMessage, aCause);
     }
 
-    //----------------------------------------------------------------------
+
     public PageServerNotConnectedException(Throwable aCause)
     {
         super(aCause);

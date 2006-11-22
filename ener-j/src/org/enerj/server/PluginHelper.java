@@ -42,7 +42,7 @@ public class PluginHelper
 {
     private static final Class[] CONNECT_PARAMETERS = { Properties.class };
     
-    //----------------------------------------------------------------------
+
     /**
      * Given a plug-in class name and properties, resolve and connect to a plug-in.
      *

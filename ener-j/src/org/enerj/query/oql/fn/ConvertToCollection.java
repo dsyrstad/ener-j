@@ -49,7 +49,7 @@ public class ConvertToCollection extends UnaryFunctor
     private Class mCollectionType;
     private UnaryFunctor mApplyFunctor;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ConvertToCollection functor.
      * 
@@ -70,7 +70,7 @@ public class ConvertToCollection extends UnaryFunctor
         mApplyFunctor = anApplyFunctor;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         Object[] values = (Object[])mApplyFunctor.fn(arg);
@@ -87,7 +87,7 @@ public class ConvertToCollection extends UnaryFunctor
         return dSet;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(ConvertToCollection)</code> method, if it implements
@@ -98,14 +98,14 @@ public class ConvertToCollection extends UnaryFunctor
             ((ConvertToCollection.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "ConvertToCollection( " + mApplyFunctor + ')';
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>ConvertToCollection</b> functor.
      */

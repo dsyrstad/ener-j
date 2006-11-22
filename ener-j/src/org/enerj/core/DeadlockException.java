@@ -37,19 +37,19 @@ import org.odmg.*;
  */
 public class DeadlockException extends org.odmg.LockNotGrantedException
 {
-    //----------------------------------------------------------------------
+
     public DeadlockException()
     {
         super();
     }
 
-    //----------------------------------------------------------------------
+
     public DeadlockException(String aMessage)
     {
         super(aMessage);
     }
 
-    //----------------------------------------------------------------------
+
     public DeadlockException(String aMessage, Throwable aCause)
     {
         super(aMessage, aCause);

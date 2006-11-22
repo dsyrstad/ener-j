@@ -19,7 +19,7 @@ package com.vscorp.ui.model;
  */
 public interface ObjectSource
 {
-    //----------------------------------------------------------------------
+
     /**
      * Adds a listener to the list that is notified each time a change to
      * the object source occurs.
@@ -28,7 +28,7 @@ public interface ObjectSource
      */
     public void addObjectSourceListener(ObjectSourceListener aListener);
 
-    //----------------------------------------------------------------------
+
     /**
      * Removes a listener from the list that is notified each time a change to
      * the object source occurs.
@@ -37,7 +37,7 @@ public interface ObjectSource
      */
     public void removeObjectSourceListener(ObjectSourceListener aListener);
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the number of objects represented by this object source.
      *
@@ -47,7 +47,7 @@ public interface ObjectSource
      */
     public int size() throws ObjectSourceException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the object at the specified index.
      *
@@ -62,7 +62,7 @@ public interface ObjectSource
     public Object get(int anIndex)
         throws ObjectSourceException, java.lang.ArrayIndexOutOfBoundsException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets an array of objects starting at the specified index.
      *
@@ -83,7 +83,7 @@ public interface ObjectSource
     public void get(int anIndex, int aLength, Object[] anObjectArray)
         throws ObjectSourceException, java.lang.ArrayIndexOutOfBoundsException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the object at with the specified object Id.
      *
@@ -96,7 +96,7 @@ public interface ObjectSource
     public Object get(Object anObjectId)
         throws ObjectSourceException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Updates the object at the specified index. Fires an ObjectSourceEvent of
      * ObjectSourceEvent.RANGE_CHANGED to the registered listeners.
@@ -111,7 +111,7 @@ public interface ObjectSource
     public void update(Object anObject, int anIndex)
         throws ObjectSourceException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Updates the object when the index is not known.  Fires an ObjectSourceEvent of
      * ObjectSourceEvent.OBJECT_CHANGED to the registered listeners.
@@ -126,7 +126,7 @@ public interface ObjectSource
     public void update(Object anObject)
         throws ObjectSourceException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the object Id associated with the specified object. The id can be any type of
      * object (e.g., a String or an Integer), but it must follow these rules:

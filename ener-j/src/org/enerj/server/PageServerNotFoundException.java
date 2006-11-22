@@ -38,25 +38,25 @@ import org.odmg.*;
  */
 public class PageServerNotFoundException extends PageServerException
 {
-    //----------------------------------------------------------------------
+
     public PageServerNotFoundException()
     {
         super();
     }
 
-    //----------------------------------------------------------------------
+
     public PageServerNotFoundException(String aMessage)
     {
         super(aMessage);
     }
 
-    //----------------------------------------------------------------------
+
     public PageServerNotFoundException(String aMessage, Throwable aCause)
     {
         super(aMessage, aCause);
     }
 
-    //----------------------------------------------------------------------
+
     public PageServerNotFoundException(Throwable aCause)
     {
         super(aCause);

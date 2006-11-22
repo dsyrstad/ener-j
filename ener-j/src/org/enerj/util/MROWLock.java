@@ -66,7 +66,7 @@ public class MROWLock
     /** If mWriteLockOwner is non-null, this is the number of lock reentries. */
     private int mNumWriteLockReentries = 0;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct a MROWLock with no lock initially set.
      */
@@ -74,7 +74,7 @@ public class MROWLock
     {
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Acquires (or reacquires) a read lock for this Thread. Suspends the thread if a 
      * write lock is currently active.
@@ -101,7 +101,7 @@ public class MROWLock
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Releases a read lock. If the lock was acquired multiple times by
      * the same Thread, the read lock is kept, but the reentry count is 
@@ -127,7 +127,7 @@ public class MROWLock
         notifyAll();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Acquires (or reacquires) a write lock for this Thread. Suspends the thread if one 
      * or more read or write locks are currently active. The one exception to this rule
@@ -163,7 +163,7 @@ public class MROWLock
         mNumWriteLockReentries = 1;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Releases a write lock. If the lock was acquired multiple times by
      * the same Thread, the lock is kept, but the reentry count is 
@@ -188,7 +188,7 @@ public class MROWLock
         notifyAll();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Returns true if one or more read locks are currently held by any thread.
      * Because of concurrency issues, if this returns false it doesn't mean that
@@ -201,7 +201,7 @@ public class MROWLock
         return mReadLockers.size() != 0;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns true if one or more read locks are currently held by any thread
      * other than this one.
@@ -219,7 +219,7 @@ public class MROWLock
         return (numReaders > 0 && (numReaders > 1 || mReadLockers.get(thread) == null));
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns true if a read lock is currently held by this thread.
      * Because of concurrency issues, if this returns false it doesn't mean that
@@ -233,7 +233,7 @@ public class MROWLock
         return mReadLockers.get(thread) != null;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns true if a write lock is currently held by any thread.
      * Because of concurrency issues, if this returns false it doesn't mean that
@@ -246,7 +246,7 @@ public class MROWLock
         return mWriteLockOwner != null;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns true if a write lock is held by a thread other than this one.
      * Because of concurrency issues, if this returns false it doesn't mean that
@@ -260,7 +260,7 @@ public class MROWLock
         return (mWriteLockOwner != null && mWriteLockOwner != Thread.currentThread());
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns true if a write lock is currently held by this thread.
      * Because of concurrency issues, if this returns false it doesn't mean that
@@ -273,7 +273,7 @@ public class MROWLock
         return mWriteLockOwner == Thread.currentThread();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Returns true if a read or write lock is currently held by any thread.
      * Because of concurrency issues, if this returns false it doesn't mean that
@@ -286,7 +286,7 @@ public class MROWLock
         return isReadLocked() || isWriteLocked();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns true if a read or write lock is held by a thread other than this one.
      * Because of concurrency issues, if this returns false it doesn't mean that
@@ -299,7 +299,7 @@ public class MROWLock
         return isExternallyReadLocked() || isExternallyWriteLocked();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns true if a read or write lock is currently held by this thread.
      * Because of concurrency issues, if this returns false it doesn't mean that
@@ -312,8 +312,8 @@ public class MROWLock
         return isLocallyReadLocked() || isLocallyWriteLocked();
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Provides an object that can be incremented and decremented.
      */
@@ -321,13 +321,13 @@ public class MROWLock
     {
         private int mValue;
         
-        //----------------------------------------------------------------------
+
         Counter(int anInitialValue)
         {
             mValue = anInitialValue;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Increment the counter and return the new value.
          */
@@ -336,7 +336,7 @@ public class MROWLock
             return ++mValue;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Decrement the counter and return the new value.
          */
@@ -345,7 +345,7 @@ public class MROWLock
             return --mValue;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Returns the current value.
          */

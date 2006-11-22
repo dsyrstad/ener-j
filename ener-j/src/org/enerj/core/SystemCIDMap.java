@@ -55,7 +55,7 @@ public class SystemCIDMap
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the System CID corresponding to a system persistable class name.
      *
@@ -74,7 +74,7 @@ public class SystemCIDMap
         return cid.longValue();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the system persistable class name corresponding to a System CID.
      *
@@ -88,7 +88,7 @@ public class SystemCIDMap
         return (String)sCIDToNameMap.get( new Long(aCID) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Determines if the given CID is a System CID.
      *
@@ -101,7 +101,7 @@ public class SystemCIDMap
         return aCID > 0 && aCID < ObjectSerializer.LAST_SYSTEM_CID;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets all of the system persistable class names.
      *
@@ -112,7 +112,7 @@ public class SystemCIDMap
         return sNameToCIDMap.keySet().iterator();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets all of the system CID values.
      *

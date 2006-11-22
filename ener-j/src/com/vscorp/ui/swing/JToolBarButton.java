@@ -54,7 +54,7 @@ public class JToolBarButton extends JButton implements ToolBarButton
 
     private boolean mLabelEnabled = false;
 
-    //----------------------------------------------------------------------
+
     /** Listen for mouse pointer "rollovers". Show the border if the mouse
      *  pointer is inside the button and hide the border when the mouse leaves.
      */
@@ -75,7 +75,7 @@ public class JToolBarButton extends JButton implements ToolBarButton
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a toolbar button from an Action.
      *
@@ -87,7 +87,7 @@ public class JToolBarButton extends JButton implements ToolBarButton
         configure();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a toolbar button from an Action with optional label
      *
@@ -102,7 +102,7 @@ public class JToolBarButton extends JButton implements ToolBarButton
         configure();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a toolbar button from an Icon.
      *
@@ -114,7 +114,7 @@ public class JToolBarButton extends JButton implements ToolBarButton
         configure();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets whether the text Action.NAME property is displayed from the
      * associated Action.
@@ -128,7 +128,7 @@ public class JToolBarButton extends JButton implements ToolBarButton
         configure();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Determines whether the text Action.NAME property is displayed from the
      * associated Action.
@@ -141,7 +141,7 @@ public class JToolBarButton extends JButton implements ToolBarButton
         return mLabelEnabled;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Configure the button.
      */
@@ -170,7 +170,7 @@ public class JToolBarButton extends JButton implements ToolBarButton
         this.setHorizontalTextPosition(SwingConstants.CENTER);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets whether rollover is on or off. If it is on, the border is
      * only painted when the mouse is over the button. If it is off, the border

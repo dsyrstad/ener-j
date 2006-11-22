@@ -38,7 +38,7 @@ public class JavaUtilDateSCO extends java.util.Date implements SCOTracker
 {
     private Persistable mOwnerFCO;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct an empty collection using the specified date/time and 
      * owner FCO.
@@ -52,21 +52,21 @@ public class JavaUtilDateSCO extends java.util.Date implements SCOTracker
         mOwnerFCO = anOwnerFCO;
     }
 
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public Persistable getOwnerFCO()
     {
         return mOwnerFCO;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerFCO(Persistable anOwner)
     {
         mOwnerFCO = anOwner;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerModified() 
     {
@@ -75,7 +75,7 @@ public class JavaUtilDateSCO extends java.util.Date implements SCOTracker
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns a clone without the owner set.
      *
@@ -88,11 +88,11 @@ public class JavaUtilDateSCO extends java.util.Date implements SCOTracker
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // Overridden mutator methods from java.util.Date.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Overridden mutator methods from java.util.Date.
+
+
+
     // java.util.Date
     public void setTime(long time) 
     {

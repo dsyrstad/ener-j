@@ -39,7 +39,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-//-----------------------------------------------------------------------------
+
 /**
  * A class that provides useful extensions to the Swing JTable
  * class. This class extends the Swing <code>JTable</code> class in order to
@@ -52,11 +52,11 @@ import javax.swing.table.TableModel;
 public class ExtendedTable extends JTable {
     private int mVisibleRowCount = -1;
 
-    //----------------------------------------------------------------------
-    // Constructors which duplicate JTable(...)
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Constructors which duplicate JTable(...)
+
+
+
     /**
      * Constructs a default ExtendedTable which is initialized with a default
      * data model, a default column model, and a default selection
@@ -70,7 +70,7 @@ public class ExtendedTable extends JTable {
         super();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an ExtendedTable which is initialized with <i>dm</i> as the
      * data model, a default column model, and a default selection
@@ -84,7 +84,7 @@ public class ExtendedTable extends JTable {
         super(dm);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an ExtendedTable which is initialized with <i>dm</i> as the
      * data model, <i>cm</i> as the column model, and a default selection
@@ -98,7 +98,7 @@ public class ExtendedTable extends JTable {
         super(dm, cm);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an ExtendedTable which is initialized with <i>dm</i> as the
      * data model, <i>cm</i> as the column model, and <i>sm</i> as the
@@ -117,7 +117,7 @@ public class ExtendedTable extends JTable {
         super(dm, cm, sm);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an ExtendedTable with <i>numColumns</i> and <i>numRows</i> of
      * empty cells using the DefaultTableModel.  The columns will have
@@ -131,7 +131,7 @@ public class ExtendedTable extends JTable {
         super(numColumns, numRows);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an ExtendedTable using a DefaultTableModel and initialize the table
      * with the values in the <i>data</i> Vector.  The vectors contained
@@ -151,7 +151,7 @@ public class ExtendedTable extends JTable {
         super(data, columnNames);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an ExtendedTable using a DefaultTableModel and initialize the
      * table with the values in the <i>data</i> array.  The first index
@@ -168,7 +168,7 @@ public class ExtendedTable extends JTable {
         super(data, columnNames);
     }
 
-    //----------------------------------------------------------------------
+
     /** Adds a column sorter model (TableSorter) to the table. It interposes
      * the VSTableSorter model inbetween the current model and the table.
      */
@@ -178,7 +178,7 @@ public class ExtendedTable extends JTable {
         tbl_sorter.addMouseListenerToHeaderInTable(this);
     }
 
-    //----------------------------------------------------------------------
+
     /** Resize all column headers to the size of the header label.
      * If tooltips is true, a tooltip is added to each header with the name
      * of the column.
@@ -201,7 +201,7 @@ public class ExtendedTable extends JTable {
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Resize all columns to the maximum width of data in each column.
      * If checkHeaders is true and the header is larger than maximum data width,
      * the column sized to the size of the header.
@@ -212,7 +212,7 @@ public class ExtendedTable extends JTable {
             resizeColumnWidth(i, checkHeaders);
     }
 
-    //----------------------------------------------------------------------
+
     /** Resize the specified column to the maximum width of data in the column.
      * If checkHeaders is true and the header is larger than maximum data width,
      * the column sized to the size of the header.
@@ -263,7 +263,7 @@ public class ExtendedTable extends JTable {
     }
 
 
-    //-------------------------------------------------------------------------
+
     /**
      * Sets the number of visible rows for this ExtendedTable. The specified
      * row count will affect the preferred viewport size when this ExtendedTable
@@ -287,7 +287,7 @@ public class ExtendedTable extends JTable {
         mVisibleRowCount = aRowCount;
     }
 
-    //-------------------------------------------------------------------------
+
     /**
      * Sets the number of visible rows for this ExtendedTable. The returned
      * row count affects the preferred viewport size when this ExtendedTable
@@ -308,7 +308,7 @@ public class ExtendedTable extends JTable {
     }
 
 
-    //-------------------------------------------------------------------------
+
     /**
      * Overrides the implementation defined within the JTable class so that
      * a preferred visible row count will be honored when this ExtendedTable

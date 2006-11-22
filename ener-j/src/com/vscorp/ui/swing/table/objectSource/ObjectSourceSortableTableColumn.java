@@ -15,7 +15,7 @@ package com.vscorp.ui.swing.table.objectSource;
 public interface ObjectSourceSortableTableColumn 
 {
     
-    //-------------------------------------------------------------------------
+
     /**
      * Interface for getting a generic Object out of a TableColumn.  This will allow
      * other methods to use a generic ObjectSourceTableColumn object to get the value

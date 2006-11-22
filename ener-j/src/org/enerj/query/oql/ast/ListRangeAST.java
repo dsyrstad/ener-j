@@ -37,7 +37,7 @@ public class ListRangeAST extends BaseAST
     private AST mStartExpr;
     private AST mEndExpr;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ListRangeAST. 
      *
@@ -50,7 +50,7 @@ public class ListRangeAST extends BaseAST
         mEndExpr = anEndExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the EndExpr.
      *
@@ -61,7 +61,7 @@ public class ListRangeAST extends BaseAST
         return mEndExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the StartExpr.
      *

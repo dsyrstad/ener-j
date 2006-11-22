@@ -54,15 +54,8 @@ public class EnerJTransaction implements Transaction
      */
     private static ThreadLocal<EnerJTransaction> sCurrentTransactionForThread = new ThreadLocal<EnerJTransaction>();
     
-    /** True if the Transaction has started, but neither commit nor abort have been called. */
-    private boolean mIsOpen = false;
-
     /** The current database for the Transaction, only while it's open */
     private EnerJDatabase mTransactionDatabase = null;
-    
-    /** Non-null if the transaction is in the process of flushing objects. This
-     * represents the current position in mModifiedObjects. */
-    private Iterator<Persistable> mFlushIterator = null; 
     
     /** True if values of objects should be retained on commit (instead of hollowing the object). */
     private boolean mRetainValues = false;
@@ -72,7 +65,7 @@ public class EnerJTransaction implements Transaction
      */
     private boolean mRestoreValues = false;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a basic transaction.
      */
@@ -80,7 +73,6 @@ public class EnerJTransaction implements Transaction
     {
     }
 
-    //----------------------------------------------------------------------
     /**
      * Gets the current transaction for the caller's thread. There can be at most
      * one Transaction open per thread at any given time.
@@ -93,81 +85,38 @@ public class EnerJTransaction implements Transaction
         return sCurrentTransactionForThread.get();
     }
     
-    //----------------------------------------------------------------------
     /**
-     * Checks if a Persistable is at or above the desired lock level.
-     *
-     * @param aPersistable the persistable to be checked.
-     * @param aDesiredLockLevel the lock level desired.
-     *
-     * @return true if the object is at or above the level, else false.
+     * Gets the database associated with this transaction.
+     * 
+     * @return the EnerJDatabase associated with this transaction.
+     * 
+     * @throws TransactionNotInProgressException if no database is associated with this transaction.
      */
-    static boolean isAtLockLevel(Persistable aPersistable, int aDesiredLockLevel)
+    private EnerJDatabase getTransactionDatabase() throws TransactionNotInProgressException
     {
-        int currLock = aPersistable.enerj_GetLockLevel();
-        switch (currLock) {
-        case READ:
-            return aDesiredLockLevel == READ || aDesiredLockLevel == UPGRADE || aDesiredLockLevel == WRITE;
-
-        case UPGRADE:
-            return aDesiredLockLevel == UPGRADE || aDesiredLockLevel == WRITE;
-
-        case WRITE:
-            return aDesiredLockLevel == WRITE;
-
-        case NO_LOCK:
-            return true;
-            
-        default:
-            throw new ODMGRuntimeException("Bad lock level on object: " + currLock);
+        if (mTransactionDatabase == null) {
+            throw new TransactionNotInProgressException("Transaction is not in progress. No Database is associated with this transaction.");
         }
+        
+        return mTransactionDatabase;
     }
-    
-    //----------------------------------------------------------------------
+
     /**
      * Alternate form of begin which allows a transaction to be associated
      * explicitly with a Database.
      *
      * @param aDatabase the Database the transaction is being performed on.
      */
-    public void begin(Database aDatabase)
+    public void begin(EnerJDatabase aDatabase)
     {
-        if (mIsOpen) {
-            throw new TransactionInProgressException("Transaction already started");
-        }
-        
-        if (getCurrentTransaction() != null) {
-            throw new TransactionInProgressException("Another Transaction is already in progress on this thread");
-        }
-        
-        // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
-        EnerJDatabase enerjDatabase = (EnerJDatabase)aDatabase;
-        if (aDatabase == null || !enerjDatabase.isOpen()) {
-            throw new DatabaseClosedException("Database is not open yet.");
-        }
-
-        // On error, this must be cleared.
-        // This must be called prior to begin logic because it may throw saying that the
-        // Database is already bound to a transaction.
-        enerjDatabase.setTransaction(this);
-        
-        try {
-            enerjDatabase.getObjectServerSession().beginTransaction();
-        }
-        catch (RuntimeException e) {
-            enerjDatabase.setTransaction(null);
-            throw e;
-        }
+        aDatabase.begin(this);
 
         // After successful begin, store current transaction for thread.
         sCurrentTransactionForThread.set(this);
-        
-        mIsOpen = true;
-        mTransactionDatabase = enerjDatabase;
-        mTransactionDatabase.getClientCache().setTransaction(this);
+        mTransactionDatabase = aDatabase;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the database associated with this transaction. 
      *
@@ -178,7 +127,7 @@ public class EnerJTransaction implements Transaction
         return mTransactionDatabase;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Sets whether object values are retained on transaction commit.
      * This may only be called if a transaction is not active.
@@ -200,7 +149,7 @@ public class EnerJTransaction implements Transaction
         mRetainValues = shouldRetainValues;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Determines whether object values are retained on transaction commit.
      * The default setting for a transaction is false.
@@ -215,7 +164,7 @@ public class EnerJTransaction implements Transaction
         return mRetainValues;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Sets whether object values are restored on transaction abort (rollback).
      * This may only be called if a transaction is not active.
@@ -239,7 +188,7 @@ public class EnerJTransaction implements Transaction
         mRestoreValues = shouldRestoreValues;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Determines whether object values are retained on transaction commit.
      * The default setting for a transaction is false.
@@ -255,7 +204,7 @@ public class EnerJTransaction implements Transaction
         return mRestoreValues;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Closes the current transaction. Assumes checkIsOpenAndOwnedByThread()
      * has already been called.
@@ -265,7 +214,7 @@ public class EnerJTransaction implements Transaction
         sCurrentTransactionForThread.remove();
 
         // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
-        mIsOpen = false;
+        mIsTxnOpen = false;
         if (mTransactionDatabase != null) {
             mTransactionDatabase.setTransaction(null);
         }
@@ -273,7 +222,7 @@ public class EnerJTransaction implements Transaction
         mTransactionDatabase = null;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Check that the transaction is open and owned by the caller's thread.
      *
@@ -282,12 +231,12 @@ public class EnerJTransaction implements Transaction
      */
     private void checkIsOpenAndOwnedByThread()
     {
-        if (!mIsOpen || getCurrentTransaction() != this) {
+        if (!getTransactionDatabase().isTransactionOpen() || getCurrentTransaction() != this) {
             throw new TransactionNotInProgressException("Transaction not in progress, or you are attempting to use it from the wrong thread");
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Flushes modified and referenced new objects to the server. Does not
      * affect the state of the transaction. The current queue of pending 
@@ -308,7 +257,7 @@ public class EnerJTransaction implements Transaction
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Flushes modified and referenced new objects to the server. Does not
      * affect the state of the transaction. The modified list is NOT cleared.
@@ -342,7 +291,7 @@ public class EnerJTransaction implements Transaction
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Clears the transaction list of modified and referenced new objects. Similar to a
      * abort(), but only on the client-side.
@@ -385,11 +334,11 @@ public class EnerJTransaction implements Transaction
         closeCurrentTransaction();
     }
     
-    //----------------------------------------------------------------------
-    // Start of org.odmg.Transaction interface methods...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of org.odmg.Transaction interface methods...
+
+
+
     public void abort() 
     {
         checkIsOpenAndOwnedByThread();
@@ -408,7 +357,7 @@ public class EnerJTransaction implements Transaction
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * <p>
@@ -421,10 +370,15 @@ public class EnerJTransaction implements Transaction
      */
     public void begin()
     {
-        begin( EnerJDatabase.getCurrentDatabase() );
+        EnerJDatabase database = EnerJDatabase.getCurrentDatabase();
+        if (database == null) {
+            throw new DatabaseClosedException("Database is not open yet.");
+        }
+
+        begin(database);
     }
     
-    //----------------------------------------------------------------------
+
     public void checkpoint() 
     {
         checkIsOpenAndOwnedByThread();
@@ -446,7 +400,7 @@ public class EnerJTransaction implements Transaction
         mTransactionDatabase.getObjectServerSession().checkpointTransaction();
     }
     
-    //----------------------------------------------------------------------
+
     public void commit() 
     {
         checkIsOpenAndOwnedByThread();
@@ -473,17 +427,17 @@ public class EnerJTransaction implements Transaction
         }
     }
     
-    //----------------------------------------------------------------------
+
     public boolean isOpen() 
     {
-        return mIsOpen;
+        return mTransactionDatabase != null && mTransactionDatabase.isTransactionOpen();
     }
     
-    //----------------------------------------------------------------------
+
     public void join()
     {
-        if (!mIsOpen) {
-            throw new TransactionNotInProgressException("Transaction not in progress, or you are attempting to use it from the wrong thread");
+        if (!isOpen()) {
+            throw new TransactionNotInProgressException("Transaction not in progress");
         }
         
         // ODMG 3.0 - 2.10.3 says that an implicit leave occurs if another Transaction
@@ -496,7 +450,7 @@ public class EnerJTransaction implements Transaction
         sCurrentTransactionForThread.set(this);
     }
     
-    //----------------------------------------------------------------------
+
     public void leave() 
     {
         checkIsOpenAndOwnedByThread();
@@ -504,7 +458,7 @@ public class EnerJTransaction implements Transaction
         sCurrentTransactionForThread.remove();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * <p>
@@ -523,7 +477,7 @@ public class EnerJTransaction implements Transaction
         Persistable persistable = (Persistable)obj;
         
          // If already at the proper level, just return.
-        if (isAtLockLevel(persistable, lockMode)) {
+        if (EnerJDatabase.isAtLockLevel(persistable, lockMode)) {
             return;
         }       
 
@@ -533,7 +487,7 @@ public class EnerJTransaction implements Transaction
         persistable.enerj_SetLockLevel(lockMode);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * <p>
@@ -551,7 +505,7 @@ public class EnerJTransaction implements Transaction
         Persistable persistable = (Persistable)obj;
         
         // If already at the proper level, just return.
-        if (isAtLockLevel(persistable, lockMode)) {
+        if (EnerJDatabase.isAtLockLevel(persistable, lockMode)) {
             return true;
         }       
 
@@ -567,8 +521,8 @@ public class EnerJTransaction implements Transaction
         return true;
     }
     
-    //----------------------------------------------------------------------
+
     // ...End of org.odmg.Transaction interface methods.
-    //----------------------------------------------------------------------
+
 }
 

@@ -44,7 +44,7 @@ import org.odmg.ObjectNotPersistentException;
  */
 public interface ObjectServerSession
 {
-    //----------------------------------------------------------------------
+
     /**
      * Gets the ObjectServer associated with this session.
      *
@@ -52,7 +52,7 @@ public interface ObjectServerSession
      */
     public ObjectServer getObjectServer();
 
-    //----------------------------------------------------------------------
+
     /**
      * Disconnects from a database.
      * If a transaction is active on session, it is aborted.
@@ -61,7 +61,7 @@ public interface ObjectServerSession
      */
     public void disconnect() throws ODMGException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Request that the server shuts down once all active transactions have closed. The call may return
      * immediately, and the server may shutdown at a later time. However, all connection
@@ -72,7 +72,7 @@ public interface ObjectServerSession
      */
     public void shutdown() throws ODMGException;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets whether the session allows non-transactional (dirty) reads.  
      *
@@ -83,7 +83,7 @@ public interface ObjectServerSession
      */
     public void setAllowNontransactionalReads(boolean isNontransactional) throws ODMGException;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines whether the session allows non-transactional (dirty) reads.  
      *
@@ -94,7 +94,7 @@ public interface ObjectServerSession
      */
     public boolean getAllowNontransactionalReads() throws ODMGException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets ClassInfos for the given OIDs.
      * A transaction must be active on session, or non-transactional reads must be allowed.
@@ -110,7 +110,7 @@ public interface ObjectServerSession
      */
     public ClassInfo[] getClassInfoForOIDs(long[] someOIDs) throws ODMGException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Stores some objects in the database.
      * A transaction must be active on session. A WRITE lock is forced on an 
@@ -122,7 +122,7 @@ public interface ObjectServerSession
      */
     public void storeObjects(SerializedObject[] someObjects) throws ODMGException;
     
-    //----------------------------------------------------------------------
+
     /**
      * Loads objects from the database.
      * A transaction must be active on session, or non-transactional reads must be allowed.
@@ -137,7 +137,7 @@ public interface ObjectServerSession
      */
     public byte[][] loadObjects(long[] someOIDs) throws ODMGException;
     
-    //----------------------------------------------------------------------
+
     /**
      * Get a block of unused OIDs from the database. No other transaction
      * can use these OIDs while this transaction is active.
@@ -156,11 +156,11 @@ public interface ObjectServerSession
      */
     public long[] getNewOIDBlock(int anOIDCount) throws ODMGException;
     
-    //----------------------------------------------------------------------
-    // Transaction support...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Transaction support...
+
+
+
     // TODO Note: Nested transactions could be supported by calling this again
     // TODO while a transaction is active.
     /**
@@ -171,7 +171,7 @@ public interface ObjectServerSession
      */
     public void beginTransaction() throws ODMGRuntimeException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Commits a transaction.
      * A transaction must be active on session.
@@ -180,7 +180,7 @@ public interface ObjectServerSession
      */
     public void commitTransaction() throws ODMGRuntimeException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Rolls back (aborts) a transaction.
      * A transaction must be active on session.
@@ -189,7 +189,7 @@ public interface ObjectServerSession
      */
     public void rollbackTransaction() throws ODMGRuntimeException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Checkpoints a transaction. See the ODMG checkpoint semantics.
      * A transaction must be active on session.
@@ -198,7 +198,7 @@ public interface ObjectServerSession
      */
     public void checkpointTransaction() throws ODMGRuntimeException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the specified lock on the specified OID. If the OID is already at
      * above the specified lock level, the lock remains at its current level
@@ -216,11 +216,11 @@ public interface ObjectServerSession
      */
     public void getLock(long anOID, int aLockLevel, long aWaitTime) throws LockNotGrantedException;
 
-    //----------------------------------------------------------------------
-    // ...Transaction support.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // ...Transaction support.
+
+
+
     /**
      * Associate a name with an object and make it persistent.
      * An object instance may be bound to more than one name.
@@ -234,7 +234,7 @@ public interface ObjectServerSession
      */
     public void bind(long anOID, String aName) throws ObjectNameNotUniqueException;
     
-    //----------------------------------------------------------------------
+
     /**
      * Lookup an object via its name.
      *
@@ -246,7 +246,7 @@ public interface ObjectServerSession
      */
     public long lookup(String aName) throws ObjectNameNotFoundException;
     
-    //----------------------------------------------------------------------
+
     /**
      * Disassociate a name with an object
      *
@@ -256,7 +256,7 @@ public interface ObjectServerSession
      */
     public void unbind(String aName) throws ObjectNameNotFoundException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Removes an object from the extent and any indexes. Does not necessarily cause
      * it to be garbage collected.
@@ -267,7 +267,7 @@ public interface ObjectServerSession
      */
     public void removeFromExtent(long anOID) throws ObjectNotPersistentException;
     
-    //----------------------------------------------------------------------
+
     /**
      * Determines the number of objects in an Extent.
      *
@@ -282,7 +282,7 @@ public interface ObjectServerSession
      */
     public long getExtentSize(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException;
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates an ExtentIterator.
      *

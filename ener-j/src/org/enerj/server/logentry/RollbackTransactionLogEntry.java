@@ -36,7 +36,7 @@ import java.io.*;
  */
 public class RollbackTransactionLogEntry extends LogEntry
 {
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an empty RollbackTransactionLogEntry.
      */
@@ -44,7 +44,7 @@ public class RollbackTransactionLogEntry extends LogEntry
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a RollbackTransactionLogEntry with the given transaction id.
      *
@@ -56,7 +56,7 @@ public class RollbackTransactionLogEntry extends LogEntry
         setTransactionId(aTransactionId);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the entry type of this log entry.
      *
@@ -67,7 +67,7 @@ public class RollbackTransactionLogEntry extends LogEntry
         return ROLLBACK_TXN_ENTRY_TYPE;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -76,7 +76,7 @@ public class RollbackTransactionLogEntry extends LogEntry
         return 0;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

@@ -37,7 +37,7 @@ public class FromClauseAST extends BaseAST
 {
     private List<IteratorDefAST> mIteratorDefs;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a FromClauseAST. 
      *
@@ -50,7 +50,7 @@ public class FromClauseAST extends BaseAST
         mIteratorDefs = someIteratorDefs;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the IteratorDefs.
      *

@@ -50,7 +50,7 @@ public class CollectionConstructionAST extends BaseAST
     private TokenType mType; // TOK_ARRAY, LIST, BAG, SET
     private AST mValues;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a CollectionConstructionAST. 
      *
@@ -68,7 +68,7 @@ public class CollectionConstructionAST extends BaseAST
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Type.
      *
@@ -79,7 +79,7 @@ public class CollectionConstructionAST extends BaseAST
         return mType;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Values.
      *
@@ -91,7 +91,7 @@ public class CollectionConstructionAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -112,7 +112,7 @@ public class CollectionConstructionAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.query.oql.ast.BaseAST#resolve0()

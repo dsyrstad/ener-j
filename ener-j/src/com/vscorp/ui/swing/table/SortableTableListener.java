@@ -27,7 +27,7 @@ public class SortableTableListener extends MouseAdapter
 {
     private JTable mJTable;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new Listener for the specified JTable.
      * Adds an instance of this class as a listener to the JTable's header.
@@ -43,7 +43,7 @@ public class SortableTableListener extends MouseAdapter
         header.addMouseListener(this);
     }
 
-    //----------------------------------------------------------------------
+
     // From MouseAdapater/Listener...
     public void mouseClicked(MouseEvent anEvent)
     {

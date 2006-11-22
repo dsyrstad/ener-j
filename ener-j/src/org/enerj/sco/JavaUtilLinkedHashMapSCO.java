@@ -38,7 +38,7 @@ public class JavaUtilLinkedHashMapSCO extends java.util.LinkedHashMap implements
 {
     private Persistable mOwnerFCO;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct an empty collection using the specified initial capacity and 
      * owner FCO.
@@ -52,21 +52,21 @@ public class JavaUtilLinkedHashMapSCO extends java.util.LinkedHashMap implements
         mOwnerFCO = anOwnerFCO;
     }
 
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public Persistable getOwnerFCO()
     {
         return mOwnerFCO;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerFCO(Persistable anOwner)
     {
         mOwnerFCO = anOwner;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerModified() 
     {
@@ -75,7 +75,7 @@ public class JavaUtilLinkedHashMapSCO extends java.util.LinkedHashMap implements
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns a clone without the owner set.
      *
@@ -88,11 +88,11 @@ public class JavaUtilLinkedHashMapSCO extends java.util.LinkedHashMap implements
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // Overridden mutator methods from java.util.LinkedHashMap.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Overridden mutator methods from java.util.LinkedHashMap.
+
+
+
     // java.util.Map
     public Object put(Object key, Object value) 
     {
@@ -101,7 +101,7 @@ public class JavaUtilLinkedHashMapSCO extends java.util.LinkedHashMap implements
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Map
     public void putAll(Map t) 
     {
@@ -109,7 +109,7 @@ public class JavaUtilLinkedHashMapSCO extends java.util.LinkedHashMap implements
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Map
     public void clear() 
     {
@@ -117,7 +117,7 @@ public class JavaUtilLinkedHashMapSCO extends java.util.LinkedHashMap implements
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Map
     public Object remove(Object key) 
     {

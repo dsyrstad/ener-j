@@ -77,7 +77,7 @@ public class EnerJBrowserModel
     private List<Extent> mExtents = null;
     private ActionListener mLinkListener;
 
-    //--------------------------------------------------------------------------------
+
     public EnerJBrowserModel(String aDBURI, ActionListener aLinkListener) 
     {
         mDBURI = aDBURI;
@@ -93,7 +93,7 @@ public class EnerJBrowserModel
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the database behind the model. 
      *
@@ -104,7 +104,7 @@ public class EnerJBrowserModel
         return mDB;
     }
 
-    //--------------------------------------------------------------------------------
+
     public ListModel getHistoryListModel() 
     {
         if (mHistoryListModel == null) {
@@ -114,13 +114,13 @@ public class EnerJBrowserModel
         return mHistoryListModel;
     }
     
-    //--------------------------------------------------------------------------------
+
     public Object getObjectForHistoryEntry(int anIndex)
     {
         return ((PropertyRow)getHistoryListModel().getElementAt(anIndex)).getValue();
     }
 
-    //--------------------------------------------------------------------------------
+
     public String getObjectName(Object anObject)
     {
         if (anObject == null) {
@@ -139,7 +139,7 @@ public class EnerJBrowserModel
         return baseClassName + ":[" + System.identityHashCode(anObject) + ']';
     }
 
-    //--------------------------------------------------------------------------------
+
     public List<Extent> getExtents()
     {
         if (mExtents == null) {
@@ -155,7 +155,7 @@ public class EnerJBrowserModel
         return mExtents;
     }
     
-    //--------------------------------------------------------------------------------
+
     public TableInfo getTableInfoForExtents()
     {
         Object obj = getExtents();
@@ -163,7 +163,7 @@ public class EnerJBrowserModel
         return getTableInfoWithoutHistory(obj);
     }
     
-    //--------------------------------------------------------------------------------
+
     public TableInfo getTableInfoForSchema()
     {
         Object obj = getDB().getDatabaseRoot().getSchema();
@@ -171,7 +171,7 @@ public class EnerJBrowserModel
         return getTableInfoWithoutHistory(obj);
     }
     
-    //--------------------------------------------------------------------------------
+
     public TableInfo getTableInfoForBindery()
     {
         Object obj = getDB().getDatabaseRoot().getBindery();
@@ -179,7 +179,7 @@ public class EnerJBrowserModel
         return getTableInfoWithoutHistory(obj);
     }
     
-    //--------------------------------------------------------------------------------
+
     public TableInfo getTableInfoForQuery(String aQuery) throws QueryException
     {
         Object result = new EnerJOQLQuery(aQuery).execute();
@@ -187,7 +187,7 @@ public class EnerJBrowserModel
         return getTableInfoWithoutHistory(result);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Adds an object to the history list. 
      *
@@ -199,7 +199,7 @@ public class EnerJBrowserModel
         VSSwingUtil.invokeLater(this, new PropertyRow(aHistoryName, anObj), "addHistorySafely");
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Called via VSSwingUtil.invokeLater to safely add a history entry thru the event thread.
      */
@@ -217,7 +217,7 @@ public class EnerJBrowserModel
         mHistoryListModel.addElement(row);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the TableInfo for the object. 
      *
@@ -231,7 +231,7 @@ public class EnerJBrowserModel
         return getTableInfoWithoutHistory(anObj);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the TableInfo for the object without adding to the history list. 
      *
@@ -252,7 +252,7 @@ public class EnerJBrowserModel
         return getTableInfo(anObj, anObj);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the TableInfo for the object. 
      *
@@ -363,7 +363,7 @@ public class EnerJBrowserModel
         return getTableInfo( Collections.singleton(anObj), aRealRefObject);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Determine if the object's type is "linkable" (i.e., can it be clicked on to
      * recursively explore the object).
@@ -374,7 +374,7 @@ public class EnerJBrowserModel
         return anObj != null && isLinkable( anObj.getClass() );
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Determine if the given type is "linkable" (i.e., can it be clicked on to
      * recursively explore the object).
@@ -393,7 +393,7 @@ public class EnerJBrowserModel
                  Timestamp.class.isAssignableFrom(aClass)); 
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets a TableInfo with no elements in it. 
      *
@@ -414,8 +414,8 @@ public class EnerJBrowserModel
         return sEmptyTableInfo;
     }
     
-    //--------------------------------------------------------------------------------
-    //--------------------------------------------------------------------------------
+
+
     public static final class TableInfo
     {
         private ObjectSource mSource;
@@ -429,7 +429,7 @@ public class EnerJBrowserModel
             mObject = anObj;
         }
 
-        //--------------------------------------------------------------------------------
+
         /**
          * Gets the Object.
          *
@@ -440,7 +440,7 @@ public class EnerJBrowserModel
             return mObject;
         }
 
-        //--------------------------------------------------------------------------------
+
         /**
          * Gets the Source.
          *
@@ -451,7 +451,7 @@ public class EnerJBrowserModel
             return mSource;
         }
 
-        //--------------------------------------------------------------------------------
+
         /**
          * Gets the Table Columns.
          *
@@ -463,33 +463,33 @@ public class EnerJBrowserModel
         }
     }
     
-    //--------------------------------------------------------------------------------
-    //--------------------------------------------------------------------------------
+
+
     private static final class PropertyRow
     {
         private String mName;
         private Object mValue;
         
-        //--------------------------------------------------------------------------------
+
         PropertyRow(String aName, Object aValue)
         {
             mName = aName;
             mValue = aValue;
         }
 
-        //--------------------------------------------------------------------------------
+
         String getName()
         {
             return mName;
         }
 
-        //--------------------------------------------------------------------------------
+
         Object getValue()
         {
             return mValue;
         }
         
-        //--------------------------------------------------------------------------------
+
         public String toString() 
         {
             return mName;

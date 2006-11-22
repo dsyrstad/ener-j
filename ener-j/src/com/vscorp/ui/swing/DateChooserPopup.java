@@ -81,7 +81,7 @@ public class DateChooserPopup
     private Window mWindow;
     private JPanel mCalendarPanel;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a date chooser popup with a owner frame and appearing underneath
      * the specified component.
@@ -102,7 +102,7 @@ public class DateChooserPopup
         mCalendarPanel = createCalendarPanel();
     }
 
-    //----------------------------------------------------------------------
+
     protected JPanel createCalendarPanel()
     {
         DateFormatSymbols dateSymbols = new DateFormatSymbols();
@@ -205,7 +205,7 @@ public class DateChooserPopup
         return calendarPanel;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the view to match the calendar
      */
@@ -249,7 +249,7 @@ public class DateChooserPopup
 
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Open this popup.
      */
@@ -305,7 +305,7 @@ public class DateChooserPopup
         mWindow.requestFocus();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Close this popup.
      */
@@ -319,7 +319,7 @@ public class DateChooserPopup
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the Calendar associated with the popup
      *
@@ -330,7 +330,7 @@ public class DateChooserPopup
         return mCalendar;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the Calendar associated with the popup
      *
@@ -342,7 +342,7 @@ public class DateChooserPopup
         setToCalendar();
     }
 
-    //----------------------------------------------------------------------
+
     /** Called when one of the calendar buttons are clicked.
      */
     public void actionPerformed(ActionEvent e)
@@ -380,7 +380,7 @@ public class DateChooserPopup
         setToCalendar();
     }
 
-    //----------------------------------------------------------------------
+
     // Listen for the Escape key and close down.
     public void keyTyped(KeyEvent e)
     {
@@ -397,7 +397,7 @@ public class DateChooserPopup
     {
     }
 
-    //----------------------------------------------------------------------
+
     // Called when owner window deactivates, we requestFocus.
     public void windowDeactivated(WindowEvent e)
     {

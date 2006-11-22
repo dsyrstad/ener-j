@@ -55,7 +55,7 @@ public class LogicalClassSchema
     /** The versions of the class. In order of earliest to latest. This is an array of ClassVersionSchema. */
     private ArrayList<ClassVersionSchema> mClassVersions;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an empty LogicalClassSchema.
      *
@@ -75,7 +75,7 @@ public class LogicalClassSchema
         mClassVersions = new ArrayList<ClassVersionSchema>();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the class description.
      *
@@ -86,7 +86,7 @@ public class LogicalClassSchema
         return mDescription;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Sets the class description.
      *
@@ -98,7 +98,7 @@ public class LogicalClassSchema
         mDescription = (aDescription == null ? "" : aDescription);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the date that this logical class was created.
      *
@@ -109,7 +109,7 @@ public class LogicalClassSchema
         return mCreateDate;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the class name.
      *
@@ -120,7 +120,7 @@ public class LogicalClassSchema
         return mClassName;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the Schema containing this class.
      *
@@ -131,7 +131,7 @@ public class LogicalClassSchema
         return mSchema;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Add a ClassVersionSchema to this logical class. The class is appended
      * to the list of versions. The class is also added to Schema's global
@@ -153,7 +153,7 @@ public class LogicalClassSchema
         mClassVersions.add(aClassVersionSchema);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Removes a ClassVersionSchema from this logical class.
      * This should be used with extreme caution because objects referencing this
@@ -178,7 +178,7 @@ public class LogicalClassSchema
         throw new org.odmg.ObjectNameNotFoundException("Class id " + aCID + " does not exist in the schema.");
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Finds a ClassVersionSchema within this logical class.
      *
@@ -199,7 +199,7 @@ public class LogicalClassSchema
         return null;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the latest ClassVersionSchema within this logical class.
      *
@@ -215,7 +215,7 @@ public class LogicalClassSchema
         return (ClassVersionSchema)mClassVersions.get(size - 1);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the all of ClassVersionSchemas within this logical class.
      *
@@ -230,7 +230,7 @@ public class LogicalClassSchema
         return versions;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Two LogicalClassSchema's are equal if their class names are equal.
      *
@@ -245,7 +245,7 @@ public class LogicalClassSchema
         return mClassName.equals( ((LogicalClassSchema)anOther).mClassName );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * The hashcode of a LogicalClassSchema is the hashCode of the class name.
      *

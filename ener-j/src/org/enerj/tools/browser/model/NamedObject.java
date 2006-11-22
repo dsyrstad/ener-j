@@ -35,7 +35,7 @@ public class NamedObject
     private String mName;
     private Object mObject;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a NamedObject. 
      *
@@ -48,25 +48,25 @@ public class NamedObject
         mObject = anObject;
     }
     
-    //--------------------------------------------------------------------------------
+
     public String getName()
     {
         return mName;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object getObject()
     {
         return mObject;
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString()
     {
         return mName;
     }
 
-    //--------------------------------------------------------------------------------
+
     public boolean equals(Object anObj)
     {
         if (mObject == null) {
@@ -80,7 +80,7 @@ public class NamedObject
         return mObject.equals(anObj);
     }
 
-    //--------------------------------------------------------------------------------
+
     public int hashCode()
     {
         if (mObject != null) {

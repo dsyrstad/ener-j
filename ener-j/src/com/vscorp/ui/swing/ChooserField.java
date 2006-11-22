@@ -59,7 +59,7 @@ abstract public class ChooserField extends JPanel
     /** ChangeListeners to receive notifications when the value changes.  */
     private EventListenerList mListeners;
 
-    //----------------------------------------------------------------------
+
     /**
      * Create a new ChooserField with no button. Button can be set with the
      * setPopupButtonMethod.
@@ -74,7 +74,7 @@ abstract public class ChooserField extends JPanel
         this.add(mTextField, BorderLayout.CENTER);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the text field for this component.
      *
@@ -85,7 +85,7 @@ abstract public class ChooserField extends JPanel
         return mTextField;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the popup button for this component.
      *
@@ -96,7 +96,7 @@ abstract public class ChooserField extends JPanel
         return mPopupButton;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the popup button for this component.
      *
@@ -116,19 +116,19 @@ abstract public class ChooserField extends JPanel
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Opens the popup if it is closed.
      */
     abstract public void openPopup();
 
-    //----------------------------------------------------------------------
+
     /**
      * Closes the popup if it is open.
      */
     abstract public void closePopup();
 
-    //----------------------------------------------------------------------
+
     /**
      * Verifies the content of the field. Default implementation returns true.
      *
@@ -139,7 +139,7 @@ abstract public class ChooserField extends JPanel
         return true;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the text of this field. Equivalent to getTextField().getText().
      *
@@ -150,7 +150,7 @@ abstract public class ChooserField extends JPanel
         return mTextField.getText();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the text of this field. Equivalent to getTextField().setText(s).
      *
@@ -170,7 +170,7 @@ abstract public class ChooserField extends JPanel
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Enables or disables the field.
      *
@@ -185,7 +185,7 @@ abstract public class ChooserField extends JPanel
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Adds a ChangeListener to be notified when the field's value changes.
      *
@@ -200,7 +200,7 @@ abstract public class ChooserField extends JPanel
         mListeners.add(ChangeListener.class, aChangeListener);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Removes an action listener from the list.
      *
@@ -213,7 +213,7 @@ abstract public class ChooserField extends JPanel
     	}
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Conditionally fire ChangeEvent if value has changed since last firing.
      */
@@ -229,7 +229,7 @@ abstract public class ChooserField extends JPanel
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the font on the text field and the panel.
      */
@@ -241,36 +241,36 @@ abstract public class ChooserField extends JPanel
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Called when the drop-down button is clicked.
      */
     private class PopupButtonActionListener implements ActionListener
     {
-        //----------------------------------------------------------------------
+
         public void actionPerformed(ActionEvent anEvent)
         {
             ChooserField.this.openPopup();
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Called when the Enter key is pressed on the text field. Verifies entry.
      */
     private class TextFieldActionListener implements ActionListener
     {
-        //----------------------------------------------------------------------
+
         public void actionPerformed(ActionEvent anEvent)
         {
             ChooserField.this.verify();
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Verifies the fields contents via a call to the sub-class's verify
      * method.

@@ -70,7 +70,7 @@ public class ClassVersionSchema
     /** Transient field names. Needed to enhance PersistenceAware classes. */
     private String[] mTransientFields;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a ClassVersionSchema.
      *
@@ -103,7 +103,7 @@ public class ClassVersionSchema
         mTransientFields = someTransientFieldNames;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets an array of all supertype names (classes and interfaces) for this class.
      *
@@ -115,7 +115,7 @@ public class ClassVersionSchema
         return mSuperTypeNames;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the date that this class version was created.
      *
@@ -126,7 +126,7 @@ public class ClassVersionSchema
         return mCreateDate;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the class Id of this class.
      *
@@ -137,7 +137,7 @@ public class ClassVersionSchema
         return mCID;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the LogicalClassSchema containing this class.
      *
@@ -148,7 +148,7 @@ public class ClassVersionSchema
         return mLogicalClassSchema;
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Gets the Original, unenhanced bytecodes.
      *
@@ -159,7 +159,7 @@ public class ClassVersionSchema
         return mOriginalBytecodes;
     }    
 
-    //----------------------------------------------------------------------
+
     /** 
      * Gets the enhanced bytecodes, based on the original bytecodes for this version.
      *
@@ -170,7 +170,7 @@ public class ClassVersionSchema
         return mEnhancedBytecodes;
     }    
 
-    //----------------------------------------------------------------------
+
     /** 
      * Gets the proxy bytecodes to the next version of this class.
      *
@@ -182,7 +182,7 @@ public class ClassVersionSchema
         return mProxyBytecodes;
     }    
 
-    //----------------------------------------------------------------------
+
     /** 
      * Sets the proxy bytecodes to the next version of this class.
      * This method should only be used by the enhancer.
@@ -194,7 +194,7 @@ public class ClassVersionSchema
         mProxyBytecodes = aProxyBytecodeDef;
     }    
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the list of persistent field names.
      *
@@ -205,7 +205,7 @@ public class ClassVersionSchema
         return mPersistentFields;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the list of transient field names.
      *
@@ -216,7 +216,7 @@ public class ClassVersionSchema
         return mTransientFields;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Two ClassVersionSchema's are equal if their class Ids are equal.
      *
@@ -232,7 +232,7 @@ public class ClassVersionSchema
                 
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * The hashcode of a ClassVersionSchema is its class Id, truncated to
      * an int.

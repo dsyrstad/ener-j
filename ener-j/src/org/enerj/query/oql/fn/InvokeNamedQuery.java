@@ -43,7 +43,7 @@ public class InvokeNamedQuery extends UnaryFunctor
     private UnaryFunctor mQueryFunctor;
     private Class mResultType;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a InvokeNamedQuery.
      */
@@ -55,7 +55,7 @@ public class InvokeNamedQuery extends UnaryFunctor
         mResultType = aResultType;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the defined name.
      *
@@ -66,7 +66,7 @@ public class InvokeNamedQuery extends UnaryFunctor
         return mDefName;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Parameter Values.
      *
@@ -77,7 +77,7 @@ public class InvokeNamedQuery extends UnaryFunctor
         return mParameterValues;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Query Functor.
      *
@@ -93,7 +93,7 @@ public class InvokeNamedQuery extends UnaryFunctor
         return mResultType;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         if (arg != null && !(arg instanceof Object[]) ) {
@@ -114,7 +114,7 @@ public class InvokeNamedQuery extends UnaryFunctor
         return mQueryFunctor.fn(null);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(InvokeNamedQuery)</code> method, if it implements
@@ -125,14 +125,14 @@ public class InvokeNamedQuery extends UnaryFunctor
             ((InvokeNamedQuery.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "InvokeNamedQuery(" + mDefName + ':' + mQueryFunctor + ')';
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>InvokeNamedQuery</b> functor.
      */

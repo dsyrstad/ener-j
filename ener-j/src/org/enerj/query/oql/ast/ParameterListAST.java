@@ -44,7 +44,7 @@ public class ParameterListAST extends BaseAST
     /** Parameter names - List of String. One-to-one correspondence with mTypes. */
     private List<String> mNames;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a new ParameterListAST.
      * 
@@ -57,7 +57,7 @@ public class ParameterListAST extends BaseAST
         mNames = someNames;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the parameter names.
      * 
@@ -68,7 +68,7 @@ public class ParameterListAST extends BaseAST
         return mNames;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the parameter types.
      * 

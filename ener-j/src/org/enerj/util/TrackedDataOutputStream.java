@@ -38,7 +38,7 @@ public class TrackedDataOutputStream extends DataOutputStream
 {
     private long mPosition;
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a TrackedDataOutputStream with the specified buffer size.
      *
@@ -54,7 +54,7 @@ public class TrackedDataOutputStream extends DataOutputStream
         mPosition = aPosition;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the current position. The position must be retrieved for at least
      * every 2GB written to the stream, otherwise it will be incorrect.

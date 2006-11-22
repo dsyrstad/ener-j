@@ -21,7 +21,7 @@ public class ObjectSourceJTable extends JTable
 {
     private EditableSortableTableColumn[] mColumns;
 
-    //----------------------------------------------------------------------
+
     /** Constructs the ObjectSourceTable and initializes the columns to the ones
      * specified in someColumns.
      *
@@ -37,7 +37,7 @@ public class ObjectSourceJTable extends JTable
         this.setModel( new ObjectSourceTableModel(anObjectSource) );
 	}
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the current EditableSortableTableColumns used in the table.
      *
@@ -48,7 +48,7 @@ public class ObjectSourceJTable extends JTable
         return mColumns;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the current EditableSortableTableColumns used in the table.
      *
@@ -65,7 +65,7 @@ public class ObjectSourceJTable extends JTable
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the ObjectSource associated with the model of this table.
      * The model must be descended from ObjectSourceTableModel.
@@ -77,7 +77,7 @@ public class ObjectSourceJTable extends JTable
         return ((ObjectSourceTableModel)this.getModel()).getObjectSource();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the ObjectSource associated with the model of this table.
      * The model must be descended from ObjectSourceTableModel.
@@ -90,7 +90,7 @@ public class ObjectSourceJTable extends JTable
         ((ObjectSourceTableModel)this.getModel()).setObjectSource(anObjectSource);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Capture font changes and resize columns
      */
@@ -100,7 +100,7 @@ public class ObjectSourceJTable extends JTable
         resizeColumns();
     }
 
-    //----------------------------------------------------------------------
+
     /** Resize the columns to their preferred widths based on the JTable settings
      * such as font, etc.
      */

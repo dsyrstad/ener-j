@@ -42,7 +42,7 @@ public class SortCriteriaAST extends BaseAST
 {
     private List mCriteria;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a SortCriteriaAST. 
      *
@@ -53,7 +53,7 @@ public class SortCriteriaAST extends BaseAST
         mCriteria = someCriteria;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the criteria.
      *

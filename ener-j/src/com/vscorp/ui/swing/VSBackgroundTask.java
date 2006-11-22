@@ -140,7 +140,7 @@ public class VSBackgroundTask extends Thread
     private Method taskMethod;
     private Method finishMethod;
 
-    //----------------------------------------------------------------------
+
     protected VSBackgroundTask(Object aTargetObj, Object aParameter, String aTaskMethodName, String aFinishMethodName)
     {
         targetObj = aTargetObj;
@@ -160,7 +160,7 @@ public class VSBackgroundTask extends Thread
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Implements Thread.run() and executes the task method followed by the
      * finish method. The finish method is invoked from the Swing event thread.
      */
@@ -185,7 +185,7 @@ public class VSBackgroundTask extends Thread
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Runs a task on a thread separate from the Swing Event thread.
      * See the description of this class for more information

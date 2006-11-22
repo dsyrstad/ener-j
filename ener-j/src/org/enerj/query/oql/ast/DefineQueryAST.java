@@ -50,7 +50,7 @@ public class DefineQueryAST extends BaseAST
     private QueryAST mQuery;
     private boolean mIsPersistent;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a new DefineQueryAST. 
      */
@@ -62,7 +62,7 @@ public class DefineQueryAST extends BaseAST
         mIsPersistent = isPersistent;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the name of the query.
      * 
@@ -73,7 +73,7 @@ public class DefineQueryAST extends BaseAST
         return mName;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Parameter List for the definition.
      * 
@@ -84,7 +84,7 @@ public class DefineQueryAST extends BaseAST
         return mParams;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the QueryAST.
      * 
@@ -96,7 +96,7 @@ public class DefineQueryAST extends BaseAST
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines whether this named query definition should be persistent.
      * 
@@ -107,7 +107,7 @@ public class DefineQueryAST extends BaseAST
         return mIsPersistent;
     }
 
-    //--------------------------------------------------------------------------------
+
     protected Class getType0() throws QueryException
     {
         // resolve0() does all of the work. 
@@ -115,7 +115,7 @@ public class DefineQueryAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     protected UnaryFunctor resolve0() throws QueryException
     {
         EvaluatorContext context = EvaluatorContext.getContext(); 
@@ -160,7 +160,7 @@ public class DefineQueryAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Persists the named query. 
      *

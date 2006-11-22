@@ -70,7 +70,7 @@ public class TypeUtil
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the ordinal type rank of the given Number Class. The rank can be used to determine type promotion.
      * The following Number types are supported:
@@ -89,7 +89,7 @@ public class TypeUtil
         return rank.intValue();
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets a UnaryFunctor that will promote a numeric value to aNumberClass type.
      *  
@@ -107,7 +107,7 @@ public class TypeUtil
         return functor;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines if the given class is numeric. 
      * 
@@ -118,7 +118,7 @@ public class TypeUtil
         return NUMBER_RANK_MAP.get(aNumberClass) != null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines if the given class is a string type.
      * 
@@ -129,7 +129,7 @@ public class TypeUtil
         return !isNumericType(aClass) && !isCollectionType(aClass) && !isMapType(aClass);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines if the given class is a scalar type.
      * 
@@ -140,7 +140,7 @@ public class TypeUtil
         return isNumericType(aClass) || isStringType(aClass);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines if the given class is a Collection type.
      * 
@@ -151,7 +151,7 @@ public class TypeUtil
         return Collection.class.isAssignableFrom(aClass); 
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines if the given class is a Map type.
      * 
@@ -162,7 +162,7 @@ public class TypeUtil
         return Map.class.isAssignableFrom(aClass); 
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the generic parameterized type for the specified Collection type.
      * 

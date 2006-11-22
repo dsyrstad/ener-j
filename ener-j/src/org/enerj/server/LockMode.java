@@ -50,14 +50,14 @@ public final class LockMode
     private String mName;
     private int mExclusivity;
 
-    //----------------------------------------------------------------------
+
     private LockMode(String aName, int aExclusivity)
     {
         mName = aName;
         mExclusivity = aExclusivity;
     }
 
-    //----------------------------------------------------------------------
+
     /** 
      * Checks if this LockMode is more exclusive than the given mode.
      *
@@ -71,7 +71,7 @@ public final class LockMode
         return (mExclusivity - aLockMode.mExclusivity) > 0;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Checks to see if this lock mode (considered the "granted" mode) is
      * compatible with (i.e., does not conflict with) the given requested mode.
@@ -86,7 +86,7 @@ public final class LockMode
         return mCompatibilityMatrix[mExclusivity][aRequestedMode.mExclusivity];
     }
 
-    //----------------------------------------------------------------------
+
     public String toString()
     {
         return mName;

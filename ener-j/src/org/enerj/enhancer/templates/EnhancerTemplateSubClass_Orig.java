@@ -63,7 +63,7 @@ class EnhancerTemplateSubClass_Orig extends EnhancerTemplate_Orig implements Clo
     private int[][] m2dArray;
     private Object[] mObjArray;
     
-    //----------------------------------------------------------------------
+
     // User-defined constructor.
     public EnhancerTemplateSubClass_Orig(long aParam)
     {
@@ -71,17 +71,17 @@ class EnhancerTemplateSubClass_Orig extends EnhancerTemplate_Orig implements Clo
         mLong = aParam;
     }
 
-    //----------------------------------------------------------------------
-    // User-defined methods ...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // User-defined methods ...
+
+
+
     public void doIt(int aParam)
     {
         mInt = aParam;
     }
 
-    //----------------------------------------------------------------------
+
     // User-defined clone.
     public Object clone()
     {
@@ -93,7 +93,7 @@ class EnhancerTemplateSubClass_Orig extends EnhancerTemplate_Orig implements Clo
         return clone;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * User callback.
      */
@@ -101,9 +101,9 @@ class EnhancerTemplateSubClass_Orig extends EnhancerTemplate_Orig implements Clo
     {
     }
     
-    //----------------------------------------------------------------------
+
     // ...End of User-defined methods.
-    //----------------------------------------------------------------------
+
 
 
 }

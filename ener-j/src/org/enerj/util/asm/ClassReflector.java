@@ -129,7 +129,7 @@ public class ClassReflector implements ClassVisitor
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines if the class implements the specified super-interface.
      *

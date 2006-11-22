@@ -35,13 +35,13 @@ import java.util.StringTokenizer;
  */
 public class FileUtil
 {
-    //--------------------------------------------------------------------------------
+
     // Don't allow construction
     private FileUtil() 
     {
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Finds a file on the given path.
      *
@@ -65,7 +65,7 @@ public class FileUtil
         return null;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the parent directory of aDirectoryName. Return aDirectoryName
      * if it does not have a File.separatorChar.

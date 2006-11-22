@@ -53,13 +53,13 @@ public class InstrumentationAgent implements ClassFileTransformer
     
     private MetaData mMetaData;
     
-    //--------------------------------------------------------------------------------
+
     private InstrumentationAgent()
     {
         sInstance = this;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Agent premain for java.lang.instrument. Handles registration of on-the-fly enhancement. 
      *
@@ -72,7 +72,7 @@ public class InstrumentationAgent implements ClassFileTransformer
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Returns the runtime instance of InstrumentationAgent.
      *
@@ -83,7 +83,7 @@ public class InstrumentationAgent implements ClassFileTransformer
         return sInstance;
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see java.lang.instrument.ClassFileTransformer#transform(java.lang.ClassLoader, java.lang.String, java.lang.Class, java.security.ProtectionDomain, byte[])

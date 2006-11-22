@@ -74,14 +74,14 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         enerj_sClassId = 55835L;
     }
 
-    //----------------------------------------------------------------------
+
     // Generated constructor. Persister is simply used for a unique signature.
     public EnhancerTemplateSubClass_Enhanced(Persister aPersister)
     {
         super(aPersister);
     }
 
-    //----------------------------------------------------------------------
+
     // User-defined constructor.
     public EnhancerTemplateSubClass_Enhanced(long aParam)
     {
@@ -89,18 +89,18 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         enerj_Set_org_enerj_enhancer_templates_EnhancerTemplateSubClass_mLong(this, aParam);
     }
 
-    //----------------------------------------------------------------------
-    // User-defined methods ...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // User-defined methods ...
+
+
+
     public void doIt(int aParam)
     {
         enerj_Set_org_enerj_enhancer_templates_EnhancerTemplateSubClass_mInt(this, aParam);
     }
 
 
-    //----------------------------------------------------------------------
+
     // Enhanced version of user-defined clone.
     public Object clone()
     {
@@ -112,7 +112,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         return clone;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * User callback.
      */
@@ -120,29 +120,29 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
     {
     }
 
-    //----------------------------------------------------------------------
+
     // ...End of User-defined methods.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     // Generated methods for any persistable...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     // So we can get a class id when we only have a class and not an object.
     public static long enerj_GetClassIdStatic()
     {
         return enerj_sClassId;
     }
     
-    //----------------------------------------------------------------------
+
     // So we can get a class id via the Persistable interface.
     public long enerj_GetClassId()
     {
         return enerj_sClassId;
     }
     
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static long
             enerj_Get_org_enerj_enhancer_templates_EnhancerTemplateSubClass_mLong(EnhancerTemplateSubClass_Enhanced  anInstance)
@@ -154,7 +154,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         return anInstance.mLong;
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static int[]
             enerj_Get_org_enerj_enhancer_templates_EnhancerTemplateSubClass_mIntArray(EnhancerTemplateSubClass_Enhanced  anInstance)
@@ -166,7 +166,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         return anInstance.mIntArray;
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplateSubClass_mLong(EnhancerTemplateSubClass_Enhanced  anInstance,
                 long  aValue)
@@ -183,7 +183,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         }
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplateSubClass_mDouble(EnhancerTemplateSubClass_Enhanced  anInstance,
                 double  aValue)
@@ -200,7 +200,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         }
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplateSubClass_mInt(EnhancerTemplateSubClass_Enhanced  anInstance,
                 int  aValue)
@@ -217,7 +217,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         }
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplateSubClass_mFloat(EnhancerTemplateSubClass_Enhanced  anInstance,
                 float  aValue)
@@ -234,7 +234,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         }
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplateSubClass_mShort(EnhancerTemplateSubClass_Enhanced  anInstance,
                 short  aValue)
@@ -251,7 +251,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         }
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplateSubClass_mIntArray(EnhancerTemplateSubClass_Enhanced  anInstance,
                 int[] aValue)
@@ -268,7 +268,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         }
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplateSubClass_mString(EnhancerTemplateSubClass_Enhanced  anInstance,
                 String aValue)
@@ -285,7 +285,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         }
     }
 
-    //----------------------------------------------------------------------
+
     public void enerj_ReadObject(ObjectSerializer aContext) throws IOException
     {
         DataInput stream = aContext.getDataInput();
@@ -315,7 +315,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         mObjArray = (Object[])aContext.readObject(this);
    }
 
-    //----------------------------------------------------------------------
+
     public void enerj_WriteObject(ObjectSerializer aContext) throws IOException
     {
         DataOutput stream = aContext.getDataOutput();
@@ -345,7 +345,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         aContext.writeObject(mObjArray, this);
     }
 
-    //----------------------------------------------------------------------
+
     public void enerj_ResolveObject(ObjectSerializer aContext, boolean shouldDisassociate) throws IOException
     {
         super.enerj_ResolveObject(aContext, shouldDisassociate);
@@ -365,7 +365,7 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
         aContext.resolveObject(mObjArray, shouldDisassociate);
     }
 
-    //----------------------------------------------------------------------
+
     /** Clear the object's persistent fields. Only persistent fields which
      * refer to Objects are cleared (i.e., primitive field values are not touched).
      */
@@ -392,8 +392,8 @@ class EnhancerTemplateSubClass_Enhanced extends EnhancerTemplate_Enhanced implem
     }
     
     
-    //----------------------------------------------------------------------
+
     // ... End of Generated methods for any persistable.
-    //----------------------------------------------------------------------
+
     
 }

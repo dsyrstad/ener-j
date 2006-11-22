@@ -55,7 +55,7 @@ public class CollectionExprAST extends BaseAST
     private TokenType mOp; // TOK_FIRST, TOK_LAST, TOK_UNIQUE, TOK_EXISTS
     private AST mExpr;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a CollectionExprAST. 
      *
@@ -69,7 +69,7 @@ public class CollectionExprAST extends BaseAST
         mExpr = anExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Expr.
      *
@@ -80,7 +80,7 @@ public class CollectionExprAST extends BaseAST
         return mExpr;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Op.
      *
@@ -91,7 +91,7 @@ public class CollectionExprAST extends BaseAST
         return mOp;
     }
 
-    //--------------------------------------------------------------------------------
+
     protected Class getType0() throws QueryException
     {
         Class exprType = mExpr.getType();
@@ -119,7 +119,7 @@ public class CollectionExprAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     protected UnaryFunctor resolve0() throws QueryException
     {
         UnaryFunctor exprFunctor = mExpr.resolve();

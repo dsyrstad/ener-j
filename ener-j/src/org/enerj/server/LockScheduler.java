@@ -72,7 +72,7 @@ public class LockScheduler implements LockServer
             int mNumActiveLocks = 0;
     
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct a LockScheduler with no locks. Use the shutdown() method
      * to terminate the scheduler.
@@ -89,11 +89,11 @@ public class LockScheduler implements LockServer
         mDeadlockAlgorithm = aDeadlockAlgorithm;
     }
     
-    //----------------------------------------------------------------------
-    // Start of LockServer interface...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of LockServer interface...
+
+
+
     /**
      * Given a URI, resolve a connected instance of a LockServer.
      *
@@ -135,13 +135,13 @@ public class LockScheduler implements LockServer
         return new LockScheduler(initialNumLockedObjects, algorithm);
     }
     
-    //----------------------------------------------------------------------
+
     public void disconnect() throws ODMGException
     {
         mShutdown = true;
     }
 
-    //----------------------------------------------------------------------
+
     public synchronized LockServerTransaction startTransaction()
     {
         ++mTotalTransactions;
@@ -153,91 +153,91 @@ public class LockScheduler implements LockServer
         return new Transaction(this);
     }
 
-    //----------------------------------------------------------------------
+
     public DeadlockAlgorithm getDeadlockAlgorithm()
     {
         return mDeadlockAlgorithm;
     }
 
-    //----------------------------------------------------------------------
+
     public int getTotalLockAttempts()
     {
         return mTotalLockAttempts;
     }
 
-    //----------------------------------------------------------------------
+
     public int getTotalLocksGranted()
     {
         return mTotalLocksGranted;
     }
 
-    //----------------------------------------------------------------------
+
     public int getTotalLockWaits()
     {
         return mTotalLockWaits;
     }
 
-    //----------------------------------------------------------------------
+
     public int getTotalDeadlocks()
     {
         return mTotalDeadlocks;
     }
 
-    //----------------------------------------------------------------------
+
     public int getTotalTransactions()
     {
         return mTotalTransactions;
     }
 
-    //----------------------------------------------------------------------
+
     public int getPeakTransactions()
     {
         return mPeakTransactions;
     }
 
-    //----------------------------------------------------------------------
+
     public int getPeakLockedObjects()
     {
         return mPeakLockedObjects;
     }
 
-    //----------------------------------------------------------------------
+
     public int getPeakNumLocks()
     {
         return mPeakNumLocks;
     }
 
-    //----------------------------------------------------------------------
+
     public long getLongestWaitForLock()
     {
         return mLongestWaitForLock;
     }
 
-    //----------------------------------------------------------------------
+
     public long getLongestDeadlockCheck()
     {
         return mLongestDeadlockCheck;
     }
 
-    //----------------------------------------------------------------------
+
     public int getNumActiveTransactions()
     {
         return mNumActiveTransactions;
     }
 
-    //----------------------------------------------------------------------
+
     public int getNumActiveLockedObjects()
     {
         return mNumActiveLockedObjects;
     }
 
-    //----------------------------------------------------------------------
+
     public int getNumActiveLocks()
     {
         return mNumActiveLocks;
     }
 
-    //----------------------------------------------------------------------
+
     public String dumpMetrics()
     {
         return 
@@ -256,7 +256,7 @@ public class LockScheduler implements LockServer
             "\nNumActiveLocks=" + mNumActiveLocks + '\n';
     }
     
-    //----------------------------------------------------------------------
+
     public synchronized LockMode getLockMode(Object anObject)
     {
         LockedObject lockedObj = (LockedObject)mLockedObjectMap.get(anObject);
@@ -267,11 +267,11 @@ public class LockScheduler implements LockServer
         return lockedObj.getMostExclusiveLockMode();
     }
     
-    //----------------------------------------------------------------------
-    // End of LockServer interface...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // End of LockServer interface...
+
+
+
     /**
      * Updates the "longest wait for lock" metric.
      *
@@ -284,7 +284,7 @@ public class LockScheduler implements LockServer
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Cleans out this request/transaction as a waiter for a locked object.
      *
@@ -297,7 +297,7 @@ public class LockScheduler implements LockServer
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Acquires a lock on the item identified by the given object, or promotes the lock mode if 
      * the transaction currently owns a lock on the object. See the description on
@@ -454,7 +454,7 @@ public class LockScheduler implements LockServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Checks for deadlock based on the chosen algorithm.
      *
@@ -484,7 +484,7 @@ public class LockScheduler implements LockServer
         return result;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Checks for deadlock based on the waits-for graph (WFG) algorithm.
      *
@@ -527,7 +527,7 @@ public class LockScheduler implements LockServer
         return false;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Checks for deadlock based using the timestamp algorithm.
      *
@@ -550,7 +550,7 @@ public class LockScheduler implements LockServer
         return false;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Ends the transaction and unlocks all objects the Transaction locked with the lock method.
      *
@@ -609,8 +609,8 @@ public class LockScheduler implements LockServer
         --mNumActiveTransactions;
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Transaction context used in LockScheduler. A Transaction may only be 
      * used by a single thread at any one time. Transactions should not be
@@ -639,7 +639,7 @@ public class LockScheduler implements LockServer
         /** Outstanding lock request that we're waiting for, if any. */
         private LockRequest mOutstandingLockRequest = null;
         
-        //----------------------------------------------------------------------
+
         /** 
          * Internal use - only this package can construct a transaction.
          * 
@@ -654,7 +654,7 @@ public class LockScheduler implements LockServer
             mLockScheduler = aLockScheduler;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Adds a lock to the transaction's lock list.
          *
@@ -666,17 +666,17 @@ public class LockScheduler implements LockServer
             mLockListHead = aLock;
         }
 
-        //----------------------------------------------------------------------
-        // Start of LockServerTransaction interface...
-        //----------------------------------------------------------------------
 
-        //----------------------------------------------------------------------
+        // Start of LockServerTransaction interface...
+
+
+
         public LockServer getLockServer()
         {
             return mLockScheduler;
         }
         
-        //----------------------------------------------------------------------
+
         public boolean lock(Object anObject, LockMode aLockMode, long aWaitTime) throws LockNotGrantedException
         {
             if (!mActive) {
@@ -748,7 +748,7 @@ public class LockScheduler implements LockServer
             return request.mResult;
         }
 
-        //----------------------------------------------------------------------
+
         public void end()
         {
             if (!mActive) {
@@ -759,14 +759,14 @@ public class LockScheduler implements LockServer
             mActive = false;
         }
 
-        //----------------------------------------------------------------------
+
         // ...End of LockServerTransaction interface.
-        //----------------------------------------------------------------------
+
 
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Repesents the locking information for a locked object.
      *
@@ -793,7 +793,7 @@ public class LockScheduler implements LockServer
         private Lock mAcquiredListHead = null;
         private Object mClientObject;
         
-        //----------------------------------------------------------------------
+
         /**
          * Construct a LockedObject with no locks. 
          *
@@ -804,7 +804,7 @@ public class LockScheduler implements LockServer
             mClientObject = aClientObject;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Gets the most exclusive lock mode on this object.
          * Logically, this is the most exclusive mode in the acquired lock list.
@@ -816,7 +816,7 @@ public class LockScheduler implements LockServer
             return mMostExclusiveLockMode;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Gets the client object that is actually being locked.
          *
@@ -827,7 +827,7 @@ public class LockScheduler implements LockServer
             return mClientObject;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Gets the head of the wait queue. This should only be used for
          * iteration purposes. The queue is linked by Lock.mNextLock.
@@ -839,7 +839,7 @@ public class LockScheduler implements LockServer
             return mWaitQueueHead;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Gets the head of the acquired lock list. This should only be used for
          * iteration purposes. The queue is linked by Lock.mNextLock/mPrevLock.
@@ -851,7 +851,7 @@ public class LockScheduler implements LockServer
             return mAcquiredListHead;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Queues a wait lock onto the tail of the wait queue.
          *
@@ -872,7 +872,7 @@ public class LockScheduler implements LockServer
             mWaitQueueTail = aLock;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Removes a lock from the wait queue.
          */
@@ -899,7 +899,7 @@ public class LockScheduler implements LockServer
             aLock.mPrevLock = null;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Adds a new lock to this LockedObject, the specified transaction, and
          * the lock scheduler. The most exclusive lock mode is 
@@ -933,7 +933,7 @@ public class LockScheduler implements LockServer
             aTransaction.addToLockList(lock);
         }
 
-        //----------------------------------------------------------------------
+
         /** 
          * Promotes a lock already in the acquired list to aLockMode. The most exclusive lock mode is 
          * updated if necessary.
@@ -950,7 +950,7 @@ public class LockScheduler implements LockServer
             aLock.mLockMode = aLockMode;
         }
 
-        //----------------------------------------------------------------------
+
         /** 
          * Drops a lock from the acquired list. The most exclusive lock mode is 
          * updated if necessary.
@@ -1003,8 +1003,8 @@ public class LockScheduler implements LockServer
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Repesents the information for a single Lock on a object.
      *
@@ -1029,7 +1029,7 @@ public class LockScheduler implements LockServer
         /** The next lock in the Transaction's lock list. */
         Lock mNextTransactionLock = null;
 
-        //----------------------------------------------------------------------
+
         /** Construct a new Lock.
          *
          * @param aLockedObject the object being locked.
@@ -1044,8 +1044,8 @@ public class LockScheduler implements LockServer
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Represents a the state of a LockRequest.
      *
@@ -1080,7 +1080,7 @@ public class LockScheduler implements LockServer
         /** If non-null, an exception that was thrown while processing the request. */
         Exception mRequestException = null;
 
-        //----------------------------------------------------------------------
+
         /**
          * Constructs a lock request.
          */
@@ -1092,7 +1092,7 @@ public class LockScheduler implements LockServer
             mWaitTime = aWaitTime;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Completes a request.
          */
@@ -1102,7 +1102,7 @@ public class LockScheduler implements LockServer
             mResult = aResult;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Completes a request with an Exception.
          */

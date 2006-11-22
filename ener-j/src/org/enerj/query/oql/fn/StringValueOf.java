@@ -37,7 +37,7 @@ public class StringValueOf extends UnaryFunctor
 {
     private static final long serialVersionUID = 4385482694765915968L;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a StringValueOf functor.
      */
@@ -46,7 +46,7 @@ public class StringValueOf extends UnaryFunctor
         super();
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         if (arg == null) {
@@ -56,7 +56,7 @@ public class StringValueOf extends UnaryFunctor
         return arg.toString();
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(StringValueOf)</code> method, if it implements
@@ -67,14 +67,14 @@ public class StringValueOf extends UnaryFunctor
             ((StringValueOf.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "StringValueOf";
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>StringValueOf</b> functor.
      */

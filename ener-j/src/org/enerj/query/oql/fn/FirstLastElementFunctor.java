@@ -48,7 +48,7 @@ public class FirstLastElementFunctor extends UnaryFunctor
 
     private boolean mIsFirst;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a FirstLastElementFunctor functor.
      * 
@@ -61,7 +61,7 @@ public class FirstLastElementFunctor extends UnaryFunctor
         mIsFirst = isFirst;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         if (arg == null) {
@@ -97,7 +97,7 @@ public class FirstLastElementFunctor extends UnaryFunctor
         return ((List)arg).get(size - 1);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(FirstLastElementFunctor)</code> method, if it implements
@@ -108,14 +108,14 @@ public class FirstLastElementFunctor extends UnaryFunctor
             ((FirstLastElementFunctor.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "FirstLastElementFunctor( " + (mIsFirst ? "first" : "last") + ')';
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>FirstLastElementFunctor</b> functor.
      */

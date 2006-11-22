@@ -44,7 +44,7 @@ public class TrackedPositionReader extends BufferedReader
     private char[] mLineTextBuf = new char[1000];
     private int mLineLength;
 
-    //--------------------------------------------------------------------------------
+
     /**
      *
      * @param aFileName the file name for the TextPosition context.
@@ -56,7 +56,7 @@ public class TrackedPositionReader extends BufferedReader
         startNextLine();
     }
 
-    //--------------------------------------------------------------------------------
+
     private void startNextLine() throws IOException
     {
         ++mLineNumber;
@@ -74,7 +74,7 @@ public class TrackedPositionReader extends BufferedReader
         reset();
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * "\r\n" is returned as '\n' since it is treated as a single newline. However,
      * a single '\r' not followed by '\n' is returned as itself.
@@ -99,7 +99,7 @@ public class TrackedPositionReader extends BufferedReader
         return c;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Looks ahead one character in the stream without removing it from the stream.
      *
@@ -113,7 +113,7 @@ public class TrackedPositionReader extends BufferedReader
         return c;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the TextPosition of the last character read from the stream.
      */

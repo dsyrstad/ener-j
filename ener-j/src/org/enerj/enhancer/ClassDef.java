@@ -44,7 +44,7 @@ class ClassDef implements Cloneable
     private int mPersistentType;
     private FieldDef[] mFieldDefs;
     
-    //----------------------------------------------------------------------
+
     /** 
      * Construct a new ClassDef.
      *
@@ -59,7 +59,7 @@ class ClassDef implements Cloneable
         mFieldDefs = someFieldDefs;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the class name.
      *
@@ -70,7 +70,7 @@ class ClassDef implements Cloneable
         return mName;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Sets the class name.
      *
@@ -81,7 +81,7 @@ class ClassDef implements Cloneable
         mName = aName;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the persistent type. 
      *
@@ -92,7 +92,7 @@ class ClassDef implements Cloneable
         return mPersistentType;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the list of field definitions.
      *
@@ -103,7 +103,7 @@ class ClassDef implements Cloneable
         return mFieldDefs;
     }
 
-    //----------------------------------------------------------------------
+
     // From Object...
     public Object clone() 
     {

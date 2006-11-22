@@ -49,7 +49,7 @@ public class ElementExistsPredicate extends UnaryPredicate
     
     private boolean mIsExists;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ElementExistsPredicate functor.
      * 
@@ -61,7 +61,7 @@ public class ElementExistsPredicate extends UnaryPredicate
         mIsExists = isExists;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Boolean fn(Object arg)
     {
         if (arg == null) {
@@ -89,7 +89,7 @@ public class ElementExistsPredicate extends UnaryPredicate
         return size == 1;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(ElementExistsPredicate)</code> method, if it implements
@@ -100,14 +100,14 @@ public class ElementExistsPredicate extends UnaryPredicate
             ((ElementExistsPredicate.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "ElementExistsPredicate(" + (mIsExists ? "exists" : "unique") + ')';
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>ElementExistsPredicate</b> functor.
      */

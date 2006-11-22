@@ -37,7 +37,7 @@ import org.enerj.core.*;
  */
 public interface SCOTracker 
 {
-    //----------------------------------------------------------------------
+
     /**
      * Gets the owner FCO.
      *
@@ -45,7 +45,7 @@ public interface SCOTracker
      */
     public Persistable getOwnerFCO();
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the owner FCO.
      *
@@ -53,7 +53,7 @@ public interface SCOTracker
      */
     public void setOwnerFCO(Persistable anOwner);
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the owner FCO, if non-null, to a modified state.
      */

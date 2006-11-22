@@ -21,7 +21,7 @@ public class ObjectSourceTableModel extends AbstractTableModel
 {
     private ObjectSource mSource;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new table model with the specified ObjectSource.
      *
@@ -34,7 +34,7 @@ public class ObjectSourceTableModel extends AbstractTableModel
         mSource.addObjectSourceListener(this);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the ObjectSource associated with this model.
      *
@@ -45,7 +45,7 @@ public class ObjectSourceTableModel extends AbstractTableModel
         return mSource;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the ObjectSource associated with this model. The model is refreshed.
      *
@@ -68,7 +68,7 @@ public class ObjectSourceTableModel extends AbstractTableModel
         this.fireTableDataChanged();
     }
 
-    //----------------------------------------------------------------------
+
     // From ObjectSourceListener...
     public void notifyObjectSourceChanged(ObjectSourceEvent anEvent)
     {
@@ -96,18 +96,18 @@ public class ObjectSourceTableModel extends AbstractTableModel
     }
 
 
-    //----------------------------------------------------------------------
-    // Methods from javax.swing.table.TableModel...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Methods from javax.swing.table.TableModel...
+
+
+
     // From javax.swing.table.TableModel...
     public int getColumnCount()
     {
         return 0;   // Handled by ObjectSourceTableColumn
     }
 
-    //----------------------------------------------------------------------
+
     // From javax.swing.table.TableModel...
     public int getRowCount()
     {
@@ -119,14 +119,14 @@ public class ObjectSourceTableModel extends AbstractTableModel
         }
     }
 
-    //----------------------------------------------------------------------
+
     // From javax.swing.table.TableModel...
     public String getColumnName(int aColIndex)
     {
         return null;   // Handled by ObjectSourceTableColumn
     }
 
-    //----------------------------------------------------------------------
+
     // From javax.swing.table.TableModel...
     public boolean isCellEditable(int aRowIndex, int aColIndex)
     {
@@ -134,7 +134,7 @@ public class ObjectSourceTableModel extends AbstractTableModel
         return true;
     }
 
-    //----------------------------------------------------------------------
+
     // From javax.swing.table.TableModel...
     public Object getValueAt(int aRowIndex, int aColIndex)
     {
@@ -150,14 +150,14 @@ public class ObjectSourceTableModel extends AbstractTableModel
         }
     }
 
-    //----------------------------------------------------------------------
+
     // From javax.swing.table.TableModel...
     public Class getColumnClass(int aColumnIndex)
     {
         return Object.class;   // Handled by ObjectSourceTableColumn
     }
 
-    //----------------------------------------------------------------------
+
     // From javax.swing.table.TableModel...
     public void setValueAt(Object aValue, int aRowIndex, int aColumnIndex)
     {
@@ -175,7 +175,7 @@ public class ObjectSourceTableModel extends AbstractTableModel
         this.fireTableRowsUpdated(aRowIndex, aRowIndex);
     }
 
-    //----------------------------------------------------------------------
+
     // ...End of methods from javax.swing.table.TableModel
-    //----------------------------------------------------------------------
+
 }

@@ -39,7 +39,7 @@ public class SerializedObject implements Serializable
     private long mCID;
     private boolean mIsNew = false;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a SerializedObject that is not new.
      *
@@ -54,7 +54,7 @@ public class SerializedObject implements Serializable
         mImage = anImage;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a SerializedObject.
      *
@@ -71,25 +71,25 @@ public class SerializedObject implements Serializable
         mIsNew = isNew;
     }
 
-    //----------------------------------------------------------------------
+
     public byte[] getImage()
     {
         return mImage;
     }
 
-    //----------------------------------------------------------------------
+
     public long getOID()
     {
         return mOID;
     }
 
-    //----------------------------------------------------------------------
+
     public long getCID()
     {
         return mCID;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines if the object is new.
      *
@@ -100,7 +100,7 @@ public class SerializedObject implements Serializable
         return mIsNew;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets whether the object is new.
      *

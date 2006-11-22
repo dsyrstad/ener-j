@@ -38,25 +38,25 @@ import org.odmg.*;
  */
 public class PageServerNoMoreSpaceException extends PageServerException
 {
-    //----------------------------------------------------------------------
+
     public PageServerNoMoreSpaceException()
     {
         super();
     }
 
-    //----------------------------------------------------------------------
+
     public PageServerNoMoreSpaceException(String aMessage)
     {
         super(aMessage);
     }
 
-    //----------------------------------------------------------------------
+
     public PageServerNoMoreSpaceException(String aMessage, Throwable aCause)
     {
         super(aMessage, aCause);
     }
 
-    //----------------------------------------------------------------------
+
     public PageServerNoMoreSpaceException(Throwable aCause)
     {
         super(aCause);

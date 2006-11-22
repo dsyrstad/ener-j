@@ -55,7 +55,7 @@ public class DateChooser extends ChooserField
     private boolean mEditDateFlag = true;
     private boolean mNullAllowed = false;
 
-    //----------------------------------------------------------------------
+
     /**
      * Create a new DateChooser using the current date.
      */
@@ -64,7 +64,7 @@ public class DateChooser extends ChooserField
        this( new GregorianCalendar() );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Create a new DateChooser using the specified date.
      *
@@ -75,7 +75,7 @@ public class DateChooser extends ChooserField
         this(aCalendar, DateFormat.getDateInstance(DateFormat.SHORT), true, true, false );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Create a new DateChooser using the specified date and DateFormat.
      *
@@ -114,7 +114,7 @@ public class DateChooser extends ChooserField
         setCalendar(aCalendar);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Refreshes the text field to be in sync with the calendar.
      */
@@ -128,7 +128,7 @@ public class DateChooser extends ChooserField
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets whether the field may be empty or cleared by the user, resulting
      * in a null Calendar. By default, this setting is false.
@@ -141,7 +141,7 @@ public class DateChooser extends ChooserField
         mNullAllowed = aNullAllowedFlag;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the date format.
      *
@@ -152,7 +152,7 @@ public class DateChooser extends ChooserField
         return mDateFormat;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the date format.
      *
@@ -181,7 +181,7 @@ public class DateChooser extends ChooserField
         dateField.setPreferredSize(preferredSize);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the calendar associated with field
      *
@@ -200,7 +200,7 @@ public class DateChooser extends ChooserField
         return (GregorianCalendar)mCalendar.clone();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Reparses the text field to mCalendar.
      *
@@ -229,7 +229,7 @@ public class DateChooser extends ChooserField
         return true;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the calendar associated with the field.
      *
@@ -248,7 +248,7 @@ public class DateChooser extends ChooserField
         refreshText();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Verifies the content of the field.
      *
@@ -259,7 +259,7 @@ public class DateChooser extends ChooserField
         return parseTextToCalendar();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Opens the popup if it is closed.
      */
@@ -280,7 +280,7 @@ public class DateChooser extends ChooserField
         mDateChooserPopup.open();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Closes the popup if it is open.
      */

@@ -39,7 +39,7 @@ import org.enerj.server.*;
 public class CalcCID 
 {
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) throws Exception
     {
         if (args.length == 0) {
@@ -59,7 +59,7 @@ public class CalcCID
         System.exit(0);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Generate class Id.
      *

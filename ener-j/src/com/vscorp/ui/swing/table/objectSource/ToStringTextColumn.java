@@ -13,7 +13,7 @@ package com.vscorp.ui.swing.table.objectSource;
 public class ToStringTextColumn extends TextColumn
 {
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is not editable.
      * Heading alignment is leading.
@@ -25,7 +25,7 @@ public class ToStringTextColumn extends TextColumn
         super(aColumnTitle, false);
     }
 
-    //--------------------------------------------------------------------------------
+
     protected String getColumnValue(Object anObject)
     {
         if (anObject == null) {
@@ -35,7 +35,7 @@ public class ToStringTextColumn extends TextColumn
         return anObject.toString();
     }
 
-    //--------------------------------------------------------------------------------
+
     protected boolean setColumnValue(Object anObject, String aValue)
     {
         return false;

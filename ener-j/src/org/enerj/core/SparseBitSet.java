@@ -96,7 +96,7 @@ public class SparseBitSet implements Cloneable
     /** The root node of the tree. */
     private RootNode mRootNode;
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new SparseBitSet with the specified node size.
      * The maximum size of the bitset is aNodeSize^3 * 64.
@@ -113,7 +113,7 @@ public class SparseBitSet implements Cloneable
         mMaxSize = mNodeSizeSquared64 * mNodeSize;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new SparseBitSet with the default node size (1024).
      * This node size supports a maximum of 68,719,476,736 (about 68 billion) elements.
@@ -123,7 +123,7 @@ public class SparseBitSet implements Cloneable
         this(1024);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the leaf node for the corresponding bit index. Allocates new nodes if
      * shouldAllocate is true. If the size of the list changes, mModCount is
@@ -172,7 +172,7 @@ public class SparseBitSet implements Cloneable
         return leafNode;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the maximum number of bits that can be contained in the set.
      *
@@ -183,7 +183,7 @@ public class SparseBitSet implements Cloneable
         return mMaxSize;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the bit at aBitIndex.
      *
@@ -197,7 +197,7 @@ public class SparseBitSet implements Cloneable
         set(aBitIndex, true);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Clears the bit at aBitIndex.
      *
@@ -211,7 +211,7 @@ public class SparseBitSet implements Cloneable
         set(aBitIndex, false);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets or clears the bit at aBitIndex.
      *
@@ -256,7 +256,7 @@ public class SparseBitSet implements Cloneable
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the bit at aBitIndex.
      *
@@ -280,7 +280,7 @@ public class SparseBitSet implements Cloneable
         return (node.get(leafIndex) & bitPos) == bitPos;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Determines whether this bit set is completely clear (no bits set).
      *
@@ -294,7 +294,7 @@ public class SparseBitSet implements Cloneable
         return mRootNode.isClear();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Clears all bits in the bit set that are currently set.
      */
@@ -304,7 +304,7 @@ public class SparseBitSet implements Cloneable
         mRootNode = new RootNode(mNodeSize);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the index of the next true bit set in the bit set, starting from aStartingBitIndex.
      * This method quickly skips over large chunks of unset bits, hence it is much faster than
@@ -365,7 +365,7 @@ public class SparseBitSet implements Cloneable
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the number of bits set in the set.
      *
@@ -395,7 +395,7 @@ public class SparseBitSet implements Cloneable
         return numSet;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates an iterator for this bit set which iterates over all "true" bits.
      *
@@ -406,7 +406,7 @@ public class SparseBitSet implements Cloneable
         return new Iterator(this);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -416,7 +416,7 @@ public class SparseBitSet implements Cloneable
         return hashCode;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -446,7 +446,7 @@ public class SparseBitSet implements Cloneable
         return true;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -455,7 +455,7 @@ public class SparseBitSet implements Cloneable
         return this.getClass().getName() + ": size=" + mMaxSize;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -466,8 +466,8 @@ public class SparseBitSet implements Cloneable
         return clone;
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Iterator for SparseBitSet. Quickly skips over large chunks of unset bits.
      */
@@ -475,12 +475,12 @@ public class SparseBitSet implements Cloneable
         private SparseBitSet mBitSet;
         private long mNextBitIndex = 0;
 
-        //----------------------------------------------------------------------
+
         private Iterator(SparseBitSet aBitSet) {
             mBitSet = aBitSet;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Gets the index of the next true bit set in the bit set.
          *
@@ -499,7 +499,7 @@ public class SparseBitSet implements Cloneable
             return result;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Determines if there are more set bits to get from the iterator.
          *
@@ -522,8 +522,8 @@ public class SparseBitSet implements Cloneable
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /** 
      * Represents a root node in the tree. This is a separate object so that it
      * is not directly recoginized as an SCO and will be demand-loaded.
@@ -534,19 +534,19 @@ public class SparseBitSet implements Cloneable
         private SecondLevelNode[] mNodes;
         private int mNumNodes = 0;
 
-        //----------------------------------------------------------------------
+
         RootNode(int mNodeSize)
         {
             mNodes = new SecondLevelNode[mNodeSize];
         }
 
-        //----------------------------------------------------------------------
+
         SecondLevelNode get(int anIndex)
         {
             return mNodes[anIndex];
         }
 
-        //----------------------------------------------------------------------
+
         void set(int anIndex, SecondLevelNode aNode)
         {
             if (mNodes[anIndex] != aNode) {
@@ -564,7 +564,7 @@ public class SparseBitSet implements Cloneable
             }
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Determines if this node is clear (has no second level nodes).
          *
@@ -575,7 +575,7 @@ public class SparseBitSet implements Cloneable
             return mNumNodes == 0;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * {@inheritDoc}
          */
@@ -588,8 +588,8 @@ public class SparseBitSet implements Cloneable
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Represents a second level node in the tree. This is a separate object so that it
      * is not directly recoginized as an SCO and will be demand-loaded.
@@ -600,19 +600,19 @@ public class SparseBitSet implements Cloneable
         private LeafNode[] mNodes;
         private int mNumLeafs = 0;
 
-        //----------------------------------------------------------------------
+
         SecondLevelNode(int mNodeSize)
         {
             mNodes = new LeafNode[mNodeSize];
         }
 
-        //----------------------------------------------------------------------
+
         LeafNode get(int anIndex)
         {
             return mNodes[anIndex];
         }
 
-        //----------------------------------------------------------------------
+
         void set(int anIndex, LeafNode aLeafNode)
         {
             if (mNodes[anIndex] != aLeafNode) {
@@ -630,7 +630,7 @@ public class SparseBitSet implements Cloneable
             }
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Determines if this node is clear (has no leafs).
          *
@@ -641,7 +641,7 @@ public class SparseBitSet implements Cloneable
             return mNumLeafs == 0;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * {@inheritDoc}
          */
@@ -654,8 +654,8 @@ public class SparseBitSet implements Cloneable
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Represents a leaf node in the tree. This is a separate object so that it
      * is not directly recoginized as an SCO and will be demand-loaded.
@@ -667,19 +667,19 @@ public class SparseBitSet implements Cloneable
         /** Number of non-zero elements in mBits. */
         private int mNumNonZeroElements = 0;
 
-        //----------------------------------------------------------------------
+
         LeafNode(int mNodeSize)
         {
             mBits = new long[mNodeSize];
         }
 
-        //----------------------------------------------------------------------
+
         long get(int anIndex)
         {
             return mBits[anIndex];
         }
 
-        //----------------------------------------------------------------------
+
         /**
          *  Gets all of the bits in the node for read-only purposes.
          *
@@ -690,7 +690,7 @@ public class SparseBitSet implements Cloneable
             return mBits;
         }
 
-        //----------------------------------------------------------------------
+
         void set(int anIndex, long someBits)
         {
             if (mBits[anIndex] != someBits) {
@@ -708,7 +708,7 @@ public class SparseBitSet implements Cloneable
             }
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Determines if all bits in this node are clear.
          */
@@ -717,7 +717,7 @@ public class SparseBitSet implements Cloneable
             return mNumNonZeroElements == 0;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * {@inheritDoc}
          */
@@ -735,7 +735,7 @@ public class SparseBitSet implements Cloneable
             return Arrays.equals(this.mBits, otherNode.mBits);
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * {@inheritDoc}
          */

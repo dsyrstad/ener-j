@@ -43,7 +43,7 @@ public class ValueListAST extends BaseAST
 {
     private List<AST> mValues;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ValueListAST. 
      *
@@ -54,7 +54,7 @@ public class ValueListAST extends BaseAST
         mValues = someValues;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mValues.
      *
@@ -65,7 +65,7 @@ public class ValueListAST extends BaseAST
         return mValues;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.query.oql.ast.BaseAST#getType0()
@@ -76,7 +76,7 @@ public class ValueListAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * <p>
@@ -89,7 +89,7 @@ public class ValueListAST extends BaseAST
         return new ApplyUnary( getFunctors() );
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the array of UnaryFunctors representing the argument list.
      * 
@@ -109,7 +109,7 @@ public class ValueListAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Like resolve(), only adds additional conversion functors so that the values
      * evaluate to the types specified by someTargetTypes. 

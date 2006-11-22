@@ -21,7 +21,7 @@ public class GenericAction extends AbstractAction
 {
     private ActionListener mListener;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a GenericAction. 
      *
@@ -32,7 +32,7 @@ public class GenericAction extends AbstractAction
         mListener = aListener;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a GenericAction. 
      *
@@ -48,7 +48,7 @@ public class GenericAction extends AbstractAction
         mListener = aListener;
     }
     
-    //--------------------------------------------------------------------------------
+
     public void actionPerformed(ActionEvent anEvent)
     {
         if (mListener != null) {

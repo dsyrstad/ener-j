@@ -36,7 +36,7 @@ public class StructConstructionAST extends BaseAST
 {
     private AST mFieldList;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a StructConstructionAST. 
      *
@@ -47,7 +47,7 @@ public class StructConstructionAST extends BaseAST
         mFieldList = aFieldList;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the FieldList.
      *

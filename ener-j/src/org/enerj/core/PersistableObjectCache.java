@@ -39,16 +39,7 @@ import java.util.List;
  */
 public interface PersistableObjectCache
 {
-    //--------------------------------------------------------------------------------
-    /**
-     * Registers a transaction with the cache. This transaction will be used to flush
-     * objects that fall off of the cache. 
-     *
-     * @param aTxn the transaction. May be null to unset the transaction. 
-     */
-    public void setTransaction(EnerJTransaction aTxn);
 
-    //----------------------------------------------------------------------
     /**
      * Adds an object to the cache. If the OID is already in the cache,
      * the cache is left unchanged.
@@ -58,7 +49,7 @@ public interface PersistableObjectCache
      */
     void add(long anOID, Persistable aPersistable);
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the cached object corresponding to anOID.
      *
@@ -68,7 +59,7 @@ public interface PersistableObjectCache
      */
     Persistable get(long anOID);
 
-    //----------------------------------------------------------------------
+
     /**
      * Evicts a specific entry from the cache.
      *
@@ -76,13 +67,13 @@ public interface PersistableObjectCache
      */
     void evict(long anOID);
 
-    //----------------------------------------------------------------------
+
     /**
      * Evicts all entries from the cache.
      */
     void evictAll();
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the pre-modification image of this object.
      *
@@ -92,7 +83,7 @@ public interface PersistableObjectCache
      */
     void setSavedImage(long anOID, byte[] anImage);
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the pre-modification image of this object. The image is cleared upon
      * return.
@@ -104,27 +95,27 @@ public interface PersistableObjectCache
      */
     byte[] getAndClearSavedImage(long anOID);
 
-    //----------------------------------------------------------------------
+
     /**
      * Hollow all objects in the cache. The cached objects are preserved.
      */
     void hollowObjects();
 
-    //----------------------------------------------------------------------
+
     /**
      * Makes all objects in the cache non-transaction, clear any saved image, 
      * and clears the cached lock state. The cached objects are preserved.
      */
     void makeObjectsNonTransactional();
 
-    //----------------------------------------------------------------------
+
     /**
      * Clean up the cache by removing GCed entries.
      */
     void cleanup();
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Get a list of Persistables to be prefetched. The list of prefetches is cleared.
      *
@@ -133,7 +124,7 @@ public interface PersistableObjectCache
     List<Persistable> getAndClearPrefetches();
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Clears the prefetch list.
      */

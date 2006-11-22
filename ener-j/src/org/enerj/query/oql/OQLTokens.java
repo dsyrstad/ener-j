@@ -120,7 +120,7 @@ public class OQLTokens {
     public static final TokenType TOK_IS_UNDEFINED = new TokenType("is_undefined");
     public static final TokenType TOK_NEW = new TokenType("new");
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Do not allow construction.
      */

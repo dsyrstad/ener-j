@@ -41,7 +41,7 @@ public class RequestProcessorProxy implements InvocationHandler
     private Object mObject;
     private RequestProcessor mRequestProcessor;
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new RequestProcessorProxy.
      *
@@ -57,7 +57,7 @@ public class RequestProcessorProxy implements InvocationHandler
         mRequestProcessor = new RequestProcessor(aThreadName, useDaemonThread);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new RequestProcessorProxy using an existing RequestProcessor.
      *
@@ -70,7 +70,7 @@ public class RequestProcessorProxy implements InvocationHandler
         mRequestProcessor = aRequestProcessor;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Creates a new RequestProcessorProxy using a non-daemon thread.
      *
@@ -82,7 +82,7 @@ public class RequestProcessorProxy implements InvocationHandler
         return newInstance(aThreadName, anObject, false);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates a new RequestProcessorProxy.
      *
@@ -99,7 +99,7 @@ public class RequestProcessorProxy implements InvocationHandler
             new RequestProcessorProxy(aThreadName, anObject, useDaemonThread) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new RequestProcessorProxy an existing RequestProcessor.
      *
@@ -114,7 +114,7 @@ public class RequestProcessorProxy implements InvocationHandler
             new RequestProcessorProxy(anObject, aRequestProcessor) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the object proxied by this proxy.
      *
@@ -125,7 +125,7 @@ public class RequestProcessorProxy implements InvocationHandler
         return mObject;
     }
     
-    //----------------------------------------------------------------------
+
     public Object invoke(Object aProxy, Method aMethod, Object[] someArgs) throws Throwable
     {
         // Create request and send it.
@@ -141,8 +141,8 @@ public class RequestProcessorProxy implements InvocationHandler
         return request.getResult();
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Represents the proxied method invocation.
      */
@@ -153,7 +153,7 @@ public class RequestProcessorProxy implements InvocationHandler
         private Object[] mArgs;
         private Object mResult = null;
         
-        //----------------------------------------------------------------------
+
         /**
          * Constructs a new ProxyRequest.
          *
@@ -168,7 +168,7 @@ public class RequestProcessorProxy implements InvocationHandler
             mArgs = someArgs;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Gets the result of the call. Will be null if getException() is not null.
          */
@@ -177,7 +177,7 @@ public class RequestProcessorProxy implements InvocationHandler
             return mResult;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Called from the RequestProcessor thread to handle the method invocation.
          */

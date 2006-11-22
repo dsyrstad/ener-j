@@ -47,7 +47,7 @@ public class FunctorUtil
     // No construction.
     private FunctorUtil() { }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Dynamically creates a new UnaryFunctor specific by aFunctorClass for the given type.
      * 
@@ -74,7 +74,7 @@ public class FunctorUtil
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Dynamically creates a new BinaryFunctor specific by aFunctorClass for the given type.
      * 
@@ -100,7 +100,7 @@ public class FunctorUtil
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Conditionally wraps the functors from the given ASTs in conversion functors so that the values
      * evaluate to the types specified by someTargetTypes. 

@@ -46,7 +46,7 @@ public class SelectCollection extends BaseSelectCollection
     /** >= 0 if it's been calculated. */
     private int mSize = -1;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a SelectCollection that is unfiltered and unprojected. 
      *
@@ -59,7 +59,7 @@ public class SelectCollection extends BaseSelectCollection
         this(aWrappedCollection, aTrackedValueFunctor, null, null);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a SelectCollection that is filtered. 
      *
@@ -78,11 +78,11 @@ public class SelectCollection extends BaseSelectCollection
         mProjectionFunctor = aProjectionFunctor;
     }
     
-    //--------------------------------------------------------------------------------
-    // Collection Interface...
-    //--------------------------------------------------------------------------------
 
-    //--------------------------------------------------------------------------------
+    // Collection Interface...
+
+
+
     public Iterator iterator()
     {
         Iterator wrappedIterator;
@@ -100,7 +100,7 @@ public class SelectCollection extends BaseSelectCollection
         return new TrackAndProjectIterator(wrappedIterator);
     }
 
-    //--------------------------------------------------------------------------------
+
     public int size()
     {
         if (mSize < 0) {
@@ -113,12 +113,12 @@ public class SelectCollection extends BaseSelectCollection
         return mSize;
     }
 
-    //--------------------------------------------------------------------------------
-    // ...Collection Interface.
-    //--------------------------------------------------------------------------------
 
-    //--------------------------------------------------------------------------------
-    //--------------------------------------------------------------------------------
+    // ...Collection Interface.
+
+
+
+
     /**
      * Iterator that tracks the value at its current iteration and also projects based on
      * mProjectionFunctor.
@@ -127,13 +127,13 @@ public class SelectCollection extends BaseSelectCollection
     {
         private Iterator mWrappedIterator;
         
-        //--------------------------------------------------------------------------------
+
         private TrackAndProjectIterator(Iterator aWrappedIterator)
         {
             mWrappedIterator = aWrappedIterator;
         }
 
-        //--------------------------------------------------------------------------------
+
         public Object next()
         {
             Object value = mWrappedIterator.next();
@@ -149,13 +149,13 @@ public class SelectCollection extends BaseSelectCollection
             return value;
         }
 
-        //--------------------------------------------------------------------------------
+
         public boolean hasNext()
         {
             return mWrappedIterator.hasNext();
         }
 
-        //--------------------------------------------------------------------------------
+
         public void remove()
         {
             mWrappedIterator.remove();

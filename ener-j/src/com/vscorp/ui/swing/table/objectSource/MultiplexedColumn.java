@@ -30,7 +30,7 @@ abstract public class MultiplexedColumn extends EditableSortableTableColumn
      */
     private CellEditorListener mCellEditorListener = new CellEditorPropagator();
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -43,7 +43,7 @@ abstract public class MultiplexedColumn extends EditableSortableTableColumn
         this("", true);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable.
      * Heading alignment HEADER_CENTER by default.
@@ -56,7 +56,7 @@ abstract public class MultiplexedColumn extends EditableSortableTableColumn
         super(aColumnTitle, anEditingFlag);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the delegate column based on the specified object.
      * The method usually returns the same column for a particular object regardless
@@ -72,7 +72,7 @@ abstract public class MultiplexedColumn extends EditableSortableTableColumn
     protected abstract EditableSortableTableColumn getDelegateColumn(Object aValue,
                         int aRow, boolean anEditingFlag);
 
-    //----------------------------------------------------------------------
+
     // From TableCellRenderer
     public Component getTableCellRendererComponent(JTable aTable,
                 Object aValue, boolean aSelectedFlag, boolean aFocusFlag,
@@ -83,7 +83,7 @@ abstract public class MultiplexedColumn extends EditableSortableTableColumn
                     aFocusFlag, aRow, aColumn);
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellEditor...
     public Component getTableCellEditorComponent(JTable aTable, Object aValue,
                         boolean aSelectedFlag, int aRow, int aColumn)
@@ -102,7 +102,7 @@ abstract public class MultiplexedColumn extends EditableSortableTableColumn
                         aRow, aColumn);
     }
 
-    //----------------------------------------------------------------------
+
     // From CellEditor...
     public void cancelCellEditing()
     {
@@ -114,7 +114,7 @@ abstract public class MultiplexedColumn extends EditableSortableTableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     // From CellEditor...
     public boolean stopCellEditing()
     {
@@ -131,22 +131,22 @@ abstract public class MultiplexedColumn extends EditableSortableTableColumn
         return returnValue;
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * A CellEditorListener that propagates events from the delegate to
      * our listeners.
      */
     private final class CellEditorPropagator implements CellEditorListener
     {
-        //----------------------------------------------------------------------
+
         // From CellEditorListener...
         public void editingCanceled(ChangeEvent anEvent)
         {
             MultiplexedColumn.this.fireEditingCanceled();
         }
 
-        //----------------------------------------------------------------------
+
         // From CellEditorListener...
         public void editingStopped(ChangeEvent anEvent)
         {

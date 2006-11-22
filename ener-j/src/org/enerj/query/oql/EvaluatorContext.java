@@ -63,7 +63,7 @@ public class EvaluatorContext
      */
     private LinkedList<Map<String, VariableDef>> scopedVariables = new LinkedList<Map<String, VariableDef>>();
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a EvaluatorContext. 
      *
@@ -74,7 +74,7 @@ public class EvaluatorContext
         mTransaction = EnerJTransaction.getCurrentTransaction();
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets the evaluator context for this thread. 
      *
@@ -85,7 +85,7 @@ public class EvaluatorContext
         sContexts.set(aContext);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the evaluator context for this thread. 
      *
@@ -96,7 +96,7 @@ public class EvaluatorContext
         return sContexts.get();
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Disposes resources that were opened during evaluation.
      */
@@ -107,7 +107,7 @@ public class EvaluatorContext
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Tracks an extent for later disposal.
      * 
@@ -118,7 +118,7 @@ public class EvaluatorContext
         mExtents.add(anExtent);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Adds an import to the context.
      *
@@ -134,7 +134,7 @@ public class EvaluatorContext
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the list of imports.
      *
@@ -146,7 +146,7 @@ public class EvaluatorContext
         return mImports;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Resolves a class alias to a fully-qualified class name. 
      *
@@ -160,7 +160,7 @@ public class EvaluatorContext
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Finds a class given a class name. The class name may be unqualified or fully-qualified.
      * If it is fully-qualified, the class is loaded and returned.
@@ -227,7 +227,7 @@ public class EvaluatorContext
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Database.
      *
@@ -238,7 +238,7 @@ public class EvaluatorContext
         return mDatabase;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets the Database.
      *
@@ -249,7 +249,7 @@ public class EvaluatorContext
         mDatabase = aDatabase;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Transaction.
      *
@@ -260,7 +260,7 @@ public class EvaluatorContext
         return mTransaction;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets the Transaction.
      *
@@ -271,7 +271,7 @@ public class EvaluatorContext
         mTransaction = aTransaction;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Pushs a new variable scope onto the stack. 
      */
@@ -280,7 +280,7 @@ public class EvaluatorContext
         scopedVariables.addFirst( new HashMap<String, VariableDef>(16) );
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Pops a variable scope from the stack. 
      * 
@@ -292,7 +292,7 @@ public class EvaluatorContext
         scopedVariables.removeFirst();
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * @throws QueryException if no local variable scope exists. 
      */
@@ -303,7 +303,7 @@ public class EvaluatorContext
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Adds a variable to the most local scope. 
      * 
@@ -325,7 +325,7 @@ public class EvaluatorContext
         vars.put(aVariableName, new VariableDef(aFunctor, aType) );
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets a variable that is in scope. 
      * 
@@ -345,8 +345,8 @@ public class EvaluatorContext
         return null;
     }
     
-    //--------------------------------------------------------------------------------
-    //--------------------------------------------------------------------------------
+
+
     public static final class VariableDef
     {
         private UnaryFunctor mFunctor;

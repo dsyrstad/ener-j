@@ -20,7 +20,7 @@ abstract public class ProgressColumn extends ObjectSourceTableColumn
 {
     private static final JProgressBar sRenderer = new JProgressBar();
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -32,7 +32,7 @@ abstract public class ProgressColumn extends ObjectSourceTableColumn
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable.
      *
@@ -44,7 +44,7 @@ abstract public class ProgressColumn extends ObjectSourceTableColumn
         super(aColumnTitle, false);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the progress value for the cell.
      *
@@ -54,7 +54,7 @@ abstract public class ProgressColumn extends ObjectSourceTableColumn
      */
     protected abstract Integer getColumnValue(Object anObject);
 
-    //----------------------------------------------------------------------
+
     /**
      * Set the value for the cell.
      *
@@ -66,7 +66,7 @@ abstract public class ProgressColumn extends ObjectSourceTableColumn
      */
     protected abstract boolean setColumnValue(Object anObject, Integer aValue);
 
-    //----------------------------------------------------------------------
+
     /**
      * Calculates the preferred width of the TableColumn using the specified JTable.
      * Modifies the TableColumn's preferredWidth.
@@ -81,7 +81,7 @@ abstract public class ProgressColumn extends ObjectSourceTableColumn
         calculatePreferredWidth(aTable, component);
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellRenderer
     public Component getTableCellRendererComponent(JTable aTable,
                 Object aValue, boolean aSelectedFlag, boolean aFocusFlag,
@@ -116,7 +116,7 @@ abstract public class ProgressColumn extends ObjectSourceTableColumn
         return sRenderer;
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellEditor...
     public Component getTableCellEditorComponent(JTable aTable, Object aValue,
                         boolean isSelected, int aRow, int aColumn)
@@ -124,21 +124,21 @@ abstract public class ProgressColumn extends ObjectSourceTableColumn
         return null;    /**  TODO  not implemented */
     }
 
-    //----------------------------------------------------------------------
+
     // From CellEditor...
     public boolean isCellEditable(EventObject anEvent)
     {
         return false;    /**  TODO  not implemented, remove when done */
     }
 
-    //----------------------------------------------------------------------
+
     // From CellEditor...
     public boolean shouldSelectCell(EventObject anEvent)
     {
         return false;    /**  TODO  not implemented, remove when done */
     }
 
-    //----------------------------------------------------------------------
+
     // From CellEditor...
     public boolean stopCellEditing()
     {

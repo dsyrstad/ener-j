@@ -40,7 +40,7 @@ public class StoreObjectLogEntry extends LogEntry
     private long mNewCID = -1;
     private byte[] mNewObjectValue = null;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an empty StoreObjectLogEntry.
      */
@@ -48,7 +48,7 @@ public class StoreObjectLogEntry extends LogEntry
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a StoreObjectLogEntry.
      *
@@ -66,7 +66,7 @@ public class StoreObjectLogEntry extends LogEntry
         mNewObjectValue = aNewObjectValue;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the entry type of this log entry.
      *
@@ -77,7 +77,7 @@ public class StoreObjectLogEntry extends LogEntry
         return STORE_OBJECT_ENTRY_TYPE;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -93,7 +93,7 @@ public class StoreObjectLogEntry extends LogEntry
         return 8 + 8 + 4 + objectLength;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -107,7 +107,7 @@ public class StoreObjectLogEntry extends LogEntry
         aDataOutput.write(mNewObjectValue);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets OID that was stored.
      *
@@ -118,7 +118,7 @@ public class StoreObjectLogEntry extends LogEntry
         return mOID;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the CID that was stored.
      *
@@ -129,7 +129,7 @@ public class StoreObjectLogEntry extends LogEntry
         return mNewCID;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the serialized object value that was stored.
      *
@@ -140,7 +140,7 @@ public class StoreObjectLogEntry extends LogEntry
         return mNewObjectValue;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

@@ -40,7 +40,7 @@ import org.odmg.QueryException;
 public class NilLiteralAST extends BaseAST
 {
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a new NilLiteralAST. 
      */
@@ -48,7 +48,7 @@ public class NilLiteralAST extends BaseAST
     {
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -57,7 +57,7 @@ public class NilLiteralAST extends BaseAST
         return Object.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

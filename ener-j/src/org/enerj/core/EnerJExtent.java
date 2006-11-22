@@ -50,7 +50,7 @@ public class EnerJExtent implements Extent
     private Set<EnerJExtentIterator> mOpenIterators = new HashSet<EnerJExtentIterator>(5);
     private int mSize = -1; // -1 = not initialized.
 
-    //----------------------------------------------------------------------
+
     EnerJExtent(EnerJDatabase aDatabase, Class aCandidateClass, boolean hasSubclasses)
     {
         mDatabase = aDatabase;
@@ -58,7 +58,7 @@ public class EnerJExtent implements Extent
         mHasSubclasses = hasSubclasses;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Ensures that the extent iterator has been converted to a Collection in mCollection. 
      */
@@ -77,29 +77,29 @@ public class EnerJExtent implements Extent
         }
     }
 
-    //----------------------------------------------------------------------
-    // Collection interface...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Collection interface...
+
+
+
     public boolean add(Object o)
     {
         throw new UnsupportedOperationException("Extent collection is immutable");
     }
 
-    //----------------------------------------------------------------------
+
     public boolean addAll(Collection c)
     {
         throw new UnsupportedOperationException("Extent collection is immutable");
     }
 
-    //----------------------------------------------------------------------
+
     public void clear()
     {
         throw new UnsupportedOperationException("Extent collection is immutable");
     }
 
-    //----------------------------------------------------------------------
+
     public boolean contains(Object anObject)
     {
         Iterator iter = this.iterator();
@@ -118,38 +118,38 @@ public class EnerJExtent implements Extent
         }
     }
 
-    //----------------------------------------------------------------------
+
     public boolean containsAll(Collection aCollection)
     {
         ensureCollection();
         return mCollection.containsAll(aCollection);
     }
 
-    //----------------------------------------------------------------------
+
     public boolean isEmpty()
     {
         return size() == 0;
     }
 
-    //----------------------------------------------------------------------
+
     public boolean remove(Object o)
     {
         throw new UnsupportedOperationException("Extent collection is immutable");
     }
 
-    //----------------------------------------------------------------------
+
     public boolean removeAll(Collection c)
     {
         throw new UnsupportedOperationException("Extent collection is immutable");
     }
 
-    //----------------------------------------------------------------------
+
     public boolean retainAll(Collection c)
     {
         throw new UnsupportedOperationException("Extent collection is immutable");
     }
 
-    //----------------------------------------------------------------------
+
     public int size()
     {
         if (mSize < 0) {
@@ -164,29 +164,29 @@ public class EnerJExtent implements Extent
         return mSize;
     }
 
-    //----------------------------------------------------------------------
+
     public Object[] toArray()
     {
         ensureCollection();
         return mCollection.toArray();
     }
 
-    //----------------------------------------------------------------------
+
     public Object[] toArray(Object[] a)
     {
         ensureCollection();
         return mCollection.toArray(a);
     }
 
-    //----------------------------------------------------------------------
+
     // ...Collection interface.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     // Extent interface...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     public java.util.Iterator iterator()
     {
         EnerJExtentIterator iterator = new EnerJExtent.EnerJExtentIterator();
@@ -194,19 +194,19 @@ public class EnerJExtent implements Extent
         return iterator;
     }
 
-    //----------------------------------------------------------------------
+
     public boolean hasSubclasses()
     {
         return mHasSubclasses;
     }
 
-    //----------------------------------------------------------------------
+
     public Class getCandidateClass()
     {
         return mCandidateClass;
     }
 
-    //----------------------------------------------------------------------
+
     public void closeAll()
     {
         Iterator iter = mOpenIterators.iterator();
@@ -219,7 +219,7 @@ public class EnerJExtent implements Extent
         }
     }
     
-    //----------------------------------------------------------------------
+
      public void close(java.util.Iterator anIterator)
      {
         if (anIterator instanceof EnerJExtentIterator) {
@@ -229,12 +229,12 @@ public class EnerJExtent implements Extent
         }
      }
 
-    //----------------------------------------------------------------------
+
     // ...Extent interface.
-    //----------------------------------------------------------------------
+
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     private final class EnerJExtentIterator implements java.util.Iterator
     {
         private static final int DEFAULT_CHUNK_SIZE = 200;
@@ -247,13 +247,13 @@ public class EnerJExtent implements Extent
         private int mObjectIdx = 0; 
         private boolean mIsOpen = true;
 
-        //----------------------------------------------------------------------
+
         EnerJExtentIterator()
         {
             mExtentIterator = mDatabase.getExtentIterator(mCandidateClass, mHasSubclasses);
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Closes this iterator.
          */
@@ -263,7 +263,7 @@ public class EnerJExtent implements Extent
             mIsOpen = false;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Checks if the iterator is open.
          *
@@ -274,7 +274,7 @@ public class EnerJExtent implements Extent
             return mIsOpen;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Verifies that the iterator is open.
          */
@@ -285,7 +285,7 @@ public class EnerJExtent implements Extent
             }
         }
 
-        //----------------------------------------------------------------------
+
         public boolean hasNext() 
         {
             checkOpen();
@@ -303,7 +303,7 @@ public class EnerJExtent implements Extent
             return true;
         }
         
-        //----------------------------------------------------------------------
+
         public Object next()
         {
             checkOpen();
@@ -314,7 +314,7 @@ public class EnerJExtent implements Extent
             return mObjects[mObjectIdx++];
         }
         
-        //----------------------------------------------------------------------
+
         public void remove() 
         {
             throw new UnsupportedOperationException("Cannot remove from an Extent iterator");

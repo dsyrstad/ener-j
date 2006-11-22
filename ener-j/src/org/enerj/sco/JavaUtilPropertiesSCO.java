@@ -39,7 +39,7 @@ public class JavaUtilPropertiesSCO extends java.util.Properties implements SCOTr
 {
     private Persistable mOwnerFCO;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct an empty collection using the specified initial capacity and 
      * owner FCO.
@@ -52,21 +52,21 @@ public class JavaUtilPropertiesSCO extends java.util.Properties implements SCOTr
         mOwnerFCO = anOwnerFCO;
     }
 
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public Persistable getOwnerFCO()
     {
         return mOwnerFCO;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerFCO(Persistable anOwner)
     {
         mOwnerFCO = anOwner;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerModified() 
     {
@@ -75,7 +75,7 @@ public class JavaUtilPropertiesSCO extends java.util.Properties implements SCOTr
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns a clone without the owner set.
      *
@@ -88,11 +88,11 @@ public class JavaUtilPropertiesSCO extends java.util.Properties implements SCOTr
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // Overridden mutator methods from java.util.Properties.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Overridden mutator methods from java.util.Properties.
+
+
+
     // java.util.Map
     public Object put(Object key, Object value) 
     {
@@ -101,7 +101,7 @@ public class JavaUtilPropertiesSCO extends java.util.Properties implements SCOTr
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Map
     public void putAll(Map t) 
     {
@@ -109,7 +109,7 @@ public class JavaUtilPropertiesSCO extends java.util.Properties implements SCOTr
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Map
     public void clear() 
     {
@@ -117,7 +117,7 @@ public class JavaUtilPropertiesSCO extends java.util.Properties implements SCOTr
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Map
     public Object remove(Object key) 
     {
@@ -126,7 +126,7 @@ public class JavaUtilPropertiesSCO extends java.util.Properties implements SCOTr
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Properties
     public void load(InputStream inStream) throws IOException
     {
@@ -134,7 +134,7 @@ public class JavaUtilPropertiesSCO extends java.util.Properties implements SCOTr
         super.load(inStream);
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Properties
     public Object setProperty(String key, String value)
     {

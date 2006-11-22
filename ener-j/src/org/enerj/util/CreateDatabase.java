@@ -35,7 +35,7 @@ import org.enerj.server.PagedObjectServer;
 public class CreateDatabase 
 {
     
-    //----------------------------------------------------------------------
+
     public static void usage()
     {
         System.err.println("Usage: " + CreateDatabase.class.getName() + " [options] DatabaseName");
@@ -56,7 +56,7 @@ public class CreateDatabase
         System.exit(1);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) throws Exception
     {
         if (args.length < 1) {

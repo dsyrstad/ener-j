@@ -38,7 +38,7 @@ public class JavaUtilTreeMapSCO extends java.util.TreeMap implements SCOTracker
 {
     private Persistable mOwnerFCO;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct an empty collection using the specified initial capacity and 
      * owner FCO.
@@ -53,21 +53,21 @@ public class JavaUtilTreeMapSCO extends java.util.TreeMap implements SCOTracker
         mOwnerFCO = anOwnerFCO;
     }
 
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public Persistable getOwnerFCO()
     {
         return mOwnerFCO;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerFCO(Persistable anOwner)
     {
         mOwnerFCO = anOwner;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerModified() 
     {
@@ -76,7 +76,7 @@ public class JavaUtilTreeMapSCO extends java.util.TreeMap implements SCOTracker
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns a clone without the owner set.
      *
@@ -89,11 +89,11 @@ public class JavaUtilTreeMapSCO extends java.util.TreeMap implements SCOTracker
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // Overridden mutator methods from java.util.TreeMap.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Overridden mutator methods from java.util.TreeMap.
+
+
+
     // java.util.Map
     public Object put(Object key, Object value) 
     {
@@ -102,7 +102,7 @@ public class JavaUtilTreeMapSCO extends java.util.TreeMap implements SCOTracker
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Map
     public void putAll(Map t) 
     {
@@ -110,7 +110,7 @@ public class JavaUtilTreeMapSCO extends java.util.TreeMap implements SCOTracker
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Map
     public void clear() 
     {
@@ -118,7 +118,7 @@ public class JavaUtilTreeMapSCO extends java.util.TreeMap implements SCOTracker
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Map
     public Object remove(Object key) 
     {

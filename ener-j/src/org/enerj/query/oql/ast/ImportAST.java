@@ -41,7 +41,7 @@ public class ImportAST extends BaseAST
     private QualifiedNameAST mQualifiedName;
     private String mAlias;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a new ImportAST. 
      */
@@ -51,7 +51,7 @@ public class ImportAST extends BaseAST
         mAlias = anAlias;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the qualified name of this import.
      * 
@@ -62,7 +62,7 @@ public class ImportAST extends BaseAST
         return mQualifiedName;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the import alias, if defined.
      * 
@@ -73,7 +73,7 @@ public class ImportAST extends BaseAST
         return mAlias;
     }
 
-    //--------------------------------------------------------------------------------
+
     protected Class getType0() throws QueryException
     {
         // resolve0() does all of the work. 
@@ -81,7 +81,7 @@ public class ImportAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     protected UnaryFunctor resolve0() throws QueryException
     {
         EvaluatorContext.getContext().addImport(mQualifiedName.getQualifiedName(), mAlias);

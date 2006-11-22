@@ -41,7 +41,7 @@ public class UndefineQueryAST extends BaseAST
 {
     private String mQueryName;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a new UndefineQueryAST.
      * 
@@ -52,7 +52,7 @@ public class UndefineQueryAST extends BaseAST
         mQueryName = aQueryName;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the query name to be undefined.
      * 

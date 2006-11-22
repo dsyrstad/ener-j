@@ -35,7 +35,7 @@ import java.io.*;
  */
 public class ResettableBufferedInputStream extends BufferedInputStream
 {
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a ResettableBufferedInputStream with the specified buffer size.
      *
@@ -49,7 +49,7 @@ public class ResettableBufferedInputStream extends BufferedInputStream
         super(anInputStream, aBufferSize);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Reset the buffer so that any previously buffered data input is no longer.
      */

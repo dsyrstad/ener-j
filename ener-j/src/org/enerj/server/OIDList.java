@@ -95,7 +95,7 @@ public class OIDList
     /** A working buffer that we can use. */
     private ByteBuffer mBuffer;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an OIDList from a PageServer.
      *
@@ -114,7 +114,7 @@ public class OIDList
         readHeader();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Reads the list header.
      *
@@ -150,7 +150,7 @@ public class OIDList
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** 
      * Writes the OIDList header information back to the PageServer. Until
      * this is called, the header information is cached in memory.
@@ -166,7 +166,7 @@ public class OIDList
         mPageServer.storePage(mBuffer, mHeaderOffset, 0);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the size of the OID list. Some OIDs in the list may not be in use.
      * Unused OIDs can be detected by calling getObjectOffsetForOID() on an OID.
@@ -179,7 +179,7 @@ public class OIDList
         return mNumOIDs;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Allocates a block of OIDs.
      *
@@ -199,7 +199,7 @@ public class OIDList
         return oids;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Ensures that a OID has been allocated. If it has not been allocated,
      * it will be upon return. This is used primarily for log-based recovery
@@ -216,7 +216,7 @@ public class OIDList
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the index for mOIDPages given anOID. The array will grow to 
      * accomodate the returned index. A new page is allocated if
@@ -265,7 +265,7 @@ public class OIDList
         return pageIndex;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the offset within the page of the OID. 
      *
@@ -281,7 +281,7 @@ public class OIDList
         return PTR_SIZE + ((int)(anOID - (aPageIndex * mOIDsPerPage)) * OID_SIZE);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the CID associated with the specified OID.
      *
@@ -302,7 +302,7 @@ public class OIDList
         return mBuffer.getLong(0);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the pointer to the object (object offset) for anOID.
      *
@@ -324,7 +324,7 @@ public class OIDList
         return mBuffer.getLong(0);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the OID information for anOID. Information is only updated if 
      * it is different from what is currently stored.

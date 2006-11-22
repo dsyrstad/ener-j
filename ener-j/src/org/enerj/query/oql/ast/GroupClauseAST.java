@@ -37,7 +37,7 @@ public class GroupClauseAST extends BaseAST
     private AST mFieldList;
     private AST mHaving;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a GroupClauseAST. 
      *
@@ -50,7 +50,7 @@ public class GroupClauseAST extends BaseAST
         mHaving = aHaving;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the FieldList.
      *
@@ -61,7 +61,7 @@ public class GroupClauseAST extends BaseAST
         return mFieldList;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the having clause.
      *

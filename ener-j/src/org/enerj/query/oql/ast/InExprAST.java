@@ -37,7 +37,7 @@ public class InExprAST extends BaseAST
     private AST mLeftExpr;
     private AST mRightExpr;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a OrExprAST. 
      *
@@ -50,7 +50,7 @@ public class InExprAST extends BaseAST
         mRightExpr = aRightExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mLeftExpr.
      *
@@ -61,7 +61,7 @@ public class InExprAST extends BaseAST
         return mLeftExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mRightExpr.
      *

@@ -116,14 +116,14 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
     // transient protected EnerJClass enerj_mClass; // The particular version of this class used by this object
         // EnerJClass should contain transient private long voEnhancerVersion;
 
-    //----------------------------------------------------------------------
+
     // Generated constructor. Persister is simply used for a unique signature.
     public EnhancerTemplate_Enhanced(Persister aPersister)
     {
         super(); // To Date.<init>()
     }
 
-    //----------------------------------------------------------------------
+
     // User-defined constructor.
     public EnhancerTemplate_Enhanced(int aParam)
     {
@@ -134,18 +134,18 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         enerj_Set_org_enerj_enhancer_templates_EnhancerTemplate_mInt(this, aParam);
     }
 
-    //----------------------------------------------------------------------
-    // User-defined methods ...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // User-defined methods ...
+
+
+
     public void runOn(int aParam)
     {
         System.out.println("mLong is " + enerj_Get_org_enerj_enhancer_templates_EnhancerTemplate_mLong(this));
         enerj_Set_org_enerj_enhancer_templates_EnhancerTemplate_mInt(this, aParam);
     }
 
-    //----------------------------------------------------------------------
+
     // Enhanced version of user-defined clone.
     public Object clone() 
     {
@@ -161,7 +161,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         return clone;
     }
 
-    //----------------------------------------------------------------------
+
     // Enhanced version of user-defined clone. Version 2 - no super.clone();
     public Object clone2() 
     {
@@ -177,7 +177,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         return clone;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * User callback.
      */
@@ -185,29 +185,29 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
     {
     }
     
-    //----------------------------------------------------------------------
-    // ...End of User-defined methods.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // ...End of User-defined methods.
+
+
+
     // Generated methods for top-level persistable only. These come from the 
     // Persistable interface...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     // May be null if Persister not assigned yet (it must be New in this case).
     public final Persister enerj_GetPersister()
     {
         return enerj_mPersister;
     }
 
-    //----------------------------------------------------------------------
+
     public final void enerj_SetPersister(Persister aPersister)
     {
         enerj_mPersister = aPersister;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the modification version number associated with this object.
      *
@@ -218,7 +218,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         return enerj_mVersion;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Set the modification version for this object.
      *
@@ -229,7 +229,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         enerj_mVersion = aVersion;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the object ID this object.
      *
@@ -240,19 +240,19 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         return enerj_mOID;
     }
 
-    //----------------------------------------------------------------------
+
     public void enerj_SetPrivateOID(long anOID)
     {
         enerj_mOID = anOID;
     }
 
-    //----------------------------------------------------------------------
+
     public boolean enerj_IsModified() 
     {
         return enerj_mModified;
     }
     
-    //----------------------------------------------------------------------
+
     /** Determines if this object allows Non-Transactional Reads.
      *
      * @return true if it allows Non-Transactionals Reads, else false.
@@ -262,7 +262,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         return enerj_mAllowNonTransactionalReads;
     }
     
-    //----------------------------------------------------------------------
+
     /** Determines if this object allows Non-Transactional Writes.
      *
      * @return true if it allows Non-Transactionals Writes, else false.
@@ -272,7 +272,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         return enerj_mAllowNonTransactionalWrites;
     }
     
-    //----------------------------------------------------------------------
+
     /** Determines if this object has been Loaded.
      *
      * @return true if it has been Loaded, else false.
@@ -282,7 +282,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         return enerj_mLoaded;
     }
     
-    //----------------------------------------------------------------------
+
     /** Determines if this object is New.
      *
      * @return true if it is New, else false.
@@ -292,7 +292,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         return enerj_mNew;
     }
     
-    //----------------------------------------------------------------------
+
     /** Sets whether this object allows Non-Transactional Reads.
      */
     public void enerj_SetAllowNonTransactionalRead(boolean anAllowFlag) 
@@ -300,7 +300,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         enerj_mAllowNonTransactionalReads = anAllowFlag;
     }
     
-    //----------------------------------------------------------------------
+
     /** Sets whether this object allows Non-Transactional Writes.
      */
     public void enerj_SetAllowNonTransactionalWrite(boolean anAllowFlag) 
@@ -308,7 +308,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         enerj_mAllowNonTransactionalWrites = anAllowFlag;
     }
     
-    //----------------------------------------------------------------------
+
     /** Sets whether this object is Loaded.
      */
     public void enerj_SetLoaded(boolean aLoadedFlag) 
@@ -316,7 +316,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         enerj_mLoaded = aLoadedFlag;
     }
     
-    //----------------------------------------------------------------------
+
     /** Sets whether this object is Modified.
      */
     public void enerj_SetModified(boolean aModifiedFlag) 
@@ -324,7 +324,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         enerj_mModified = aModifiedFlag;
     }
     
-    //----------------------------------------------------------------------
+
     /** Sets whether this object is New.
      */
     public void enerj_SetNew(boolean aNewFlag) 
@@ -332,7 +332,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         enerj_mNew = aNewFlag;
     }
     
-    //----------------------------------------------------------------------
+
     /** Gets the lock level of this object. This is merely the local status of the lock.
      *
      * @return one of the EnerJTransaction lock levels: NO_LOCK, READ,
@@ -344,7 +344,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         return enerj_mLockLevel;
     }
     
-    //----------------------------------------------------------------------
+
     /** Sets the lock level of this object. This does not actually lock the object,
      * it merely maintains a local status of the lock.
      *
@@ -357,7 +357,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         enerj_mLockLevel = aLockLevel;
     }
     
-    //----------------------------------------------------------------------
+
     // If user doesn't define clone() in this, one is generated like this
     // for top-level Persistables. Not that it does NOT throw CloneNotSupportedException.
     public Object clone_Generated() 
@@ -372,7 +372,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         return clone;
     }
     
-    //----------------------------------------------------------------------
+
     // If user doesn't define clone() in this, one is generated like this
     // for top-level Persistables. Not that it does NOT throw CloneNotSupportedException.
     // Version if super-class cloine is declared to throw - e.g., Object.
@@ -391,50 +391,50 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         }
     }
 
-    //----------------------------------------------------------------------
+
     // ... End of Generated methods for top-level persistable only.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     // Generated methods for any persistable...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     // So we can get a class id when we only have a class and not an object.
     public static long enerj_GetClassIdStatic()
     {
         return enerj_sClassId;
     }
     
-    //----------------------------------------------------------------------
+
     // So we can get a class id via the Persistable interface.
     public long enerj_GetClassId()
     {
         return enerj_sClassId;
     }
     
-    //----------------------------------------------------------------------
+
     // Modifier matches original field modifier (none - package)
     static int enerj_Get_org_enerj_enhancer_templates_EnhancerTemplate_mPackageStaticInt()
     {
         return mPackageStaticInt;
     }
 
-    //----------------------------------------------------------------------
+
     // Modifier matches original field modifier (none - package)
     static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplate_mPackageStaticInt(int aValue)
     {
         mPackageStaticInt = aValue;
     }
 
-    //----------------------------------------------------------------------
+
     // Modifier matches original field modifier (none - package)
     static int enerj_Get_org_enerj_enhancer_templates_EnhancerTemplate_mPackageTransientInt(EnhancerTemplate_Enhanced anInstance)
     {
         return anInstance.mPackageTransientInt;
     }
 
-    //----------------------------------------------------------------------
+
     // Modifier matches original field modifier (none - package)
     static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplate_mPackageTransientInt(EnhancerTemplate_Enhanced anInstance,
                 int aValue)
@@ -442,7 +442,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         anInstance.mPackageTransientInt = aValue;
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static long
             enerj_Get_org_enerj_enhancer_templates_EnhancerTemplate_mLong(EnhancerTemplate_Enhanced  anInstance)
@@ -454,7 +454,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         return anInstance.mLong;
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static int[]
             enerj_Get_org_enerj_enhancer_templates_EnhancerTemplate_mIntArray(EnhancerTemplate_Enhanced  anInstance)
@@ -466,7 +466,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         return anInstance.mIntArray;
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplate_mLong(EnhancerTemplate_Enhanced  anInstance,
                 long  aValue)
@@ -483,7 +483,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         }
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplate_mDouble(EnhancerTemplate_Enhanced  anInstance,
                 double  aValue)
@@ -500,7 +500,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         }
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplate_mInt(EnhancerTemplate_Enhanced  anInstance,
                 int  aValue)
@@ -517,7 +517,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         }
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplate_mFloat(EnhancerTemplate_Enhanced  anInstance,
                 float  aValue)
@@ -534,7 +534,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         }
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplate_mShort(EnhancerTemplate_Enhanced  anInstance,
                 short  aValue)
@@ -551,7 +551,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         }
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplate_mIntArray(EnhancerTemplate_Enhanced  anInstance,
                 int[] aValue)
@@ -568,7 +568,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         }
     }
 
-    //----------------------------------------------------------------------
+
     private // Modifier matches original field modifier
         static void enerj_Set_org_enerj_enhancer_templates_EnhancerTemplate_mString(EnhancerTemplate_Enhanced  anInstance,
                 String aValue)
@@ -585,7 +585,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         }
     }
 
-    //----------------------------------------------------------------------
+
     public void enerj_ReadObject(ObjectSerializer aContext) throws IOException
     {
         DataInput stream = aContext.getDataInput();
@@ -613,7 +613,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         mObjArray = (Object[])aContext.readObject(this);
    }
 
-    //----------------------------------------------------------------------
+
     public void enerj_WriteObject(ObjectSerializer aContext) throws IOException
     {
         DataOutput stream = aContext.getDataOutput();
@@ -641,7 +641,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         aContext.writeObject(mObjArray, this);
     }
 
-    //----------------------------------------------------------------------
+
     public void enerj_ResolveObject(ObjectSerializer aContext, boolean shouldDisassociate) throws IOException
     {
         aContext.resolveObject(mByteObj, shouldDisassociate);
@@ -660,7 +660,7 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
     }
 
     
-    //----------------------------------------------------------------------
+
     /** Clear the object's persistent fields. Only persistent fields which
      * refer to Objects are cleared (i.e., primitive field values are not touched).
      */
@@ -685,8 +685,8 @@ class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, C
         PersistableHelper.completeHollow(this);
     }
     
-    //----------------------------------------------------------------------
+
     // ... End of Generated methods for any persistable.
-    //----------------------------------------------------------------------
+
 
 }

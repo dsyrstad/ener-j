@@ -23,7 +23,7 @@ public class PropertyTextColumn extends TextColumn
     private PropertyDescriptor mDescriptor;
     private Method mReadMethod;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -51,7 +51,7 @@ public class PropertyTextColumn extends TextColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the column's string value from the specified object.
      *
@@ -76,7 +76,7 @@ public class PropertyTextColumn extends TextColumn
         return ret.toString();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Set the column's string value on the specified object.
      *

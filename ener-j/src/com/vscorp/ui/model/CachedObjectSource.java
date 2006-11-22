@@ -56,7 +56,7 @@ public class CachedObjectSource extends BaseObjectSource
     /** Up to this many objects may be retrieved from mObjectSource in a single call */
     private int mChunkSize;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructor for sub-classes. Does nothing. Expects that setIObjectSource
      * will be called by the sub-class constructor.
@@ -65,7 +65,7 @@ public class CachedObjectSource extends BaseObjectSource
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct with a subservient ObjectSource. The default retrieval "chunk"
      * size is aMaxCacheSize / 4.
@@ -83,7 +83,7 @@ public class CachedObjectSource extends BaseObjectSource
         setObjectSource(anObjectSource, aMaxCacheSize, aMaxCacheSize / 4);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct with a subservient ObjectSource.
      *
@@ -105,7 +105,7 @@ public class CachedObjectSource extends BaseObjectSource
         setObjectSource(anObjectSource, aMaxCacheSize, aChunkSize);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the subservient ObjectSource and evicts the current cache.
      *
@@ -151,7 +151,7 @@ public class CachedObjectSource extends BaseObjectSource
         mObjectSource.addObjectSourceListener(this);
    }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the subservient ObjectSource.
      *
@@ -162,7 +162,7 @@ public class CachedObjectSource extends BaseObjectSource
         return mObjectSource;
     }
 
-    //----------------------------------------------------------------------
+
     // From ObjectSourceListener...
     public void notifyObjectSourceChanged(ObjectSourceEvent anEvent)
     {
@@ -215,7 +215,7 @@ public class CachedObjectSource extends BaseObjectSource
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Evicts all objects from the cache.
      */
@@ -224,7 +224,7 @@ public class CachedObjectSource extends BaseObjectSource
         createCacheSpace();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Evicts a specific CachedObject from the cache.
      *
@@ -249,7 +249,7 @@ public class CachedObjectSource extends BaseObjectSource
         mObjectIdMap.remove(aCachedObject.mObjectId);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Evicts a specific object id from the cache.
      *
@@ -260,7 +260,7 @@ public class CachedObjectSource extends BaseObjectSource
         evictCachedObject( (CachedObject)mObjectIdMap.get(anObjectId) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Evicts an indexed object from the cache.
      *
@@ -271,7 +271,7 @@ public class CachedObjectSource extends BaseObjectSource
         evictCachedObject( (CachedObject)mIndexMap.get( new MutableInteger(anIndex) ) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Evicts a range of objects from the cache.
      *
@@ -287,7 +287,7 @@ public class CachedObjectSource extends BaseObjectSource
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Creates all of the cache data structures
      */
@@ -302,7 +302,7 @@ public class CachedObjectSource extends BaseObjectSource
         mBaseSize = -1;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Add an CachedObject to the head of the MRU list.
      *
@@ -326,7 +326,7 @@ public class CachedObjectSource extends BaseObjectSource
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Unlink a CachedObject from the MRU list.
      *
@@ -356,7 +356,7 @@ public class CachedObjectSource extends BaseObjectSource
         aCachedObject.mNext = null;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Unlink the LRU CachedObject from the MRU list.
      *
@@ -371,7 +371,7 @@ public class CachedObjectSource extends BaseObjectSource
         return returnObject;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Checks to see if anObject is cached. If it's not, then it will be
      * cached. In the process of adding new objects to the cache, LRU objects
@@ -427,11 +427,11 @@ public class CachedObjectSource extends BaseObjectSource
         return cachedObject;
     }
 
-    //----------------------------------------------------------------------
-    // Methods from ObjectSource...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Methods from ObjectSource...
+
+
+
     // From ObjectSource...
     public int size() throws ObjectSourceException
     {
@@ -442,7 +442,7 @@ public class CachedObjectSource extends BaseObjectSource
         return mBaseSize;
     }
 
-    //----------------------------------------------------------------------
+
     // From ObjectSource...
     public Object get(int anIndex)
         throws ObjectSourceException, ArrayIndexOutOfBoundsException
@@ -539,7 +539,7 @@ public class CachedObjectSource extends BaseObjectSource
         return cachedObject.mObject;
     }
 
-    //----------------------------------------------------------------------
+
     // From ObjectSource...
     public void get(int anIndex, int aLength, Object[] anObjectArray)
         throws ObjectSourceException, ArrayIndexOutOfBoundsException
@@ -599,7 +599,7 @@ public class CachedObjectSource extends BaseObjectSource
         }
     }
 
-    //----------------------------------------------------------------------
+
     // From ObjectSource...
     public Object get(Object anObjectId) throws ObjectSourceException
     {
@@ -630,14 +630,14 @@ public class CachedObjectSource extends BaseObjectSource
         return object;
     }
 
-    //----------------------------------------------------------------------
+
     // From ObjectSource...
     public Object getObjectId(Object anObject)
     {
         return mObjectSource.getObjectId(anObject);
     }
 
-    //----------------------------------------------------------------------
+
     // From ObjectSource...
     public void update(Object anObject, int anIndex) throws ObjectSourceException
     {
@@ -646,7 +646,7 @@ public class CachedObjectSource extends BaseObjectSource
         mObjectSource.update(anObject, anIndex);
     }
 
-    //----------------------------------------------------------------------
+
     // From ObjectSource...
     public void update(Object anObject) throws ObjectSourceException
     {
@@ -655,15 +655,15 @@ public class CachedObjectSource extends BaseObjectSource
         mObjectSource.update(anObject);
     }
 
-    //----------------------------------------------------------------------
+
     // ...End of methods from ObjectSource
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     // Nested classes...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     /**
      * Represents a cached object and a node in MRU list.
      * Yep, we're implementing our own linked list here.
@@ -684,7 +684,7 @@ public class CachedObjectSource extends BaseObjectSource
         MutableInteger mIndex;
         Object mObjectId;
 
-        //----------------------------------------------------------------------
+
         CachedObject(Object anObject, MutableInteger anIndex, Object anObjectId)
         {
             mObject = anObject;
@@ -693,7 +693,7 @@ public class CachedObjectSource extends BaseObjectSource
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Similar to the MutableInteger class, but mutable.
      * We use this instead of integer so that we can quickly generate keys for
@@ -703,7 +703,7 @@ public class CachedObjectSource extends BaseObjectSource
     {
         private int mValue;
 
-        //----------------------------------------------------------------------
+
         /** Construct using a value.
          *
          * @param aValue the value to be represented by this object.
@@ -713,7 +713,7 @@ public class CachedObjectSource extends BaseObjectSource
             setValue(aValue);
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Sets the integer value.
          *
@@ -724,7 +724,7 @@ public class CachedObjectSource extends BaseObjectSource
             mValue = aValue;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Gets the integer value. Mirrors the method on MutableInteger.
          *
@@ -735,7 +735,7 @@ public class CachedObjectSource extends BaseObjectSource
             return mValue;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Returns a String object representing this MutableInteger's value. The
          * value is returned exactly as if the integer value were given as an
@@ -748,7 +748,7 @@ public class CachedObjectSource extends BaseObjectSource
             return String.valueOf(mValue);
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Returns a hashcode for this MutableInteger.
          *
@@ -759,7 +759,7 @@ public class CachedObjectSource extends BaseObjectSource
             return mValue;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Compares this object to the specified object.
          * The result is true if and only if the argument is not

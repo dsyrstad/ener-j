@@ -43,7 +43,7 @@ public class DateLiteralAST extends BaseAST
 {
     private String mValue;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a DateLiteralAST. 
      *
@@ -54,7 +54,7 @@ public class DateLiteralAST extends BaseAST
         mValue = someValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Value.
      *
@@ -65,7 +65,7 @@ public class DateLiteralAST extends BaseAST
         return mValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -74,7 +74,7 @@ public class DateLiteralAST extends BaseAST
         return Date.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
