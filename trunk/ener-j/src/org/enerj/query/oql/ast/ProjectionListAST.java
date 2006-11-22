@@ -37,7 +37,7 @@ public class ProjectionListAST extends BaseAST
 {
     private List<ProjectionAST> mProjections;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a new ProjectionListAST. 
      */
@@ -46,7 +46,7 @@ public class ProjectionListAST extends BaseAST
         mProjections = someProjections;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the projections.
      *

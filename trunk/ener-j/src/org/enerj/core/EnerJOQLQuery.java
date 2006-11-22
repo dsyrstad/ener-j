@@ -54,7 +54,7 @@ public class EnerJOQLQuery implements OQLQuery
 {
     private UnaryFunctor[] mFunctors;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct an empty EnerJOQLQuery. You must call create() to configure the query. 
      *
@@ -63,7 +63,7 @@ public class EnerJOQLQuery implements OQLQuery
     {
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a EnerJOQLQuery with the given query string. You need not call create() to configure the query.
      * See create() for more details.
@@ -77,7 +77,7 @@ public class EnerJOQLQuery implements OQLQuery
         create(aQuery);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a EnerJOQLQuery with the given query Reader. You need not call create() to configure the query.
      * See create() for more details.
@@ -91,7 +91,7 @@ public class EnerJOQLQuery implements OQLQuery
         create(aQueryReader);
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.odmg.OQLQuery#create(java.lang.String)
@@ -101,7 +101,7 @@ public class EnerJOQLQuery implements OQLQuery
         create( new StringReader(aQuery) );
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * Creates a query from a Reader. 
      * 
@@ -158,7 +158,7 @@ public class EnerJOQLQuery implements OQLQuery
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.odmg.OQLQuery#bind(java.lang.Object)
@@ -169,7 +169,7 @@ public class EnerJOQLQuery implements OQLQuery
 
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.odmg.OQLQuery#execute()
@@ -200,7 +200,7 @@ public class EnerJOQLQuery implements OQLQuery
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Executes a functor (fn()) and if the result is a Collection, it is wrapped in
      * a ResultList. 

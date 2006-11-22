@@ -38,7 +38,7 @@ import org.odmg.*;
  */
 public interface LargeList extends LargeCollection, java.util.List
 {
-    //----------------------------------------------------------------------
+
     /**
      * Inserts anElementCount null elements into the array (expands array). 
      * Elements from anIndex (inclusive)  to the end of the array are shifted 
@@ -53,7 +53,7 @@ public interface LargeList extends LargeCollection, java.util.List
      */
     public void insertElements(long anIndex, long anElementCount);
     
-    //----------------------------------------------------------------------
+
     /**
      * Removes anElementCount elements from the array (shrinks array). 
      * Elements from (anIndex + anElementCount) (inclusive) to the end of 
@@ -68,7 +68,7 @@ public interface LargeList extends LargeCollection, java.util.List
      */
     public void removeElements(long anIndex, long anElementCount);
     
-    //----------------------------------------------------------------------
+
     /**
      * Sets the element at the specified index. Grows the array if necessary.
      * If the array grows, new elements between sizeAsLong() and anIndex-1 are
@@ -79,7 +79,7 @@ public interface LargeList extends LargeCollection, java.util.List
      */
     public void setAtIndex(long anIndex, Object anElement);
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the element at the specified index.
      *
@@ -92,7 +92,7 @@ public interface LargeList extends LargeCollection, java.util.List
      */
     public Object getAtIndex(long anIndex);
 
-    //----------------------------------------------------------------------
+
     /**
      * Like Collection.indexOf(), but returns result as long.
      *
@@ -102,7 +102,7 @@ public interface LargeList extends LargeCollection, java.util.List
      */
     public long indexOfAsLong(Object anObject);
 
-    //----------------------------------------------------------------------
+
     /**
      * Like Collection.lastIndexOf(), but returns result as long.
      *

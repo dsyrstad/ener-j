@@ -39,7 +39,7 @@ public class StartDatabaseCheckpointLogEntry extends LogEntry
     private long[] mActiveTransactionIds;
     private long[] mActiveTransactionPositions;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an empty StartDatabaseCheckpointLogEntry.
      */
@@ -47,7 +47,7 @@ public class StartDatabaseCheckpointLogEntry extends LogEntry
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a StartDatabaseCheckpointLogEntry.
      *
@@ -69,7 +69,7 @@ public class StartDatabaseCheckpointLogEntry extends LogEntry
         mActiveTransactionPositions = anActiveTransactionPositionArray;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the entry type of this log entry.
      *
@@ -80,7 +80,7 @@ public class StartDatabaseCheckpointLogEntry extends LogEntry
         return START_DB_CHECKPOINT_ENTRY_TYPE;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -100,7 +100,7 @@ public class StartDatabaseCheckpointLogEntry extends LogEntry
         return 4 + (8 * 2 * numTransactions);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -115,7 +115,7 @@ public class StartDatabaseCheckpointLogEntry extends LogEntry
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the array of transaction ids that were active at the time of this log entry.
      *
@@ -126,7 +126,7 @@ public class StartDatabaseCheckpointLogEntry extends LogEntry
         return mActiveTransactionIds;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the array of log positions to either the BeginTransactionLogEntry or 
      * last CheckpointTransactionLogEntry
@@ -139,7 +139,7 @@ public class StartDatabaseCheckpointLogEntry extends LogEntry
         return mActiveTransactionPositions;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

@@ -37,7 +37,7 @@ public class GregorianCalendarUtils  {
     private static final int[] mDaysInMonth = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the day of the week for the first day of the month.
      *
@@ -58,7 +58,7 @@ public class GregorianCalendarUtils  {
     }
 
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the number of days in the current month.
      *

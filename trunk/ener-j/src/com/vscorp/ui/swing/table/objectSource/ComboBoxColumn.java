@@ -28,7 +28,7 @@ abstract public class ComboBoxColumn extends ObjectSourceTableColumn
     private DefaultComboBoxModel mEditorComboModel;
     private DefaultComboBoxModel mRendererComboModel;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -40,7 +40,7 @@ abstract public class ComboBoxColumn extends ObjectSourceTableColumn
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column that may be edited with a JComboBox.
      * Column is optionally editable.
@@ -62,7 +62,7 @@ abstract public class ComboBoxColumn extends ObjectSourceTableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the possible values for the combo box.
      *
@@ -76,7 +76,7 @@ abstract public class ComboBoxColumn extends ObjectSourceTableColumn
         mRendererComboModel = new DefaultComboBoxModel(mValues);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the value for the cell.
      *
@@ -88,7 +88,7 @@ abstract public class ComboBoxColumn extends ObjectSourceTableColumn
      */
     protected abstract Object getColumnValue(Object anObject);
 
-    //----------------------------------------------------------------------
+
     /**
      * Set the value for the cell.
      *
@@ -100,7 +100,7 @@ abstract public class ComboBoxColumn extends ObjectSourceTableColumn
      */
     protected abstract boolean setColumnValue(Object anObject, Object aValue);
 
-    //----------------------------------------------------------------------
+
     /**
      * Calculates the preferred width of the TableColumn using the specified JTable.
      * Modifies the TableColumn's preferredWidth.
@@ -117,7 +117,7 @@ abstract public class ComboBoxColumn extends ObjectSourceTableColumn
         calculatePreferredWidth(aTable, combo);
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellRenderer
     public Component getTableCellRendererComponent(JTable aTable,
                 Object aValue, boolean aSelectedFlag, boolean aFocusFlag,
@@ -154,7 +154,7 @@ abstract public class ComboBoxColumn extends ObjectSourceTableColumn
         return component;
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellEditor...
     public Component getTableCellEditorComponent(JTable aTable, Object aValue,
                         boolean isSelected, int aRow, int aColumn)
@@ -183,7 +183,7 @@ abstract public class ComboBoxColumn extends ObjectSourceTableColumn
         return mEditorJComboBox;
     }
 
-    //----------------------------------------------------------------------
+
     // From CellEditor...
     public boolean stopCellEditing()
     {

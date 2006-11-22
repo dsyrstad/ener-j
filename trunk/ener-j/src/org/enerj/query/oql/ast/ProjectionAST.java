@@ -37,7 +37,7 @@ public class ProjectionAST extends BaseAST
     private AST mExpr;
     private String mAlias;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ProjectionAST. 
      *
@@ -50,7 +50,7 @@ public class ProjectionAST extends BaseAST
         mAlias = anAlias;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mAlias.
      *
@@ -61,7 +61,7 @@ public class ProjectionAST extends BaseAST
         return mAlias;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mExpr.
      *

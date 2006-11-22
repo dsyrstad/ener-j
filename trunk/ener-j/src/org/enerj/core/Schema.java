@@ -78,7 +78,7 @@ public class Schema
     //  TODO  EnerJUsers object for user login validation. 
     //  TODO  Add permissions object to each logical class
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a Schema containing only the core database classes.
      *
@@ -96,7 +96,7 @@ public class Schema
         mSubclassMap = new HashMap<String, Set<ClassVersionSchema>>(2048);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Resolve all supertype names (classes and interfaces) for the given class.
      *
@@ -125,7 +125,7 @@ public class Schema
         return returnSuperTypeNames;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Resolve all superinterface names recursively and add them to someNames.
      *
@@ -141,7 +141,7 @@ public class Schema
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the schema description.
      *
@@ -152,7 +152,7 @@ public class Schema
         return mDescription;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Sets the schema description.
      *
@@ -164,7 +164,7 @@ public class Schema
         mDescription = (aDescription == null ? "" : aDescription);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the date that this schema was created.
      *
@@ -175,7 +175,7 @@ public class Schema
         return mCreateDate;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Add a LogicalClassSchema to this Schema.
      *
@@ -194,7 +194,7 @@ public class Schema
         mClassMap.put(className, aLogicalClassSchema);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Removes a LogicalClassSchema from this Schema.
      * This should be used with extreme caution because objects referencing the
@@ -213,7 +213,7 @@ public class Schema
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Finds a LogicalClassSchema in this Schema.
      *
@@ -227,7 +227,7 @@ public class Schema
         return (LogicalClassSchema)mClassMap.get(aClassName);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets an Iterator of all LogicalClassSchemas.
      *
@@ -241,7 +241,7 @@ public class Schema
         return mClassMap.values();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets a set of all persistable direct subclasses of the given class or
      * interface name.
@@ -261,7 +261,7 @@ public class Schema
         return subclasses;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Adds a ClassVersionSchema to the global map of Class Id to class version.
      * Should only be used by LogicalClassSchema.
@@ -286,7 +286,7 @@ public class Schema
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Adds a subclass to the set of subclasses for a given superclass name.
      *
@@ -304,7 +304,7 @@ public class Schema
         subclasses.add(aClassVersionSchema);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Removes a subclass from the set of subclasses for a given superclass name.
      *
@@ -319,7 +319,7 @@ public class Schema
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Removes a ClassVersionSchema from the global map of Class Id to class version.
      * Should only be used by LogicalClassSchema.
@@ -344,7 +344,7 @@ public class Schema
         mClassIdMap.remove(aCID);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Finds a ClassVersionSchema in this Schema using the Class Id.
      *
@@ -358,7 +358,7 @@ public class Schema
         return (ClassVersionSchema)mClassIdMap.get(aCID);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Database Version.
      *
@@ -369,7 +369,7 @@ public class Schema
         return mDatabaseVersion;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Schema Version.
      *

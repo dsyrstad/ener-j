@@ -42,7 +42,7 @@ public class CartesianProductCollection extends BaseSelectCollection
     /** >= 0 if it's been calculated. */
     private int mSize = -1;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a CartesianProductCollection that is unfiltered. 
      *
@@ -56,17 +56,17 @@ public class CartesianProductCollection extends BaseSelectCollection
         mRightCollection = aRightCollection;
     }
     
-    //--------------------------------------------------------------------------------
-    // Collection Interface...
-    //--------------------------------------------------------------------------------
 
-    //--------------------------------------------------------------------------------
+    // Collection Interface...
+
+
+
     public Iterator iterator()
     {
         return new ProductIterator();
     }
 
-    //--------------------------------------------------------------------------------
+
     public int size()
     {
         if (mSize >= 0) {
@@ -77,12 +77,12 @@ public class CartesianProductCollection extends BaseSelectCollection
         return mSize;
     }
 
-    //--------------------------------------------------------------------------------
-    // ...Collection Interface.
-    //--------------------------------------------------------------------------------
 
-    //--------------------------------------------------------------------------------
-    //--------------------------------------------------------------------------------
+    // ...Collection Interface.
+
+
+
+
     /**
      * Iterator that performs the Cartesian (cross) product.
      */
@@ -93,7 +93,7 @@ public class CartesianProductCollection extends BaseSelectCollection
         private Iterator mRightIterator;
         private boolean mRightIsEmpty;
 
-        //--------------------------------------------------------------------------------
+
         private ProductIterator()
         {
             mLeftIterator = mLeftCollection.iterator();
@@ -107,7 +107,7 @@ public class CartesianProductCollection extends BaseSelectCollection
             }
         }
 
-        //--------------------------------------------------------------------------------
+
         public Object next()
         {
             if (!hasNext()) {
@@ -131,13 +131,13 @@ public class CartesianProductCollection extends BaseSelectCollection
             return value;
         }
 
-        //--------------------------------------------------------------------------------
+
         public boolean hasNext()
         {
             return mRightIsEmpty || mLeftIterator.hasNext() || mRightIterator.hasNext();
         }
 
-        //--------------------------------------------------------------------------------
+
         public void remove()
         {
             throw new UnsupportedOperationException("Collection is immutable");

@@ -62,7 +62,7 @@ class EnhancerTemplate_Orig extends java.util.Date implements Cloneable
     private int[][] m2dArray;
     private Object[] mObjArray;
     
-    //----------------------------------------------------------------------
+
     // User-defined constructor.
     public EnhancerTemplate_Orig(int aParam)
     {
@@ -70,23 +70,23 @@ class EnhancerTemplate_Orig extends java.util.Date implements Cloneable
         mInt = aParam;
     }
 
-    //----------------------------------------------------------------------
+
     // User-defined methods ...
-    //----------------------------------------------------------------------
+
     
     public void test(Object obj) 
     {
         Date[][] array = (Date[][])obj;
     }
 
-    //----------------------------------------------------------------------
+
     public void runOn(int aParam)
     {
         System.out.println("mLong is " + mLong);
         mInt = aParam;
     }
 
-    //----------------------------------------------------------------------
+
     // User-defined clone.
     public Object clone() 
     {
@@ -98,7 +98,7 @@ class EnhancerTemplate_Orig extends java.util.Date implements Cloneable
         return clone;
     }
 
-    //----------------------------------------------------------------------
+
     // User-defined clone. Version 2 - does not use super.clone();
     public Object clone2() 
     {
@@ -109,7 +109,7 @@ class EnhancerTemplate_Orig extends java.util.Date implements Cloneable
         return clone;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * User callback.
      */
@@ -117,8 +117,8 @@ class EnhancerTemplate_Orig extends java.util.Date implements Cloneable
     {
     }
     
-    //----------------------------------------------------------------------
+
     // ...End of User-defined methods.
-    //----------------------------------------------------------------------
+
 
 }

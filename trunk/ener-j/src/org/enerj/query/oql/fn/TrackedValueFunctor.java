@@ -39,7 +39,7 @@ public class TrackedValueFunctor extends UnaryFunctor
 
     private Object mValue = null;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a TrackedValueFunctor.
      */
@@ -47,7 +47,7 @@ public class TrackedValueFunctor extends UnaryFunctor
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the tracked value.
      *
@@ -59,7 +59,7 @@ public class TrackedValueFunctor extends UnaryFunctor
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets the tracked value.
      *
@@ -70,13 +70,13 @@ public class TrackedValueFunctor extends UnaryFunctor
         mValue = aValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         return mValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(TrackedValueFunctor)</code> method, if it implements
@@ -87,14 +87,14 @@ public class TrackedValueFunctor extends UnaryFunctor
             ((TrackedValueFunctor.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "TrackedValueFunctor";
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>TrackedValueFunctor</b> functor.
      */

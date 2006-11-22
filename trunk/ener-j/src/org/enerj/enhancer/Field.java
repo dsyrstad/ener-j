@@ -39,7 +39,7 @@ class Field
     private int mAccessModifiers;
     private String mInternalName;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a Field. 
      *
@@ -60,7 +60,7 @@ class Field
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the field's Access Modifiers.
      *
@@ -71,7 +71,7 @@ class Field
         return mAccessModifiers;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the field's type Descriptor.
      *
@@ -82,7 +82,7 @@ class Field
         return mDescriptor;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the field's Name.
      *
@@ -93,7 +93,7 @@ class Field
         return mName;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Internal Name of the field's type (ASM style).
      *
@@ -104,7 +104,7 @@ class Field
         return mInternalName;
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see java.lang.Object#equals(java.lang.Object)
@@ -120,7 +120,7 @@ class Field
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}

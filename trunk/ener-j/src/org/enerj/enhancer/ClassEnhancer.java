@@ -117,7 +117,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
     private Map<String, Field> mDeclaredFields = new HashMap<String, Field>();
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ClassEnhancer. 
      *
@@ -138,7 +138,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mThisClassDescr = 'L' + mThisClassNameSlashed + ';';
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * Enhances at the class level. 
@@ -233,7 +233,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * Enhances methods.
@@ -300,7 +300,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         return mv;
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.objectweb.asm.ClassAdapter#visitField(int, java.lang.String, java.lang.String, java.lang.String, java.lang.Object)
@@ -340,7 +340,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.objectweb.asm.ClassAdapter#visitEnd()
@@ -397,7 +397,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         cv.visitEnd();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Generate class Id.<p>
      *
@@ -434,7 +434,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Modify a top-level Persistable class to add the core "enerj_" fields and methods.
      * This generally implements the Persistable interface.
@@ -482,7 +482,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Emits a readObject() method on a top-level persistable that implements
      * Serializable.
@@ -502,7 +502,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitEnd();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Emit a simple, generic accessor method.
      */
@@ -517,7 +517,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitEnd();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Emit a simple, generic accessor method.
      */
@@ -533,7 +533,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitEnd();
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the opcode offset for the specified descriptor.
      *
@@ -571,7 +571,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the xLOAD opcode for the specified descriptor.
      *
@@ -584,7 +584,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         return ILOAD + getOpcodeOffsetForDescriptor(aDescriptor);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the xRETURN opcode for the specified descriptor.
      *
@@ -601,7 +601,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         return IRETURN + getOpcodeOffsetForDescriptor(aDescriptor);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Create the method name suffix used for a field getter or setter.
      *
@@ -616,7 +616,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         return aClassName.replace('.', '_') + '_' + aFieldName;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Generate the getfield/putfield replacement methods (enerj_Get_* and enerj_Set_*)
      * for persistent fields.
@@ -803,7 +803,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitEnd();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Generate the getfield/putfield replacement methods (enerj_Get_* and enerj_Set_*)
      * for non-static transient fields.
@@ -854,7 +854,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitEnd();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Generate the getstatic/putstatic replacement methods (enerj_Get_* and enerj_Set_*)
      * for static transient fields. 
@@ -897,7 +897,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitEnd();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Emit the special clone() method on a top-level persistable. This is
      * generated when a top-level Persistable doesn't have a clone method.
@@ -1153,7 +1153,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitEnd();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Generate the enerj_Hollow method.
      *
@@ -1207,7 +1207,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitEnd();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Emit the special constructor. "&lt;init>(Persister)".
      */
@@ -1252,7 +1252,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitEnd();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Emits the class Id static variable and a static and non-static getters for it.
      */
@@ -1286,7 +1286,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitEnd();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Emits the &lt;clinit> method when one does not already exist.
      * Initializes the value of the class Id.
@@ -1302,7 +1302,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         mv.visitEnd();
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Answers if this class is a Persistable.
      *
@@ -1313,7 +1313,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         return mIsPersistable;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Persistent Fields.
      *
@@ -1324,7 +1324,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         return mPersistentFields;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Transient Fields.
      *
@@ -1336,7 +1336,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
     }
 
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the ClassId.
      *
@@ -1347,8 +1347,8 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         return mClassId;
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Handles enhancement of existing methods.
      */
@@ -1366,7 +1366,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         private boolean mShouldEnhanceReadObject;
         private boolean mIsClinit;
         
-        //----------------------------------------------------------------------
+
         /**
          * Constructs a MethodEnhancer.
          * 
@@ -1391,7 +1391,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         }
         
         
-        //--------------------------------------------------------------------------------
+
         /** 
          * {@inheritDoc}
          * Do special first instruction insertion, if necessary.
@@ -1408,7 +1408,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
             }
         }
         
-        //--------------------------------------------------------------------------------
+
         /** 
          * {@inheritDoc}
          * Replace any getfield/getstatic/putfield/putstatic instructions in the 
@@ -1467,7 +1467,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
             }
         }
         
-        //--------------------------------------------------------------------------------
+
         /** 
          * {@inheritDoc}
          * Special enhancement on top-level persistable constructors.
@@ -1487,7 +1487,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
             }
         }
         
-        //--------------------------------------------------------------------------------
+
         /** 
          * {@inheritDoc}
          * Special enhancement on clone() methods.

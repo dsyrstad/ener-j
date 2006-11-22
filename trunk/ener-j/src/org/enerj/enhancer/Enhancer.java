@@ -58,7 +58,7 @@ public class Enhancer
     private int mNumClasses = 0;
     private long mElapsedTotal = 0;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct an instance of the Enhancer.
      */
@@ -66,7 +66,7 @@ public class Enhancer
     {
     }
 
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) throws Exception
     {
         int rc = runEnhancer(args);
@@ -78,7 +78,7 @@ public class Enhancer
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * A wrapper for main() so that this can be called without System.exit()
      * being called.
@@ -198,7 +198,7 @@ public class Enhancer
         return returnCode;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the last exception caught by runEnhancer. May be null.
      */
@@ -207,7 +207,7 @@ public class Enhancer
         return sLastException;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Enhance all classes specified by the metadata.
      *
@@ -250,7 +250,7 @@ public class Enhancer
             elapsedAll + "ms. Avg Time per class: " + mElapsedTotal / ((mNumClasses > 0) ? mNumClasses : 1));
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Recursively scan aDirectory for files to scan.
      *
@@ -295,7 +295,7 @@ public class Enhancer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Enhance the named class.
      *

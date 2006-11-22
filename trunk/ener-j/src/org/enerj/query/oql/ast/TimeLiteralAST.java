@@ -44,7 +44,7 @@ public class TimeLiteralAST extends BaseAST
 {
     private String mValue;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a TimeLiteralAST. 
      *
@@ -55,7 +55,7 @@ public class TimeLiteralAST extends BaseAST
         mValue = someValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Value.
      *
@@ -66,7 +66,7 @@ public class TimeLiteralAST extends BaseAST
         return mValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -75,7 +75,7 @@ public class TimeLiteralAST extends BaseAST
         return Time.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

@@ -23,7 +23,7 @@
 //$Header: /cvsroot/ener-j/ener-j/src/org/enerj/util/ClassUtil.java,v 1.9 2006/05/31 01:58:22 dsyrstad Exp $
 
 // Portions of this code were derived from OGNL:
-//--------------------------------------------------------------------------
+
 //	Copyright (c) 1998-2004, Drew Davidson and Luke Blanshard
 //  All rights reserved.
 //
@@ -52,7 +52,7 @@
 //  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 //  THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 //  DAMAGE.
-//--------------------------------------------------------------------------
+
 
 package org.enerj.util;
 
@@ -78,13 +78,13 @@ import java.util.Set;
 public class ClassUtil
 {
 
-    //--------------------------------------------------------------------------------
+
     // Don't allow construction
     private ClassUtil()
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Attempts to find a public method on the given class, searching its superclasses if necessary.
      * 
@@ -117,7 +117,7 @@ public class ClassUtil
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Attempts to find a public field on the given class, searching its superclasses if necessary.
      * 
@@ -138,7 +138,7 @@ public class ClassUtil
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Maps the given class to one of the primitve class types if aClass is one of the wrapper types: 
      * Boolean, Integer, Double, Byte, Long, Float, Short, or Character.
@@ -190,7 +190,7 @@ public class ClassUtil
         return aClass;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Maps the given class from one of the primitve class types to one of the wrapper types:  
      * Boolean, Integer, Double, Byte, Long, Float, Short, or Character.
@@ -240,7 +240,7 @@ public class ClassUtil
         return aClass;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Tells whether the given type is compatible with the given target type 
      * -- that is, whether the given object can be passed as an argument
@@ -264,7 +264,7 @@ public class ClassUtil
         return true;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Tells whether the given array of types are compatible with the given array of
      * target types -- that is, whether the given array of objects can be passed as arguments
@@ -285,7 +285,7 @@ public class ClassUtil
         return true;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Tells whether the first array of classes is more specific than the second.
      * Assumes that the two arrays are of the same length.
@@ -312,7 +312,7 @@ public class ClassUtil
         return false;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the most specific method to be called for the given class, method name and arguments types.
      * It attempts to find the method with the most "specific" argument type match (in JLS terms). 
@@ -339,7 +339,7 @@ public class ClassUtil
         return result;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the most specific constructor to be called for the given class and arguments types.
      * It attempts to find the constructor with the most "specific" argument type match (in JLS terms). 
@@ -365,7 +365,7 @@ public class ClassUtil
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the base class name of a Class.
      * 
@@ -384,7 +384,7 @@ public class ClassUtil
         return baseClassName;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Get the property descriptors for an object. Does not return the "class" property.
      *
@@ -416,7 +416,7 @@ public class ClassUtil
         return returnDescriptors;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the bytecode bytes for the named class. The class is found via the classpath, but it
      * is <em>not</em> loaded as a Java Class.
@@ -456,7 +456,7 @@ public class ClassUtil
         
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the bytecode InputStream for the named class. The class is found via the classpath, but it
      * is <em>not</em> loaded as a Java Class.
@@ -478,7 +478,7 @@ public class ClassUtil
         return inStream;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets all super-type names (super classes and super interfaces) of aClass and
      * return them in an array. 
@@ -501,7 +501,7 @@ public class ClassUtil
         return typeNames;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets all super-types (super classes and super interfaces) of aClass and
      * return them in an array. 
@@ -519,7 +519,7 @@ public class ClassUtil
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets all super-types (super classes and super interfaces) of aClass and
      * adds them to the allSuperTypes set. 

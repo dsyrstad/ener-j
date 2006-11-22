@@ -19,7 +19,7 @@ public class ReflectedTimeIntervalColumn extends TimeIntervalColumn
     /** The reflected field to use as a value */
     private Field mField;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column configured by the specified arguments. This
      * constructor form is common to all of the "reflected" column types and is
@@ -44,7 +44,7 @@ public class ReflectedTimeIntervalColumn extends TimeIntervalColumn
         this("", true, anObjectClass, anAttributeName);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -65,7 +65,7 @@ public class ReflectedTimeIntervalColumn extends TimeIntervalColumn
         this("", true, anObjectClass, anAttributeName);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable. This method
      * fails fast by throwing an AWTError if anAttributeName does not exist.
@@ -95,7 +95,7 @@ public class ReflectedTimeIntervalColumn extends TimeIntervalColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the column's value from the specified object.
      *
@@ -129,7 +129,7 @@ public class ReflectedTimeIntervalColumn extends TimeIntervalColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Set the column's value on the specified object.
      *

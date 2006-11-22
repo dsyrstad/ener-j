@@ -37,7 +37,7 @@ public class IteratorDefAST extends BaseAST
     private AST mExpr;
     private String mAlias;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a IteratorDefAST. 
      *
@@ -50,7 +50,7 @@ public class IteratorDefAST extends BaseAST
         mAlias = anAlias;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the alias.
      *
@@ -61,7 +61,7 @@ public class IteratorDefAST extends BaseAST
         return mAlias;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the expression.
      *

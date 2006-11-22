@@ -94,7 +94,7 @@ class MetaData
     private Map<String, Set<String>> mAllSuperTypes = new HashMap<String, Set<String>>(1024);
 
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new MetaData model using the specified property files and
      * source path.
@@ -118,7 +118,7 @@ class MetaData
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Determines if the specified class name is enhanceable (defined in the
      * metadata to be persistable or persistence aware).
@@ -136,7 +136,7 @@ class MetaData
         return (type == ClassDef.TYPE_AWARE || type == ClassDef.TYPE_CAPABLE);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Determines the specified class' enhancment type (defined in the
      * metadata to be persistable, persistence aware, or transient).
@@ -155,7 +155,7 @@ class MetaData
         return (type == ClassDef.TYPE_AWARE ? -1 : (type == ClassDef.TYPE_CAPABLE ? 1 : 0));
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Determines if the specified class name is only PersistentAware (defined in the
      * metadata to be persistence=aware).
@@ -172,7 +172,7 @@ class MetaData
         return (type == ClassDef.TYPE_AWARE);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Converts a Java VM signature to a class name.
      *
@@ -195,7 +195,7 @@ class MetaData
         return className;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Determines if the specified class name is a FCO (i.e., it 
      * implements Persistable). 
@@ -211,7 +211,7 @@ class MetaData
         return getClassDef(aClassName).getPersistentType() == ClassDef.TYPE_CAPABLE;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Determines if the specified signature (e.g., "Z") denotes a primitive type.
      *
@@ -224,7 +224,7 @@ class MetaData
         return sPrimitiveTypesMap.containsKey(aSignature);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the corresponding DataInput/Output read/write method suffix for
      * aSignature.
@@ -238,7 +238,7 @@ class MetaData
         return (String)sPrimitiveTypesMap.get(aSignature);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the overrides, if any, for a field as defined by the metadata.
      *
@@ -262,7 +262,7 @@ class MetaData
         return null;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Ensure that the field overrides for a class are actually defined on the class.
      *
@@ -294,7 +294,7 @@ class MetaData
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Determines if a field is persistent. If the specified class is found 
      * in the source path, the metadata and/or Field definition is used
@@ -339,7 +339,7 @@ class MetaData
         return (someModifiers & Opcodes.ACC_TRANSIENT) != Opcodes.ACC_TRANSIENT;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Determine if the access modifiers are static or final.
      * 
@@ -354,7 +354,7 @@ class MetaData
                (someModifiers & Opcodes.ACC_FINAL) == Opcodes.ACC_FINAL;        
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the ClassDef for a class.
      *
@@ -371,7 +371,7 @@ class MetaData
         return getClassDef(aClassName, null);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the ClassDef for a class.
      *
@@ -404,7 +404,7 @@ class MetaData
         return cachableClassDef;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the uncached ClassDef for a class.
      *
@@ -467,7 +467,7 @@ class MetaData
         return mDefaultClassDef;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Get the containing package name of the given class or package name.
      *
@@ -486,7 +486,7 @@ class MetaData
         return packageName;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Attempts to get a ClassDef for the named class via annotations on the class.
      *
@@ -557,7 +557,7 @@ class MetaData
         return null;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets information about a class by reading its bytecodes. After a class
      * has been read once, the information is cached.  
@@ -594,7 +594,7 @@ class MetaData
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Recursively resolves all superclasses and superinterfaces of the specified class.
      * Intentionally attempts to avoid using the ClassLoader to reflect on these values. Classes
@@ -646,7 +646,7 @@ class MetaData
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets the default ClassDef.
      *
@@ -658,7 +658,7 @@ class MetaData
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Adds a default ClassDef for a package. Only classes below this package are 
      * treated by aClassDef.
@@ -671,7 +671,7 @@ class MetaData
         mPackageDefaultsMap.put(aPackageName, aClassDef);
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Adds a default ClassDef for a recursive package. All classes in this package and
      * all sub-packages below it are treated by aClassDef. 
@@ -684,7 +684,7 @@ class MetaData
         mRecursivePackageDefaultsMap.put(aPackageName, aClassDef);
     }
    
-    //--------------------------------------------------------------------------------
+
     /**
      * Adds a ClassDef.
      *

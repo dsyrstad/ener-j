@@ -38,7 +38,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
 {
     private Persistable mOwnerFCO;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct an empty collection using the specified initial capacity and 
      * owner FCO.
@@ -51,21 +51,21 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         mOwnerFCO = anOwnerFCO;
     }
 
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public Persistable getOwnerFCO()
     {
         return mOwnerFCO;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerFCO(Persistable anOwner)
     {
         mOwnerFCO = anOwner;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerModified() 
     {
@@ -74,7 +74,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns a clone without the owner set.
      *
@@ -87,11 +87,11 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // Overridden mutator methods from java.util.Stack.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Overridden mutator methods from java.util.Stack.
+
+
+
     // java.util.Collection
     public boolean add(Object o) 
     {
@@ -100,7 +100,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean addAll(Collection c) 
     {
@@ -109,7 +109,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public void clear() 
     {
@@ -117,7 +117,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean remove(Object o) 
     {
@@ -126,7 +126,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean removeAll(Collection c) 
     {
@@ -135,7 +135,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean retainAll(Collection c) 
     {
@@ -144,7 +144,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.List
     public Object set(int index, Object element) 
     {
@@ -153,7 +153,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.List
     public Object remove(int index) 
     {
@@ -162,7 +162,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.List
     public boolean addAll(int index, Collection c) 
     {
@@ -171,7 +171,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.List
     public void add(int index, Object element) 
     {
@@ -179,7 +179,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.AbstractList
     protected void removeRange(int fromIndex, int toIndex)
     {
@@ -187,7 +187,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         setOwnerModified();
     }
 
-    //----------------------------------------------------------------------
+
     // java.util.Vector
     public void addElement(Object obj)
     {
@@ -195,7 +195,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         setOwnerModified();
     }
 
-    //----------------------------------------------------------------------
+
     // java.util.Vector
     public void insertElementAt(Object obj, int index)
     {
@@ -203,7 +203,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         setOwnerModified();
     }
 
-    //----------------------------------------------------------------------
+
     // java.util.Vector
     public void setElementAt(Object obj, int index)
     {
@@ -211,7 +211,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         setOwnerModified();
     }
 
-    //----------------------------------------------------------------------
+
     // java.util.Vector
     public boolean removeElement(Object obj)
     {
@@ -220,7 +220,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         return b;
     }
 
-    //----------------------------------------------------------------------
+
     // java.util.Vector
     public void removeElementAt(int index)
     {
@@ -228,7 +228,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         setOwnerModified();
     }
 
-    //----------------------------------------------------------------------
+
     // java.util.Vector
     public void removeAllElements()
     {
@@ -236,7 +236,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         setOwnerModified();
     }
 
-    //----------------------------------------------------------------------
+
     // java.util.Vector
     public void setSize(int newSize)
     {
@@ -244,7 +244,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         setOwnerModified();
     }
 
-    //----------------------------------------------------------------------
+
     // java.util.Stack
     public Object pop()
     {
@@ -253,7 +253,7 @@ public class JavaUtilStackSCO extends java.util.Stack implements SCOTracker
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Stack
     public Object push(Object item)
     {

@@ -38,7 +38,7 @@ public class QuantifierExprAST extends BaseAST
     private AST mRightExpr;
     private boolean mIsUniversal;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a OrExprAST. 
      *
@@ -53,7 +53,7 @@ public class QuantifierExprAST extends BaseAST
         mIsUniversal = isUniversal;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mInClause.
      *
@@ -64,7 +64,7 @@ public class QuantifierExprAST extends BaseAST
         return mInClause;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mRightExpr.
      *

@@ -50,7 +50,7 @@ public class IndexedExprAST extends BaseAST
     private AST mIndex; // an index expression or IndexRangeAST.
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a IndexedExprAST. 
      *
@@ -65,7 +65,7 @@ public class IndexedExprAST extends BaseAST
         mIndex = anIndex;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the left-hand indexable expression.
      *
@@ -76,7 +76,7 @@ public class IndexedExprAST extends BaseAST
         return mExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the index AST.
      *
@@ -87,7 +87,7 @@ public class IndexedExprAST extends BaseAST
         return mIndex;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -127,7 +127,7 @@ public class IndexedExprAST extends BaseAST
         throw new QueryInvalidException("Invalid type for indexed expression. Expected a String, array, Map, or Collection, but type was " + exprType.getName());
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

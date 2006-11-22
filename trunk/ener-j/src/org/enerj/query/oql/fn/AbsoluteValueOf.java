@@ -42,7 +42,7 @@ public class AbsoluteValueOf extends UnaryFunctor
     private Negate mNegateFunctor;
     private Number mZero;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a AbsoluteValueOf functor.
      */
@@ -54,7 +54,7 @@ public class AbsoluteValueOf extends UnaryFunctor
         mZero = new ValueOf(aType).fn( Integer.valueOf(0) );
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         if (arg == null) {
@@ -64,7 +64,7 @@ public class AbsoluteValueOf extends UnaryFunctor
         return ((Comparable)arg).compareTo(mZero) < 0 ? mNegateFunctor.fn((Number)arg) : arg;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(AbsoluteValueOf)</code> method, if it implements
@@ -75,14 +75,14 @@ public class AbsoluteValueOf extends UnaryFunctor
             ((AbsoluteValueOf.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "AbsoluteValueOf";
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>AbsoluteValueOf</b> functor.
      */

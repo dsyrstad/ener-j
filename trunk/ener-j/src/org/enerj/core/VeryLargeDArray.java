@@ -77,7 +77,7 @@ public class VeryLargeDArray
     
     protected transient int mModCount = 0;
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new VeryLargeDArray with the specified node size. 
      * The maximum size of the array is aNodeSize^3.
@@ -93,7 +93,7 @@ public class VeryLargeDArray
         mSize = 0;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new VeryLargeDArray with the default node size (1024). 
      * This node size supports a maximum of 1,073,741,824 (about 1 billion) elements.
@@ -103,7 +103,7 @@ public class VeryLargeDArray
         this(1024);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the leaf node for the corresponding index. Allocates new nodes if 
      * shouldAllocate is true. If the size of the list changes, mModCount is
@@ -159,11 +159,11 @@ public class VeryLargeDArray
         return leafNode;
     }
 
-    //----------------------------------------------------------------------
-    // Start of LargeList interface...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of LargeList interface...
+
+
+
     public void insertElements(long anIndex, long anElementCount)
     {
         if (anIndex < 0 || anIndex > mSize) {
@@ -189,7 +189,7 @@ public class VeryLargeDArray
         // Note: setAtIndex automatically increased mSize
     }
     
-    //----------------------------------------------------------------------
+
     public void removeElements(long anIndex, long anElementCount)
     {
         if (anIndex < 0 || anIndex >= mSize || (anIndex + anElementCount) > mSize || anElementCount < 0) {
@@ -208,14 +208,14 @@ public class VeryLargeDArray
         ++mModCount;
     }
     
-    //----------------------------------------------------------------------
+
     public void setAtIndex(long anIndex, Object anElement) 
     {
         Node node = getLeafNodeForIndex(anIndex, true);
         node.set((int)(anIndex % mNodeSize), anElement);
     }
     
-    //----------------------------------------------------------------------
+
     public Object getAtIndex(long anIndex) 
     {
         Node node = getLeafNodeForIndex(anIndex, false);
@@ -226,21 +226,21 @@ public class VeryLargeDArray
         return node.get((int)(anIndex % mNodeSize));
     }
     
-    //----------------------------------------------------------------------
+
     // ...End of LargeList interface.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     // Start of LargeCollection interface...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     public long sizeAsLong()
     {
         return mSize;
     }
     
-    //----------------------------------------------------------------------
+
     public long indexOfAsLong(Object anObject) 
     {
         if (anObject == null) {
@@ -261,7 +261,7 @@ public class VeryLargeDArray
         return -1L;
     }
 
-    //----------------------------------------------------------------------
+
     public long lastIndexOfAsLong(Object anObject) 
     {
         if (anObject == null) {
@@ -282,35 +282,35 @@ public class VeryLargeDArray
         return -1L;
     }
 
-    //----------------------------------------------------------------------
+
     public int getModificationCount()
     {
         return mModCount;
     }
     
-    //----------------------------------------------------------------------
+
     // ..End of LargeCollection interface.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     // Start of Interfaces: org.odmg.DArray, java.util.Collection, java.util.List...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     public boolean add(Object anElement) 
     {
         setAtIndex(mSize, anElement);
         return true;
     }
     
-    //----------------------------------------------------------------------
+
     public void add(int anIndex, Object anElement) 
     {
         insertElements(anIndex, 1L);
         setAtIndex((long)anIndex, anElement);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean addAll(Collection aCollection) 
     {
         // This appends
@@ -323,7 +323,7 @@ public class VeryLargeDArray
         return result;
     }
     
-    //----------------------------------------------------------------------
+
     public boolean addAll(int anIndex, Collection aCollection) 
     {
         long numElements;
@@ -345,7 +345,7 @@ public class VeryLargeDArray
         return result;
     }
     
-    //----------------------------------------------------------------------
+
     public void clear() 
     {
         // The previous tree is GCed.
@@ -354,13 +354,13 @@ public class VeryLargeDArray
         ++mModCount;
     }
     
-    //----------------------------------------------------------------------
+
     public boolean contains(Object anObject) 
     {
         return indexOfAsLong(anObject) >= 0L;
     }
     
-    //----------------------------------------------------------------------
+
     public boolean containsAll(Collection aCollection) 
     {
         Iterator iterator = aCollection.iterator();
@@ -373,49 +373,49 @@ public class VeryLargeDArray
         return true;
     }
     
-    //----------------------------------------------------------------------
+
     public Object get(int anIndex) 
     {
         return getAtIndex((long)anIndex);
     }
     
-    //----------------------------------------------------------------------
+
     public int indexOf(Object anObject) 
     {
         return (int)indexOfAsLong(anObject);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean isEmpty() 
     {
         return mSize == 0;
     }
     
-    //----------------------------------------------------------------------
+
     public Iterator iterator() 
     {
         return listIterator(0);
     }
     
-    //----------------------------------------------------------------------
+
     public int lastIndexOf(Object anObject) 
     {
         return (int)lastIndexOfAsLong(anObject);
     }
     
-    //----------------------------------------------------------------------
+
     public ListIterator listIterator() 
     {
         return listIterator(0);
     }
     
-    //----------------------------------------------------------------------
+
     public ListIterator listIterator(int anIndex) 
     {
         return new RandomAccessLargeListIterator(this, anIndex);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean remove(Object anObject) 
     {
         long idx = indexOfAsLong(anObject);
@@ -427,7 +427,7 @@ public class VeryLargeDArray
         return true;
     }
     
-    //----------------------------------------------------------------------
+
     public Object remove(int anIndex) 
     {
         Object prevElement = getAtIndex((long)anIndex);
@@ -435,7 +435,7 @@ public class VeryLargeDArray
         return prevElement;
     }
     
-    //----------------------------------------------------------------------
+
     public boolean removeAll(Collection aCollection) 
     {
         Iterator iterator = aCollection.iterator();
@@ -449,7 +449,7 @@ public class VeryLargeDArray
         return result;
     }
     
-    //----------------------------------------------------------------------
+
     public void resize(int aNewSize) 
     {
         // ODMG v3.0 2.3.6.4 says resize changes the maximum number of elements
@@ -465,7 +465,7 @@ public class VeryLargeDArray
         ++mModCount;
     }
     
-    //----------------------------------------------------------------------
+
     public boolean retainAll(Collection aCollection) 
     {
         boolean result = false;
@@ -479,7 +479,7 @@ public class VeryLargeDArray
         return result;
     }
     
-    //----------------------------------------------------------------------
+
     public Object set(int anIndex, Object anElement) 
     {
         // This also checks that the index is in bounds.
@@ -488,26 +488,26 @@ public class VeryLargeDArray
         return prevObj;
     }
     
-    //----------------------------------------------------------------------
+
     public int size() 
     {
         return (int)mSize;
     }
     
-    //----------------------------------------------------------------------
+
     public List subList(int fromIndex, int toIndex) 
     {
         /**  TODO  */
         throw new UnsupportedOperationException("subList");
     }
     
-    //----------------------------------------------------------------------
+
     public Object[] toArray() 
     {
         return toArray(new Object[(int)mSize]);
     }
     
-    //----------------------------------------------------------------------
+
     public Object[] toArray(Object[] anArray) 
     {
         if (anArray.length < mSize) {
@@ -526,35 +526,35 @@ public class VeryLargeDArray
         return anArray;
     }
 
-    //----------------------------------------------------------------------
+
     public java.util.Iterator select(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public boolean existsElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public org.odmg.DCollection query(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public Object selectElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -571,7 +571,7 @@ public class VeryLargeDArray
         return hashCode;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -610,7 +610,7 @@ public class VeryLargeDArray
         return true;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -619,7 +619,7 @@ public class VeryLargeDArray
         return this.getClass().getName() + ": size=" + mSize;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -630,12 +630,12 @@ public class VeryLargeDArray
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // ...End of Interfaces: org.odmg.DArray, java.util.Collection, java.util.List.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+    // ...End of Interfaces: org.odmg.DArray, java.util.Collection, java.util.List.
+
+
+
+
     /** 
      * Represents a node in the tree. This is a separate object so that it
      * is not directly recoginized as an SCO and will be demand-loaded.
@@ -645,19 +645,19 @@ public class VeryLargeDArray
     {
         private Object[] mObjects;
         
-        //----------------------------------------------------------------------
+
         Node(int mNodeSize)
         {
             mObjects = new Object[mNodeSize];
         }
 
-        //----------------------------------------------------------------------
+
         Object get(int anIndex)
         {
             return mObjects[anIndex];
         }
 
-        //----------------------------------------------------------------------
+
         void set(int anIndex, Object anObject)
         {
             if (mObjects[anIndex] != anObject) {
@@ -666,7 +666,7 @@ public class VeryLargeDArray
             }
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * {@inheritDoc}
          */

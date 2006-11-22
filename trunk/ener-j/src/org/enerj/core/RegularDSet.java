@@ -54,7 +54,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
     /** The delegate Set. This is treated as an SCO when this FCO is persisted. */
     private Set mDelegateSet;
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new RegularDSet backed by the given Set. Changes made to this
      * DSet are seen in the delegate Set, and vice-verse.  
@@ -66,7 +66,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         mDelegateSet = aDelegateSet;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new RegularDSet with the specified initial capacity. 
      * 
@@ -78,7 +78,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         mDelegateSet = new HashSet(anInitialCapacity, 1.0F);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new RegularDSet with an initial capacity of 10. 
      */
@@ -87,89 +87,89 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         this(10);
     }
     
-    //----------------------------------------------------------------------
-    // Start of Interfaces: org.odmg.DSet, java.util.Collection
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of Interfaces: org.odmg.DSet, java.util.Collection
+
+
+
     public boolean add(Object o)
     {
         return mDelegateSet.add(o);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean addAll(Collection c)
     {
         return mDelegateSet.addAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public void clear()
     {
         mDelegateSet.clear();
     }
     
-    //----------------------------------------------------------------------
+
     public boolean contains(Object o)
     {
         return mDelegateSet.contains(o);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean containsAll(Collection c)
     {
         return mDelegateSet.containsAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean isEmpty() 
     {
         return mDelegateSet.isEmpty();
     }
     
-    //----------------------------------------------------------------------
+
     public Iterator iterator() 
     {
         return mDelegateSet.iterator();
     }
     
-    //----------------------------------------------------------------------
+
     public boolean remove(Object o) 
     {
         return mDelegateSet.remove(o);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean removeAll(Collection c) 
     {
         return mDelegateSet.removeAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean retainAll(Collection c) 
     {
         return mDelegateSet.retainAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public int size() 
     {
         return mDelegateSet.size();
     }
     
-    //----------------------------------------------------------------------
+
     public Object[] toArray() 
     {
         return mDelegateSet.toArray();
     }
     
-    //----------------------------------------------------------------------
+
     public Object[] toArray(Object[] a) 
     {
         return mDelegateSet.toArray(a);
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Create a new <code>DSet</code> object that contains the elements of this
      * collection minus the elements in <code>anOtherSet</code>.
@@ -184,7 +184,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return difference((Set)anOtherSet);
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Create a new <code>DSet</code> object that contains the elements of this
      * collection minus the elements in <code>anOtherSet</code>.
@@ -212,7 +212,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return result;
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Create a new <code>DSet</code> object that is the set intersection of this
      * <code>DSet</code> object and the set referenced by <code>anOtherSet</code>.
@@ -227,7 +227,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return intersection((Set)anOtherSet);
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Create a new <code>DSet</code> object that is the set intersection of this
      * <code>DSet</code> object and the set referenced by <code>anOtherSet</code>.
@@ -266,7 +266,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return result;
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Create a new <code>DSet</code> object that is the set union of this
      * <code>DSet</code> object and the set referenced by <code>anOtherSet</code>.
@@ -280,7 +280,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return union((Set)anOtherSet);
     }
 
-    //----------------------------------------------------------------------
+
     /** 
      * Create a new <code>DSet</code> object that is the set union of this
      * <code>DSet</code> object and the set referenced by <code>anOtherSet</code>.
@@ -301,7 +301,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return result;
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Determine whether this set is a proper subset of the set referenced by
      * <code>anOtherSet</code>. It is a proper subset if subsetOf(anOtherSet) is 
@@ -318,7 +318,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return subsetOf(anOtherSet) && anOtherSet.size() > size();
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Determine whether this set is a proper superset of the set referenced by
      * <code>anOtherSet</code>.  It is a proper superset if supersetOf(anOtherSet) is 
@@ -335,7 +335,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return supersetOf(anOtherSet) && size() > anOtherSet.size();
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Determine whether this set is a subset of the set referenced by <code>anOtherSet</code>.
      *
@@ -349,7 +349,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return anOtherSet.containsAll(this);
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Determine whether this set is a superset of the set referenced by <code>anOtherSet</code>.
      *
@@ -363,35 +363,35 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return containsAll(anOtherSet);
     }
     
-    //----------------------------------------------------------------------
+
     public java.util.Iterator select(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public boolean existsElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public org.odmg.DCollection query(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public Object selectElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -400,7 +400,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return mDelegateSet.hashCode();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -409,7 +409,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return mDelegateSet.equals(anObject);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -418,7 +418,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return mDelegateSet.toString();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -431,8 +431,8 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         return clone;
     }
     
-    //----------------------------------------------------------------------
+
     // ...End of Interfaces: org.odmg.DSet, java.util.Collection.
-    //----------------------------------------------------------------------
+
 }
 

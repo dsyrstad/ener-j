@@ -52,7 +52,7 @@ abstract public class LogEntry
     private long mTransactionId = -1;
     private long mTimestamp;
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an empty LogEntry.
      */
@@ -60,7 +60,7 @@ abstract public class LogEntry
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the entry type of this log entry.
      *
@@ -68,7 +68,7 @@ abstract public class LogEntry
      */
     abstract public byte getEntryType();
 
-    //----------------------------------------------------------------------
+
     /**
      * Loads the type-specific information for the LogEntry from aDataInput.
      * This method is not, by itself, thread-safe. However, it is usually invoked
@@ -82,7 +82,7 @@ abstract public class LogEntry
      */
     abstract protected int loadFromLog(DataInput aDataInput) throws IOException;
     
-    //----------------------------------------------------------------------
+
     /**
      * Appends this LogEntry to the end of aDataOutput.
      * Subtypes must call super.appendToLog(aDataOutput)
@@ -101,7 +101,7 @@ abstract public class LogEntry
         aDataOutput.writeLong(mTransactionId);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates a concrete LogEntry from aDataInput.
      * This method is thread-safe.
@@ -179,7 +179,7 @@ abstract public class LogEntry
         } // ...end synchronized
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the log position of this entry.
      *
@@ -191,7 +191,7 @@ abstract public class LogEntry
         return mLogPosition;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the log position of this entry.
      *
@@ -203,7 +203,7 @@ abstract public class LogEntry
         mLogPosition = aLogPosition;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the transaction id of this entry.
      *
@@ -215,7 +215,7 @@ abstract public class LogEntry
         return mTransactionId;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the transaction id of this entry.
      *
@@ -227,7 +227,7 @@ abstract public class LogEntry
         mTransactionId = aTransactionId;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the next log entry position (the log record following this one).
      *
@@ -239,7 +239,7 @@ abstract public class LogEntry
         return mNextLogEntryPosition;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the next log entry position (the log record following this one).
      *
@@ -251,7 +251,7 @@ abstract public class LogEntry
         mNextLogEntryPosition = aPosition;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the UTC timestamp of the log entry.
      *

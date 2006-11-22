@@ -38,7 +38,7 @@ public class IndexListAST extends BaseAST
     private List mIndicies;
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a IndexListAST. 
      *
@@ -49,7 +49,7 @@ public class IndexListAST extends BaseAST
         mIndicies = someIndicies;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Indicies.
      *

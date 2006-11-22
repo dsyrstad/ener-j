@@ -23,7 +23,7 @@ public class ReflectedComboBoxColumn extends ComboBoxColumn
     /** This will be null if internal/mapped values are not used. */
     private Object[] mInternalValues = null;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column configured by the specified arguments. This
      * constructor form is common to all of the "reflected" column types and is
@@ -54,7 +54,7 @@ public class ReflectedComboBoxColumn extends ComboBoxColumn
         convertArgs(someArgs);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -75,7 +75,7 @@ public class ReflectedComboBoxColumn extends ComboBoxColumn
         this("", true, new String[0], anObjectClass, anAttributeName);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable. This method
      * fails fast by throwing an AWTError if anAttributeName does not exist.
@@ -108,7 +108,7 @@ public class ReflectedComboBoxColumn extends ComboBoxColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Convert the combo box values into appropriate object types for the attribute.
      */
@@ -150,7 +150,7 @@ public class ReflectedComboBoxColumn extends ComboBoxColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Helper for convertArgs to convert a single argument.
      *
@@ -191,7 +191,7 @@ public class ReflectedComboBoxColumn extends ComboBoxColumn
         return result;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Get the column's value from the specified object.
      *
@@ -222,7 +222,7 @@ public class ReflectedComboBoxColumn extends ComboBoxColumn
         return value;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Set the column's value on the specified object.
      *

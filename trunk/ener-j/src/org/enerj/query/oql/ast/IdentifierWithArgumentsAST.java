@@ -73,7 +73,7 @@ public class IdentifierWithArgumentsAST extends BaseAST
     /** If this is a named query, this is its functor. */
     transient private InvokeNamedQuery mNamedQueryFunctor = null;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a IdentifierWithArgumentsAST. Because the arguments are a FieldListAST,
      * it is assumed that this is an object construction. 
@@ -88,7 +88,7 @@ public class IdentifierWithArgumentsAST extends BaseAST
         mIsObjectConstruction = true;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a IdentifierWithArgumentsAST. Could be a named query
      * call or object construction, we don't know yet. Semantic checks will resolve this. 
@@ -102,7 +102,7 @@ public class IdentifierWithArgumentsAST extends BaseAST
         mValueList = aValueList;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a IdentifierWithArgumentsAST. This is used when we know for sure that
      * the invocation is either an object constructor or named query call.
@@ -119,7 +119,7 @@ public class IdentifierWithArgumentsAST extends BaseAST
         mIsObjectConstruction = isObjectConstructor;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Identifier.
      *
@@ -130,7 +130,7 @@ public class IdentifierWithArgumentsAST extends BaseAST
         return mIdent;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Field List.
      *
@@ -141,7 +141,7 @@ public class IdentifierWithArgumentsAST extends BaseAST
         return mFieldList;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Value List.
      *
@@ -152,7 +152,7 @@ public class IdentifierWithArgumentsAST extends BaseAST
         return mValueList;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -205,7 +205,7 @@ public class IdentifierWithArgumentsAST extends BaseAST
         return type;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

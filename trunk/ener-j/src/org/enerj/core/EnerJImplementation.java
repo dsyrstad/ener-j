@@ -48,7 +48,7 @@ public class EnerJImplementation implements Implementation
 
     private static EnerJImplementation sSingleton;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructor is private to force use of the static getInstance()
      * method. 
@@ -57,7 +57,7 @@ public class EnerJImplementation implements Implementation
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the singleton instance of Implementation.
      */
@@ -70,7 +70,7 @@ public class EnerJImplementation implements Implementation
         return sSingleton;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the Ener-J representation of the object's identifier.
      *
@@ -102,7 +102,7 @@ public class EnerJImplementation implements Implementation
         return ObjectSerializer.NULL_OID;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the Ener-J <code>Database</code> implementation that contains the
      * object <code>obj</code>.
@@ -124,7 +124,7 @@ public class EnerJImplementation implements Implementation
         return null;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Marks a persistable as modified. This is necessary if the contents
      * of an array contained in a persistable are modified.
@@ -138,7 +138,7 @@ public class EnerJImplementation implements Implementation
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Get a new EnerJTransaction instance. Similar to newTransaction(), only
      * it returns a EnerJTransaction.
@@ -148,7 +148,7 @@ public class EnerJImplementation implements Implementation
         return new EnerJTransaction();
     }
 
-    //----------------------------------------------------------------------
+
     /** 
      * Get the current EnerJTransaction for this thread. Similar to currentTransaction(),
      * only it returns a EnerJTransaction.
@@ -158,7 +158,7 @@ public class EnerJImplementation implements Implementation
         return EnerJTransaction.getCurrentTransaction();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get a new EnerJDatabase instance. Similar to newDatabase(), only it returns
      * a EnerJDatabase. 
@@ -168,74 +168,74 @@ public class EnerJImplementation implements Implementation
         return new EnerJDatabase();
     }
 
-    //----------------------------------------------------------------------
-    // Start of org.odmg.Implementation interface methods...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of org.odmg.Implementation interface methods...
+
+
+
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final Transaction newTransaction()
     {
         return newEnerJTransaction();
     }
 
-    //----------------------------------------------------------------------
+
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final Transaction currentTransaction()
     {
         return currentEnerJTransaction();
     }
 
-    //----------------------------------------------------------------------
+
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final Database newDatabase()
     {
         return newEnerJDatabase();
     }
 
-    //----------------------------------------------------------------------
+
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final OQLQuery newOQLQuery()
     {
         return new EnerJOQLQuery();
     }
 
-    //----------------------------------------------------------------------
+
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final DList newDList()
     {
         return new RegularDList();
     }
 
-    //----------------------------------------------------------------------
+
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final DBag newDBag()
     {
         return new RegularDBag();
     }
 
-    //----------------------------------------------------------------------
+
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final DSet newDSet()
     {
         return new RegularDSet();
     }
 
-    //----------------------------------------------------------------------
+
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final DArray newDArray()
     {
         return new RegularDArray();
     }
 
-    //----------------------------------------------------------------------
+
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final DMap newDMap()
     {
         return new RegularDMap();
     }
 
-    //----------------------------------------------------------------------
+
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final String getObjectId(Object obj)
     {
@@ -244,14 +244,14 @@ public class EnerJImplementation implements Implementation
         return String.valueOf(oid);
     }
     
-    //----------------------------------------------------------------------
+
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final Database getDatabase(Object obj)
     {
         return getEnerJDatabase(obj);
     }
 
-    //----------------------------------------------------------------------
+
     // ...End of org.odmg.Implementation interface methods.
-    //----------------------------------------------------------------------
+
 }

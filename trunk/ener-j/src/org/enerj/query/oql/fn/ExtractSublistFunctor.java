@@ -46,7 +46,7 @@ public class ExtractSublistFunctor extends BinaryFunctor
 
     private UnaryFunctor mIndexedFunctor;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ExtractSublistFunctor functor.
      * 
@@ -58,7 +58,7 @@ public class ExtractSublistFunctor extends BinaryFunctor
         mIndexedFunctor = anIndexedFunctor;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object x, Object y)
     {
         Object expr = mIndexedFunctor.fn(null);
@@ -112,7 +112,7 @@ public class ExtractSublistFunctor extends BinaryFunctor
         return string.substring(start, end + 1);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(ExtractSublistFunctor)</code> method, if it implements
@@ -123,14 +123,14 @@ public class ExtractSublistFunctor extends BinaryFunctor
             ((ExtractSublistFunctor.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "ExtractSublistFunctor[" + mIndexedFunctor + ']';
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>ExtractSublistFunctor</b> functor.
      */

@@ -38,7 +38,7 @@ public class TextPosition
     private int mColumn;
     private String mLineText;
 
-    //--------------------------------------------------------------------------------
+
     public TextPosition(String aFileName, int aLineNumber, int aColumn, String aLineText)
     {
         mFileName = aFileName;
@@ -47,7 +47,7 @@ public class TextPosition
         mLineText = aLineText;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the 1-based line number.
      */
@@ -56,7 +56,7 @@ public class TextPosition
         return mLineNumber;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the 1-based column position.
      */
@@ -65,7 +65,7 @@ public class TextPosition
         return mColumn;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the text of the line, including the text ahead of the column position.
      */
@@ -74,7 +74,7 @@ public class TextPosition
         return mLineText;
     }
 
-    //--------------------------------------------------------------------------------
+
     public String toString()
     {
         return (mFileName == null ? "" : (mFileName + ": ")) + "line " + mLineNumber + " column " + mColumn + " line=" + mLineText;

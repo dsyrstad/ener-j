@@ -47,7 +47,7 @@ public class CollectionPredicate extends UnaryPredicate
     private boolean mIsExists;
     private UnaryFunctor mCollectionFunctor;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a CollectionPredicate functor.
      * 
@@ -68,7 +68,7 @@ public class CollectionPredicate extends UnaryPredicate
         mCollectionFunctor = aCollectionFunctor;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Boolean fn(Object arg)
     {
         Object scalar = mScalarFunctor.fn(arg);
@@ -114,7 +114,7 @@ public class CollectionPredicate extends UnaryPredicate
         return !mIsExists;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(CollectionPredicate)</code> method, if it implements
@@ -125,14 +125,14 @@ public class CollectionPredicate extends UnaryPredicate
             ((CollectionPredicate.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "CollectionPredicate( " + mScalarFunctor + ',' + mComparisonPredicate + ", exists=" + mIsExists + ',' + mCollectionFunctor + ')';
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>CollectionPredicate</b> functor.
      */

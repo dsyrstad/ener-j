@@ -45,7 +45,7 @@ public class QueryProgramAST extends BaseAST
     /** List of QueryAST and/or DeclarationAST. */ 
     private List mQueriesAndDeclarations = new ArrayList(10);
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a new QueryProgramAST. 
      */
@@ -54,7 +54,7 @@ public class QueryProgramAST extends BaseAST
         mQueriesAndDeclarations = someQueriesAndDeclarations;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the list of queries and declarations for this query program.
      * 
@@ -66,7 +66,7 @@ public class QueryProgramAST extends BaseAST
         return mQueriesAndDeclarations;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -76,7 +76,7 @@ public class QueryProgramAST extends BaseAST
         return List.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

@@ -37,7 +37,7 @@ import org.odmg.LockNotGrantedException;
  */
 public interface LockServerTransaction
 {
-    //----------------------------------------------------------------------
+
     /**
      * Gets the LockServer for this transaction.
      *
@@ -45,7 +45,7 @@ public interface LockServerTransaction
      */
     public LockServer getLockServer();
 
-    //----------------------------------------------------------------------
+
     /**
      * Acquires a lock on the item identified by the given object, or promotes the lock mode if 
      * the transaction currently owns a lock on the object. If the requested lock
@@ -76,7 +76,7 @@ public interface LockServerTransaction
      */
     public boolean lock(Object anObject, LockMode aLockMode, long aWaitTime) throws LockNotGrantedException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Ends the transaction and unlocks all objects the Transaction locked with the lock method.
      *

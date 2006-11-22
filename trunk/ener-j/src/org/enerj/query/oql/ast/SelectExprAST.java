@@ -57,7 +57,7 @@ public class SelectExprAST extends BaseAST
     private transient String[] mIteratorNames;
     private transient TrackedValueFunctor[] mIteratorTrackedValueFunctors;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a SelectExprAST. 
      *
@@ -79,7 +79,7 @@ public class SelectExprAST extends BaseAST
         mOrderByClause = anOrderByClause;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the FromClause.
      *
@@ -90,7 +90,7 @@ public class SelectExprAST extends BaseAST
         return mFromClause;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the GroupByClause.
      *
@@ -101,7 +101,7 @@ public class SelectExprAST extends BaseAST
         return mGroupByClause;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the IsDistinct.
      *
@@ -112,7 +112,7 @@ public class SelectExprAST extends BaseAST
         return mIsDistinct;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the OrderByClause.
      *
@@ -123,7 +123,7 @@ public class SelectExprAST extends BaseAST
         return mOrderByClause;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the ProjectionAttributes.
      *
@@ -134,7 +134,7 @@ public class SelectExprAST extends BaseAST
         return mProjectionAttributes;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the WhereClause.
      *
@@ -145,7 +145,7 @@ public class SelectExprAST extends BaseAST
         return mWhereClause;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -156,7 +156,7 @@ public class SelectExprAST extends BaseAST
         return Collection.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -178,7 +178,7 @@ public class SelectExprAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Resolves the 'from' clause.
      *
@@ -254,7 +254,7 @@ public class SelectExprAST extends BaseAST
         return selectFunctor;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Resolves the 'where' clause.
      *
@@ -283,7 +283,7 @@ public class SelectExprAST extends BaseAST
         return selectFunctor;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Resolves the projection.
      *

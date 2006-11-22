@@ -55,7 +55,7 @@ public class IdentifierExprAST extends BaseAST
     // Set if mIdentifier evaluates to a named object.
     private transient Object mNamedObject = null;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a IdentifierExprAST. It is unknown at this point what the identifier 
      * represents. It may be a defined query call with no arguments, it may be a reference
@@ -68,7 +68,7 @@ public class IdentifierExprAST extends BaseAST
         mIdentifier = anIdentifier;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the identifier.
      *
@@ -79,7 +79,7 @@ public class IdentifierExprAST extends BaseAST
         return mIdentifier;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * If this identifier refers to a class, get the resolved Class. Otherwise null is returned.
      * 
@@ -94,7 +94,7 @@ public class IdentifierExprAST extends BaseAST
         return mIdentifierClass;
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -140,7 +140,7 @@ public class IdentifierExprAST extends BaseAST
         throw new QueryException("Cannot resolve identifier: " + mIdentifier);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

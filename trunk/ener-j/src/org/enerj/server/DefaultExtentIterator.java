@@ -43,7 +43,7 @@ public class DefaultExtentIterator implements ExtentIterator
     private SparseBitSet.Iterator mCurrentIterator = null;
     private boolean mIsOpen = true;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a DefaultExtentIterator.
      *
@@ -56,7 +56,7 @@ public class DefaultExtentIterator implements ExtentIterator
         mExtents = someExtents;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Verifies that the iterator is open.
      */
@@ -67,7 +67,7 @@ public class DefaultExtentIterator implements ExtentIterator
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Determines if more objects are available from this iterator.
      *
@@ -98,7 +98,7 @@ public class DefaultExtentIterator implements ExtentIterator
         return mCurrentIterator.hasNext();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets, at most, the next N objects from the iterator, where N is aMaxNumObjects.
      *
@@ -139,7 +139,7 @@ public class DefaultExtentIterator implements ExtentIterator
         return oids;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Closes this iterator.
      */

@@ -41,7 +41,7 @@ public class ExtentFunctor extends UnaryFunctor
 {
     private static final long serialVersionUID = -7023610246811874224L;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ExtentFunctor functor.
      */
@@ -50,7 +50,7 @@ public class ExtentFunctor extends UnaryFunctor
         super();
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         Class extentClass = (Class)arg;
@@ -60,7 +60,7 @@ public class ExtentFunctor extends UnaryFunctor
         return extent; 
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(ExtentFunctor)</code> method, if it implements
@@ -71,14 +71,14 @@ public class ExtentFunctor extends UnaryFunctor
             ((ExtentFunctor.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "ExtentFunctor";
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>ExtentFunctor</b> functor.
      */

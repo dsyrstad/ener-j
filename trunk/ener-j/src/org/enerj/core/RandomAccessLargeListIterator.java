@@ -57,7 +57,7 @@ public class RandomAccessLargeListIterator implements ListIterator
     /** The last mModCount value we tracked on the array when the iterator modified the list. */
     private transient int mLastModCount;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new iterator on the specified LargeList, starting at aStartIndex.
      *
@@ -77,17 +77,17 @@ public class RandomAccessLargeListIterator implements ListIterator
         mLastModCount = mLargeList.getModificationCount();
     }
 
-    //----------------------------------------------------------------------
-    // Start of Iterator interface....
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of Iterator interface....
+
+
+
     public boolean hasNext() 
     {
         return mPosition < mLargeList.sizeAsLong();
     }
 
-    //----------------------------------------------------------------------
+
     public Object next() 
     {
         if (mPosition >= mLargeList.sizeAsLong()) {
@@ -100,7 +100,7 @@ public class RandomAccessLargeListIterator implements ListIterator
         return mLargeList.getAtIndex(mPosition++);
     }
 
-    //----------------------------------------------------------------------
+
     public void remove() 
     {
         if (mPreviousIdx == -1L) {
@@ -115,15 +115,15 @@ public class RandomAccessLargeListIterator implements ListIterator
         mLastModCount = mLargeList.getModificationCount();
     }
 
-    //----------------------------------------------------------------------
+
     // ...End of Iterator interface.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     // Start of ListIterator interface....
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     public void add(Object anObject)
     {
         if (mPreviousIdx < 0L) {
@@ -139,19 +139,19 @@ public class RandomAccessLargeListIterator implements ListIterator
         mLastModCount = mLargeList.getModificationCount();
     }
 
-    //----------------------------------------------------------------------
+
     public boolean hasPrevious()
     {
         return mPosition > 0;
     }
 
-    //----------------------------------------------------------------------
+
     public int nextIndex()
     {
         return (int)mPosition;
     }
 
-    //----------------------------------------------------------------------
+
     public Object previous()
     {
         if (mPosition <= 0) {
@@ -165,13 +165,13 @@ public class RandomAccessLargeListIterator implements ListIterator
         return mLargeList.getAtIndex(mPosition);
     }
 
-    //----------------------------------------------------------------------
+
     public int previousIndex()
     {
         return (int)mPosition - 1;
     }
 
-    //----------------------------------------------------------------------
+
     public void set(Object anObject)
     {
         if (mPreviousIdx < 0L) {
@@ -184,11 +184,11 @@ public class RandomAccessLargeListIterator implements ListIterator
         mLastModCount = mLargeList.getModificationCount();
     }
 
-    //----------------------------------------------------------------------
-    // ...End of ListIterator interface.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // ...End of ListIterator interface.
+
+
+
     /**
      * Ensures that a concurrent modification to the backing list has
      * not occured outside of the iterator.

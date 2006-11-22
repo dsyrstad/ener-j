@@ -40,7 +40,7 @@ public class CartesianProductCollectionFunctor extends BinaryFunctor
 {
     private static final long serialVersionUID = -4050152182465280159L;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a CartesianProductCollectionFunctor.
      */
@@ -48,7 +48,7 @@ public class CartesianProductCollectionFunctor extends BinaryFunctor
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg1, Object arg2)
     {
         if (arg1 == null || arg2 == null || !(arg1 instanceof Collection) || !(arg2 instanceof Collection)) {
@@ -58,7 +58,7 @@ public class CartesianProductCollectionFunctor extends BinaryFunctor
         return new CartesianProductCollection((Collection)arg1, (Collection)arg2);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(CartesianProductCollectionFunctor)</code> method, if it implements
@@ -69,14 +69,14 @@ public class CartesianProductCollectionFunctor extends BinaryFunctor
             ((CartesianProductCollectionFunctor.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "CartesianProductCollectionFunctor";
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>CartesianProductCollectionFunctor</b> functor.
      */

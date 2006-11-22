@@ -47,7 +47,7 @@ public class FlattenCollection extends UnaryFunctor
 
     private boolean mIsResultASet;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a FlattenCollection functor.
      *
@@ -58,7 +58,7 @@ public class FlattenCollection extends UnaryFunctor
         mIsResultASet = isSet;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets an instance of this functor for the given type.
      *
@@ -75,7 +75,7 @@ public class FlattenCollection extends UnaryFunctor
         return LIST_INSTANCE;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         // If null or already a Set, return the argument.
@@ -111,7 +111,7 @@ public class FlattenCollection extends UnaryFunctor
         return result;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(FlattenCollection)</code> method, if it implements
@@ -123,7 +123,7 @@ public class FlattenCollection extends UnaryFunctor
             ((FlattenCollection.Visitor)v).visit(this);
     }
 
-    //--------------------------------------------------------------------------------
+
     public String toString()
     {
         return "FlattenCollection(" + (mIsResultASet ? "Set" : "List") + ')';
@@ -132,7 +132,7 @@ public class FlattenCollection extends UnaryFunctor
 
     // AcyclicVisitor
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>FlattenCollection</b> functor.
      */

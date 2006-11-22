@@ -36,7 +36,7 @@ import java.util.List;
 class NoOpClientCache implements PersistableObjectCache
 {
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a NoOpClientCache. 
      *
@@ -46,7 +46,7 @@ class NoOpClientCache implements PersistableObjectCache
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -56,7 +56,7 @@ class NoOpClientCache implements PersistableObjectCache
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -66,7 +66,7 @@ class NoOpClientCache implements PersistableObjectCache
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -77,7 +77,7 @@ class NoOpClientCache implements PersistableObjectCache
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -88,7 +88,7 @@ class NoOpClientCache implements PersistableObjectCache
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -98,7 +98,7 @@ class NoOpClientCache implements PersistableObjectCache
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -108,7 +108,7 @@ class NoOpClientCache implements PersistableObjectCache
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -118,7 +118,7 @@ class NoOpClientCache implements PersistableObjectCache
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -129,7 +129,7 @@ class NoOpClientCache implements PersistableObjectCache
         return null;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -139,7 +139,7 @@ class NoOpClientCache implements PersistableObjectCache
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -149,7 +149,7 @@ class NoOpClientCache implements PersistableObjectCache
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -159,7 +159,7 @@ class NoOpClientCache implements PersistableObjectCache
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -172,7 +172,7 @@ class NoOpClientCache implements PersistableObjectCache
 
 
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}

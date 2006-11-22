@@ -14,7 +14,7 @@ package com.vscorp.ui.model;
  */
 public interface ObjectSourceListener extends java.util.EventListener
 {
-    //----------------------------------------------------------------------
+
     /**
      * Invoked when a change to an ObjectSource occurs.
      *

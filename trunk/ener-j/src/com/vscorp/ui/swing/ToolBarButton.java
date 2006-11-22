@@ -33,7 +33,7 @@ package com.vscorp.ui.swing;
  * @author Daniel A. Syrstad
  */
 public interface ToolBarButton {
-    //----------------------------------------------------------------------
+
     /**
      * Sets whether the text Action.NAME property is displayed from the
      * associated Action.
@@ -43,7 +43,7 @@ public interface ToolBarButton {
      */
     public void setLabelEnabled(boolean aLabelFlag);
 
-    //----------------------------------------------------------------------
+
     /**
      * Determines whether the text Action.NAME property is displayed from the
      * associated Action.

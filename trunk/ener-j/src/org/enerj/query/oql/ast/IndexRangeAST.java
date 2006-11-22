@@ -37,7 +37,7 @@ public class IndexRangeAST extends BaseAST
     private AST mStartExpr;
     private AST mEndExpr;    
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a IndexRangeAST. 
      *
@@ -49,7 +49,7 @@ public class IndexRangeAST extends BaseAST
         mStartExpr = aStartExpr;
         mEndExpr = anEndExpr;
     }
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the EndExpr.
      *
@@ -60,7 +60,7 @@ public class IndexRangeAST extends BaseAST
         return mEndExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the StartExpr.
      *

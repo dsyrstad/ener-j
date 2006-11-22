@@ -55,7 +55,7 @@ public class MethodCallExprAST extends BaseAST
     transient private Class[] mParamTypes;
     transient private Field mField;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a MethodCallExprAST. The aMethodName argument is actually treated like
      * a JavaBean property when anArgList is null. In the case of a property name, a JavaBean
@@ -73,7 +73,7 @@ public class MethodCallExprAST extends BaseAST
         mArgList = anArgList;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the ArgList.
      *
@@ -84,7 +84,7 @@ public class MethodCallExprAST extends BaseAST
         return mArgList;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the left-hand Expr evaluating to an object.
      *
@@ -95,7 +95,7 @@ public class MethodCallExprAST extends BaseAST
         return mExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the method name.
      *
@@ -107,7 +107,7 @@ public class MethodCallExprAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the type of mExpr. Handles the case where mExpr may be a identifier representing a 
      * Class, in which case we have a static method call.
@@ -132,7 +132,7 @@ public class MethodCallExprAST extends BaseAST
         return exprType;
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -190,7 +190,7 @@ public class MethodCallExprAST extends BaseAST
         throw new QueryException(msg);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

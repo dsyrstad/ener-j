@@ -70,7 +70,7 @@ public class FilePageServer implements PageServer
     /** The file name corresponding to the volume. */
     private String mVolumeFileName;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new FilePageServer.
      *
@@ -153,7 +153,7 @@ public class FilePageServer implements PageServer
         } // End finally
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates a page server physical volume (file). The file may exist on 
      * the OS's filesystem, or it may be a raw device (e.g., a raw disk partition).
@@ -256,7 +256,7 @@ public class FilePageServer implements PageServer
         
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates a page server physical volume (file) that is part of a "chain"
      * of volumes. The file may exist on 
@@ -285,7 +285,7 @@ public class FilePageServer implements PageServer
         throw new PageServerException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the volume's file name.
      *
@@ -296,11 +296,11 @@ public class FilePageServer implements PageServer
         return mVolumeFileName;
     }
     
-    //----------------------------------------------------------------------
-    // Start of PageServer Interface...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of PageServer Interface...
+
+
+
     /**
      * Connects to a FilePageServer.
      *
@@ -330,7 +330,7 @@ public class FilePageServer implements PageServer
         return new FilePageServer(volume, someProperties.getProperty("PageServer.forceOpen") != null);
     }
 
-    //----------------------------------------------------------------------
+
     public void disconnect() throws PageServerException
     {
         try {
@@ -355,13 +355,13 @@ public class FilePageServer implements PageServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     public long getLogicalFirstPageOffset()
     {
         return mHeader.getLogicalFirstPageOffset();
     }
 
-    //----------------------------------------------------------------------
+
     public long getLogicalLastPageOffset()
     {
         long maxSize = mHeader.getMaximumSize();
@@ -374,31 +374,31 @@ public class FilePageServer implements PageServer
             mPageSize;
     }
 
-    //----------------------------------------------------------------------
+
     public int getPageSize()
     {
         return mPageSize;
     }
 
-    //----------------------------------------------------------------------
+
     public long getVolumeCreationDate()
     {
         return mHeader.getCreationDate();
     }
 
-    //----------------------------------------------------------------------
+
     public long getDatabaseID()
     {
         return mHeader.getDatabaseID();
     }
     
-    //----------------------------------------------------------------------
+
     public boolean isReadOnly()
     {
         return mReadOnly;
     }
 
-    //----------------------------------------------------------------------
+
     public void loadPage(ByteBuffer aBuffer, long aLogicalPageOffset, int anOffset) throws PageServerException
     {
         if ((aBuffer.remaining() + anOffset) > getPageSize()) {
@@ -418,7 +418,7 @@ public class FilePageServer implements PageServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     public void storePage(ByteBuffer aBuffer, long aLogicalPageOffset, int anOffset) throws PageServerException
     {
         if (mReadOnly) {
@@ -442,7 +442,7 @@ public class FilePageServer implements PageServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     public long allocatePage() throws PageServerException
     {
         if (mReadOnly) {
@@ -477,7 +477,7 @@ public class FilePageServer implements PageServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     public void freePage(long aLogicalPageOffset) throws PageServerException
     {
         // The new head pointer will point to the page being freed. The page being
@@ -499,7 +499,7 @@ public class FilePageServer implements PageServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     public void syncAllPages() throws PageServerException
     {
         try {
@@ -511,12 +511,12 @@ public class FilePageServer implements PageServer
         }
     }
 
-    //----------------------------------------------------------------------
-    // ...End of PageServer Interface.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+    // ...End of PageServer Interface.
+
+
+
+
     /**
      * Header for the volume.
      */
@@ -538,7 +538,7 @@ public class FilePageServer implements PageServer
         private long mCreationDate;
         private long mNextAllocationOffset;
         
-        //----------------------------------------------------------------------
+
         /**
          * Construct an empty VolumeHeader so that it can be read.
          */
@@ -546,7 +546,7 @@ public class FilePageServer implements PageServer
         {
         }
         
-        //----------------------------------------------------------------------
+
         VolumeHeader(int aPageSize, long aDatabaseID, long aLogicalFirstPageOffset, 
             long aMaximumSize)
         {
@@ -564,7 +564,7 @@ public class FilePageServer implements PageServer
             mNextAllocationOffset = mPhysicalFirstPageOffset;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Gets Database ID.
          *
@@ -575,7 +575,7 @@ public class FilePageServer implements PageServer
             return mDatabaseID;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Gets the LogicalFirstPageOffset.
          *
@@ -586,7 +586,7 @@ public class FilePageServer implements PageServer
             return mLogicalFirstPageOffset;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Gets the PhysicalFirstPageOffset.
          *
@@ -598,7 +598,7 @@ public class FilePageServer implements PageServer
             return mPhysicalFirstPageOffset;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Gets the MaximumSize of the volume.
          *
@@ -609,7 +609,7 @@ public class FilePageServer implements PageServer
             return mMaximumSize;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Sets the MaximumSize.
          *
@@ -620,7 +620,7 @@ public class FilePageServer implements PageServer
             mMaximumSize = aMaximumSize;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Gets the PageSize.
          *
@@ -631,7 +631,7 @@ public class FilePageServer implements PageServer
             return mPageSize;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Gets the FreePageListHead.
          *
@@ -642,7 +642,7 @@ public class FilePageServer implements PageServer
             return mFreePageListHead;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Sets the FreePageListHead.
          *
@@ -654,7 +654,7 @@ public class FilePageServer implements PageServer
             mFreePageListHead = aFreePageListHead;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Determines if the volume is currently open.
          *
@@ -666,7 +666,7 @@ public class FilePageServer implements PageServer
             return mOpenFlag;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Sets the whether the volume is open.
          *
@@ -677,7 +677,7 @@ public class FilePageServer implements PageServer
             mOpenFlag = anOpenFlag;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Gets the date in which the volume was created.
          *
@@ -689,7 +689,7 @@ public class FilePageServer implements PageServer
             return mCreationDate;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Gets the physical offset to the next page that can be allocated when
          * the free page list is empty.
@@ -701,7 +701,7 @@ public class FilePageServer implements PageServer
             return mNextAllocationOffset;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Sets the physical offset to the next page that can be allocated when
          * the free page list is empty.
@@ -712,7 +712,7 @@ public class FilePageServer implements PageServer
             mNextAllocationOffset = aNextAllocationOffset;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Converts a logical page offset to a physical offset.
          *
@@ -725,7 +725,7 @@ public class FilePageServer implements PageServer
             return (aLogicalPageOffset - mLogicalFirstPageOffset) + mPhysicalFirstPageOffset;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Converts a physical page offset to a logical offset.
          *
@@ -738,7 +738,7 @@ public class FilePageServer implements PageServer
             return (aPhysicalPageOffset - mPhysicalFirstPageOffset) + mLogicalFirstPageOffset;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Reads the header from the given FileChannel starting at NULL_OFFSET.
          */
@@ -782,7 +782,7 @@ public class FilePageServer implements PageServer
 
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Writes the header to the given FileChannel starting at NULL_OFFSET.
          */

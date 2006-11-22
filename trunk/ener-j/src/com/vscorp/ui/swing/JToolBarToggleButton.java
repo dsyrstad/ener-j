@@ -49,7 +49,7 @@ public class JToolBarToggleButton extends JToggleButton implements ToolBarButton
 
     private boolean mLabelEnabled = false;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a toolbar button from an Action.
      *
@@ -61,7 +61,7 @@ public class JToolBarToggleButton extends JToggleButton implements ToolBarButton
         configure();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a toolbar button from an Action with optional label
      *
@@ -76,7 +76,7 @@ public class JToolBarToggleButton extends JToggleButton implements ToolBarButton
         configure();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a toolbar button from an Icon.
      *
@@ -88,7 +88,7 @@ public class JToolBarToggleButton extends JToggleButton implements ToolBarButton
         configure();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets whether the text Action.NAME property is displayed from the
      * associated Action.
@@ -102,7 +102,7 @@ public class JToolBarToggleButton extends JToggleButton implements ToolBarButton
         configure();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Determines whether the text Action.NAME property is displayed from the
      * associated Action.
@@ -115,7 +115,7 @@ public class JToolBarToggleButton extends JToggleButton implements ToolBarButton
         return mLabelEnabled;
     }
 
-    //----------------------------------------------------------------------
+
     /** Configure the button.
      */
     private void configure()

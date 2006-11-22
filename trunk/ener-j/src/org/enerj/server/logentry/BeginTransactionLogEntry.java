@@ -35,7 +35,7 @@ import java.io.*;
  */
 public class BeginTransactionLogEntry extends LogEntry
 {
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an empty BeginTransactionLogEntry.
      * The transaction id is assigned by the server when this entry is logged.
@@ -44,7 +44,7 @@ public class BeginTransactionLogEntry extends LogEntry
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the entry type of this log entry.
      *
@@ -55,7 +55,7 @@ public class BeginTransactionLogEntry extends LogEntry
         return BEGIN_TXN_ENTRY_TYPE;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -64,7 +64,7 @@ public class BeginTransactionLogEntry extends LogEntry
         return 0;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

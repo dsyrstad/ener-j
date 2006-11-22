@@ -25,7 +25,7 @@ abstract public class TextColumn extends ObjectSourceTableColumn
     /** The JTable that is currently using this column to edit */
     private JTable mEditingJTable = null;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -38,7 +38,7 @@ abstract public class TextColumn extends ObjectSourceTableColumn
         this("", true);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable.
      * Heading alignment is leading.
@@ -58,7 +58,7 @@ abstract public class TextColumn extends ObjectSourceTableColumn
         } );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the title for the editor dialog box. 
      *
@@ -69,7 +69,7 @@ abstract public class TextColumn extends ObjectSourceTableColumn
         return mEditorTextField.getTitle();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the title for the editor's dialog box. If not set, this will default
      * to the title of the owner Frame/Dialog.
@@ -81,7 +81,7 @@ abstract public class TextColumn extends ObjectSourceTableColumn
         mEditorTextField.setTitle(aTitle);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the column's string value from the specified object.
      *
@@ -91,7 +91,7 @@ abstract public class TextColumn extends ObjectSourceTableColumn
      */
     protected abstract String getColumnValue(Object anObject);
 
-    //----------------------------------------------------------------------
+
     /**
      * Set the column's string value on the specified object.
      *
@@ -103,7 +103,7 @@ abstract public class TextColumn extends ObjectSourceTableColumn
      */
     protected abstract boolean setColumnValue(Object anObject, String aValue);
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the column's string value from the specified object. A valid string
      * is always returned regarless if anObject or the column's value is null.
@@ -132,7 +132,7 @@ abstract public class TextColumn extends ObjectSourceTableColumn
         return stringValue;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Calculates the preferred width of the TableColumn using the specified JTable.
      * Modifies the TableColumn's preferredWidth.
@@ -147,7 +147,7 @@ abstract public class TextColumn extends ObjectSourceTableColumn
         calculatePreferredWidth(aTable, component);
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellRenderer
     public Component getTableCellRendererComponent(JTable aTable,
                 Object aValue, boolean aSelectedFlag, boolean aFocusFlag,
@@ -171,7 +171,7 @@ abstract public class TextColumn extends ObjectSourceTableColumn
         return component;
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellEditor...
     public Component getTableCellEditorComponent(JTable aTable, Object aValue,
                         boolean isSelected, int aRow, int aColumn)
@@ -184,7 +184,7 @@ abstract public class TextColumn extends ObjectSourceTableColumn
         return mEditorTextField;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Called when the editor field changes value. We update the table's
      * object immediately so that we can work around the focus bug 4249803.
@@ -202,7 +202,7 @@ abstract public class TextColumn extends ObjectSourceTableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     // From CellEditor...
     public boolean stopCellEditing()
     {

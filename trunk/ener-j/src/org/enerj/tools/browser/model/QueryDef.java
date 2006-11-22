@@ -35,26 +35,26 @@ public class QueryDef
     private String mQuery;
     private Object mResult;
     
-    //--------------------------------------------------------------------------------
+
     QueryDef(String aQuery, Object aResult)
     {
         mQuery = aQuery;
         mResult = aResult;
     }
 
-    //--------------------------------------------------------------------------------
+
     public String getQuery()
     {
         return mQuery;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object getResult()
     {
         return mResult;
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() 
     {
         return mQuery;

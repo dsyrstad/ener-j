@@ -34,7 +34,7 @@ package org.enerj.query.oql;
 public class ParserException extends Exception {
     private TextPosition mPosition;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Constructs a ParserException using optional cause and TextPosition.
      *
@@ -48,7 +48,7 @@ public class ParserException extends Exception {
         mPosition = aPosition;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the TextPosition of the exception.
      *
@@ -59,7 +59,7 @@ public class ParserException extends Exception {
         return mPosition;
     }
     
-    //--------------------------------------------------------------------------------
+
     public String getMessage()
     {
         return super.getMessage() + (mPosition != null ? (": " + mPosition.toString()) : "");

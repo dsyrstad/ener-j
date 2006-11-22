@@ -38,7 +38,7 @@ public class JavaUtilTreeSetSCO extends java.util.TreeSet implements SCOTracker
 {
     private Persistable mOwnerFCO;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct an empty collection using the specified initial capacity and 
      * owner FCO.
@@ -53,21 +53,21 @@ public class JavaUtilTreeSetSCO extends java.util.TreeSet implements SCOTracker
         mOwnerFCO = anOwnerFCO;
     }
 
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public Persistable getOwnerFCO()
     {
         return mOwnerFCO;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerFCO(Persistable anOwner)
     {
         mOwnerFCO = anOwner;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerModified() 
     {
@@ -76,7 +76,7 @@ public class JavaUtilTreeSetSCO extends java.util.TreeSet implements SCOTracker
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns a clone without the owner set.
      *
@@ -89,11 +89,11 @@ public class JavaUtilTreeSetSCO extends java.util.TreeSet implements SCOTracker
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // Overridden mutator methods from java.util.TreeSet.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Overridden mutator methods from java.util.TreeSet.
+
+
+
     // java.util.Collection
     public boolean add(Object o) 
     {
@@ -102,7 +102,7 @@ public class JavaUtilTreeSetSCO extends java.util.TreeSet implements SCOTracker
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean addAll(Collection c) 
     {
@@ -111,7 +111,7 @@ public class JavaUtilTreeSetSCO extends java.util.TreeSet implements SCOTracker
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public void clear() 
     {
@@ -119,7 +119,7 @@ public class JavaUtilTreeSetSCO extends java.util.TreeSet implements SCOTracker
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean remove(Object o) 
     {
@@ -128,7 +128,7 @@ public class JavaUtilTreeSetSCO extends java.util.TreeSet implements SCOTracker
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean removeAll(Collection c) 
     {
@@ -137,7 +137,7 @@ public class JavaUtilTreeSetSCO extends java.util.TreeSet implements SCOTracker
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean retainAll(Collection c) 
     {

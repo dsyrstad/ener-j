@@ -41,7 +41,7 @@ public class BigDecimalLiteralAST extends BaseAST
 {
     private BigDecimal mValue;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a BigDecimalLiteralAST. 
      *
@@ -52,7 +52,7 @@ public class BigDecimalLiteralAST extends BaseAST
         mValue = aValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the value.
      *
@@ -63,7 +63,7 @@ public class BigDecimalLiteralAST extends BaseAST
         return mValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -72,7 +72,7 @@ public class BigDecimalLiteralAST extends BaseAST
         return BigDecimal.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

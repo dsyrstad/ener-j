@@ -47,7 +47,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
     
     private BufferedRandomAccessLogFile mRandomAccessLogFile = null;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct an ArchivingRedoLogServer.
      *
@@ -68,7 +68,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
         init(logFileName);
     }
         
-    //----------------------------------------------------------------------
+
     /**
      * Construct an ArchivingRedoLogServer.
      *
@@ -81,7 +81,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
         init(aLogFileName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Common Constructor initialization.
      *
@@ -107,7 +107,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Flushes pending output physically to disk.
      *
@@ -127,11 +127,11 @@ public class ArchivingRedoLogServer implements RedoLogServer
         }
     }
     
-    //----------------------------------------------------------------------
-    // Start of RedoLogServer interface...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of RedoLogServer interface...
+
+
+
     /**
      * Get an instance of a RedoLogServer.
      *
@@ -158,7 +158,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
         return new ArchivingRedoLogServer(someProperties);
     }
 
-    //----------------------------------------------------------------------
+
     public void disconnect() throws ODMGException
     {
         synchronized (mRandomAccessLogFile) {
@@ -177,7 +177,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     public void append(LogEntry aLogEntry) throws ODMGException
     {
         synchronized (mRandomAccessLogFile) {
@@ -206,13 +206,13 @@ public class ArchivingRedoLogServer implements RedoLogServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     public long getFirstLogEntryPosition() throws ODMGException
     {
         return 0L;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Reads an entry to the log.
      *
@@ -236,9 +236,9 @@ public class ArchivingRedoLogServer implements RedoLogServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     // ...End of RedoLogServer interface.
-    //----------------------------------------------------------------------
+
 
     /**
      * Buffered version of RandomAccessFile specifically designed to support the log. 

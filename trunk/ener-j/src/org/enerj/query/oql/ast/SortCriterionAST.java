@@ -37,7 +37,7 @@ public class SortCriterionAST extends BaseAST
     private AST mExpr;
     private boolean mAscending;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a SortCriterionAST. 
      *
@@ -50,7 +50,7 @@ public class SortCriterionAST extends BaseAST
         mAscending = isAscending;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the ascending flag.
      *
@@ -61,7 +61,7 @@ public class SortCriterionAST extends BaseAST
         return mAscending;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the expression.
      *

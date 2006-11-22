@@ -63,7 +63,7 @@ public class CachedPageServer implements PageServer
     /** Pool of reusable pages. We don't let this grow larger than mMaxPages. */
     private LinkedList mPagePool = new LinkedList();
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new CachedPageServer.
      *
@@ -96,7 +96,7 @@ public class CachedPageServer implements PageServer
         mCache = new LinkedHashCache(mMaxPages);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Allocates a new page at the given offset.
      *
@@ -116,7 +116,7 @@ public class CachedPageServer implements PageServer
         return page;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Frees an allocated page. The page may be added to the free page pool, or dumped.
      *
@@ -130,7 +130,7 @@ public class CachedPageServer implements PageServer
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Adds page to the cache and make it the MRU. The LRU page will drop off the cache if the cache
      * is full.
@@ -157,7 +157,7 @@ public class CachedPageServer implements PageServer
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets a cached page and make it the MRU.
      *
@@ -170,11 +170,11 @@ public class CachedPageServer implements PageServer
         return (Page)mCache.get( new Long(aLogicalPageOffset) );
     }
     
-    //----------------------------------------------------------------------
-    // Start of PageServer Interface...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of PageServer Interface...
+
+
+
     /**
      * Connects to a CachedPageServer.
      *
@@ -215,7 +215,7 @@ public class CachedPageServer implements PageServer
         return new CachedPageServer(maxPages, writeThru, delegate);
     }
 
-    //----------------------------------------------------------------------
+
     public void disconnect() throws PageServerException
     {
         try {
@@ -228,43 +228,43 @@ public class CachedPageServer implements PageServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     public long getLogicalFirstPageOffset()
     {
         return mDelegate.getLogicalFirstPageOffset();
     }
 
-    //----------------------------------------------------------------------
+
     public long getLogicalLastPageOffset()
     {
         return mDelegate.getLogicalLastPageOffset();
     }
 
-    //----------------------------------------------------------------------
+
     public int getPageSize()
     {
         return mPageSize;
     }
 
-    //----------------------------------------------------------------------
+
     public long getVolumeCreationDate()
     {
         return mDelegate.getVolumeCreationDate();
     }
 
-    //----------------------------------------------------------------------
+
     public long getDatabaseID()
     {
         return mDelegate.getDatabaseID();
     }
     
-    //----------------------------------------------------------------------
+
     public boolean isReadOnly()
     {
         return mReadOnly;
     }
 
-    //----------------------------------------------------------------------
+
     public void loadPage(ByteBuffer aBuffer, long aLogicalPageOffset, int anOffset) throws PageServerException
     {
         Page page = getCachedPage(aLogicalPageOffset);
@@ -288,7 +288,7 @@ public class CachedPageServer implements PageServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     public void storePage(ByteBuffer aBuffer, long aLogicalPageOffset, int anOffset) throws PageServerException
     {
         //  TODO  we should track the union of anOffset/aLength ranges in the cached page
@@ -333,13 +333,13 @@ public class CachedPageServer implements PageServer
         }
     }
 
-    //----------------------------------------------------------------------
+
     public long allocatePage() throws PageServerException
     {
         return mDelegate.allocatePage();
     }
 
-    //----------------------------------------------------------------------
+
     public void freePage(long aLogicalPageOffset) throws PageServerException
     {
         // We don't care if the cached page is dirty or not if we're freeing it.
@@ -350,7 +350,7 @@ public class CachedPageServer implements PageServer
         }            
     }
 
-    //----------------------------------------------------------------------
+
     public void syncAllPages() throws PageServerException
     {
         // Flush all dirty pages. Note that iterating does not change the access order.
@@ -366,25 +366,25 @@ public class CachedPageServer implements PageServer
         mDelegate.syncAllPages();
     }
 
-    //----------------------------------------------------------------------
-    // ...End of PageServer Interface.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+    // ...End of PageServer Interface.
+
+
+
+
     /**
      * Overrides removeEldestEntry from LinkedHashMap so that LRU Pages can
      * be dropped from the cache.
      */
     private final class LinkedHashCache extends LinkedHashMap
     {
-        //----------------------------------------------------------------------
+
         LinkedHashCache(int aMaxNumPages)
         {
             super((aMaxNumPages * 3) / 4 + 1, .75F, true);
         }
         
-        //----------------------------------------------------------------------
+
         protected boolean removeEldestEntry(Map.Entry anEldestEntry)
         {
             if (size() < mMaxPages) {
@@ -403,8 +403,8 @@ public class CachedPageServer implements PageServer
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Definition of a Page served up by a CachedPageServer. 
      *
@@ -422,7 +422,7 @@ public class CachedPageServer implements PageServer
         /** Modified page flag. */
         boolean mModified;
 
-        //----------------------------------------------------------------------
+
         /**
          * Constructs a new Page.
          *
@@ -433,7 +433,7 @@ public class CachedPageServer implements PageServer
             initialize(aLogicalPageOffset);
         }
 
-        //----------------------------------------------------------------------
+
         /** 
          * Initializes the page to the specified offset and sets mModified to false.
          *

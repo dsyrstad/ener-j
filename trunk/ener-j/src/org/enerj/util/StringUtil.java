@@ -41,13 +41,13 @@ import java.util.Properties;
 public class StringUtil 
 {
     
-    //--------------------------------------------------------------------------------
+
     // Don't allow construction
     private StringUtil() 
     {
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Appends aValue's string representation to aBuffer. Recursively calls #toString(Object, boolean, boolean).
      * 
@@ -67,7 +67,7 @@ public class StringUtil
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Returns aValue's string representation via reflection. All fields of aValue are dumped, including
      * superclass fields. Each field name of a superclass field is prefix by one or more '.' indicating its
@@ -191,7 +191,7 @@ public class StringUtil
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Substitutes macros of the form "${key}" in aString to the corresponding value of
      * "key" in someProperties. 

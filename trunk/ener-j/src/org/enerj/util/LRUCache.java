@@ -37,7 +37,7 @@ public class LRUCache<K,V> extends LinkedHashMap<K,V>
 {
     private int mMaxNumEntries;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a LRUCache. 
      *
@@ -50,7 +50,7 @@ public class LRUCache<K,V> extends LinkedHashMap<K,V>
         mMaxNumEntries = aMaxNumEntries;
     }
     
-    //--------------------------------------------------------------------------------
+
     protected boolean removeEldestEntry(Map.Entry anEldestEntry)
     {
          return size() < mMaxNumEntries;

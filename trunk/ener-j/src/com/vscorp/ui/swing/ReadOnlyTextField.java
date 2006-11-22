@@ -14,7 +14,7 @@ import javax.swing.JTextField;
  */
 public class ReadOnlyTextField extends JTextField
 {
-    //----------------------------------------------------------------------
+
     /**
      * Create a new ReadOnlyTextField using the specified text.
      *
@@ -26,7 +26,7 @@ public class ReadOnlyTextField extends JTextField
         configure();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Create a new ReadOnlyTextField using the specified number of columns
      *
@@ -41,7 +41,7 @@ public class ReadOnlyTextField extends JTextField
         configure();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Configures the text field to be selectable/read-only. Called by constructors
      * to complete initialization.

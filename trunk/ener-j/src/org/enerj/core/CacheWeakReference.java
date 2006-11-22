@@ -34,7 +34,7 @@ class CacheWeakReference extends WeakReference
     /** Pre-modification image of the object. */
     private byte[] mSavedImage;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct a CacheWeakReference that belongs to a ReferenceQueue.
      *
@@ -48,13 +48,13 @@ class CacheWeakReference extends WeakReference
         mOID = anOID;
     }
 
-    //----------------------------------------------------------------------
+
     long getOID()
     {
         return mOID;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the pre-modification image of this object.
      *
@@ -66,7 +66,7 @@ class CacheWeakReference extends WeakReference
         mSavedImage = anImage;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the pre-modification image of this object.
      *

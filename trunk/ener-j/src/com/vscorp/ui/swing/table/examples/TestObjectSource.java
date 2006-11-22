@@ -23,7 +23,7 @@ class TestObjectSource extends BaseObjectSource
 {
     private TestObject[] mObjects;
 
-    //----------------------------------------------------------------------
+
     static class TestObject
     {
         String mObjectId;
@@ -51,7 +51,7 @@ class TestObjectSource extends BaseObjectSource
         }
     }
 
-    //----------------------------------------------------------------------
+
     public static class NameIconColumn extends IconColumn
     {
         // JLF icons
@@ -73,25 +73,25 @@ class TestObjectSource extends BaseObjectSource
                     null
         };
 
-        //----------------------------------------------------------------------
+
         public NameIconColumn(Class anObjectClass, String anAttributeName, String[] someArgs)
         {
             super();
         }
 
-        //----------------------------------------------------------------------
+
         NameIconColumn(String aHeading, boolean anEditingFlag)
         {
             super(aHeading, anEditingFlag);
         }
 
-        //----------------------------------------------------------------------
+
         public String getColumnValue(Object anObject)
         {
             return ((TestObject)anObject).mName;
         }
 
-        //----------------------------------------------------------------------
+
         public Icon getColumnIcon(Object anObject)
         {
             String string;
@@ -110,7 +110,7 @@ class TestObjectSource extends BaseObjectSource
             return mIcons[ sum % 8 ];
         }
 
-        //----------------------------------------------------------------------
+
         public boolean setColumnValue(Object anObject, String aValue)
         {
             ((TestObject)anObject).mName = aValue;
@@ -118,15 +118,15 @@ class TestObjectSource extends BaseObjectSource
         }
     }
 
-    //----------------------------------------------------------------------
+
     private class ChangeTimerTask extends java.util.TimerTask
     {
-        //----------------------------------------------------------------------
+
         ChangeTimerTask()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public void run()
         {
             int index = (int)(Math.random() * mObjects.length );
@@ -141,7 +141,7 @@ class TestObjectSource extends BaseObjectSource
         }
     }
 
-    //----------------------------------------------------------------------
+
     TestObjectSource()
     {
         mObjects = new TestObject[100];
@@ -155,27 +155,27 @@ class TestObjectSource extends BaseObjectSource
         }
     }
 
-    //----------------------------------------------------------------------
+
     public int size() throws ObjectSourceException
     {
         return mObjects.length;
     }
 
-    //----------------------------------------------------------------------
+
     public Object get(int anIndex)
         throws ObjectSourceException, java.lang.ArrayIndexOutOfBoundsException
     {
         return mObjects[anIndex];
     }
 
-    //----------------------------------------------------------------------
+
     public void get(int anIndex, int aLength, Object[] anObjectArray)
         throws ObjectSourceException, java.lang.ArrayIndexOutOfBoundsException
     {
         System.arraycopy(mObjects, anIndex, anObjectArray, 0, aLength);
     }
 
-    //----------------------------------------------------------------------
+
     public Object get(Object anObjectId) throws ObjectSourceException
     {
         for (int i = 0; i < mObjects.length; i++) {
@@ -187,7 +187,7 @@ class TestObjectSource extends BaseObjectSource
         return null;
     }
 
-    //----------------------------------------------------------------------
+
     public void update(Object anObject, int anIndex)
             throws ObjectSourceException
     {
@@ -199,7 +199,7 @@ class TestObjectSource extends BaseObjectSource
         this.fireObjectSourceRangeChanged(anIndex, anIndex);
     }
 
-    //----------------------------------------------------------------------
+
     public void update(Object anObject) throws ObjectSourceException
     {
         if (!(anObject instanceof TestObject)) {
@@ -221,7 +221,7 @@ class TestObjectSource extends BaseObjectSource
 
     }
 
-    //----------------------------------------------------------------------
+
     public Object getObjectId(Object anObject)
     {
         if (anObject instanceof TestObject) {

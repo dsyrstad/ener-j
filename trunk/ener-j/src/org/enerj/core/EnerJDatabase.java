@@ -30,6 +30,9 @@ import static org.enerj.server.ObjectServer.ENERJ_HOSTNAME_PROP;
 import static org.enerj.server.ObjectServer.ENERJ_PASSWORD_PROP;
 import static org.enerj.server.ObjectServer.ENERJ_PORT_PROP;
 import static org.enerj.server.ObjectServer.ENERJ_USERNAME_PROP;
+import static org.odmg.Transaction.READ;
+import static org.odmg.Transaction.UPGRADE;
+import static org.odmg.Transaction.WRITE;
 import gnu.trove.TLongHashSet;
 
 import java.io.IOException;
@@ -42,7 +45,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.enerj.annotations.SchemaAnnotation;
-import org.enerj.server.BaseObjectServerSession;
 import org.enerj.server.ClassInfo;
 import org.enerj.server.ExtentIterator;
 import org.enerj.server.ObjectServerSession;
@@ -125,9 +127,13 @@ public class EnerJDatabase implements Database, Persister
     /** Number of bytes in mSerializedObjectQueue. */
     private int mSerializedObjectQueueSize = 0;
     
+    /** True if the Transaction has started, but neither commit nor abort have been called. */
+    private boolean mIsTxnOpen = false;
 
-
-    //----------------------------------------------------------------------
+    /** Non-null if the transaction is in the process of flushing objects. This
+     * represents the current position in mModifiedObjects. */
+    private Iterator<Persistable> mFlushIterator = null; 
+    
     /**
      * Construct a unopened EnerJDatabase.
      */
@@ -136,7 +142,7 @@ public class EnerJDatabase implements Database, Persister
         init();
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Common constructor initialization. 
      */
@@ -155,11 +161,11 @@ public class EnerJDatabase implements Database, Persister
         }
     }
     
-    //----------------------------------------------------------------------
-    // Start of truly public EnerJ-specific methods...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of truly public EnerJ-specific methods...
+
+
+
     /** 
      * Gets the current open database for the process. This is initially set to
      * the first database opened by the process. When this database is closed, it
@@ -173,7 +179,7 @@ public class EnerJDatabase implements Database, Persister
         return sCurrentProcessDatabase;
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Gets the current open database for the caller's thread. This is initially set to
      * the first database opened by the thread. When this database is closed, it
@@ -187,7 +193,7 @@ public class EnerJDatabase implements Database, Persister
         return (EnerJDatabase)sCurrentThreadDatabaseMap.get( Thread.currentThread() );
     }
 
-    //----------------------------------------------------------------------
+
     /** 
      * Gets the current open database. This method attempts to get the current
      * database via getCurrentDatabaseForThread(). Failing that, getCurrentDatabaseForProcess
@@ -205,7 +211,7 @@ public class EnerJDatabase implements Database, Persister
         return db;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Determines if this database is open.
      *
@@ -216,15 +222,15 @@ public class EnerJDatabase implements Database, Persister
         return mIsOpen;
     }
 
-    //----------------------------------------------------------------------
+
     // ... End of truly public EnerJ-specific methods.
-    //----------------------------------------------------------------------
 
-    //--------------------------------------------------------------------------------
+
+
     // Start of Persister interface...
-    //--------------------------------------------------------------------------------
 
-    //--------------------------------------------------------------------------------
+
+
     /**
      * {@inheritDoc}
      */
@@ -233,7 +239,7 @@ public class EnerJDatabase implements Database, Persister
         return mAllowNontransactionalReads;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -243,7 +249,7 @@ public class EnerJDatabase implements Database, Persister
         return getObjectsForOIDs(new long[] { anOID } )[0];
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -318,7 +324,7 @@ public class EnerJDatabase implements Database, Persister
         return objects;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -354,7 +360,7 @@ public class EnerJDatabase implements Database, Persister
         return oid;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -390,14 +396,14 @@ public class EnerJDatabase implements Database, Persister
         for (Persistable prefetch : prefetches) {
             PersistableHelper.loadSerializedImage(this, prefetch, objects[idx++]);
 
-            if ( !isNontransactionalReadMode() && !EnerJTransaction.isAtLockLevel(prefetch, EnerJTransaction.READ)) {
+            if ( !isNontransactionalReadMode() && !EnerJDatabase.isAtLockLevel(prefetch, EnerJTransaction.READ)) {
                 // loadObject() obtains a READ lock.
                 prefetch.enerj_SetLockLevel(EnerJTransaction.READ);
             }
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -405,6 +411,7 @@ public class EnerJDatabase implements Database, Persister
      */
     public void addToModifiedList(Persistable aPersistable)
     {
+        // TODO Flush to server when list gets too full.
         EnerJTransaction txn = getTransaction(); 
         if (txn == null) {
             return; // Ignore if txn not active.
@@ -420,7 +427,7 @@ public class EnerJDatabase implements Database, Persister
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * 
      * {@inheritDoc}
@@ -432,7 +439,7 @@ public class EnerJDatabase implements Database, Persister
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.core.Persister#getModifiedList()
@@ -442,11 +449,11 @@ public class EnerJDatabase implements Database, Persister
         return mModifiedObjects.getIterator();
     }
 
-    //--------------------------------------------------------------------------------
-    // ...End of Persister interface.
-    //--------------------------------------------------------------------------------
 
-    //--------------------------------------------------------------------------------
+    // ...End of Persister interface.
+
+
+
     /**
      * Sets whether this database instance allows non-transactional (dirty) reads.  
      *
@@ -465,7 +472,7 @@ public class EnerJDatabase implements Database, Persister
         mAllowNontransactionalReads = isNontransactional;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Store a Persistable object whose modified or new flags are set to true. 
      * Afterwards, the object's new and modified flags are set to
@@ -530,7 +537,7 @@ public class EnerJDatabase implements Database, Persister
         aPersistable.enerj_SetLoaded(true);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Queue a serialized object to be stored to the database. If a pre-configured
      * number of bytes have already been queued, the queue is flushed to the database. 
@@ -559,7 +566,7 @@ public class EnerJDatabase implements Database, Persister
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Flushes previously serialized objects queued by {@link #storePersistable(Persistable)}
      * to the database.  
@@ -583,7 +590,7 @@ public class EnerJDatabase implements Database, Persister
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Updates the database with the schema for aPersistable, if necessary.
      *
@@ -621,7 +628,7 @@ public class EnerJDatabase implements Database, Persister
         mKnownSchemaCIDs.add(cid);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Saves a serialized image of the Persistable in the cache.
      *
@@ -640,7 +647,7 @@ public class EnerJDatabase implements Database, Persister
         mClientCache.setSavedImage(oid, objectBytes);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Restores the serialized image previously saved by savePersistableImage and
      * clears the saved image from the cache.
@@ -662,7 +669,7 @@ public class EnerJDatabase implements Database, Persister
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Clears the serialized image previously saved by savePersistableImage.
      *
@@ -680,7 +687,7 @@ public class EnerJDatabase implements Database, Persister
         mClientCache.setSavedImage(oid, null);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Evicts all cached objects from the local cache.
      */
@@ -689,7 +696,7 @@ public class EnerJDatabase implements Database, Persister
         mClientCache.evictAll();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Evicts the specified cached object from the local cache.
      * 
@@ -715,7 +722,7 @@ public class EnerJDatabase implements Database, Persister
         PersistableHelper.resolveObject((Persistable)anObject, shouldDisassociate);
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Gets the client-side cache for this database.
      *
@@ -746,7 +753,7 @@ public class EnerJDatabase implements Database, Persister
         return iterator;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the open transaction that is bound to this database.
      *
@@ -767,7 +774,7 @@ public class EnerJDatabase implements Database, Persister
         return sIsThisTheClientJVM;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Sets the current transaction for the database.
      *
@@ -789,7 +796,7 @@ public class EnerJDatabase implements Database, Persister
         mOIDCachePosition = 0;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Adds a new Persistable to the Persister's modified list.
      * The Persistable's database and new OID are set. 
@@ -820,7 +827,7 @@ public class EnerJDatabase implements Database, Persister
         return oid;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Checks that the database is open, it currently bound to a transaction,
      * and that the transaction is current for the caller's thread.
@@ -834,7 +841,7 @@ public class EnerJDatabase implements Database, Persister
         checkBoundTransaction(false);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Checks that the database is open, it currently bound to a transaction,
      * and that the transaction is current for the caller's thread.
@@ -865,7 +872,7 @@ public class EnerJDatabase implements Database, Persister
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines whether we're in non-transactional read mode. Non-transaction read mode
      * exists when the database is not bound to a transaction and it is set to allow non-transactional reads. 
@@ -881,7 +888,7 @@ public class EnerJDatabase implements Database, Persister
         return mAllowNontransactionalReads;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets a new OID.
      *
@@ -911,7 +918,7 @@ public class EnerJDatabase implements Database, Persister
         return oid;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Common initialization used when opening a database.
      */
@@ -929,11 +936,11 @@ public class EnerJDatabase implements Database, Persister
         mIsOpen = true;
     }
     
-    //----------------------------------------------------------------------
-    // Start of org.odmg.Database interface methods...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of org.odmg.Database interface methods...
+
+
+
     /**
      * {@inheritDoc}
      * @param name The name of the database as a URI. Currently, three forms
@@ -1090,7 +1097,7 @@ public class EnerJDatabase implements Database, Persister
         initOpenDatabase();
     }
     
-    //----------------------------------------------------------------------
+
     public void close() throws ODMGException 
     {
         if (!mIsOpen) {
@@ -1119,7 +1126,7 @@ public class EnerJDatabase implements Database, Persister
         } // End finally
     }
     
-    //----------------------------------------------------------------------
+
     public void bind(Object object, String name) throws ObjectNameNotUniqueException 
     {
         checkBoundTransaction();
@@ -1131,14 +1138,14 @@ public class EnerJDatabase implements Database, Persister
         mObjectServerSession.bind(getOID(object), name);
     }
     
-    //----------------------------------------------------------------------
+
     public void unbind(String name) throws ObjectNameNotFoundException 
     {
         checkBoundTransaction();
         mObjectServerSession.unbind(name);
     }
     
-    //----------------------------------------------------------------------
+
     public Object lookup(String name) throws ObjectNameNotFoundException 
     {
         checkBoundTransaction(true);
@@ -1147,7 +1154,7 @@ public class EnerJDatabase implements Database, Persister
         return getObjectForOID(oid);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * <p>
@@ -1174,7 +1181,7 @@ public class EnerJDatabase implements Database, Persister
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * <p>
@@ -1212,6 +1219,11 @@ public class EnerJDatabase implements Database, Persister
         mObjectServerSession.removeFromExtent( getOID(persistable) );
     }
     
+    
+
+    // ...End of org.odmg.Database interface methods.
+
+
     /**
      * Gets an Extent for the given class.
      *
@@ -1237,9 +1249,81 @@ public class EnerJDatabase implements Database, Persister
     {
         return mObjectServerSession.getExtentSize(aPersistentCapableClass.getName(), wantSubClassInstances);
     }
+
+    /**
+     * Checks if a Persistable is at or above the desired lock level.
+     *
+     * @param aPersistable the persistable to be checked.
+     * @param aDesiredLockLevel the lock level desired.
+     *
+     * @return true if the object is at or above the level, else false.
+     */
+    static boolean isAtLockLevel(Persistable aPersistable, int aDesiredLockLevel)
+    {
+        int currLock = aPersistable.enerj_GetLockLevel();
+        switch (currLock) {
+        case READ:
+            return aDesiredLockLevel == READ || aDesiredLockLevel == UPGRADE || aDesiredLockLevel == WRITE;
     
-    //----------------------------------------------------------------------
-    // ...End of org.odmg.Database interface methods.
-    //----------------------------------------------------------------------
+        case UPGRADE:
+            return aDesiredLockLevel == UPGRADE || aDesiredLockLevel == WRITE;
+    
+        case WRITE:
+            return aDesiredLockLevel == WRITE;
+    
+        case EnerJTransaction.NO_LOCK:
+            return true;
+            
+        default:
+            throw new ODMGRuntimeException("Bad lock level on object: " + currLock);
+        }
+    }
+
+    
+    /**
+     * Determines whether a transaction is open on this database.
+     * 
+     * @return true if a transaction is open.
+     */
+    boolean isTransactionOpen()
+    {
+        return mIsTxnOpen;
+    }
+    
+    /**
+     * Begins a transaction to be associated explicitly with this Database.
+     * 
+     * @param aTransaction the transaction initiating the begin().
+     */
+    void begin(EnerJTransaction aTransaction)
+    {
+        if (mIsTxnOpen) {
+            throw new TransactionInProgressException("Transaction already started");
+        }
+        
+        if (EnerJTransaction.getCurrentTransaction() != null) {
+            throw new TransactionInProgressException("Another Transaction is already in progress on this thread");
+        }
+        
+        if (!isOpen()) {
+            throw new DatabaseClosedException("Database is not open yet.");
+        }
+
+        // On error, this must be cleared.
+        // This must be called prior to begin logic because it may throw saying that the
+        // Database is already bound to a transaction.
+        setTransaction(aTransaction);
+        
+        try {
+            mObjectServerSession.beginTransaction();
+        }
+        catch (RuntimeException e) {
+            setTransaction(null);
+            throw e;
+        }
+
+        mIsTxnOpen = true;
+    }
+
 }
 

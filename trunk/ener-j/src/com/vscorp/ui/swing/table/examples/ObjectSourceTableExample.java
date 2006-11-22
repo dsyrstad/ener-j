@@ -83,12 +83,12 @@ public class ObjectSourceTableExample extends WindowAdapter
 
     };
 
-    //----------------------------------------------------------------------
+
     private ObjectSourceTableExample()
     {
     }
 
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) throws Exception
     {
         //String lookAndFeelClassname = UIManager.getSystemLookAndFeelClassName();
@@ -123,14 +123,14 @@ public class ObjectSourceTableExample extends WindowAdapter
         frame.setVisible(true);
     }
 
-    //----------------------------------------------------------------------
+
     private void sortColumn(ChangeEvent anEvent)
     {
         EditableSortableTableColumn column = (EditableSortableTableColumn)anEvent.getSource();
         System.out.println("Column=" + column.getHeaderValue() + " Sort direction=" + column.getSortDirection() );
     }
 
-    //----------------------------------------------------------------------
+
     public void windowClosing(WindowEvent anEvent)
     {
         JFrame frame = (JFrame)anEvent.getSource();

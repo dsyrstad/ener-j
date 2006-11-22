@@ -197,9 +197,9 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
     }
 
-    //----------------------------------------------------------------------
+
     // Start of ObjectServerSession interface methods...
-    //----------------------------------------------------------------------
+
 
     /** 
      * {@inheritDoc}
@@ -666,12 +666,12 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
     }
 
-    //----------------------------------------------------------------------
-    // ...End of ObjectServerSession interface methods.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+    // ...End of ObjectServerSession interface methods.
+
+
+
+
     /**
      * Our JVM ShutdownHook thread.
      */

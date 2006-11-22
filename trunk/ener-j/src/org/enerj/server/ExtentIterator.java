@@ -38,7 +38,7 @@ import java.util.NoSuchElementException;
  */
 public interface ExtentIterator
 {
-    //----------------------------------------------------------------------
+
     /**
      * Determines if more objects are available from this iterator.
      *
@@ -48,7 +48,7 @@ public interface ExtentIterator
      */
     public boolean hasNext() throws ODMGRuntimeException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets, at most, the next N objects from the iterator, where N is aMaxNumObjects.
      *
@@ -61,7 +61,7 @@ public interface ExtentIterator
      */
     public long[] next(int aMaxNumObjects) throws ODMGRuntimeException, NoSuchElementException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Closes this iterator.
      */

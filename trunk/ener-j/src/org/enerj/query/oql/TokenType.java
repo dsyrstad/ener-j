@@ -33,25 +33,25 @@ package org.enerj.query.oql;
 public class TokenType {
     private String mName;
     
-    //--------------------------------------------------------------------------------
+
     public TokenType(String aName) 
     {
         mName = aName;
     }
     
-    //--------------------------------------------------------------------------------
+
     public String getName()
     {
         return mName;
     }
 
-    //--------------------------------------------------------------------------------
+
     public String toString()
     {
         return mName;
     }
 
-    //--------------------------------------------------------------------------------
+
     public boolean equals(Object anObject)
     {
         if (!(anObject instanceof TokenType)) {
@@ -61,7 +61,7 @@ public class TokenType {
         return ((TokenType)anObject).mName.equals(mName);
     }
 
-    //--------------------------------------------------------------------------------
+
     public int hashCode()
     {
         return mName.hashCode();

@@ -177,7 +177,7 @@ public class ObjectSerializer
     /** HashMap mapping SCO class to corresponding Serializer object */
     private static HashMap sClassToSerializer = new HashMap(sSCOSerializers.length);
     
-    //----------------------------------------------------------------------
+
     // Initialize HashMaps and array class types
     static {
         // This must be done prior to initializing the maps.
@@ -209,7 +209,7 @@ public class ObjectSerializer
     private ReadContext mReadContext;
     private WriteContext mWriteContext;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new ObjectSerializer for resolving objects.
      */
@@ -217,7 +217,7 @@ public class ObjectSerializer
     {
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new ObjectSerializer for input.
      *
@@ -228,7 +228,7 @@ public class ObjectSerializer
         mReadContext = new ReadContext(aDataInput, this);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new ObjectSerializer for output.
      *
@@ -240,7 +240,7 @@ public class ObjectSerializer
         mWriteContext = new WriteContext(aDataOutput, this);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the DataInput stream associated with this serializer.
      * 
@@ -252,7 +252,7 @@ public class ObjectSerializer
         return (mReadContext == null ? null : mReadContext.mStream);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the DataOutput stream associated with this serializer.
      * 
@@ -264,7 +264,7 @@ public class ObjectSerializer
         return (mWriteContext == null ? null : mWriteContext.mStream);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Writes a Object to a stream.
      *
@@ -392,7 +392,7 @@ public class ObjectSerializer
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Reads a Object from a stream.
      *
@@ -436,7 +436,7 @@ public class ObjectSerializer
         // Not reached
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Writes a FCO to a stream. 
      *
@@ -455,7 +455,7 @@ public class ObjectSerializer
         mWriteContext.mStream.writeLong(oid);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Reads a FCO from a stream.
      *
@@ -479,7 +479,7 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Writes all of the Objects in a Collection to a stream.
      *
@@ -497,7 +497,7 @@ public class ObjectSerializer
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Reads anObjectCount of Objects from a stream into a Collection.
      * Assumes that the size value (written by writeCollection) has already been
@@ -517,7 +517,7 @@ public class ObjectSerializer
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Writes all of the Objects in a Map to a stream.
      *
@@ -537,7 +537,7 @@ public class ObjectSerializer
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Reads anObjectCount of Objects from a stream into a Map.
      * Assumes that the size value (written by writeMap) has already been
@@ -559,11 +559,11 @@ public class ObjectSerializer
         }
     }
     
-    //----------------------------------------------------------------------
-    // Read/Write contexts
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Read/Write contexts
+
+
+
     /**
      * Context used for reading objects.
      */
@@ -578,14 +578,14 @@ public class ObjectSerializer
          */
         private ArrayList mSCOArray = null;
         
-        //----------------------------------------------------------------------
+
         public ReadContext(DataInput aStream, ObjectSerializer aSerializer)
         {
             mStream = aStream;
             mSerializer = aSerializer;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Resets this object so that it may be used again as if it were newly
          * constructed.
@@ -597,7 +597,7 @@ public class ObjectSerializer
             }
         }
         
-        //----------------------------------------------------------------------
+
         public ArrayList getSCOArray()
         {
             if (mSCOArray == null) {
@@ -608,7 +608,7 @@ public class ObjectSerializer
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Context used for writing objects.
      */
@@ -623,14 +623,14 @@ public class ObjectSerializer
          */
         private IdentityHashMap mSCOMap = null;
         
-        //----------------------------------------------------------------------
+
         public WriteContext(DataOutput aStream, ObjectSerializer aSerializer)
         {
             mStream = aStream;
             mSerializer = aSerializer;
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Resets this object so that it may be used again as if it were newly
          * constructed.
@@ -642,7 +642,7 @@ public class ObjectSerializer
             }
         }
         
-        //----------------------------------------------------------------------
+
         public IdentityHashMap getSCOMap()
         {
             if (mSCOMap == null) {
@@ -653,16 +653,16 @@ public class ObjectSerializer
         }
     }
     
-    //----------------------------------------------------------------------
-    // Serializers...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Serializers...
+
+
+
     /** Interface for all serializers.
      */
     private interface Serializer
     {
-        //----------------------------------------------------------------------
+
         /**
          * Gets the object type id for this SCO.
          *
@@ -670,7 +670,7 @@ public class ObjectSerializer
          */
         public byte getTypeId();
 
-        //----------------------------------------------------------------------
+
         /**
          * Gets the Class object representing this SCO.
          *
@@ -678,7 +678,7 @@ public class ObjectSerializer
          */
         public Class getRepresentingClass();
         
-        //----------------------------------------------------------------------
+
         /**
          * Gets the Proxy Class object representing this SCO.
          *
@@ -687,7 +687,7 @@ public class ObjectSerializer
          */
         public Class getProxyClass();
         
-        //----------------------------------------------------------------------
+
         /**
          * Writes a SCO to aContext.mStream.
          *
@@ -699,7 +699,7 @@ public class ObjectSerializer
          */
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException;
 
-        //----------------------------------------------------------------------
+
         /**
          * Reads a SCO from aContext.mStream.
          *
@@ -727,35 +727,35 @@ public class ObjectSerializer
         public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException;
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a byte[] SCO.
      */
     private static final class ByteArraySerializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         ByteArraySerializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sByteArray_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return sByteArrayClass;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             byte[] aValue = (byte[])anObject;
@@ -763,7 +763,7 @@ public class ObjectSerializer
             aContext.mStream.write(aValue);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int len = aContext.mStream.readInt();
@@ -778,35 +778,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a boolean[] SCO.
      */
     private static final class BooleanArraySerializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         BooleanArraySerializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sBooleanArray_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return sBooleanArrayClass;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             boolean[] aValue = (boolean[])anObject;
@@ -816,7 +816,7 @@ public class ObjectSerializer
             }
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int len = aContext.mStream.readInt();
@@ -834,35 +834,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a char[] SCO.
      */
     private static final class CharArraySerializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         CharArraySerializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sCharArray_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return sCharArrayClass;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             char[] aValue = (char[])anObject;
@@ -872,7 +872,7 @@ public class ObjectSerializer
             }
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int len = aContext.mStream.readInt();
@@ -890,35 +890,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a short[] SCO.
      */
     private static final class ShortArraySerializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         ShortArraySerializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sShortArray_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return sShortArrayClass;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             short[] aValue = (short[])anObject;
@@ -928,7 +928,7 @@ public class ObjectSerializer
             }
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int len = aContext.mStream.readInt();
@@ -946,35 +946,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a int[] SCO.
      */
     private static final class IntArraySerializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         IntArraySerializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sIntArray_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return sIntArrayClass;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             int[] aValue = (int[])anObject;
@@ -984,7 +984,7 @@ public class ObjectSerializer
             }
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int len = aContext.mStream.readInt();
@@ -1002,35 +1002,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a long[] SCO.
      */
     private static final class LongArraySerializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         LongArraySerializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sLongArray_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return sLongArrayClass;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             long[] aValue = (long[])anObject;
@@ -1040,7 +1040,7 @@ public class ObjectSerializer
             }
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int len = aContext.mStream.readInt();
@@ -1058,35 +1058,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a float[] SCO.
      */
     private static final class FloatArraySerializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         FloatArraySerializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sFloatArray_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return sFloatArrayClass;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             float[] aValue = (float[])anObject;
@@ -1096,7 +1096,7 @@ public class ObjectSerializer
             }
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int len = aContext.mStream.readInt();
@@ -1114,35 +1114,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a double[] SCO.
      */
     private static final class DoubleArraySerializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         DoubleArraySerializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sDoubleArray_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return sDoubleArrayClass;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             double[] aValue = (double[])anObject;
@@ -1152,7 +1152,7 @@ public class ObjectSerializer
             }
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int len = aContext.mStream.readInt();
@@ -1170,38 +1170,38 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a Object[] SCO. This includes arrays of
      * object types ("[Lxxxx;") and multi-dimensional arrays ("[[..." - which are
      * also arrays of Object).
      */
     private static final class ObjectArraySerializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         ObjectArraySerializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sObjectArray_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             // We can't generically determine this. Use a this class as a placeholder.
             return this.getClass();
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             // Write class name of component type. For example, this would be "java.lang.Integer"
@@ -1214,7 +1214,7 @@ public class ObjectSerializer
             }
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             String componentClassName = aContext.mStream.readUTF();
@@ -1243,42 +1243,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.lang.Byte SCO.
      */
     private static final class Java_lang_Byte_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_lang_Byte_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_lang_Byte_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.lang.Byte.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.lang.Byte aValue = (java.lang.Byte)anObject;
             aContext.mStream.writeByte( aValue.byteValue () );
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             byte value = aContext.mStream.readByte();
@@ -1291,42 +1291,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.lang.Boolean SCO.
      */
     private static final class Java_lang_Boolean_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_lang_Boolean_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_lang_Boolean_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.lang.Boolean.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.lang.Boolean aValue = (java.lang.Boolean)anObject;
             aContext.mStream.writeBoolean( aValue.booleanValue() );
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             boolean value = aContext.mStream.readBoolean();
@@ -1339,42 +1339,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.lang.Character SCO.
      */
     private static final class Java_lang_Character_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_lang_Character_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_lang_Character_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.lang.Character.class;
         }
         
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.lang.Character aValue = (java.lang.Character)anObject;
             aContext.mStream.writeChar( aValue.charValue () );
         }
 
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             char value = aContext.mStream.readChar();
@@ -1387,42 +1387,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.lang.Short SCO.
      */
     private static final class Java_lang_Short_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_lang_Short_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_lang_Short_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.lang.Short.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.lang.Short aValue = (java.lang.Short)anObject;
             aContext.mStream.writeShort( aValue.shortValue () );
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             short value = aContext.mStream.readShort();
@@ -1435,42 +1435,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.lang.Integer SCO.
      */
     private static final class Java_lang_Integer_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_lang_Integer_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_lang_Integer_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.lang.Integer.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.lang.Integer aValue = (java.lang.Integer)anObject;
             aContext.mStream.writeInt( aValue.intValue () );
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int value = aContext.mStream.readInt();
@@ -1483,42 +1483,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.lang.Long SCO.
      */
     private static final class Java_lang_Long_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_lang_Long_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_lang_Long_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.lang.Long.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.lang.Long aValue = (java.lang.Long)anObject;
             aContext.mStream.writeLong( aValue.longValue () );
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             long value = aContext.mStream.readLong();
@@ -1531,42 +1531,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.lang.Float SCO.
      */
     private static final class Java_lang_Float_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_lang_Float_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_lang_Float_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.lang.Float.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.lang.Float aValue = (java.lang.Float)anObject;
             aContext.mStream.writeFloat( aValue.floatValue () );
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             float value = aContext.mStream.readFloat();
@@ -1579,42 +1579,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.lang.Double SCO.
      */
     private static final class Java_lang_Double_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_lang_Double_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_lang_Double_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.lang.Double.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.lang.Double aValue = (java.lang.Double)anObject;
             aContext.mStream.writeDouble( aValue.doubleValue () );
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             double value = aContext.mStream.readDouble();
@@ -1627,35 +1627,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.lang.String SCO.
      */
     private static final class Java_lang_String_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_lang_String_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_lang_String_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.lang.String.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.lang.String aValue = (java.lang.String)anObject;
@@ -1664,7 +1664,7 @@ public class ObjectSerializer
             aContext.mStream.write(bytes);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int len = aContext.mStream.readInt();
@@ -1679,35 +1679,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.lang.Class SCO.
      */
     private static final class Java_lang_Class_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_lang_Class_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_lang_Class_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.lang.Class.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.lang.Class aValue = (java.lang.Class)anObject;
@@ -1716,7 +1716,7 @@ public class ObjectSerializer
             aContext.mStream.write(bytes);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int len = aContext.mStream.readShort();
@@ -1737,7 +1737,7 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.math.BigDecimal SCO.
      */
     private static final class Java_math_BigDecimal_Serializer implements Serializer
@@ -1745,30 +1745,30 @@ public class ObjectSerializer
         private static final Java_math_BigInteger_Serializer sBigIntegerSerializer = 
                 new Java_math_BigInteger_Serializer();
 
-        //----------------------------------------------------------------------
+
         Java_math_BigDecimal_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_math_BigDecimal_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.math.BigDecimal.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.math.BigDecimal aValue = (java.math.BigDecimal)anObject;
@@ -1778,7 +1778,7 @@ public class ObjectSerializer
             sBigIntegerSerializer.write(aContext, aValue.unscaledValue(), anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int scale = aContext.mStream.readUnsignedShort();
@@ -1792,35 +1792,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.math.BigInteger SCO.
      */
     private static final class Java_math_BigInteger_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_math_BigInteger_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_math_BigInteger_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.math.BigInteger.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.math.BigInteger aValue = (java.math.BigInteger)anObject;
@@ -1830,7 +1830,7 @@ public class ObjectSerializer
             aContext.mStream.write(bytes);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int len = aContext.mStream.readUnsignedShort();
@@ -1845,35 +1845,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.Locale SCO.
      */
     private static final class Java_util_Locale_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_Locale_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_Locale_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.Locale.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return null;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.Locale aValue = (java.util.Locale)anObject;
@@ -1882,7 +1882,7 @@ public class ObjectSerializer
             aContext.mStream.writeUTF( aValue.getVariant() );
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             String language = aContext.mStream.readUTF();
@@ -1897,42 +1897,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.Date SCO.
      */
     private static final class Java_util_Date_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_Date_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_Date_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.Date.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilDateSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.Date aValue = (java.util.Date)anObject;
             aContext.mStream.writeLong( aValue.getTime() );
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             long value = aContext.mStream.readLong();
@@ -1945,42 +1945,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.sql.Date SCO.
      */
     private static final class Java_sql_Date_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_sql_Date_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_sql_Date_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.sql.Date.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaSqlDateSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.sql.Date aValue = (java.sql.Date)anObject;
             aContext.mStream.writeLong( aValue.getTime() );
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             long value = aContext.mStream.readLong();
@@ -1993,42 +1993,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.sql.Time SCO.
      */
     private static final class Java_sql_Time_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_sql_Time_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_sql_Time_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.sql.Time.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaSqlTimeSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.sql.Time aValue = (java.sql.Time)anObject;
             aContext.mStream.writeLong( aValue.getTime() );
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             long value = aContext.mStream.readLong();
@@ -2041,35 +2041,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.sql.Timestamp SCO.
      */
     private static final class Java_sql_Timestamp_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_sql_Timestamp_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_sql_Timestamp_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.sql.Timestamp.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaSqlTimestampSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.sql.Timestamp aValue = (java.sql.Timestamp)anObject;
@@ -2077,7 +2077,7 @@ public class ObjectSerializer
             aContext.mStream.writeInt( aValue.getNanos() );
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             long value = aContext.mStream.readLong();
@@ -2091,42 +2091,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.ArrayList SCO.
      */
     private static final class Java_util_ArrayList_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_ArrayList_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_ArrayList_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.ArrayList.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilArrayListSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.ArrayList aValue = (java.util.ArrayList)anObject;
             aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int size = aContext.mStream.readInt();
@@ -2143,42 +2143,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.LinkedList SCO.
      */
     private static final class Java_util_LinkedList_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_LinkedList_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_LinkedList_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.LinkedList.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilLinkedListSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.LinkedList aValue = (java.util.LinkedList)anObject;
             aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int size = aContext.mStream.readInt();
@@ -2194,35 +2194,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.TreeSet SCO.
      */
     private static final class Java_util_TreeSet_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_TreeSet_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_TreeSet_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.TreeSet.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilTreeSetSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.TreeSet aValue = (java.util.TreeSet)anObject;
@@ -2237,7 +2237,7 @@ public class ObjectSerializer
             aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             String comparatorClassName = aContext.mStream.readUTF();
@@ -2264,42 +2264,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.Vector SCO.
      */
     private static final class Java_util_Vector_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_Vector_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_Vector_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.Vector.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilVectorSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.Vector aValue = (java.util.Vector)anObject;
             aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int size = aContext.mStream.readInt();
@@ -2315,42 +2315,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.Stack SCO.
      */
     private static final class Java_util_Stack_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_Stack_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_Stack_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.Stack.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilStackSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.Stack aValue = (java.util.Stack)anObject;
             aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int size = aContext.mStream.readInt();
@@ -2366,42 +2366,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.HashSet SCO.
      */
     private static final class Java_util_HashSet_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_HashSet_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_HashSet_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.HashSet.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilHashSetSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.HashSet aValue = (java.util.HashSet)anObject;
             aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int size = aContext.mStream.readInt();
@@ -2417,42 +2417,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.LinkedHashSet SCO.
      */
     private static final class Java_util_LinkedHashSet_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_LinkedHashSet_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_LinkedHashSet_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.LinkedHashSet.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilLinkedHashSetSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.LinkedHashSet aValue = (java.util.LinkedHashSet)anObject;
             aContext.mSerializer.writeCollection(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int size = aContext.mStream.readInt();
@@ -2468,42 +2468,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.HashMap SCO.
      */
     private static final class Java_util_HashMap_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_HashMap_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_HashMap_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.HashMap.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilHashMapSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.HashMap aValue = (java.util.HashMap)anObject;
             aContext.mSerializer.writeMap(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int size = aContext.mStream.readInt();
@@ -2519,42 +2519,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.Hashtable SCO.
      */
     private static final class Java_util_Hashtable_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_Hashtable_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_Hashtable_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.Hashtable.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilHashtableSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.Hashtable aValue = (java.util.Hashtable)anObject;
             aContext.mSerializer.writeMap(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int size = aContext.mStream.readInt();
@@ -2570,42 +2570,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.LinkedHashMap SCO.
      */
     private static final class Java_util_LinkedHashMap_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_LinkedHashMap_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_LinkedHashMap_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.LinkedHashMap.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilLinkedHashMapSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.LinkedHashMap aValue = (java.util.LinkedHashMap)anObject;
             aContext.mSerializer.writeMap(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int size = aContext.mStream.readInt();
@@ -2621,42 +2621,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.Properties SCO.
      */
     private static final class Java_util_Properties_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_Properties_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_Properties_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.Properties.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilPropertiesSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.Properties aValue = (java.util.Properties)anObject;
             aContext.mSerializer.writeMap(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int size = aContext.mStream.readInt();
@@ -2672,35 +2672,35 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.TreeMap SCO.
      */
     private static final class Java_util_TreeMap_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_TreeMap_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_TreeMap_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.TreeMap.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilTreeMapSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.TreeMap aValue = (java.util.TreeMap)anObject;
@@ -2715,7 +2715,7 @@ public class ObjectSerializer
             aContext.mSerializer.writeMap(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             String comparatorClassName = aContext.mStream.readUTF();
@@ -2742,42 +2742,42 @@ public class ObjectSerializer
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** Internal serializer for a java.util.IdentityHashMap SCO.
      */
     private static final class Java_util_IdentityHashMap_Serializer implements Serializer
     {
-        //----------------------------------------------------------------------
+
         Java_util_IdentityHashMap_Serializer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public byte getTypeId()
         {
             return sJava_util_IdentityHashMap_TypeId;
         }
 
-        //----------------------------------------------------------------------
+
         public Class getRepresentingClass()
         {
             return java.util.IdentityHashMap.class;
         }
         
-        //----------------------------------------------------------------------
+
         public Class getProxyClass()
         {
             return JavaUtilIdentityHashMapSCO.class;
         }
 
-        //----------------------------------------------------------------------
+
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.util.IdentityHashMap aValue = (java.util.IdentityHashMap)anObject;
             aContext.mSerializer.writeMap(aValue, anOwner);
         }
 
-        //----------------------------------------------------------------------
+
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             int size = aContext.mStream.readInt();

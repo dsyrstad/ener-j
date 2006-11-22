@@ -35,7 +35,7 @@ public class Token {
     private String mValue;
     private TextPosition mPosition;
     
-    //--------------------------------------------------------------------------------
+
     public Token(TokenType aType, String aValue, TextPosition aPosition) 
     {
         mType = aType;
@@ -43,31 +43,31 @@ public class Token {
         mPosition = aPosition;
     }
     
-    //--------------------------------------------------------------------------------
+
     public TokenType getTokenType()
     {
         return mType;
     }
     
-    //--------------------------------------------------------------------------------
+
     public String getValue()
     {
         return mValue;
     }
     
-    //--------------------------------------------------------------------------------
+
     public TextPosition getTextPosition()
     {
         return mPosition;
     }
     
-    //--------------------------------------------------------------------------------
+
     public boolean isTokenType(TokenType aType)
     {
         return mType.equals(aType);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString()
     {
         return mType.toString() + "[value=" + mValue + " position=" + mPosition + ']';

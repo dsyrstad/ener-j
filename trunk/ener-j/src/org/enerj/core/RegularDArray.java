@@ -58,7 +58,7 @@ public class RegularDArray implements org.odmg.DArray, Cloneable
     /** The delegate array. This is treated as an SCO when this FCO is persisted. */
     private ArrayList mArrayList;
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new RegularDArray with the specified initial capacity. 
      * 
@@ -70,7 +70,7 @@ public class RegularDArray implements org.odmg.DArray, Cloneable
         mArrayList = new ArrayList(anInitialCapacity);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new RegularDArray with an initial capacity of 10. 
      */
@@ -79,113 +79,113 @@ public class RegularDArray implements org.odmg.DArray, Cloneable
         this(10);
     }
     
-    //----------------------------------------------------------------------
-    // Start of Interfaces: org.odmg.DArray, java.util.Collection, java.util.List...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of Interfaces: org.odmg.DArray, java.util.Collection, java.util.List...
+
+
+
     public boolean add(Object o)
     {
         return mArrayList.add(o);
     }
     
-    //----------------------------------------------------------------------
+
     public void add(int index, Object element)
     {
         mArrayList.add(index, element);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean addAll(Collection c)
     {
         return mArrayList.addAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean addAll(int index, Collection c)
     {
         return mArrayList.addAll(index, c);
     }
     
-    //----------------------------------------------------------------------
+
     public void clear()
     {
         mArrayList.clear();
     }
     
-    //----------------------------------------------------------------------
+
     public boolean contains(Object o)
     {
         return mArrayList.contains(o);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean containsAll(Collection c)
     {
         return mArrayList.containsAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public Object get(int index) 
     {
         return mArrayList.get(index);
     }
     
-    //----------------------------------------------------------------------
+
     public int indexOf(Object o) 
     {
         return mArrayList.indexOf(o);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean isEmpty() 
     {
         return mArrayList.isEmpty();
     }
     
-    //----------------------------------------------------------------------
+
     public Iterator iterator() 
     {
         return mArrayList.iterator();
     }
     
-    //----------------------------------------------------------------------
+
     public int lastIndexOf(Object o) 
     {
         return mArrayList.lastIndexOf(o);
     }
     
-    //----------------------------------------------------------------------
+
     public ListIterator listIterator() 
     {
         return mArrayList.listIterator();
     }
     
-    //----------------------------------------------------------------------
+
     public ListIterator listIterator(int index) 
     {
         return mArrayList.listIterator(index);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean remove(Object o) 
     {
         return mArrayList.remove(o);
     }
     
-    //----------------------------------------------------------------------
+
     public Object remove(int index) 
     {
         return mArrayList.remove(index);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean removeAll(Collection c) 
     {
         return mArrayList.removeAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public void resize(int aNewSize) 
     {
         // ODMG v3.0 2.3.6.4 says resize changes the maximum number of elements
@@ -203,71 +203,71 @@ public class RegularDArray implements org.odmg.DArray, Cloneable
         }
     }
     
-    //----------------------------------------------------------------------
+
     public boolean retainAll(Collection c) 
     {
         return mArrayList.retainAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public Object set(int index, Object element) 
     {
         return mArrayList.set(index, element);
     }
     
-    //----------------------------------------------------------------------
+
     public int size() 
     {
         return mArrayList.size();
     }
     
-    //----------------------------------------------------------------------
+
     public List subList(int fromIndex, int toIndex) 
     {
         return mArrayList.subList(fromIndex, toIndex);
     }
     
-    //----------------------------------------------------------------------
+
     public Object[] toArray() 
     {
         return mArrayList.toArray();
     }
     
-    //----------------------------------------------------------------------
+
     public Object[] toArray(Object[] a) 
     {
         return mArrayList.toArray(a);
     }
     
-    //----------------------------------------------------------------------
+
     public java.util.Iterator select(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public boolean existsElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public org.odmg.DCollection query(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public Object selectElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -276,7 +276,7 @@ public class RegularDArray implements org.odmg.DArray, Cloneable
         return mArrayList.hashCode();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -285,7 +285,7 @@ public class RegularDArray implements org.odmg.DArray, Cloneable
         return mArrayList.equals(anObject);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -294,7 +294,7 @@ public class RegularDArray implements org.odmg.DArray, Cloneable
         return mArrayList.toString();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -305,8 +305,8 @@ public class RegularDArray implements org.odmg.DArray, Cloneable
         return clone;
     }
     
-    //----------------------------------------------------------------------
+
     // ...End of Interfaces: org.odmg.DArray, java.util.Collection, java.util.List.
-    //----------------------------------------------------------------------
+
 }
 

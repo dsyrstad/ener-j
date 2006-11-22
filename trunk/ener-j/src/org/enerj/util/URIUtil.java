@@ -37,13 +37,13 @@ public class URIUtil
 {
     private static final char[] HEX = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
-    //--------------------------------------------------------------------------------
+
     // Don't allow construction
     private URIUtil() 
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Parse the query of a URI into a set of properties. Escaped octets are decoded.
      *
@@ -56,7 +56,7 @@ public class URIUtil
         return parseQuery(aURI, true);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Parse the query of a URI into a set of properties.
      *
@@ -70,7 +70,7 @@ public class URIUtil
         return parseQuery( aURI.getRawQuery(), shouldDecode, new Properties() );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Parse the query of a URI into a set of properties. Escaped octets are decoded.
      *
@@ -83,7 +83,7 @@ public class URIUtil
         return parseQuery(aQueryString, true, new Properties() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Parse the query of a URI into a set of properties.
      *
@@ -115,7 +115,7 @@ public class URIUtil
         return someProperties;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Format query parameters back into a query string.
      *
@@ -144,7 +144,7 @@ public class URIUtil
         return buf.toString();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Escapes special characters in a URI query value to hex values (e.g., '%AB').
      *
@@ -179,7 +179,7 @@ public class URIUtil
         return buf.toString();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Unescapes hex values in a URI query value.
      *
@@ -208,7 +208,7 @@ public class URIUtil
         return buf.toString();
     }
 
-    //----------------------------------------------------------------------
+
     private static int charToNybble(char c)
     {
         if (Character.isDigit(c)) {

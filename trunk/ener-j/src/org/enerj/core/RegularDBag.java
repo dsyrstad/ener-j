@@ -58,7 +58,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
     /** The delegate bag. This is treated as an SCO when this FCO is persisted. */
     private Collection mDelegateBag;
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a RegularDBag backed by the given Collection. Changes to this DBag
      * are reflected in the delegate, and vice versa.
@@ -70,7 +70,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         mDelegateBag = aCollection;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an empty RegularDBag with the specified initial capacity. 
      *
@@ -82,7 +82,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         mDelegateBag = new ArrayList(anInitialCapacity);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an empty RegularDBag with an initial capacity of 30. 
      */
@@ -91,117 +91,117 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         this(30);
     }
 
-    //----------------------------------------------------------------------
-    // Start of Interfaces: org.odmg.DBag, java.util.Collection
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of Interfaces: org.odmg.DBag, java.util.Collection
+
+
+
     public boolean add(Object o)
     {
         return mDelegateBag.add(o);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean addAll(Collection c)
     {
         return mDelegateBag.addAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public void clear()
     {
         mDelegateBag.clear();
     }
     
-    //----------------------------------------------------------------------
+
     public boolean contains(Object o)
     {
         return mDelegateBag.contains(o);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean containsAll(Collection c)
     {
         return mDelegateBag.containsAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean isEmpty() 
     {
         return mDelegateBag.isEmpty();
     }
     
-    //----------------------------------------------------------------------
+
     public Iterator iterator() 
     {
         return mDelegateBag.iterator();
     }
     
-    //----------------------------------------------------------------------
+
     public boolean remove(Object o) 
     {
         return mDelegateBag.remove(o);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean removeAll(Collection c) 
     {
         return mDelegateBag.removeAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean retainAll(Collection c) 
     {
         return mDelegateBag.retainAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public int size() 
     {
         return mDelegateBag.size();
     }
     
-    //----------------------------------------------------------------------
+
     public Object[] toArray() 
     {
         return mDelegateBag.toArray();
     }
     
-    //----------------------------------------------------------------------
+
     public Object[] toArray(Object[] a) 
     {
         return mDelegateBag.toArray(a);
     }
     
-    //----------------------------------------------------------------------
+
     public java.util.Iterator select(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public boolean existsElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public org.odmg.DCollection query(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public Object selectElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -210,7 +210,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         return mDelegateBag.hashCode();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -219,7 +219,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         return mDelegateBag.equals(anObject);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -228,7 +228,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         return mDelegateBag.toString();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -241,7 +241,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         return clone;
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * A new <code>DBag</code> instance is created that contains the difference of
      * this object and <code>anOtherBag</code>.
@@ -259,7 +259,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         return difference((Collection)anOtherBag);
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * A new <code>DBag</code> instance is created that contains the difference of
      * this object and <code>anOtherBag</code>.
@@ -290,7 +290,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         return result;
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * A new <code>DBag</code> instance is created that contains the intersection of
      * this object and <code>anOtherBag</code>.
@@ -308,7 +308,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         return intersection((Collection)anOtherBag);
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * A new <code>DBag</code> instance is created that contains the intersection of
      * this object and <code>anOtherBag</code>.
@@ -350,7 +350,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         return result;
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * A new <code>DBag</code> instance is created that is the union of this object
      * and <code>anOtherBag</code>.
@@ -367,7 +367,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         return union((Collection)anOtherBag);
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * A new <code>DBag</code> instance is created that is the union of this object
      * and <code>anOtherBag</code>.
@@ -392,7 +392,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         return result;
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * This method returns the number of occurrences of the object <code>obj</code>
      * in the <code>DBag</code> collection. Occurance comparisons are based on equals(),
@@ -424,8 +424,8 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         return count;
     }
     
-    //----------------------------------------------------------------------
+
     // ...End of Interfaces: org.odmg.DBag, java.util.Collection, java.util.List.
-    //----------------------------------------------------------------------
+
 }
 

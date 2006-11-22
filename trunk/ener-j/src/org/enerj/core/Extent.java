@@ -36,7 +36,7 @@ import java.util.Iterator;
  */
 public interface Extent extends Collection  // TODO implements JDO Extent when we implement JDO
 {
-    //----------------------------------------------------------------------
+
     /** 
      * Returns an immutable iterator over all the instances in the Extent.
      * If any mutating method, including the remove method, is called on the Iterator 
@@ -46,7 +46,7 @@ public interface Extent extends Collection  // TODO implements JDO Extent when w
      */
     public Iterator iterator();
 
-    //----------------------------------------------------------------------
+
     /** 
      * Returns whether this Extent was defined to contain subclasses.
      *
@@ -55,7 +55,7 @@ public interface Extent extends Collection  // TODO implements JDO Extent when w
      */    
     public boolean hasSubclasses();
 
-    //----------------------------------------------------------------------
+
     /** 
      * An Extent contains all instances of a particular class in the data
      * store; this method returns the Class of the instances.
@@ -64,7 +64,7 @@ public interface Extent extends Collection  // TODO implements JDO Extent when w
      */
     public Class getCandidateClass();
 
-    //----------------------------------------------------------------------
+
     /** 
      * Close all Iterators associated with this Extent instance.
      * Iterators closed by this method will return false
@@ -73,7 +73,7 @@ public interface Extent extends Collection  // TODO implements JDO Extent when w
      */    
     public void closeAll();
     
-    //----------------------------------------------------------------------
+
     /** 
      * Close an Iterator associated with this Extent instance.
      * Iterators closed by this method will return false

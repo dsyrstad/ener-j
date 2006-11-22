@@ -17,7 +17,7 @@ public class ObjectSourceException extends Exception
     /** The wrapped exception. May be null. */
     private Exception mWrappedException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct with a message. There is no wrapped exception.
      *
@@ -28,7 +28,7 @@ public class ObjectSourceException extends Exception
         super(aMessage);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct with another exception that is wrapped. The message of anException
      * becomes the message of this exception.
@@ -41,7 +41,7 @@ public class ObjectSourceException extends Exception
         mWrappedException = anException;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the wrapped exception.
      *

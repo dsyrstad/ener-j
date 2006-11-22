@@ -52,7 +52,7 @@ public class EnerJQLCmdLine
 {
     private static int sIndentLevel = 0;
     
-    //--------------------------------------------------------------------------------
+
     public static void main(String[] args) throws Exception
     {
         Reader inReader;
@@ -93,7 +93,7 @@ public class EnerJQLCmdLine
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Prints the result object to System.out. 
      *
@@ -143,7 +143,7 @@ public class EnerJQLCmdLine
     }
 
     
-    //--------------------------------------------------------------------------------
+
     private static void usage() 
     {
         System.err.println("Usage: EnerJQLCmdLine database-uri [ OQL-expression ]");

@@ -47,13 +47,13 @@ public class OQLLexer
     /** True if debugging is on. */
     private boolean mDebug = false;
     
-    //--------------------------------------------------------------------------------
+
     public OQLLexer(TrackedPositionReader aReader) 
     {
         mReader = aReader;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Logs a debug message if debug is on.
      * 
@@ -66,7 +66,7 @@ public class OQLLexer
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets whether debugging is on or off.
      * 
@@ -77,7 +77,7 @@ public class OQLLexer
         mDebug = aDebugFlag;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Looks ahead to the Nth token without changing the lexer's position.
      *
@@ -106,7 +106,7 @@ public class OQLLexer
         return tokens[anIndex - 1];
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Looks ahead a single token without changing the lexer's position.
      *
@@ -123,7 +123,7 @@ public class OQLLexer
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines whether the next token, via look-ahead, is is of the specified type.
      * 
@@ -139,7 +139,7 @@ public class OQLLexer
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Determines if the next token matches the given keyword. To be a keyword, the 
      * token must be a TOK_IDENT and the identifier string must match aKeyword exactly.
@@ -156,7 +156,7 @@ public class OQLLexer
         return (token.getTokenType().equals(OQLTokens.TOK_IDENT) && token.getValue().equals(aKeyword));
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Marks the current point in the lexer stream. Tokens will be recorded for possible later
      * pushback. Calling resetToMark() will stop recording and reset the lexer stream back
@@ -174,7 +174,7 @@ public class OQLLexer
         if (mDebug) debug("mark(), stack size: " + mRecordedTokensStack.size());
     }
     
-    //--------------------------------------------------------------------------------
+
     private void popMarkStack()
     {
         if (mRecordedTokensStack.isEmpty()) {
@@ -185,7 +185,7 @@ public class OQLLexer
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Stops recording and resets the lexer stream back to the mark.
      */
@@ -199,7 +199,7 @@ public class OQLLexer
         popMarkStack();
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Stops recording and clears the recorded tokens.
      */
@@ -210,7 +210,7 @@ public class OQLLexer
         debug("clearToMark()");
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the next token.
      *
@@ -229,7 +229,7 @@ public class OQLLexer
         return token;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * For internal use: gets the next token.
      *
@@ -475,7 +475,7 @@ public class OQLLexer
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Copy all digits from input to mValueBuf.
      *
@@ -505,7 +505,7 @@ public class OQLLexer
         return foundDecimal;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Convert escape sequences to literal characters.
      *

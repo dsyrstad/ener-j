@@ -55,7 +55,7 @@ class FieldDef
      */
     private String mInverseReferenceFieldName;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new FieldDef.
      *
@@ -73,7 +73,7 @@ class FieldDef
         mInverseReferenceFieldName = aInverseReferenceFieldName;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the class name.
      *
@@ -84,7 +84,7 @@ class FieldDef
         return mName;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the persistent override.
      *
@@ -95,7 +95,7 @@ class FieldDef
         return mPersistentOverride;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the "refers to" class name.
      *
@@ -106,7 +106,7 @@ class FieldDef
         return mRefersToClassName;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the "inverse reference" field name.
      *

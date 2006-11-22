@@ -38,7 +38,7 @@ public class DeleteObjectLogEntry extends LogEntry
 {
     private long mOID = -1;
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an empty DeleteObjectLogEntry.
      */
@@ -46,7 +46,7 @@ public class DeleteObjectLogEntry extends LogEntry
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a DeleteObjectLogEntry.
      *
@@ -60,7 +60,7 @@ public class DeleteObjectLogEntry extends LogEntry
         mOID = anOID;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the entry type of this log entry.
      *
@@ -71,7 +71,7 @@ public class DeleteObjectLogEntry extends LogEntry
         return DELETE_OBJECT_ENTRY_TYPE;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -81,7 +81,7 @@ public class DeleteObjectLogEntry extends LogEntry
         return 8;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -91,7 +91,7 @@ public class DeleteObjectLogEntry extends LogEntry
         aDataOutput.writeLong(mOID);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets OID that was deleted.
      *
@@ -102,7 +102,7 @@ public class DeleteObjectLogEntry extends LogEntry
         return mOID;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

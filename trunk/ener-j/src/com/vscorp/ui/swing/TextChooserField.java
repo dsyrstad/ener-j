@@ -27,7 +27,7 @@ public class TextChooserField extends ChooserField
     private String mTitle;
     private JTextField mDialogTextField = new JTextField();
 
-    //----------------------------------------------------------------------
+
     /**
      * Create a new TextChooserField using the specified text.
      *
@@ -45,7 +45,7 @@ public class TextChooserField extends ChooserField
         this(aTextValue, aPrompt, aTitle);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Create a new TextChooserField using the specified text.
      *
@@ -76,7 +76,7 @@ public class TextChooserField extends ChooserField
         setPopupButton(button);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the text of this field. Equivalent to getTextField().getText().
      *
@@ -87,7 +87,7 @@ public class TextChooserField extends ChooserField
         return super.getText();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the text of this field. Equivalent to getTextField().setText(s).
      *
@@ -98,7 +98,7 @@ public class TextChooserField extends ChooserField
         super.setText(aString);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the text field used on the dialog.
      *
@@ -109,7 +109,7 @@ public class TextChooserField extends ChooserField
         return mDialogTextField;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Verifies the content of the field. Default implementation returns true.
      * Also fires a ChangeEvent if field has changed.
@@ -122,7 +122,7 @@ public class TextChooserField extends ChooserField
         return true;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the title for the editor dialog box. If not set, this will default
      * to the title of the owner Frame/Dialog.
@@ -134,7 +134,7 @@ public class TextChooserField extends ChooserField
         mTitle = aTitle;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the title for the editor dialog box. 
      *
@@ -145,7 +145,7 @@ public class TextChooserField extends ChooserField
         return mTitle;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Opens the popup if it is closed.
      */
@@ -181,7 +181,7 @@ public class TextChooserField extends ChooserField
         mDialogTextField.setText("");
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Closes the popup if it is open.
      */

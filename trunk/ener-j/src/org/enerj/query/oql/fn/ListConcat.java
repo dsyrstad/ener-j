@@ -44,7 +44,7 @@ public class ListConcat extends BinaryFunctor
     /** Singleton instance of this functor. */
     public static final ListConcat INSTANCE = new ListConcat();
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ListConcat functor.
      */
@@ -52,7 +52,7 @@ public class ListConcat extends BinaryFunctor
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg0, Object arg1)
     {
         if (arg0 == null || arg1 == null) {
@@ -83,7 +83,7 @@ public class ListConcat extends BinaryFunctor
         throw new IllegalArgumentException("Both arguments must be a List or an array");
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(ListConcat)</code> method, if it implements
@@ -94,14 +94,14 @@ public class ListConcat extends BinaryFunctor
             ((ListConcat.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "ListConcat";
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>ListConcat</b> functor.
      */

@@ -58,7 +58,7 @@ public class RegularDList implements org.odmg.DList, Cloneable
     /** The delegate list. This is treated as an SCO when this FCO is persisted. */
     private LinkedList mLinkedList;
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an empty RegularDList. 
      */
@@ -67,177 +67,177 @@ public class RegularDList implements org.odmg.DList, Cloneable
         mLinkedList = new LinkedList();
     }
     
-    //----------------------------------------------------------------------
-    // Start of Interfaces: org.odmg.DList, java.util.Collection, java.util.List...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of Interfaces: org.odmg.DList, java.util.Collection, java.util.List...
+
+
+
     public boolean add(Object o)
     {
         return mLinkedList.add(o);
     }
     
-    //----------------------------------------------------------------------
+
     public void add(int index, Object element)
     {
         mLinkedList.add(index, element);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean addAll(Collection c)
     {
         return mLinkedList.addAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean addAll(int index, Collection c)
     {
         return mLinkedList.addAll(index, c);
     }
     
-    //----------------------------------------------------------------------
+
     public void clear()
     {
         mLinkedList.clear();
     }
     
-    //----------------------------------------------------------------------
+
     public boolean contains(Object o)
     {
         return mLinkedList.contains(o);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean containsAll(Collection c)
     {
         return mLinkedList.containsAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public Object get(int index) 
     {
         return mLinkedList.get(index);
     }
     
-    //----------------------------------------------------------------------
+
     public int indexOf(Object o) 
     {
         return mLinkedList.indexOf(o);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean isEmpty() 
     {
         return mLinkedList.isEmpty();
     }
     
-    //----------------------------------------------------------------------
+
     public Iterator iterator() 
     {
         return mLinkedList.iterator();
     }
     
-    //----------------------------------------------------------------------
+
     public int lastIndexOf(Object o) 
     {
         return mLinkedList.lastIndexOf(o);
     }
     
-    //----------------------------------------------------------------------
+
     public ListIterator listIterator() 
     {
         return mLinkedList.listIterator();
     }
     
-    //----------------------------------------------------------------------
+
     public ListIterator listIterator(int index) 
     {
         return mLinkedList.listIterator(index);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean remove(Object o) 
     {
         return mLinkedList.remove(o);
     }
     
-    //----------------------------------------------------------------------
+
     public Object remove(int index) 
     {
         return mLinkedList.remove(index);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean removeAll(Collection c) 
     {
         return mLinkedList.removeAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public boolean retainAll(Collection c) 
     {
         return mLinkedList.retainAll(c);
     }
     
-    //----------------------------------------------------------------------
+
     public Object set(int index, Object element) 
     {
         return mLinkedList.set(index, element);
     }
     
-    //----------------------------------------------------------------------
+
     public int size() 
     {
         return mLinkedList.size();
     }
     
-    //----------------------------------------------------------------------
+
     public List subList(int fromIndex, int toIndex) 
     {
         return mLinkedList.subList(fromIndex, toIndex);
     }
     
-    //----------------------------------------------------------------------
+
     public Object[] toArray() 
     {
         return mLinkedList.toArray();
     }
     
-    //----------------------------------------------------------------------
+
     public Object[] toArray(Object[] a) 
     {
         return mLinkedList.toArray(a);
     }
     
-    //----------------------------------------------------------------------
+
     public java.util.Iterator select(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public boolean existsElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public org.odmg.DCollection query(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     public Object selectElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -246,7 +246,7 @@ public class RegularDList implements org.odmg.DList, Cloneable
         return mLinkedList.hashCode();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -255,7 +255,7 @@ public class RegularDList implements org.odmg.DList, Cloneable
         return mLinkedList.equals(anObject);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -264,7 +264,7 @@ public class RegularDList implements org.odmg.DList, Cloneable
         return mLinkedList.toString();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -275,7 +275,7 @@ public class RegularDList implements org.odmg.DList, Cloneable
         return clone;
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Creates a new <code>DList</code> object that contains the contents of this
      * <code>DList</code> object concatenated
@@ -300,8 +300,8 @@ public class RegularDList implements org.odmg.DList, Cloneable
         }
     }
     
-    //----------------------------------------------------------------------
+
     // ...End of Interfaces: org.odmg.DList, java.util.Collection, java.util.List.
-    //----------------------------------------------------------------------
+
 }
 

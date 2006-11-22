@@ -41,7 +41,7 @@ public class LongLiteralAST extends BaseAST
 {
     private long mValue;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a LongLiteralAST. 
      *
@@ -52,7 +52,7 @@ public class LongLiteralAST extends BaseAST
         mValue = aValue;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mValue.
      *
@@ -63,7 +63,7 @@ public class LongLiteralAST extends BaseAST
         return mValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -76,7 +76,7 @@ public class LongLiteralAST extends BaseAST
         return Long.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

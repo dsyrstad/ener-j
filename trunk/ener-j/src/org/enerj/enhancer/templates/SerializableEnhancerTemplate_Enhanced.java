@@ -67,7 +67,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         enerj_sClassId = 55834L;
     }
 
-    //----------------------------------------------------------------------
+
     public SerializableEnhancerTemplate_Enhanced()
     {
         super();
@@ -75,25 +75,25 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         PersistableHelper.initPersistable(this);
     }
 
-    //----------------------------------------------------------------------
+
     // Generated methods for top-level persistable only. These come from the 
     // Persistable interface...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     // May be null if Persister not assigned yet (it must be New in this case).
     public final Persister enerj_GetPersister()
     {
         return enerj_mPersister;
     }
 
-    //----------------------------------------------------------------------
+
     public final void enerj_SetPersister(Persister aPersister)
     {
         enerj_mPersister = aPersister;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the modification version number associated with this object.
      *
@@ -104,7 +104,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         return enerj_mVersion;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Set the modification version for this object.
      *
@@ -115,7 +115,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         enerj_mVersion = aVersion;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the object ID this object.
      *
@@ -126,19 +126,19 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         return enerj_mOID;
     }
 
-    //----------------------------------------------------------------------
+
     public void enerj_SetPrivateOID(long anOID)
     {
         enerj_mOID = anOID;
     }
 
-    //----------------------------------------------------------------------
+
     public boolean enerj_IsModified() 
     {
         return enerj_mModified;
     }
     
-    //----------------------------------------------------------------------
+
     /** Determines if this object allows Non-Transactional Reads.
      *
      * @return true if it allows Non-Transactionals Reads, else false.
@@ -148,7 +148,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         return enerj_mAllowNonTransactionalReads;
     }
     
-    //----------------------------------------------------------------------
+
     /** Determines if this object allows Non-Transactional Writes.
      *
      * @return true if it allows Non-Transactionals Writes, else false.
@@ -158,7 +158,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         return enerj_mAllowNonTransactionalWrites;
     }
     
-    //----------------------------------------------------------------------
+
     /** Determines if this object has been Loaded.
      *
      * @return true if it has been Loaded, else false.
@@ -168,7 +168,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         return enerj_mLoaded;
     }
     
-    //----------------------------------------------------------------------
+
     /** Determines if this object is New.
      *
      * @return true if it is New, else false.
@@ -178,7 +178,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         return enerj_mNew;
     }
     
-    //----------------------------------------------------------------------
+
     /** Sets whether this object allows Non-Transactional Reads.
      */
     public void enerj_SetAllowNonTransactionalRead(boolean anAllowFlag) 
@@ -186,7 +186,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         enerj_mAllowNonTransactionalReads = anAllowFlag;
     }
     
-    //----------------------------------------------------------------------
+
     /** Sets whether this object allows Non-Transactional Writes.
      */
     public void enerj_SetAllowNonTransactionalWrite(boolean anAllowFlag) 
@@ -194,7 +194,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         enerj_mAllowNonTransactionalWrites = anAllowFlag;
     }
     
-    //----------------------------------------------------------------------
+
     /** Sets whether this object is Loaded.
      */
     public void enerj_SetLoaded(boolean aLoadedFlag) 
@@ -202,7 +202,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         enerj_mLoaded = aLoadedFlag;
     }
     
-    //----------------------------------------------------------------------
+
     /** Sets whether this object is Modified.
      */
     public void enerj_SetModified(boolean aModifiedFlag) 
@@ -210,7 +210,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         enerj_mModified = aModifiedFlag;
     }
     
-    //----------------------------------------------------------------------
+
     /** Sets whether this object is New.
      */
     public void enerj_SetNew(boolean aNewFlag) 
@@ -218,7 +218,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         enerj_mNew = aNewFlag;
     }
     
-    //----------------------------------------------------------------------
+
     /** Gets the lock level of this object. This is merely the local status of the lock.
      *
      * @return one of the EnerJTransaction lock levels: NO_LOCK, READ,
@@ -230,7 +230,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         return enerj_mLockLevel;
     }
     
-    //----------------------------------------------------------------------
+
     /** Sets the lock level of this object. This does not actually lock the object,
      * it merely maintains a local status of the lock.
      *
@@ -243,7 +243,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         enerj_mLockLevel = aLockLevel;
     }
     
-    //----------------------------------------------------------------------
+
     // If user doesn't define clone() in this, one is generated like this
     // for top-level Persistables. Not that it does NOT throw CloneNotSupportedException.
     public Object clone_Generated() 
@@ -262,7 +262,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         }
     }
     
-    //----------------------------------------------------------------------
+
     // If user doesn't define clone() in this, one is generated like this
     // for top-level Persistables. Not that it does NOT throw CloneNotSupportedException.
     // Version if super-class cloine is declared to throw - e.g., Object.
@@ -281,7 +281,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         }
     }
 
-    //----------------------------------------------------------------------
+
     // Generated readObject() method. If one already exists, initPersistable()
     // is inserted as the first statement.
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
@@ -290,23 +290,23 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         in.defaultReadObject();
     }
     
-    //----------------------------------------------------------------------
+
     // ... End of Generated methods for top-level persistable only.
-    //----------------------------------------------------------------------
 
 
-    //----------------------------------------------------------------------
+
+
     // Generated methods for any persistable...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+
+
     // So we can get a class id when we only have a class and not an object.
     public static long enerj_GetClassIdStatic()
     {
         return enerj_sClassId;
     }
     
-    //----------------------------------------------------------------------
+
     // So we can get a class id via the Persistable interface.
     public long enerj_GetClassId()
     {
@@ -314,7 +314,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
     }
     
 
-    //----------------------------------------------------------------------
+
     public void enerj_ReadObject(ObjectSerializer aContext) throws IOException
     {
         DataInput stream = aContext.getDataInput();
@@ -322,7 +322,7 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         mByte = stream.readByte();
    }
 
-    //----------------------------------------------------------------------
+
     public void enerj_WriteObject(ObjectSerializer aContext) throws IOException
     {
         DataOutput stream = aContext.getDataOutput();
@@ -330,12 +330,12 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         stream.writeByte(mByte);
     }
 
-    //----------------------------------------------------------------------
+
     public void enerj_ResolveObject(ObjectSerializer aContext, boolean shouldDisassociate) throws IOException
     {
     }
     
-    //----------------------------------------------------------------------
+
     /** Clear the object's persistent fields. Only persistent fields which
      * refer to Objects are cleared (i.e., primitive field values are not touched).
      */
@@ -344,8 +344,8 @@ class SerializableEnhancerTemplate_Enhanced implements Serializable, Persistable
         PersistableHelper.completeHollow(this);
     }
     
-    //----------------------------------------------------------------------
+
     // ... End of Generated methods for any persistable.
-    //----------------------------------------------------------------------
+
 
 }

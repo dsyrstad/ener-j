@@ -41,7 +41,7 @@ public class CharLiteralAST extends BaseAST
 {
     private char mValue;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a CharLiteralAST. 
      *
@@ -52,7 +52,7 @@ public class CharLiteralAST extends BaseAST
         mValue = aValue;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Value.
      *
@@ -63,7 +63,7 @@ public class CharLiteralAST extends BaseAST
         return mValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -72,7 +72,7 @@ public class CharLiteralAST extends BaseAST
         return Character.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

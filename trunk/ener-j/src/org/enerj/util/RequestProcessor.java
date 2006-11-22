@@ -45,7 +45,7 @@ public class RequestProcessor
     /** The request queue. This is a list of Runnable objects. */
     private LinkedList mRequestQueue = new LinkedList();
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new RequestProcessor and starts a processing thread with 
      * the given name. The thread is created as a non-daemon thread.
@@ -57,7 +57,7 @@ public class RequestProcessor
         this (aThreadName, false);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new RequestProcessor and starts a processing thread with 
      * the given name. The thread is created as a non-daemon thread.
@@ -73,7 +73,7 @@ public class RequestProcessor
         mRequestThread.start();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sends a request to the processing thread to shutdown. After all requests
      * have finished processing, the thread shuts down and this method returns.
@@ -101,7 +101,7 @@ public class RequestProcessor
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Queues a Request to be processed by the RequestProcessor.
      * Returns when the request has been processed.
@@ -116,7 +116,7 @@ public class RequestProcessor
         waitForRequest(aRequest);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Queues a Request to be processed by the RequestProcessor.
      * Returns after the request has been queued, but not yet processed.
@@ -139,7 +139,7 @@ public class RequestProcessor
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Wait for a previously queued Request to be processed by the RequestProcessor.
      * Returns when the request has been processed.
@@ -163,8 +163,8 @@ public class RequestProcessor
         } // ... end synchronized.
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * The main Runnable for the request thread.
      *
@@ -174,7 +174,7 @@ public class RequestProcessor
      */
     private final class Processor implements Runnable
     {
-        //----------------------------------------------------------------------
+
         public void processRequest(Request aRequest)
         {
             try {
@@ -185,7 +185,7 @@ public class RequestProcessor
             }
         }
 
-        //----------------------------------------------------------------------
+
         public void run()
         {
             while (true) {
@@ -229,8 +229,8 @@ public class RequestProcessor
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Represents the base class for requests to the RequestProcessor.
      * Subclasses implement the run() method.
@@ -251,7 +251,7 @@ public class RequestProcessor
          */
         private boolean mMonitored = true;
 
-        //----------------------------------------------------------------------
+
         /**
          * Constructs an empty request.
          */
@@ -259,7 +259,7 @@ public class RequestProcessor
         {
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Determines whether this request is monitored. If the request is not
          * monitored, it will not be notified when the request completes.
@@ -271,7 +271,7 @@ public class RequestProcessor
             return mMonitored;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Sets whether this request is monitored. If the request is not
          * monitored, it will not be notified when the request completes.
@@ -283,7 +283,7 @@ public class RequestProcessor
             mMonitored = aMonitoredFlag;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Determines if the request is complete.
          *
@@ -294,7 +294,7 @@ public class RequestProcessor
             return mRequestComplete;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Gets the Exception for the request, if it is complete.
          *
@@ -306,7 +306,7 @@ public class RequestProcessor
             return mRequestException;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Completes a request and notifies the requester.
          *

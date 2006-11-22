@@ -37,7 +37,7 @@ public class StringConcat extends BinaryFunctor
 {
     private static final long serialVersionUID = 4824869661889510689L;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a StringConcat functor.
      */
@@ -46,7 +46,7 @@ public class StringConcat extends BinaryFunctor
         super();
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg0, Object arg1)
     {
         if (arg0 == null) {
@@ -60,7 +60,7 @@ public class StringConcat extends BinaryFunctor
         return (String)arg0 + (String)arg1;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(StringConcat)</code> method, if it implements
@@ -71,14 +71,14 @@ public class StringConcat extends BinaryFunctor
             ((StringConcat.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "StringConcat";
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>StringConcat</b> functor.
      */

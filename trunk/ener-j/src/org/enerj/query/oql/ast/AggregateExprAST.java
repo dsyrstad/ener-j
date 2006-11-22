@@ -38,7 +38,7 @@ public class AggregateExprAST extends BaseAST
  private TokenType mOp;
  private AST mExpr;
  
- //--------------------------------------------------------------------------------
+
  /**
   * Construct a AggregateExprAST. 
   *
@@ -51,7 +51,7 @@ public class AggregateExprAST extends BaseAST
      mExpr = anExpr;
  }
  
- //--------------------------------------------------------------------------------
+
  /**
   * Gets the Expr.
   *
@@ -62,7 +62,7 @@ public class AggregateExprAST extends BaseAST
      return mExpr;
  }
  
- //--------------------------------------------------------------------------------
+
  /**
   * Gets the Op.
   *

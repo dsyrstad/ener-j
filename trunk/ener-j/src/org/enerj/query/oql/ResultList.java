@@ -50,7 +50,7 @@ public class ResultList extends AbstractList implements RandomAccess
     private TLongArrayList mOIDList;
     private int mSize = -1; // -1 = not initialized.
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ResultList. The iterator from the given Collection is only scanned once.
      *
@@ -62,7 +62,7 @@ public class ResultList extends AbstractList implements RandomAccess
         mOIDList = new TLongArrayList(1000);
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see java.util.List#get(int)
@@ -96,7 +96,7 @@ public class ResultList extends AbstractList implements RandomAccess
         return EnerJDatabase.getCurrentDatabase().getObjectForOID(oid);
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see java.util.Collection#size()

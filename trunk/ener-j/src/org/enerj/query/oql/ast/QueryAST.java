@@ -41,7 +41,7 @@ public class QueryAST extends BaseAST
     private AST mChildAST;
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a new QueryAST.
      * 
@@ -52,7 +52,7 @@ public class QueryAST extends BaseAST
         mChildAST = aChildAST;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the child AST.
      * 
@@ -63,7 +63,7 @@ public class QueryAST extends BaseAST
         return mChildAST;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -79,7 +79,7 @@ public class QueryAST extends BaseAST
         return type;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

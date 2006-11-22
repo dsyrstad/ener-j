@@ -111,7 +111,7 @@ class PagedStore
     private ByteBuffer mFreeBuffer;
 
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct a PagedStore.
      *
@@ -153,7 +153,7 @@ class PagedStore
         mObjectServer = anObjectServer;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Cleans up and disconects from the PageServer.
      *
@@ -177,7 +177,7 @@ class PagedStore
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Helper for storage requests - RequestProcessor.queueRequestAndWait(). Traps non-ODMGExceptions
      * and rewraps them as ODMGException. All exceptions from the request are thrown.
@@ -191,7 +191,7 @@ class PagedStore
         waitForStorageRequest(aRequest);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Helper for storage requests - RequestProcessor.queueRequest(). Traps non-ODMGExceptions
      * and rewraps them as ODMGException. All exceptions from the request are thrown.
@@ -210,7 +210,7 @@ class PagedStore
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Helper for storage requests - RequestProcessor.waitForRequest(). Traps non-ODMGExceptions
      * and rewraps them as ODMGException. All exceptions from the request are thrown.
@@ -242,7 +242,7 @@ class PagedStore
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Helper for ByteBuffer to get a two byte unsigned short.
      * 
@@ -258,7 +258,7 @@ class PagedStore
         return (highByte << 8) | lowByte;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Helper for ByteBuffer to put a two byte unsigned short.
      * 
@@ -272,7 +272,7 @@ class PagedStore
         aByteBuffer.put(aPosition + 1, (byte)(aValue & 0xff));
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Given a storage pointer, get the offset to the start of the page.
      *
@@ -285,7 +285,7 @@ class PagedStore
         return (aPtr / mPageSize) * mPageSize;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Given a storage pointer, get the offset within the page.
      *
@@ -298,7 +298,7 @@ class PagedStore
         return (int)(aPtr % mPageSize);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the "Page Free Length" field.
      * Note: This uses mStoragePageBuffer.
@@ -323,7 +323,7 @@ class PagedStore
         return freeLength;
     }
         
-    //----------------------------------------------------------------------
+
     /**
      * Sets the "Page Free Length" field. If page free length would result in the
      * entire page being free, the page is freed from the PageServer.
@@ -357,7 +357,7 @@ class PagedStore
         //  TODO  set mRemainingPagePtr if not set? -- do this in compact.
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Change the "Page Free Length" for the specified page by a delta amount.
      * Note: This uses mStoragePageBuffer.
@@ -375,7 +375,7 @@ class PagedStore
         setPageFreeLength(aPagePtr, freeLength + aDeltaValue);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Frees the object pointed to by anObjectPtr. All segments starting 
      * from anObjectPtr to the end of the object are freed. This does <em>not</em>
@@ -415,7 +415,7 @@ class PagedStore
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Called from StorageThread to store an object.
      *
@@ -586,7 +586,7 @@ class PagedStore
         mOIDList.setOIDInfo(anOID, currentObjectPtr, aCID);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Load an object.
      *
@@ -663,7 +663,7 @@ class PagedStore
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Get the CID corresponding to anOID.
      *
@@ -683,7 +683,7 @@ class PagedStore
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Get a block of new OIDs.
      * 
@@ -703,7 +703,7 @@ class PagedStore
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Ensures that a OID has been allocated. If it has not been allocated,
      * it will be upon return. This is used primarily for log-based recovery
@@ -723,8 +723,8 @@ class PagedStore
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Object header as stored in a page.
      */
@@ -746,7 +746,7 @@ class PagedStore
         /** Offset in page to start of serialized object. */
         int mObjectOffset;
 
-        //----------------------------------------------------------------------
+
         /** 
          * Constructs an empty. All values are zero.
          */
@@ -754,7 +754,7 @@ class PagedStore
         {
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Constructs a new header that has never been stored.
          */
@@ -766,7 +766,7 @@ class PagedStore
             mObjectSegmentLength = anObjectSegmentLength;
         }
 
-        //----------------------------------------------------------------------
+
         /** 
          * Constructs a new header from a storage pointer to an Object. Header is
          * read from storage.
@@ -777,7 +777,7 @@ class PagedStore
             read(anObjectPtr);
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Reads an Object header given a storage pointer.
          * Note: Uses mStoragePageBuffer.
@@ -799,7 +799,7 @@ class PagedStore
             mObjectOffset = mHeaderOffset + HEADER_SIZE;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Writes an Object header given a storage pointer.
          * Note: Uses mStoragePageBuffer.
@@ -819,7 +819,7 @@ class PagedStore
             mPageServer.storePage(mStoragePageBuffer, mPagePtr, mHeaderOffset);
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Validates an ObjectHeader's OID and Object Length against the given values.
          * Returns normally if they match, otherwise throws.
@@ -840,8 +840,8 @@ class PagedStore
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Abstract Request that represents updates managed a transaction.
      * It supports a double-linked list capability.
@@ -854,7 +854,7 @@ class PagedStore
         long mLogEntryPosition = -1L;
         long mOID;
 
-        //----------------------------------------------------------------------
+
         UpdateRequest(long anOID)
         {
             mOID = anOID;
@@ -862,7 +862,7 @@ class PagedStore
             setMonitored(false);
         }
 
-        //----------------------------------------------------------------------
+
         public void complete(Exception e) 
         {
             super.complete(e);
@@ -872,8 +872,8 @@ class PagedStore
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Request to store an Object.
      */
@@ -882,7 +882,7 @@ class PagedStore
         long mCID; 
         byte[] mSerializedObject;
 
-        //----------------------------------------------------------------------
+
         StoreObjectRequest(long aCID, long anOID, byte[] aSerializedObject)
         {
             super(anOID);
@@ -890,7 +890,7 @@ class PagedStore
             mSerializedObject = aSerializedObject;
         }
 
-        //----------------------------------------------------------------------
+
         public void run()
         {
             try {
@@ -902,7 +902,7 @@ class PagedStore
             }
         }
         
-        //----------------------------------------------------------------------
+
         public void complete(Exception e) 
         {
             super.complete(e);
@@ -912,7 +912,7 @@ class PagedStore
             }
         }
         
-        //----------------------------------------------------------------------
+
         /** 
          * Resolves the bytes for the serialized object, loading them from 
          * the RedoLogServer if necessary.
@@ -935,20 +935,20 @@ class PagedStore
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Request to delete an Object.
      */
     final class DeleteObjectRequest extends UpdateRequest
     {
-        //----------------------------------------------------------------------
+
         DeleteObjectRequest(long anOID)
         {
             super(anOID);
         }
 
-        //----------------------------------------------------------------------
+
         public void run()
         {
             try {
@@ -962,8 +962,8 @@ class PagedStore
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Request to perform the work of a database "end checkpoint". This
      * is put in the queue after committed requests. It causes the
@@ -972,14 +972,14 @@ class PagedStore
      */
     class EndDatabaseCheckpointRequest extends RequestProcessor.Request
     {
-        //----------------------------------------------------------------------
+
         EndDatabaseCheckpointRequest()
         {
             // We don't wait this request.
             setMonitored(false);
         }
 
-        //----------------------------------------------------------------------
+
         public void run()
         {
             try {
@@ -992,7 +992,7 @@ class PagedStore
             }
         }
 
-        //----------------------------------------------------------------------
+
         public void complete(Exception e) 
         {
             super.complete(e);

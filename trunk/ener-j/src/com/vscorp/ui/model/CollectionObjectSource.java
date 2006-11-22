@@ -23,7 +23,7 @@ public class CollectionObjectSource extends BaseObjectSource
     private List mList;
     private int mSize = -1; // -1 = not initialized.
     
-    //--------------------------------------------------------------------------------
+
     public CollectionObjectSource(Collection aCollection) throws ObjectSourceException
     {
         mCollection = aCollection;
@@ -35,7 +35,7 @@ public class CollectionObjectSource extends BaseObjectSource
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     public int size() throws ObjectSourceException
     {
         if (mSize < 0) {
@@ -45,7 +45,7 @@ public class CollectionObjectSource extends BaseObjectSource
         return mSize;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object get(int anIndex) throws ObjectSourceException, ArrayIndexOutOfBoundsException
     {
         if (mList != mCollection) {
@@ -66,7 +66,7 @@ public class CollectionObjectSource extends BaseObjectSource
         return mList.get(anIndex);
     }
 
-    //--------------------------------------------------------------------------------
+
     public void get(int anIndex, int aLength, Object[] anObjectArray) throws ObjectSourceException,
                     ArrayIndexOutOfBoundsException
     {
@@ -75,23 +75,23 @@ public class CollectionObjectSource extends BaseObjectSource
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object get(Object anObjectId) throws ObjectSourceException
     {
         return get( (Integer)anObjectId );
     }
 
-    //--------------------------------------------------------------------------------
+
     public void update(Object anObject, int anIndex) throws ObjectSourceException
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     public void update(Object anObject) throws ObjectSourceException
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object getObjectId(Object anObject)
     {
         int size;

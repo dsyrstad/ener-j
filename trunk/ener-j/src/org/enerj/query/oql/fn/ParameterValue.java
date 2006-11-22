@@ -40,7 +40,7 @@ public class ParameterValue extends UnaryFunctor
     private Object mValue = null;
     private Class mType;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a ParameterValue.
      */
@@ -49,7 +49,7 @@ public class ParameterValue extends UnaryFunctor
         mType = aType;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the parameter's type.
      *
@@ -60,7 +60,7 @@ public class ParameterValue extends UnaryFunctor
         return mType;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the parameter's value.
      *
@@ -72,7 +72,7 @@ public class ParameterValue extends UnaryFunctor
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets the parameter's value.
      *
@@ -90,13 +90,13 @@ public class ParameterValue extends UnaryFunctor
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object notused)
     {
         return mValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(ParameterValue)</code> method, if it implements
@@ -107,14 +107,14 @@ public class ParameterValue extends UnaryFunctor
             ((ParameterValue.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "ParameterValue(" + mType + ':' + mValue + ')';
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>ParameterValue</b> functor.
      */

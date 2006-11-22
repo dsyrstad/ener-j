@@ -49,7 +49,7 @@ public class UnaryExprAST extends BaseAST
     private AST mExpr;
     private TokenType mOp;  // TOK_PLUS, MINUS, ABS, NOT
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a UnaryExprAST. 
      *
@@ -63,7 +63,7 @@ public class UnaryExprAST extends BaseAST
         mOp = anOp;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mExpr.
      *
@@ -74,7 +74,7 @@ public class UnaryExprAST extends BaseAST
         return mExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the mOp.
      *
@@ -85,7 +85,7 @@ public class UnaryExprAST extends BaseAST
         return mOp;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -106,7 +106,7 @@ public class UnaryExprAST extends BaseAST
         throw new QueryException("Invalid operand to operator '" + mOp.getName() + "': operand is " + type.getName());
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

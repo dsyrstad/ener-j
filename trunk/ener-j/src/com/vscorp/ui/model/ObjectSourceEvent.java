@@ -53,7 +53,7 @@ public class ObjectSourceEvent extends java.util.EventObject
     private int mStartIndex = -1;
     private int mEndIndex = -1;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an event specify that the entire contents have changed
      * (CONTENTS_CHANGED type).
@@ -67,7 +67,7 @@ public class ObjectSourceEvent extends java.util.EventObject
         mType = CONTENTS_CHANGED;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an event representing an add/change/deletion of a specific
      * object id.
@@ -87,7 +87,7 @@ public class ObjectSourceEvent extends java.util.EventObject
         mObjectId = anObjectId;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs an event representing an add/change/deletion of a range of
      * objects.
@@ -110,7 +110,7 @@ public class ObjectSourceEvent extends java.util.EventObject
         mEndIndex = anEndIndex;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the event type.
      *
@@ -121,7 +121,7 @@ public class ObjectSourceEvent extends java.util.EventObject
         return mType;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the object Id associated with the event.
      *
@@ -132,7 +132,7 @@ public class ObjectSourceEvent extends java.util.EventObject
         return mObjectId;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the start of the range.
      *
@@ -144,7 +144,7 @@ public class ObjectSourceEvent extends java.util.EventObject
         return mStartIndex;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the end of the range.
      *

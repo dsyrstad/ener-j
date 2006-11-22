@@ -40,7 +40,7 @@ public class FieldAST extends BaseAST
     private String mFieldName;
     private AST mExpr;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a FieldAST. 
      *
@@ -53,7 +53,7 @@ public class FieldAST extends BaseAST
         mExpr = anExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Expr.
      *
@@ -64,7 +64,7 @@ public class FieldAST extends BaseAST
         return mExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the FieldName.
      *
@@ -76,7 +76,7 @@ public class FieldAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -86,7 +86,7 @@ public class FieldAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */

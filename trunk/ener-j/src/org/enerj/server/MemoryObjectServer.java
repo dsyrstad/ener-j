@@ -67,7 +67,7 @@ public class MemoryObjectServer extends BaseObjectServer
     private MemoryDB mDatabase;
     private boolean mNeedsInit = false;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a MemoryObjectServer.
      *
@@ -114,7 +114,7 @@ public class MemoryObjectServer extends BaseObjectServer
         mDatabase = db;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Shuts down this ObjectServer.
      */
@@ -138,11 +138,11 @@ public class MemoryObjectServer extends BaseObjectServer
         } // End synchronized
     }
         
-    //----------------------------------------------------------------------
-    // Start of ObjectServer interface methods...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Start of ObjectServer interface methods...
+
+
+
     /**
      * Connects to a database.
      * An empty memory database is created on the fly using "vo.dbname" if it doesn't
@@ -198,7 +198,7 @@ public class MemoryObjectServer extends BaseObjectServer
         return new Session(server, server.mDatabase, isSchemaSession);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Initialize a new database if mNeedsInit is set.
      *
@@ -276,8 +276,8 @@ public class MemoryObjectServer extends BaseObjectServer
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * A memory database.
      */
@@ -290,19 +290,19 @@ public class MemoryObjectServer extends BaseObjectServer
         // File used to persist memory contents.
         private File mFile = null;
 
-        //----------------------------------------------------------------------
+
         MemoryDB(String aDatabaseName)
         {
             mDatabaseName = aDatabaseName;
         }
 
-        //----------------------------------------------------------------------
+
         String getDatabaseName()
         {
             return mDatabaseName;
         }
 
-        //----------------------------------------------------------------------
+
         void storeEntry(MemoryDBEntry anEntry)
         {
             Long oidKey = new Long(anEntry.getOID());
@@ -311,7 +311,7 @@ public class MemoryObjectServer extends BaseObjectServer
             mEntryMap.put(oidKey, anEntry);
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * @return the MemoryDBEntry, or null if anOID is not in the database.
          */
@@ -320,7 +320,7 @@ public class MemoryObjectServer extends BaseObjectServer
             return (MemoryDBEntry)mEntryMap.get( new Long(anOID) );
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Gets the next unused OID.
          * @return Gets the next unused OID.
@@ -330,21 +330,21 @@ public class MemoryObjectServer extends BaseObjectServer
             return mNextOID++;
         }
 
-        //----------------------------------------------------------------------
+
         File getFile()
         {
             return mFile;
         }
 
-        //----------------------------------------------------------------------
+
         void setFile(File aFile)
         {
             mFile = aFile;
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * An object entry in a database.
      */
@@ -354,7 +354,7 @@ public class MemoryObjectServer extends BaseObjectServer
         private byte[] mObjectBytes;
         private long mCID;
 
-        //----------------------------------------------------------------------
+
         MemoryDBEntry(long aCID, long anOID, byte[] aSerializedObject)
         {
             mOID = anOID;
@@ -362,27 +362,27 @@ public class MemoryObjectServer extends BaseObjectServer
             mObjectBytes = aSerializedObject;
         }
 
-        //----------------------------------------------------------------------
+
         long getOID()
         {
             return mOID;
         }
 
-        //----------------------------------------------------------------------
+
         long getObjectCID()
         {
             return mCID;
         }
 
-        //----------------------------------------------------------------------
+
         byte[] getSerializedObject()
         {
             return mObjectBytes;
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Internal transaction.
      */
@@ -390,21 +390,21 @@ public class MemoryObjectServer extends BaseObjectServer
     {
         private ObjectServerSession mSession;
         
-        //----------------------------------------------------------------------
+
         MemoryTxn(ObjectServerSession aSession)
         {
             mSession = aSession;
         }
 
-        //----------------------------------------------------------------------
+
         ObjectServerSession getSession()
         {
             return mSession;
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * The ObjectServerSession object returned by this server.
      */
@@ -415,7 +415,7 @@ public class MemoryObjectServer extends BaseObjectServer
         private MemoryDB mDatabase;
         
 
-        //----------------------------------------------------------------------
+
         /**
          * Constructs a new Session in a connected state.
          *
@@ -430,7 +430,7 @@ public class MemoryObjectServer extends BaseObjectServer
             mIsSchemaSession = isSchemaSession;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Gets the transaction associated with this session.
          *
@@ -447,7 +447,7 @@ public class MemoryObjectServer extends BaseObjectServer
             return mTxn;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Sets the transaction associated with this session.
          *
@@ -459,11 +459,11 @@ public class MemoryObjectServer extends BaseObjectServer
             setTransactionActive(mTxn != null);
         }
         
-        //----------------------------------------------------------------------
-        // Start of ObjectServerSession interface...
-        //----------------------------------------------------------------------
 
-        //----------------------------------------------------------------------
+        // Start of ObjectServerSession interface...
+
+
+
         public void disconnect() throws ODMGException 
         {
             if (!isConnected()) {
@@ -479,7 +479,7 @@ public class MemoryObjectServer extends BaseObjectServer
             super.disconnect();
         }
 
-        //----------------------------------------------------------------------
+
         public void shutdown() throws ODMGException
         {
             ((MemoryObjectServer)getObjectServer()).initDB();
@@ -532,7 +532,7 @@ public class MemoryObjectServer extends BaseObjectServer
             return classInfo;
         }
 
-        //----------------------------------------------------------------------
+
         public synchronized void storeObjects(SerializedObject[] someObjects) throws ODMGException
         {
             for (SerializedObject object : someObjects) {
@@ -550,7 +550,7 @@ public class MemoryObjectServer extends BaseObjectServer
             super.storeObjects(someObjects);
         }
 
-        //----------------------------------------------------------------------
+
         public synchronized byte[][] loadObjects(long[] someOIDs) throws ODMGException
         {
             if (!getAllowNontransactionalReads()) {
@@ -572,7 +572,7 @@ public class MemoryObjectServer extends BaseObjectServer
             return objects;
         }
 
-        //----------------------------------------------------------------------
+
         public synchronized long[] getNewOIDBlock(int anOIDCount) throws ODMGException
         {
             // Validate txn active - interface requirement
@@ -586,7 +586,7 @@ public class MemoryObjectServer extends BaseObjectServer
             return oids;
         }
 
-        //----------------------------------------------------------------------
+
         public synchronized void beginTransaction() throws ODMGRuntimeException 
         {
             ((MemoryObjectServer)getObjectServer()).initDB();
@@ -597,7 +597,7 @@ public class MemoryObjectServer extends BaseObjectServer
             setTransaction(txn);
         }
 
-        //----------------------------------------------------------------------
+
         public synchronized void checkpointTransaction() throws ODMGRuntimeException 
         {
             super.checkpointTransaction();
@@ -605,7 +605,7 @@ public class MemoryObjectServer extends BaseObjectServer
             //  TODO 
         }
 
-        //----------------------------------------------------------------------
+
         public synchronized void commitTransaction() throws ODMGRuntimeException 
         {
             super.commitTransaction();
@@ -614,7 +614,7 @@ public class MemoryObjectServer extends BaseObjectServer
             //  TODO 
         }
 
-        //----------------------------------------------------------------------
+
         public synchronized void getLock(long anOID, int aLockLevel, long aWaitTime) throws LockNotGrantedException 
         {
             if (getAllowNontransactionalReads() && aLockLevel == org.odmg.Transaction.READ) {
@@ -628,7 +628,7 @@ public class MemoryObjectServer extends BaseObjectServer
             //  TODO 
         }
 
-        //----------------------------------------------------------------------
+
         public synchronized void rollbackTransaction() throws ODMGRuntimeException 
         {
             super.rollbackTransaction();
@@ -637,9 +637,9 @@ public class MemoryObjectServer extends BaseObjectServer
             //  TODO 
         }
 
-        //----------------------------------------------------------------------
+
         // ...End of ObjectServerSession interface methods.
-        //----------------------------------------------------------------------
+
 
     }
 }

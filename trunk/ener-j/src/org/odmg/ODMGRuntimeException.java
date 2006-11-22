@@ -24,7 +24,7 @@ public class ODMGRuntimeException extends RuntimeException {
         super(msg);
     }
 
-    //--------------------------------------------------------------------------
+
     /**
      * Construct with an error message and a cause.
      * @param msg	The error message associated with this exception.
@@ -35,7 +35,7 @@ public class ODMGRuntimeException extends RuntimeException {
         super(msg, cause);
     }
 
-    //--------------------------------------------------------------------------
+
     /**
      * Construct with an error message and a cause.
      * 

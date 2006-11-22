@@ -42,7 +42,7 @@ public class TimestampLiteralAST extends BaseAST
 {
     private String mValue;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a TimestampLiteralAST. 
      *
@@ -54,7 +54,7 @@ public class TimestampLiteralAST extends BaseAST
         mValue = someValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Value.
      *
@@ -65,7 +65,7 @@ public class TimestampLiteralAST extends BaseAST
         return mValue;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      */
@@ -74,7 +74,7 @@ public class TimestampLiteralAST extends BaseAST
         return Timestamp.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */

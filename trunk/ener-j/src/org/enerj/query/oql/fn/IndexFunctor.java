@@ -48,7 +48,7 @@ public class IndexFunctor extends UnaryFunctor
 
     private UnaryFunctor mIndexedFunctor;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a IndexFunctor functor.
      * 
@@ -60,7 +60,7 @@ public class IndexFunctor extends UnaryFunctor
         mIndexedFunctor = anIndexedFunctor;
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         Object expr = mIndexedFunctor.fn(null);
@@ -111,7 +111,7 @@ public class IndexFunctor extends UnaryFunctor
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(IndexFunctor)</code> method, if it implements
@@ -122,14 +122,14 @@ public class IndexFunctor extends UnaryFunctor
             ((IndexFunctor.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "IndexFunctor[" + mIndexedFunctor + ']';
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>IndexFunctor</b> functor.
      */

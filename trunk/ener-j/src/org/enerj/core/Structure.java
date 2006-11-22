@@ -39,7 +39,7 @@ public class Structure implements Comparable, Cloneable
     private Object[] mMemberValues;
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a Structure. 
      *
@@ -54,7 +54,7 @@ public class Structure implements Comparable, Cloneable
     }
 
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the member names.
      *
@@ -66,7 +66,7 @@ public class Structure implements Comparable, Cloneable
     }
 
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the member values.
      *
@@ -77,7 +77,7 @@ public class Structure implements Comparable, Cloneable
         return mMemberValues;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * Note: This method expects that all members implement Comparable. If not, and the members
      * are not equal (using equals()), IllegalArgumentException
@@ -142,7 +142,7 @@ public class Structure implements Comparable, Cloneable
         return 0;
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see java.lang.Object#clone()
@@ -156,7 +156,7 @@ public class Structure implements Comparable, Cloneable
         return struct;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * Only the values are compared for equality, not the names.<p/>
      * {@inheritDoc}
@@ -190,7 +190,7 @@ public class Structure implements Comparable, Cloneable
         return true;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see java.lang.Object#hashCode()
@@ -205,7 +205,7 @@ public class Structure implements Comparable, Cloneable
         return hash;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see java.lang.Object#toString()

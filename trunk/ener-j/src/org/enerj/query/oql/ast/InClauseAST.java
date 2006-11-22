@@ -37,7 +37,7 @@ public class InClauseAST extends BaseAST
     private String mIdent;
     private AST mExpr;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a InClauseAST. 
      *
@@ -50,7 +50,7 @@ public class InClauseAST extends BaseAST
         mExpr = anExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Expr.
      *
@@ -61,7 +61,7 @@ public class InClauseAST extends BaseAST
         return mExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Ident.
      *

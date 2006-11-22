@@ -131,7 +131,7 @@ public class AnnotationNode implements AnnotationVisitor {
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the value associated with the specified annotation parameter.
      *
@@ -156,7 +156,7 @@ public class AnnotationNode implements AnnotationVisitor {
         return null;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the array associated with the specified annotation parameter.
      *

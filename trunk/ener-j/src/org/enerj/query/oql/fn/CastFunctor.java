@@ -52,7 +52,7 @@ public class CastFunctor extends UnaryFunctor
     private Class mType;
     private boolean mTypeIsNumeric;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a CastFunctor functor.
      * 
@@ -65,7 +65,7 @@ public class CastFunctor extends UnaryFunctor
         mTypeIsNumeric = TypeUtil.isNumericType(mType);
     }
 
-    //--------------------------------------------------------------------------------
+
     public Object fn(Object arg)
     {
         if (arg == null) {
@@ -80,7 +80,7 @@ public class CastFunctor extends UnaryFunctor
         return mType.cast(arg);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      * Calls the Visitor's <code>visit(CastFunctor)</code> method, if it implements
@@ -91,14 +91,14 @@ public class CastFunctor extends UnaryFunctor
             ((CastFunctor.Visitor)v).visit(this);
     }
     
-    //--------------------------------------------------------------------------------
+
     public String toString() {
         return "CastFunctor( " + mType + ')';
     }
     
     // AcyclicVisitor
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Interface for classes that may interpret a <b>CastFunctor</b> functor.
      */

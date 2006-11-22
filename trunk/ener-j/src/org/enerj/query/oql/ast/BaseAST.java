@@ -46,7 +46,7 @@ abstract public class BaseAST implements AST
     /** Cached type returned by getType0(). */
     private Class mASTType = null;
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * Calls sub-class' resolve0() method if this AST has not been resolved yet.
@@ -62,7 +62,7 @@ abstract public class BaseAST implements AST
         return mASTExprFunctor;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * @see #resolve().
      */
@@ -71,7 +71,7 @@ abstract public class BaseAST implements AST
         return new ConstantUnary("resolve0 not implemented for AST: " + this.getClass() );
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * Calls sub-class' getType0() method if it hasn't been called yet.
@@ -87,7 +87,7 @@ abstract public class BaseAST implements AST
         return mASTType;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * @see #getType().
      */
@@ -96,7 +96,7 @@ abstract public class BaseAST implements AST
         return String.class;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Returns a recusive String representation of this AST. 
      */

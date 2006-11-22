@@ -41,14 +41,14 @@ import org.enerj.server.logentry.*;
 public class DumpRedoLog 
 {
     
-    //----------------------------------------------------------------------
+
     public static void usage()
     {
         System.err.println("Usage: " + DumpRedoLog.class.getName() + " log-name");
         System.exit(1);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) throws Exception
     {
         if (args.length < 1) {

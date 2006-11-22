@@ -104,7 +104,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
      */
     private String mFieldName = null;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -117,7 +117,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         this("", true);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -151,7 +151,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         setHeaderTextAlignment(HEADER_CENTER);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable and sortable. A 
      * single click is required to start editing. Column is not sorted after 
@@ -167,7 +167,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         setSortable(aSortableFlag);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Factory method to create a column instance based on a universally-specified
      * set of arguments. The column values are derived via reflection. This
@@ -216,7 +216,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Factory method to create a column instances based on a universally-specified
      * set of arguments. The column values are derived via reflection. This
@@ -333,7 +333,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         return rawColumns;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the optional field name for the column. The field name is usually
      * the name of the attribute representing the column. Most "reflected" forms
@@ -346,7 +346,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         mFieldName = aFieldName;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the optional field name for the column.
      *
@@ -359,7 +359,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         return mFieldName;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets whether this column can be edited.
      *
@@ -370,7 +370,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         mEditable = anEditingFlag;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Answers whether this column is editable.
      *
@@ -381,7 +381,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         return mEditable;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets whether this column can be sorted.
      *
@@ -395,7 +395,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Answers whether this column is sortable.
      *
@@ -406,7 +406,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         return mSortable;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the current sort direction.
      *
@@ -418,7 +418,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         return mSortDirection;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the sort direction.
      * An event is fired to listeners interested in sort order if the sort was
@@ -455,7 +455,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Flips the current sort direction. Here's a mapping of what happens:<p>
      * Current Direction    Resulting Direction<p>
@@ -479,7 +479,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tells listeners registered by addSortChangeListener that the column's
      * sort order has changed.
@@ -505,7 +505,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Add a sort order change listener. Listener is notified when the sort order/
      * direction changes.
@@ -519,7 +519,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         setSortDirection( getSortDirection() );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Removes a sort order change listener.
      *
@@ -532,7 +532,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         setSortDirection( getSortDirection() );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the current header text alignment.
      *
@@ -545,7 +545,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         return mHeaderTextAlignment;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the header text alignment.
      *
@@ -567,7 +567,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the number of clicks required to start editing a cell.
      *
@@ -578,7 +578,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         return mNumClicksToEdit;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the number of clicks required to start editing a cell.
      *
@@ -589,7 +589,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         mNumClicksToEdit = aNumClicksToEdit;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the value being edited.
      *
@@ -600,7 +600,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         mEditorValue = aValue;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the value being edited.
      *
@@ -611,7 +611,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         return mEditorValue;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Calculates the preferred width of the TableColumn using the specified JComponent.
      * Modifies the TableColumn's preferredWidth. May also modify the JTable's
@@ -661,7 +661,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         this.setPreferredWidth(width);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Calculates the preferred width of the TableColumn using the specified JTable.
      * Modifies the TableColumn's preferredWidth. It's recommended that sub-classes
@@ -672,7 +672,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
      */
     abstract protected void calculatePreferredWidth(JTable aTable);
 
-    //----------------------------------------------------------------------
+
     /**
      * Configure a renderer for the standard colors, etc.
      */
@@ -700,11 +700,11 @@ abstract public class EditableSortableTableColumn extends TableColumn
         }
     }
 
-    //----------------------------------------------------------------------
-    // Stuff for CellEditor interface...
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Stuff for CellEditor interface...
+
+
+
     /*
      * Notifies all listeners that have registered interest for
      * notification on this event type.  The event instance
@@ -729,7 +729,7 @@ abstract public class EditableSortableTableColumn extends TableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     /*
      * Notifies all listeners that have registered interest for
      * notification on this event type.  The event instance
@@ -754,13 +754,13 @@ abstract public class EditableSortableTableColumn extends TableColumn
         }
     }
 
-    //----------------------------------------------------------------------
+
     public Object getCellEditorValue()
     {
         return getEditorValue();
     }
 
-    //----------------------------------------------------------------------
+
     public boolean isCellEditable(EventObject anEvent)
     {
         if (anEvent instanceof MouseEvent &&
@@ -771,13 +771,13 @@ abstract public class EditableSortableTableColumn extends TableColumn
         return mEditable;
     }
 
-    //----------------------------------------------------------------------
+
     public boolean shouldSelectCell(EventObject anEvent)
     {
         return true;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Default implementation returns true.
      * Sub-classes may implement validation before calling firingEditingStopped()
@@ -791,29 +791,29 @@ abstract public class EditableSortableTableColumn extends TableColumn
         return true;
     }
 
-    //----------------------------------------------------------------------
+
     public void cancelCellEditing()
     {
         fireEditingCanceled();
     }
 
-    //----------------------------------------------------------------------
+
     public void addCellEditorListener(CellEditorListener aListener)
     {
         mEditorListenerList.add(CellEditorListener.class, aListener);
     }
 
-    //----------------------------------------------------------------------
+
     public void removeCellEditorListener(CellEditorListener aListener)
     {
         mEditorListenerList.remove(CellEditorListener.class, aListener);
     }
 
-    //----------------------------------------------------------------------
-    // ...End of Stuff for CellEditor interface
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // ...End of Stuff for CellEditor interface
+
+
+
     /**
      * From TableCellEditor interface. Default implementation. If sub-class
      * overrides this method, it should call setEditorValue with the value
@@ -827,8 +827,8 @@ abstract public class EditableSortableTableColumn extends TableColumn
         return null;
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Sort Direction enumeration type.
      */
@@ -836,22 +836,22 @@ abstract public class EditableSortableTableColumn extends TableColumn
     {
         private String mName;
 
-        //----------------------------------------------------------------------
+
         // We're the only ones who can create these things.
         private SortDirection(String aName)
         {
             mName = aName;
         }
 
-        //----------------------------------------------------------------------
+
         public String toString()
         {
             return mName;
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Header Text Alignment enumeration type.
      */
@@ -859,33 +859,33 @@ abstract public class EditableSortableTableColumn extends TableColumn
     {
         private String mName;
 
-        //----------------------------------------------------------------------
+
         // We're the only ones who can create these things.
         private HeaderTextAlignment(String aName)
         {
             mName = aName;
         }
 
-        //----------------------------------------------------------------------
+
         public String toString()
         {
             return mName;
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Our HeaderRenderer.
      */
     private final class ColumnHeaderRenderer implements TableCellRenderer
     {
-        //----------------------------------------------------------------------
+
         private ColumnHeaderRenderer()
         {
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * From TableCellRenderer interface. This default implementation returns
          * component from getTableCellEditorComponent configured for proper

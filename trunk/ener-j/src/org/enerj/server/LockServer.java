@@ -114,7 +114,7 @@ import org.odmg.*;
  */
 public interface LockServer
 {
-    //----------------------------------------------------------------------
+
     /**
      * Starts a transaction in the lock server.  A Transaction may only be 
      * used by a single thread at any one time.
@@ -123,7 +123,7 @@ public interface LockServer
      */
     public LockServerTransaction startTransaction();
 
-    //----------------------------------------------------------------------
+
     /**
      * Disconnects from a LockServer.
      * A transaction must not be active.
@@ -132,7 +132,7 @@ public interface LockServer
      */
     public void disconnect() throws ODMGException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the DeadlockAlgorithm assigned to this server.
      *
@@ -140,7 +140,7 @@ public interface LockServer
      */
     public DeadlockAlgorithm getDeadlockAlgorithm();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the LockMode for the specified object at the current point in time.
      *
@@ -150,7 +150,7 @@ public interface LockServer
      */
     public LockMode getLockMode(Object anObject);
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the Total Lock Attempts.
      *
@@ -158,7 +158,7 @@ public interface LockServer
      */
     public int getTotalLockAttempts();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the Total Locks Granted.
      *
@@ -166,7 +166,7 @@ public interface LockServer
      */
     public int getTotalLocksGranted();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the Total Lock Waits.
      *
@@ -174,7 +174,7 @@ public interface LockServer
      */
     public int getTotalLockWaits();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the total number of Deadlocks.
      *
@@ -182,7 +182,7 @@ public interface LockServer
      */
     public int getTotalDeadlocks();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the total number of Transactions.
      *
@@ -190,7 +190,7 @@ public interface LockServer
      */
     public int getTotalTransactions();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the peak number of Transactions.
      *
@@ -198,7 +198,7 @@ public interface LockServer
      */
     public int getPeakTransactions();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the peak number of locked objects.
      *
@@ -206,7 +206,7 @@ public interface LockServer
      */
     public int getPeakLockedObjects();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the peak number of locks.
      *
@@ -214,7 +214,7 @@ public interface LockServer
      */
     public int getPeakNumLocks();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the longest wait for a lock.
      *
@@ -222,7 +222,7 @@ public interface LockServer
      */
     public long getLongestWaitForLock();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the longest time for a deadlock check.
      *
@@ -230,7 +230,7 @@ public interface LockServer
      */
     public long getLongestDeadlockCheck();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the number of active Transactions.
      *
@@ -238,7 +238,7 @@ public interface LockServer
      */
     public int getNumActiveTransactions();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the number of active locked objects.
      *
@@ -246,7 +246,7 @@ public interface LockServer
      */
     public int getNumActiveLockedObjects();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the number of active locks.
      *
@@ -254,7 +254,7 @@ public interface LockServer
      */
     public int getNumActiveLocks();
 
-    //----------------------------------------------------------------------
+
     /**
      * Dumps all of the LockScheduler metrics to a String.
      *

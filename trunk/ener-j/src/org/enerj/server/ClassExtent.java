@@ -49,7 +49,7 @@ public class ClassExtent
 
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the mutable extent for this class.
      *
@@ -61,7 +61,7 @@ public class ClassExtent
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Returns the Extent for this class and it's subclasses.
      *

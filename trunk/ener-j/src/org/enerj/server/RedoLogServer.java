@@ -59,7 +59,7 @@ import org.enerj.server.logentry.*;
  */
 public interface RedoLogServer
 {
-    //----------------------------------------------------------------------
+
     /**
      * Disconnects from a RedoLogServer.
      *
@@ -67,7 +67,7 @@ public interface RedoLogServer
      */
     public void disconnect() throws ODMGException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Appends an entry to the log. If the log entry is an instance of CommitTransactionLogEntry,
      * CheckpointTransactionLogEntry, or EndDatabaseCheckpointLogEntry, 
@@ -82,7 +82,7 @@ public interface RedoLogServer
      */
     public void append(LogEntry aLogEntry) throws ODMGException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Returns the position of the first log entry.
      *
@@ -92,7 +92,7 @@ public interface RedoLogServer
      */
     public long getFirstLogEntryPosition() throws ODMGException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Reads an entry to the log.
      *

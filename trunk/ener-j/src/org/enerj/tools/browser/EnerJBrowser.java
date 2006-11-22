@@ -115,7 +115,7 @@ public class EnerJBrowser
     private Action mViewGoForwardAction;
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a EnerJBrowser. 
      *
@@ -133,7 +133,7 @@ public class EnerJBrowser
         initComponents();
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Object Browser main. 
      *
@@ -150,7 +150,7 @@ public class EnerJBrowser
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Initialize the main frame and its components.
      */
@@ -233,7 +233,7 @@ public class EnerJBrowser
         vertSplitter.setDividerLocation(.25);
     }
 
-    //----------------------------------------------------------------------
+
     private void initMenus() {
         // TODO  use  Action w/ toolbar&menu
         JMenu fileMenu = new JMenu();
@@ -270,14 +270,14 @@ public class EnerJBrowser
         mFrame.setJMenuBar(mainMenu);
     }
 
-    //----------------------------------------------------------------------
+
     private void initStatusBar() {
         mStatusBar = new JLabel("Ready");
         mStatusBar.setBorder(BorderFactory.createEtchedBorder());
         mFrame.getContentPane().add(mStatusBar, BorderLayout.SOUTH);
     }
 
-    //----------------------------------------------------------------------
+
     private void initToolbar() {
         JPanel topPanel = new JPanel(new BorderLayout());
         mFrame.getContentPane().add(topPanel, BorderLayout.NORTH);
@@ -307,7 +307,7 @@ public class EnerJBrowser
         busyPanel.add(mWorkingLabel, BorderLayout.CENTER);
     }
 
-    //----------------------------------------------------------------------
+
     private void initActions()
     {
         mViewExtentsAction = new GenericAction("View Extents", mViewExtentsImage,
@@ -330,7 +330,7 @@ public class EnerJBrowser
         mRunQueryAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("F5") );
     }
     
-    //----------------------------------------------------------------------
+
     private void frameClosing(WindowEvent anEvent)
     {
         JFrame frame = (JFrame)anEvent.getSource();
@@ -338,13 +338,13 @@ public class EnerJBrowser
         exitApp();
     }
 
-    //----------------------------------------------------------------------
+
     private void exitAppAction(ActionEvent anAction)
     {
         exitApp();
     }
     
-    //----------------------------------------------------------------------
+
     private void exitApp() 
     {
         EnerJTransaction txn = EnerJTransaction.getCurrentTransaction();
@@ -355,7 +355,7 @@ public class EnerJBrowser
         System.exit(0);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the TableInfo on the table. Must be called from Event Dispatch thread.
      */
@@ -373,7 +373,7 @@ public class EnerJBrowser
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Sets the TableInfo on the table. Must be called from Event Dispatch thread.
      * Alternative form callable by VSSwingUtil.invokeLater().
@@ -385,7 +385,7 @@ public class EnerJBrowser
         setTableInfo((TableInfo)anObj); 
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Shows an error message dialog. Must be called from Event Dispatch thread.
      * Callable by VSSwingUtil.invokeLater().
@@ -398,25 +398,25 @@ public class EnerJBrowser
         JOptionPane.showMessageDialog(mFrame, msg, "Error", JOptionPane.ERROR_MESSAGE); 
     }
     
-    //----------------------------------------------------------------------
+
     private void viewExtents(ActionEvent anAction)
     {
         VSSwingUtil.invokeLater(this, mModel.getTableInfoForExtents(), "setTableInfo");
     }
 
-    //----------------------------------------------------------------------
+
     private void viewSchema(ActionEvent anAction)
     {
         VSSwingUtil.invokeLater(this, mModel.getTableInfoForSchema(), "setTableInfo");
     }
 
-    //----------------------------------------------------------------------
+
     private void viewNamedObjects(ActionEvent anAction)
     {
         VSSwingUtil.invokeLater(this, mModel.getTableInfoForBindery(), "setTableInfo");
     }
 
-    //----------------------------------------------------------------------
+
     private void executeQuery(ActionEvent anAction)
     {
         String query = mQueryText.getSelectedText();
@@ -434,7 +434,7 @@ public class EnerJBrowser
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** 
      * Called from the event thread to handle the back button. Should be quick.
      */
@@ -453,7 +453,7 @@ public class EnerJBrowser
         }
     }
 
-    //----------------------------------------------------------------------
+
     /** 
      * Called from the event thread to handle the forward button. Should be quick.
      */
@@ -473,7 +473,7 @@ public class EnerJBrowser
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Called from the event thread to handle History list selections.
      */
@@ -497,7 +497,7 @@ public class EnerJBrowser
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Called from the event thread when history is added.
      */
@@ -513,22 +513,22 @@ public class EnerJBrowser
         
     }
     
-    //----------------------------------------------------------------------
+
     private void handleObjectLinkAction(ActionEvent anAction)
     {
         TableInfo tableInfo = mModel.getTableInfo( anAction.getSource() );
         VSSwingUtil.invokeLater(this, tableInfo, "setTableInfo");
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Extends ActionRedirector to mark the frame busy during long actions. 
      * The specified event method is invoked from a background thread.
      */
     private final class BusyActionRedirector extends ActionRedirector
     {
-        //--------------------------------------------------------------------------------
+
         /**
          * Construct a BusyActionRedirector. 
          *
@@ -540,20 +540,20 @@ public class EnerJBrowser
             super(anEventReceiver, anActionPerformedMethodName);
         }
 
-        //--------------------------------------------------------------------------------
+
         private void handleActionInBackground(Object anEvent) 
         {
             super.actionPerformed((ActionEvent)anEvent);
         }
 
-        //--------------------------------------------------------------------------------
+
         private void finishAction(Object anEvent) 
         {
             mFrame.setBusy(false);
             mWorkingLabel.setIcon(mIdleImage);
         }
 
-        //--------------------------------------------------------------------------------
+
         public void actionPerformed(ActionEvent anEvent)
         {
             mFrame.setBusy(true);

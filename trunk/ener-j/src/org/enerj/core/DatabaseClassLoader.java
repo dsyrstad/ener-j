@@ -62,7 +62,7 @@ public class DatabaseClassLoader extends ClassLoader
     /** Number of bytes read at a time during parent class loading. */
     private static final int CHUNK_SIZE = 8192;
     
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new DatabaseClassLoader. 
      *
@@ -74,7 +74,7 @@ public class DatabaseClassLoader extends ClassLoader
         super(aParentLoader);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      */
@@ -221,7 +221,7 @@ public class DatabaseClassLoader extends ClassLoader
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Loads the class bytes using the parent's class loading algorithm, but 
      * defines the class with our ClassLoader. The only exception to this rule

@@ -38,7 +38,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
 {
     private Persistable mOwnerFCO;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct an empty collection using a owner FCO.
      *
@@ -50,21 +50,21 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         mOwnerFCO = anOwnerFCO;
     }
 
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public Persistable getOwnerFCO()
     {
         return mOwnerFCO;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerFCO(Persistable anOwner)
     {
         mOwnerFCO = anOwner;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerModified() 
     {
@@ -73,7 +73,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns a clone without the owner set.
      *
@@ -86,11 +86,11 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // Overridden mutator methods from java.util.LinkedList.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Overridden mutator methods from java.util.LinkedList.
+
+
+
     // java.util.Collection
     public boolean add(Object o) 
     {
@@ -99,7 +99,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean addAll(Collection c) 
     {
@@ -108,7 +108,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public void clear() 
     {
@@ -116,7 +116,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean remove(Object o) 
     {
@@ -125,7 +125,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean removeAll(Collection c) 
     {
@@ -134,7 +134,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.Collection
     public boolean retainAll(Collection c) 
     {
@@ -143,7 +143,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.List
     public Object set(int index, Object element) 
     {
@@ -152,7 +152,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.List
     public Object remove(int index) 
     {
@@ -161,7 +161,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.List
     public boolean addAll(int index, Collection c) 
     {
@@ -170,7 +170,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         return b;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.List
     public void add(int index, Object element) 
     {
@@ -178,7 +178,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.AbstractList
     protected void removeRange(int fromIndex, int toIndex)
     {
@@ -186,7 +186,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         setOwnerModified();
     }
 
-    //----------------------------------------------------------------------
+
     // java.util.LinkedList
     public void addFirst(Object o) 
     {
@@ -194,7 +194,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.LinkedList
     public void addLast(Object o) 
     {
@@ -202,7 +202,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         setOwnerModified();
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.LinkedList
     public Object removeFirst() 
     {
@@ -211,7 +211,7 @@ public class JavaUtilLinkedListSCO extends java.util.LinkedList implements SCOTr
         return o;
     }
     
-    //----------------------------------------------------------------------
+
     // java.util.LinkedList
     public Object removeLast() 
     {

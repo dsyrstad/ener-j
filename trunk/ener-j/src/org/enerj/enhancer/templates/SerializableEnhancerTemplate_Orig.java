@@ -39,7 +39,7 @@ class SerializableEnhancerTemplate_Orig implements Serializable
 {
     private byte mByte;
     
-    //----------------------------------------------------------------------
+
     public SerializableEnhancerTemplate_Orig()
     {
     }

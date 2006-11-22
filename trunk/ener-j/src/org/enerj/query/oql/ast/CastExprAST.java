@@ -42,7 +42,7 @@ public class CastExprAST extends BaseAST
     private TypeAST mType; 
     private AST mExpr;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a CastExprAST. 
      *
@@ -55,7 +55,7 @@ public class CastExprAST extends BaseAST
         mExpr = anExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the expression to be cast.
      *
@@ -66,7 +66,7 @@ public class CastExprAST extends BaseAST
         return mExpr;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Type.
      *
@@ -77,7 +77,7 @@ public class CastExprAST extends BaseAST
         return mType;
     }
     
-    //--------------------------------------------------------------------------------
+
     protected Class getType0() throws QueryException
     {
         Class castToType = mType.getType();
@@ -95,7 +95,7 @@ public class CastExprAST extends BaseAST
         return castToType;
     }
     
-    //--------------------------------------------------------------------------------
+
     protected UnaryFunctor resolve0() throws QueryException
     {
     	getType(); // Make sure validation has been performed.

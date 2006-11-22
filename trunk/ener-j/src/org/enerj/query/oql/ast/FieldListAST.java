@@ -41,7 +41,7 @@ public class FieldListAST extends BaseAST
 {
     private List<FieldAST> mFields;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a FieldListAST. 
      *
@@ -52,7 +52,7 @@ public class FieldListAST extends BaseAST
         mFields = someFields;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the fields.
      *
@@ -64,7 +64,7 @@ public class FieldListAST extends BaseAST
     }
 
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Like resolve(), only adds additional conversion functors so that the values
      * evaluate to the types specified by someTargetTypes. 

@@ -33,7 +33,7 @@ package org.enerj.enhancer;
 class SkipEnhancementException extends EnhancerException
 {
   
-  //----------------------------------------------------------------------
+
   /**
    * Constructs a new SkipEnhancementException.
    * 

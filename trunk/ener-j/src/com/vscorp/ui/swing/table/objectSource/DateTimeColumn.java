@@ -34,7 +34,7 @@ abstract public class DateTimeColumn extends ObjectSourceTableColumn
 
     private DateFormat mDateTimeFormat;
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is editable. A single click is
      * required to start editing. Column is sortable by default, but is not sorted
@@ -46,7 +46,7 @@ abstract public class DateTimeColumn extends ObjectSourceTableColumn
     {
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column with the default date/time format. The default
      * format is one created by new SimpleDateFormat().
@@ -61,7 +61,7 @@ abstract public class DateTimeColumn extends ObjectSourceTableColumn
         this(aColumnTitle, anEditingFlag, null);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Construct a new column. Column is optionally editable.
      * Heading alignment is leading.
@@ -82,7 +82,7 @@ abstract public class DateTimeColumn extends ObjectSourceTableColumn
         mDateTimeFormat = aDateTimeFormat;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the date/time format used to format and parse the field contents.
      *
@@ -93,7 +93,7 @@ abstract public class DateTimeColumn extends ObjectSourceTableColumn
         return mDateTimeFormat;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Sets the date/time format used to format and parse the field contents.
      *
@@ -104,7 +104,7 @@ abstract public class DateTimeColumn extends ObjectSourceTableColumn
         mDateTimeFormat = aDateTimeFormat;
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Get the Date/Time value for the cell.
      *
@@ -114,7 +114,7 @@ abstract public class DateTimeColumn extends ObjectSourceTableColumn
      */
     protected abstract Date getColumnValue(Object anObject);
 
-    //----------------------------------------------------------------------
+
     /**
      * Set the Date/Time value for the cell.
      *
@@ -126,7 +126,7 @@ abstract public class DateTimeColumn extends ObjectSourceTableColumn
      */
     protected abstract boolean setColumnValue(Object anObject, Date aDate);
 
-    //----------------------------------------------------------------------
+
     /**
      * Format the date and time attributes of a java.util.Date based on locale.
      *
@@ -143,7 +143,7 @@ abstract public class DateTimeColumn extends ObjectSourceTableColumn
         return mDateTimeFormat.format(aDate);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Calculates the preferred width of the TableColumn using the specified JTable.
      * Modifies the TableColumn's preferredWidth.
@@ -166,7 +166,7 @@ abstract public class DateTimeColumn extends ObjectSourceTableColumn
         calculatePreferredWidth(aTable, label);
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellRenderer
     public Component getTableCellRendererComponent(JTable aTable,
                 Object aValue, boolean aSelectedFlag, boolean aFocusFlag,
@@ -205,7 +205,7 @@ abstract public class DateTimeColumn extends ObjectSourceTableColumn
         return component;
     }
 
-    //----------------------------------------------------------------------
+
     // From TableCellEditor...
     public Component getTableCellEditorComponent(JTable aTable, Object aValue,
                         boolean isSelected, int aRow, int aColumn)
@@ -237,7 +237,7 @@ abstract public class DateTimeColumn extends ObjectSourceTableColumn
         return mEditorDateChooser;
     }
 
-    //----------------------------------------------------------------------
+
     // From CellEditor...
     public boolean stopCellEditing()
     {

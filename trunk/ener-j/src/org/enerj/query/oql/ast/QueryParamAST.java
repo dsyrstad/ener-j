@@ -37,7 +37,7 @@ public class QueryParamAST extends BaseAST
 {
     private AST mIndex;
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a QueryParamAST. 
      *
@@ -48,7 +48,7 @@ public class QueryParamAST extends BaseAST
         mIndex = anIndex;
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the Index.
      *

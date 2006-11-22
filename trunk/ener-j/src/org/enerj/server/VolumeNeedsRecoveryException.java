@@ -35,25 +35,25 @@ package org.enerj.server;
  */
 public class VolumeNeedsRecoveryException extends PageServerException
 {
-    //----------------------------------------------------------------------
+
     public VolumeNeedsRecoveryException()
     {
         super();
     }
 
-    //----------------------------------------------------------------------
+
     public VolumeNeedsRecoveryException(String aMessage)
     {
         super(aMessage);
     }
 
-    //----------------------------------------------------------------------
+
     public VolumeNeedsRecoveryException(String aMessage, Throwable aCause)
     {
         super(aMessage, aCause);
     }
 
-    //----------------------------------------------------------------------
+
     public VolumeNeedsRecoveryException(Throwable aCause)
     {
         super(aCause);

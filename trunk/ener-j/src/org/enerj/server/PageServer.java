@@ -76,7 +76,7 @@ public interface PageServer
     public static final int MIN_PAGE_SIZE = 512;
 
     
-    //----------------------------------------------------------------------
+
     /**
      * Disconnects from the PageServer. This properly closes down the volume.
      *
@@ -85,7 +85,7 @@ public interface PageServer
      */
     public void disconnect() throws PageServerException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the offset of the first page offset managed by this PageServer.
      * This value may point to an allocated or free page.
@@ -94,7 +94,7 @@ public interface PageServer
      */
     public long getLogicalFirstPageOffset();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the offset of the last page offset managed by this PageServer.
      * This value may point to an allocated or free page.
@@ -104,7 +104,7 @@ public interface PageServer
      */
     public long getLogicalLastPageOffset();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the page size managed by this PageServer. This is 
      * the page size specified when the volume was created.
@@ -113,7 +113,7 @@ public interface PageServer
      */
     public int getPageSize();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the date in which the volume was created.
      *
@@ -122,7 +122,7 @@ public interface PageServer
      */
     public long getVolumeCreationDate();
 
-    //----------------------------------------------------------------------
+
     /**
      * Gets the unique database ID assigned to this volume. If the database
      * is represented by multiple volumes, all volumes must have the same
@@ -132,7 +132,7 @@ public interface PageServer
      */
     public long getDatabaseID();
     
-    //----------------------------------------------------------------------
+
     /**
      * Determines if the volume is read-only.
      *
@@ -140,7 +140,7 @@ public interface PageServer
      */
     public boolean isReadOnly();
 
-    //----------------------------------------------------------------------
+
     /**
      * Loads partial contents of a page from the volume.
      * aBuffer.remaining() bytes are loaded.
@@ -158,7 +158,7 @@ public interface PageServer
      */
     public void loadPage(ByteBuffer aBuffer, long aLogicalPageOffset, int anOffset) throws PageServerException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Stores a partial page to the volume. The bytes from aBuffer.position()
      * to aBuffer.limit() are stored to the page.
@@ -174,7 +174,7 @@ public interface PageServer
      */
     public void storePage(ByteBuffer aBuffer, long aLogicalPageOffset, int anOffset) throws PageServerException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Allocates a new/free page in the volume.
      *
@@ -186,7 +186,7 @@ public interface PageServer
      */
     public long allocatePage() throws PageServerException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Frees an allocated page in the volume.
      *
@@ -196,7 +196,7 @@ public interface PageServer
      */
     public void freePage(long aLogicalPageOffset) throws PageServerException;
 
-    //----------------------------------------------------------------------
+
     /**
      * Ensures that all pages have been physically written to the volume.
      *

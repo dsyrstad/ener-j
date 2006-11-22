@@ -59,11 +59,8 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
      * to clean GCed objects out of the cache. 
      */
     private ReferenceQueue mCacheReferenceQueue = new ReferenceQueue();
-    
-    /** Transaction registered with this cache, if any. */
-    private EnerJTransaction mTxn = null;
 
-    //----------------------------------------------------------------------
+
     /**
      * Constructs a new client-side object cache of the specified size.
      *
@@ -79,19 +76,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         mPrefetchList = new ArrayList<CacheWeakReference>(anInitialSize / 4); 
     }
     
-    //--------------------------------------------------------------------------------
-    /**
-     * Registers a transaction with the cache. This transaction will be used to flush
-     * objects that fall off of the cache. 
-     *
-     * @param aTxn the transaction. May be null to unset the transaction. 
-     */
-    public void setTransaction(EnerJTransaction aTxn)
-    {
-        mTxn = aTxn;
-    }
-    
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.core.PersistableObjectCache#add(long, java.lang.Object)
@@ -110,7 +95,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Finds the CacheWeakReference entry corresponding to anOID.
      * Calls cleanup() prior to the lookup.
@@ -125,7 +110,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         return (CacheWeakReference)mCache.get(anOID);
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.core.PersistableObjectCache#get(long)
@@ -147,7 +132,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         return referent;
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.core.PersistableObjectCache#evict(long)
@@ -158,7 +143,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         mCache.remove(anOID);
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.core.PersistableObjectCache#evictAll()
@@ -168,7 +153,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         mCache.clear();
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.core.PersistableObjectCache#setSavedImage(long, byte[])
@@ -183,7 +168,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         ref.setSavedImage(anImage);
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.core.PersistableObjectCache#getAndClearSavedImage(long)
@@ -200,7 +185,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         return image;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.core.PersistableObjectCache#hollowObjects()
@@ -217,7 +202,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         }
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.core.PersistableObjectCache#makeObjectsNonTransactional()
@@ -235,7 +220,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         }
     }
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.core.PersistableObjectCache#cleanup()
@@ -250,7 +235,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.core.PersistableObjectCache#getAndClearPrefetches()
@@ -271,7 +256,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         return prefetches;
     }
 
-    //--------------------------------------------------------------------------------
+
     /** 
      * {@inheritDoc}
      * @see org.enerj.core.PersistableObjectCache#clearPrefetches()

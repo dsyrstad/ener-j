@@ -38,7 +38,7 @@ public class JavaSqlTimestampSCO extends java.sql.Timestamp implements SCOTracke
 {
     private Persistable mOwnerFCO;
     
-    //----------------------------------------------------------------------
+
     /**
      * Construct an empty collection using the specified initial capacity and 
      * owner FCO.
@@ -55,21 +55,21 @@ public class JavaSqlTimestampSCO extends java.sql.Timestamp implements SCOTracke
         mOwnerFCO = anOwnerFCO;
     }
 
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public Persistable getOwnerFCO()
     {
         return mOwnerFCO;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerFCO(Persistable anOwner)
     {
         mOwnerFCO = anOwner;
     }
     
-    //----------------------------------------------------------------------
+
     // From SCOTracker...
     public void setOwnerModified() 
     {
@@ -78,7 +78,7 @@ public class JavaSqlTimestampSCO extends java.sql.Timestamp implements SCOTracke
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Returns a clone without the owner set.
      *
@@ -91,11 +91,11 @@ public class JavaSqlTimestampSCO extends java.sql.Timestamp implements SCOTracke
         return clone;
     }
     
-    //----------------------------------------------------------------------
-    // Overridden mutator methods from java.sql.Timestamp.
-    //----------------------------------------------------------------------
 
-    //----------------------------------------------------------------------
+    // Overridden mutator methods from java.sql.Timestamp.
+
+
+
     // java.util.Timestamp
     public void setTime(long time) 
     {
@@ -103,7 +103,7 @@ public class JavaSqlTimestampSCO extends java.sql.Timestamp implements SCOTracke
         setOwnerModified();
     }
 
-    //----------------------------------------------------------------------
+
     // java.sql.Timestamp
     public void setNanos(int n)
     {
