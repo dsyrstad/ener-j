@@ -44,13 +44,13 @@ import org.enerj.core.*;
  */
 public abstract class AbstractDSetTest extends AbstractSetTest
 {
-    //----------------------------------------------------------------------
+
     public AbstractDSetTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests union(DSet).
      */
@@ -94,7 +94,7 @@ public abstract class AbstractDSetTest extends AbstractSetTest
         assertTrue("Size should be correct", dset3.size() == 0);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests intersection(DSet).
      */
@@ -142,7 +142,7 @@ public abstract class AbstractDSetTest extends AbstractSetTest
         assertTrue("Size should be correct", dset3.size() == 0);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests difference(DSet).
      */
@@ -198,7 +198,7 @@ public abstract class AbstractDSetTest extends AbstractSetTest
         assertTrue("Size should be correct", dset3.size() == 0);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests subsetOf(DSet).
      */
@@ -238,7 +238,7 @@ public abstract class AbstractDSetTest extends AbstractSetTest
         assertTrue("Second set is subset of first", dset2.subsetOf(testDSet) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests supersetOf(DSet).
      */
@@ -278,7 +278,7 @@ public abstract class AbstractDSetTest extends AbstractSetTest
         assertTrue("Second set is superset of first", dset2.supersetOf(testDSet) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests properSubsetOf(DSet).
      */
@@ -318,7 +318,7 @@ public abstract class AbstractDSetTest extends AbstractSetTest
         assertTrue("Second set is not a properSubset of first", !dset2.properSubsetOf(testDSet) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests properSupersetOf(DSet).
      */

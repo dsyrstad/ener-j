@@ -42,19 +42,19 @@ import org.enerj.core.*;
  */
 public class RegularDSetTest extends TestCase
 {
-    //----------------------------------------------------------------------
+
     public RegularDSetTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(RegularDSetTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         TestSuite suite = new TestSuite(RegularDSetTest.class);
@@ -65,7 +65,7 @@ public class RegularDSetTest extends TestCase
         return suite;
     }
     
-    //----------------------------------------------------------------------
+
     /*
      * You can have additional methods here..... 
      */
@@ -74,23 +74,23 @@ public class RegularDSetTest extends TestCase
         // Placeholder until a specific test is added.
     }
 
-    //----------------------------------------------------------------------
+
     // Inner classes used to test interfaces and abstract classes.
-    //----------------------------------------------------------------------
+
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests DSet interface of RegularDSet.
      */
     public static final class InternalDSetTest extends AbstractDSetTest
     {
-        //----------------------------------------------------------------------
+
         public InternalDSetTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public Collection createCollection() throws Exception
         {
             return new RegularDSet();
@@ -98,19 +98,19 @@ public class RegularDSetTest extends TestCase
     }
     
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests QueryableCollection interface of RegularDSet.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
-        //----------------------------------------------------------------------
+
         public InternalQueryableCollectionTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public QueryableCollection createQueryableCollection() throws Exception
         {
             return new RegularDSet();

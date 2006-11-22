@@ -45,7 +45,7 @@ import junit.framework.TestCase;
 public class SerializableEnhancementTest extends TestCase
 {
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a SerializableEnhancementTest. 
      */
@@ -53,7 +53,7 @@ public class SerializableEnhancementTest extends TestCase
     {
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a SerializableEnhancementTest. 
      *
@@ -65,7 +65,7 @@ public class SerializableEnhancementTest extends TestCase
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Create a copy of an Object via serialization.
      *
@@ -91,7 +91,7 @@ public class SerializableEnhancementTest extends TestCase
        }
     }
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Test enhancement of a top-level persistable that doesn't implement the
      * readObject method.
@@ -114,7 +114,7 @@ public class SerializableEnhancementTest extends TestCase
         testObj.test();
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Test enhancement of a top-level persistable that implements the
      * readObject method.
@@ -137,7 +137,7 @@ public class SerializableEnhancementTest extends TestCase
         testObj.test();
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Test enhancement of a non-top-level persistable that doesn't implement the
      * readObject method. 
@@ -167,8 +167,8 @@ public class SerializableEnhancementTest extends TestCase
         testObj.test();
     }
 
-    //--------------------------------------------------------------------------------
-    //--------------------------------------------------------------------------------
+
+
     @Persist
     private static class TLPWithoutReadObject implements Serializable
     {
@@ -181,8 +181,8 @@ public class SerializableEnhancementTest extends TestCase
         }
     }
 
-    //--------------------------------------------------------------------------------
-    //--------------------------------------------------------------------------------
+
+
     @Persist
     private static class TLPWithReadObject implements Serializable
     {
@@ -201,8 +201,8 @@ public class SerializableEnhancementTest extends TestCase
         }
     }
 
-    //--------------------------------------------------------------------------------
-    //--------------------------------------------------------------------------------
+
+
     @Persist
     private static class NTLPWithoutReadObject extends TLPWithoutReadObject implements Serializable
     {

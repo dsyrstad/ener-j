@@ -46,25 +46,25 @@ public class PersistentFieldsTest extends TestCase
     private static final String DATABASE2_URI = "enerj://root:root@-/PF2TestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
     private static final String DATABASE3_URI = "enerj://root:root@-/PF3TestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
     
-    //----------------------------------------------------------------------
+
     public PersistentFieldsTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(PersistentFieldsTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(PersistentFieldsTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Make sure proper basic enhancement was done.
      *
@@ -226,8 +226,8 @@ public class PersistentFieldsTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     private static final class TestClass1
     {

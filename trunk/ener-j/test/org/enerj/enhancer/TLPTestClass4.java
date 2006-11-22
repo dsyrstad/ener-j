@@ -33,7 +33,7 @@ class TLPTestClass4 extends java.util.ArrayList
     private static int sSomeValue = 5;  // not persistent
     private int mValue;
     
-    //----------------------------------------------------------------------
+
     TLPTestClass4(int aValue)
     {
         super();
@@ -41,14 +41,14 @@ class TLPTestClass4 extends java.util.ArrayList
     }
     
     
-    //----------------------------------------------------------------------
+
     public void someMethod()
     {
         mValue = 22;
         sSomeValue = 23;
     }
 
-    //----------------------------------------------------------------------
+
     public boolean equals(Object anObject)
     {
         if (!(anObject instanceof TLPTestClass4)) {

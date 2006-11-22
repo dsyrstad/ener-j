@@ -39,7 +39,7 @@ public class CompositePart extends DesignObj
         super(id, buildDate);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the document.
      *
@@ -50,7 +50,7 @@ public class CompositePart extends DesignObj
         return document;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets CompositePart.java.
      *
@@ -61,7 +61,7 @@ public class CompositePart extends DesignObj
         document = someDocument;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the parts.
      *
@@ -72,7 +72,7 @@ public class CompositePart extends DesignObj
         return parts;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets CompositePart.java.
      *
@@ -83,7 +83,7 @@ public class CompositePart extends DesignObj
         parts = someParts;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the rootPart.
      *
@@ -94,7 +94,7 @@ public class CompositePart extends DesignObj
         return rootPart;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets CompositePart.java.
      *
@@ -105,7 +105,7 @@ public class CompositePart extends DesignObj
         rootPart = someRootPart;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the usedInPrivate.
      *
@@ -116,7 +116,7 @@ public class CompositePart extends DesignObj
         return usedInPrivate;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets CompositePart.java.
      *
@@ -127,7 +127,7 @@ public class CompositePart extends DesignObj
         usedInPrivate = someUsedInPrivate;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the usedInShared.
      *
@@ -138,7 +138,7 @@ public class CompositePart extends DesignObj
         return usedInShared;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets CompositePart.java.
      *

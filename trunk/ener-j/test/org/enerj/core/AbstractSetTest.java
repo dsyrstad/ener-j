@@ -43,13 +43,13 @@ import org.enerj.core.*;
  */
 public abstract class AbstractSetTest extends AbstractCollectionTest
 {
-    //----------------------------------------------------------------------
+
     public AbstractSetTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests equals(Object).
      */
@@ -72,7 +72,7 @@ public abstract class AbstractSetTest extends AbstractCollectionTest
         assertTrue("Sets should not be equal", !testSet.equals(set2) );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests hashCode().
      */

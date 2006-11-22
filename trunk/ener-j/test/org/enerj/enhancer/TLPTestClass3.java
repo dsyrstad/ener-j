@@ -33,28 +33,28 @@ class TLPTestClass3 extends TLPTestClassNP
     private static int sSomeValue = 5;  // not persistent
     private int mValue;
     
-    //----------------------------------------------------------------------
+
     TLPTestClass3(int aValue)
     {
         super(true);
         mValue = aValue;
     }
     
-    //----------------------------------------------------------------------
+
     // No-arg constructor because superclass doesn't have one.
     TLPTestClass3()
     {
         this(4);
     }
     
-    //----------------------------------------------------------------------
+
     public void someMethod()
     {
         mValue = 22;
         sSomeValue = 23;
     }
 
-    //----------------------------------------------------------------------
+
     public boolean equals(Object anObject)
     {
         if (!(anObject instanceof TLPTestClass3)) {

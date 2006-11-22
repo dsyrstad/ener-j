@@ -48,25 +48,25 @@ public class OIDListTest extends TestCase
     private File mTmpPageFile = null;
     private PageServer mPageServer = null;
     
-    //----------------------------------------------------------------------
+
     public OIDListTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args)
     {
         junit.swingui.TestRunner.run(OIDListTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(OIDListTest.class);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Creates a new page server volume.
      */
@@ -87,7 +87,7 @@ public class OIDListTest extends TestCase
         assertTrue( allocatedPage == logicalFirstPage );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Connects to the PageServer volume created by createPageVolume().
      */
@@ -100,14 +100,14 @@ public class OIDListTest extends TestCase
         return (PageServer)PluginHelper.connect(CachedPageServer.class.getName(), props); 
     }
     
-    //----------------------------------------------------------------------
+
     protected void setUp() throws Exception
     {
         createPageVolume();
         mPageServer = connectToPageVolume();
     }
 
-    //----------------------------------------------------------------------
+
     protected void tearDown() throws Exception
     {
         if (mPageServer != null) {
@@ -121,7 +121,7 @@ public class OIDListTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests allocation of OIDs.
      */
@@ -152,7 +152,7 @@ public class OIDListTest extends TestCase
         list.writeHeader();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Helper for testSetGetOIDInfo.
      */
@@ -198,7 +198,7 @@ public class OIDListTest extends TestCase
         list.writeHeader();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests setting and getting of OID info on one page only.
      */
@@ -207,7 +207,7 @@ public class OIDListTest extends TestCase
         setGetOIDs(OIDS_PER_PAGE - 2);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests setting and getting of OID info on multiple pages.
      */
@@ -216,7 +216,7 @@ public class OIDListTest extends TestCase
         setGetOIDs(OIDS_PER_PAGE * 130 + (OIDS_PER_PAGE / 2));
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Helper for tests skipping over allocated OIDs so that multiple pages are allocated on
      * first setOIDInfo.
@@ -287,7 +287,7 @@ public class OIDListTest extends TestCase
         list.writeHeader();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests skipping over allocated OIDs so that multiple pages are allocated on
      * first setOIDInfo. Allocate the first and last OIDs.
@@ -297,7 +297,7 @@ public class OIDListTest extends TestCase
         skipOIDs(true, 4000);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests skipping over allocated OIDs so that multiple pages are allocated on
      * first setOIDInfo. Allocate only the last OID.
@@ -307,7 +307,7 @@ public class OIDListTest extends TestCase
         skipOIDs(false, 4000);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests skipping over allocated OIDs so that multiple pages are allocated on
      * first setOIDInfo. Also cause the OID page array to grow. The assumption 

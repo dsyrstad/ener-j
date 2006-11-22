@@ -68,7 +68,7 @@ class TestClass implements Cloneable
         mTestNonPersistentStatic = "foo";
     }
     
-    //----------------------------------------------------------------------
+
     TestClass()
     {
         // Intentionally do a new here.
@@ -78,7 +78,7 @@ class TestClass implements Cloneable
         System.out.println(mLong);
     }
 
-    //----------------------------------------------------------------------
+
     TestClass(String aString, int aValue)
     {
         // implicit super();
@@ -95,7 +95,7 @@ class TestClass implements Cloneable
         mDoubleObj = new Double(55.);
     }
     
-    //----------------------------------------------------------------------
+
     void testFieldAccessMethod()
     {
         System.out.println(mLong);
@@ -103,7 +103,7 @@ class TestClass implements Cloneable
         System.out.println(mLong);
     }
 
-    //----------------------------------------------------------------------
+
     static void testFieldAccessStaticMethod(TestClass aTestClass)
     {
         System.out.println(aTestClass.mLong);
@@ -111,7 +111,7 @@ class TestClass implements Cloneable
         System.out.println(aTestClass.mLong);
     }
 
-    //----------------------------------------------------------------------
+
     public Object clone() throws CloneNotSupportedException
     {
         TestClass clone = (TestClass)super.clone();
@@ -128,35 +128,35 @@ class TestClass implements Cloneable
         return clone;
     }
     
-    //----------------------------------------------------------------------
+
     // Optional EnerJ callback.
     private void enerjPostLoad()
     {
         System.out.println("enerjPostLoad called on " + this);
     }
     
-    //----------------------------------------------------------------------
+
     // Optional EnerJ callback.
     private void enerjPreStore()
     {
         System.out.println("enerjPreStore called on " + this);
     }
     
-    //----------------------------------------------------------------------
+
     // Optional EnerJ callback.
     private void enerjPostStore()
     {
         System.out.println("enerjPostStore called on " + this);
     }
     
-    //----------------------------------------------------------------------
+
     // Optional EnerJ callback.
     private void enerjPreHollow()
     {
         System.out.println("enerjPreHollow called on " + this);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args)  throws Exception
     {
         // Let's see if this class even loads....

@@ -43,20 +43,20 @@ import org.enerj.core.*;
  */
 public abstract class AbstractQueryableCollectionTest extends TestCase
 {
-    //----------------------------------------------------------------------
+
     public AbstractQueryableCollectionTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates an instance implementing QueryableCollection. Subclass implements this
      * to create a specific type of QueryableCollection.
      */
     abstract public QueryableCollection createQueryableCollection() throws Exception;
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests selectElement(String predicate).
      */
@@ -65,7 +65,7 @@ public abstract class AbstractQueryableCollectionTest extends TestCase
         //  TODO  after OQL parser done.
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests select(String predicate).
      */
@@ -74,7 +74,7 @@ public abstract class AbstractQueryableCollectionTest extends TestCase
         //  TODO  after OQL parser done.
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests query(String predicate).
      */
@@ -83,7 +83,7 @@ public abstract class AbstractQueryableCollectionTest extends TestCase
         //  TODO  after OQL parser done.
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests existsElement(String predicate).
      */

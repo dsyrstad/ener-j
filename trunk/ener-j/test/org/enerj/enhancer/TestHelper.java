@@ -36,7 +36,7 @@ import org.enerj.util.FileUtil;
  */
 public class TestHelper
 {
-    //----------------------------------------------------------------------
+
     /**
      * Get the specified classes enhanced.
      * The source class files for the enhancer are expected to be in 
@@ -58,7 +58,7 @@ public class TestHelper
         enhance(new String[] { aMetaDataName });
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Get the specified classes enhanced.
      * The source class files for the enhancer are expected to be in 

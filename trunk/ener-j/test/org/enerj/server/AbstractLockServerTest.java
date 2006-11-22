@@ -40,28 +40,28 @@ import org.enerj.core.DeadlockException;
 abstract public class AbstractLockServerTest extends TestCase
 {
     
-    //----------------------------------------------------------------------
+
     public AbstractLockServerTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     abstract protected String getLockServerClassName();
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets properties that specify a server that uses waits-for deadlock detection.
      */
     abstract protected Properties getWaitsForProperties();
         
-    //----------------------------------------------------------------------
+
     /**
      * Gets properties that specify a server that uses timestamp deadlock detection.
      */
     abstract protected Properties getTimestampProperties();
         
-    //----------------------------------------------------------------------
+
     /**
      * Tests that an empty transaction works and that locks cannot be gained after
      * the txn ends.
@@ -80,7 +80,7 @@ abstract public class AbstractLockServerTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests single transaction gaining multiple locks. Also tests that locks
      * are dropped after ending the txn.
@@ -122,7 +122,7 @@ abstract public class AbstractLockServerTest extends TestCase
         lockServer.disconnect();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests single transaction lock promotions. Also tests that demotions are invalid.
      */
@@ -130,7 +130,7 @@ abstract public class AbstractLockServerTest extends TestCase
     {
         LockServer lockServer = (LockServer)PluginHelper.connect(getLockServerClassName(), getWaitsForProperties() );
 
-        //----------------------------------------------------------------------
+
         // READ -> WRITE
         LockServerTransaction txn = lockServer.startTransaction();
 
@@ -146,7 +146,7 @@ abstract public class AbstractLockServerTest extends TestCase
 
         assertNull( lockServer.getLockMode(obj) );
 
-        //----------------------------------------------------------------------
+
         // READ -> UPGRADE
         txn = lockServer.startTransaction();
 
@@ -160,7 +160,7 @@ abstract public class AbstractLockServerTest extends TestCase
 
         assertNull( lockServer.getLockMode(obj) );
 
-        //----------------------------------------------------------------------
+
         // READ -> READ (no promotion)
         txn = lockServer.startTransaction();
 
@@ -174,7 +174,7 @@ abstract public class AbstractLockServerTest extends TestCase
 
         assertNull( lockServer.getLockMode(obj) );
 
-        //----------------------------------------------------------------------
+
         // UPGRADE -> WRITE
         txn = lockServer.startTransaction();
 
@@ -188,7 +188,7 @@ abstract public class AbstractLockServerTest extends TestCase
 
         assertNull( lockServer.getLockMode(obj) );
 
-        //----------------------------------------------------------------------
+
         // UPGRADE -> UPGRADE (no promotion)
         txn = lockServer.startTransaction();
 
@@ -202,7 +202,7 @@ abstract public class AbstractLockServerTest extends TestCase
 
         assertNull( lockServer.getLockMode(obj) );
 
-        //----------------------------------------------------------------------
+
         // WRITE -> WRITE (no promotion)
         txn = lockServer.startTransaction();
 
@@ -216,7 +216,7 @@ abstract public class AbstractLockServerTest extends TestCase
 
         assertNull( lockServer.getLockMode(obj) );
 
-        //----------------------------------------------------------------------
+
         // UPGRADE -> READ (demotion - OK - lock should stay UPGRADE)
         txn = lockServer.startTransaction();
 
@@ -229,7 +229,7 @@ abstract public class AbstractLockServerTest extends TestCase
         txn.end();
         assertNull( lockServer.getLockMode(obj) );
 
-        //----------------------------------------------------------------------
+
         // WRITE -> READ (demotion - OK - lock should stay WRITE)
         txn = lockServer.startTransaction();
 
@@ -242,7 +242,7 @@ abstract public class AbstractLockServerTest extends TestCase
         txn.end();
         assertNull( lockServer.getLockMode(obj) );
 
-        //----------------------------------------------------------------------
+
         // WRITE -> UPGRADE (demotion - OK - lock should stay WRITE)
         txn = lockServer.startTransaction();
 
@@ -258,7 +258,7 @@ abstract public class AbstractLockServerTest extends TestCase
         lockServer.disconnect();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests multiple readers.
      */
@@ -293,7 +293,7 @@ abstract public class AbstractLockServerTest extends TestCase
         lockServer.disconnect();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests multiple readers with single UPGRADE. A second upgrade request
      * should wait. Also tests wait timeouts.
@@ -381,7 +381,7 @@ abstract public class AbstractLockServerTest extends TestCase
         lockServer.disconnect();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests single upgrader, adds multiple readers with WRITE waiting.
      */
@@ -468,7 +468,7 @@ abstract public class AbstractLockServerTest extends TestCase
         lockServer.disconnect();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests multiple readers with WRITE waiting.
      */
@@ -544,7 +544,7 @@ abstract public class AbstractLockServerTest extends TestCase
         lockServer.disconnect();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests single writer with multiple readers waiting.
      */
@@ -637,7 +637,7 @@ abstract public class AbstractLockServerTest extends TestCase
         lockServer.disconnect();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests single writer with an upgrader and multiple readers waiting, followed
      * by another upgrader waiting - in this order in the FIFO queue.
@@ -790,7 +790,7 @@ abstract public class AbstractLockServerTest extends TestCase
         lockServer.disconnect();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests simple case of waits-for deadlock.
      */
@@ -801,7 +801,7 @@ abstract public class AbstractLockServerTest extends TestCase
         String objA = "Object A";
         String objB = "Object B";
 
-        //----------------------------------------------------------------------
+
         // Single depth cycle: T1 wants to wait on T2, which is waiting on T1.
         LockServerTransaction txn1 = lockServer.startTransaction();
         
@@ -831,13 +831,13 @@ abstract public class AbstractLockServerTest extends TestCase
         lockServer.disconnect();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests complex waits-for deadlock with longer cycle.
      */
     public void testComplexWaitsForDeadlock() throws Exception
     {
-        //----------------------------------------------------------------------
+
         // Four depth cycle. "T1" means Transaction 1. "R(X)" means Read lock on resource X. 
         // "W(X) wait T4" means waiting on Transaction 4 for write lock on resource X.
         //  T0          T1          T2          T3          T4
@@ -928,13 +928,13 @@ abstract public class AbstractLockServerTest extends TestCase
         //System.out.println( lockServer.dumpMetrics() );
     }
         
-    //----------------------------------------------------------------------
+
     /**
      * Tests single resource waits-for deadlock.
      */
     public void testSingleResourceWaitsForDeadlock() throws Exception
     {
-        //----------------------------------------------------------------------
+
         // Test the single resource deadlock scenario:
         // T0                   T1
         // R(A)                 R(A)
@@ -971,13 +971,13 @@ abstract public class AbstractLockServerTest extends TestCase
     }
     
         
-    //----------------------------------------------------------------------
+
     /**
      * Tests that no waits-for deadlock occurs on a single resource when UPGRADE is used.
      */
     public void testNoSingleResourceWaitsForDeadlockWithUpgrade() throws Exception
     {
-        //----------------------------------------------------------------------
+
         // Test that no single resource deadlock occurs with UPGRADE locks. Scenario:
         // T0                   T1
         // U(A)                 U(A) waits on T0
@@ -1027,13 +1027,13 @@ abstract public class AbstractLockServerTest extends TestCase
         lockServer.disconnect();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests simple case of timestamp deadlock.
      */
     public void testSimpleTimestampDeadlock() throws Exception
     {
-        //----------------------------------------------------------------------
+
         // Scenario:
         // T1               T2 (T2 created after T1)
         // W(A)
@@ -1063,7 +1063,7 @@ abstract public class AbstractLockServerTest extends TestCase
 
         lockServer.disconnect();
 
-        //----------------------------------------------------------------------
+
         // This case shouldn't deadlock:
         // T1               T2 (T2 created after T1)
         //                  W(A)
@@ -1109,8 +1109,8 @@ abstract public class AbstractLockServerTest extends TestCase
         lockServer.disconnect();
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     private static final class LockWaiter extends Thread
     {
         private LockServer mLockServer;
@@ -1124,7 +1124,7 @@ abstract public class AbstractLockServerTest extends TestCase
         boolean mFinished = false;
         boolean mReleaseLock = true;
         
-        //----------------------------------------------------------------------
+
         LockWaiter(LockServer aLockServer, Object anObject, LockMode aMode)
         {
             mLockServer = aLockServer;
@@ -1132,7 +1132,7 @@ abstract public class AbstractLockServerTest extends TestCase
             mMode = aMode;
         }
         
-        //----------------------------------------------------------------------
+
         LockWaiter(LockServer aLockServer, LockServerTransaction aTransaction, 
                     Object anObject, LockMode aMode)
         {
@@ -1142,7 +1142,7 @@ abstract public class AbstractLockServerTest extends TestCase
             mAlternateTransaction = aTransaction;
         }
         
-        //----------------------------------------------------------------------
+
         public void run() 
         {
             LockServerTransaction txn = null;
@@ -1178,7 +1178,7 @@ abstract public class AbstractLockServerTest extends TestCase
             }
         }
 
-        //----------------------------------------------------------------------
+
         void waitToRequest()
         {
             for (int w = 0; w < 5000 && !mRequested && mException == null; ++w) {
@@ -1186,7 +1186,7 @@ abstract public class AbstractLockServerTest extends TestCase
             }
         }
 
-        //----------------------------------------------------------------------
+
         void waitToAcquire()
         {
             for (int w = 0; w < 5000 && !mAcquired && mException == null; ++w) {
@@ -1195,8 +1195,8 @@ abstract public class AbstractLockServerTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     private static final class DeadlockWaiter extends Thread
     {
         private LockServerTransaction mTransaction;
@@ -1209,7 +1209,7 @@ abstract public class AbstractLockServerTest extends TestCase
         boolean mRequested = false;
         boolean mFinished = false;
         
-        //----------------------------------------------------------------------
+
         DeadlockWaiter(LockServerTransaction aTransaction, Object anObject, LockMode aMode, String aName)
         {
             mTransaction = aTransaction;
@@ -1218,7 +1218,7 @@ abstract public class AbstractLockServerTest extends TestCase
             mName = aName;
         }
         
-        //----------------------------------------------------------------------
+
         public void run() 
         {
             try {
@@ -1241,7 +1241,7 @@ abstract public class AbstractLockServerTest extends TestCase
             }
         }
 
-        //----------------------------------------------------------------------
+
         void waitToRequest()
         {
             for (int w = 0; w < 5000 && !mRequested && mException == null; ++w) {

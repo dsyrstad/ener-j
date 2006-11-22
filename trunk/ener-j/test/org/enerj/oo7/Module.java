@@ -28,7 +28,7 @@ public class Module extends DesignObj
     private Assembly designRoot;
     private Manual manual;
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a Module. 
      *
@@ -38,7 +38,7 @@ public class Module extends DesignObj
         super();
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Construct a Module. 
      *
@@ -50,7 +50,7 @@ public class Module extends DesignObj
         super(someId, someBuildDate);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the assemblies.
      *
@@ -61,7 +61,7 @@ public class Module extends DesignObj
         return assemblies;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets Module.java.
      *
@@ -72,7 +72,7 @@ public class Module extends DesignObj
         assemblies = someAssemblies;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the designRoot.
      *
@@ -83,7 +83,7 @@ public class Module extends DesignObj
         return designRoot;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets Module.java.
      *
@@ -94,7 +94,7 @@ public class Module extends DesignObj
         designRoot = someDesignRoot;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the manual.
      *
@@ -105,7 +105,7 @@ public class Module extends DesignObj
         return manual;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets Module.java.
      *

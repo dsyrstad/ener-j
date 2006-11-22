@@ -42,25 +42,25 @@ public class NonTLPersistableEnhancementTest extends AbstractPersistableEnhancem
 {
     private static final String DATABASE_URI = "enerj://root:root@-/NTLPETestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
 
-    //----------------------------------------------------------------------
+
     public NonTLPersistableEnhancementTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(NonTLPersistableEnhancementTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(NonTLPersistableEnhancementTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Make sure proper basic enhancement was done for fields and methods.
      *
@@ -100,7 +100,7 @@ public class NonTLPersistableEnhancementTest extends AbstractPersistableEnhancem
         assertTrue("Expected Persistable interface on superclass", interfaces[0] == org.enerj.core.Persistable.class);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Make sure proper basic enhancement was done.
      *
@@ -112,7 +112,7 @@ public class NonTLPersistableEnhancementTest extends AbstractPersistableEnhancem
         checkFieldsAndMethods(NTLPTestClass2.class, 12);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test that the "new" flag is set on instantiation.
      *
@@ -141,7 +141,7 @@ public class NonTLPersistableEnhancementTest extends AbstractPersistableEnhancem
         assertTrue("Expected it to be not new and not modified", !persistable.enerj_IsNew() && !persistable.enerj_IsModified() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test that the "new" flag is set on instantiation.
      * >> Should be moved to common Persistable tests.

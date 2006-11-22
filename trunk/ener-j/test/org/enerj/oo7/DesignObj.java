@@ -37,7 +37,7 @@ public class DesignObj
         this.buildDate = buildDate;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the buildDate.
      *
@@ -48,7 +48,7 @@ public class DesignObj
         return buildDate;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets DesignObj.java.
      *
@@ -59,7 +59,7 @@ public class DesignObj
         buildDate = someBuildDate;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the id.
      *
@@ -70,7 +70,7 @@ public class DesignObj
         return id;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets DesignObj.java.
      *
@@ -81,7 +81,7 @@ public class DesignObj
         id = someId;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the type.
      *
@@ -92,7 +92,7 @@ public class DesignObj
         return type;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets DesignObj.java.
      *

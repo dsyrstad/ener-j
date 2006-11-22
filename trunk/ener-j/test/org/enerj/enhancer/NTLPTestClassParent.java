@@ -32,20 +32,20 @@ class NTLPTestClassParent
     private static int sSomeValue = 5;  // not persistent
     private int mValue;
     
-    //----------------------------------------------------------------------
+
     NTLPTestClassParent(int aValue)
     {
         mValue = aValue;
     }
     
-    //----------------------------------------------------------------------
+
     public void someMethod()
     {
         mValue = 22;
         sSomeValue = 23;
     }
 
-    //----------------------------------------------------------------------
+
     public boolean equals(Object anObject)
     {
         if (!(anObject instanceof NTLPTestClassParent)) {

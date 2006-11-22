@@ -35,25 +35,25 @@ import junit.framework.*;
 public class MROWLockTest extends TestCase
 {
     
-    //----------------------------------------------------------------------
+
     public MROWLockTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args)
     {
         junit.swingui.TestRunner.run(MROWLockTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(MROWLockTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Performs local-only read lock assertions on the given aLock.
      */
@@ -70,7 +70,7 @@ public class MROWLockTest extends TestCase
         assertTrue( !aLock.isExternallyWriteLocked() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Performs local-only write lock assertions on the given aLock.
      */
@@ -87,7 +87,7 @@ public class MROWLockTest extends TestCase
         assertTrue( !aLock.isExternallyWriteLocked() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Performs local-only read and write lock assertions on the given aLock.
      */
@@ -104,7 +104,7 @@ public class MROWLockTest extends TestCase
         assertTrue( !aLock.isExternallyWriteLocked() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Performs local read lock assertions on the given aLock. External locks are not checked.
      */
@@ -118,7 +118,7 @@ public class MROWLockTest extends TestCase
         assertTrue( !aLock.isLocallyWriteLocked() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Performs local write lock assertions on the given aLock. External locks are not checked.
      */
@@ -132,7 +132,7 @@ public class MROWLockTest extends TestCase
         assertTrue( !aLock.isLocallyReadLocked() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Performs local read and write lock assertions on the given aLock. External locks are not checked.
      */
@@ -146,7 +146,7 @@ public class MROWLockTest extends TestCase
         assertTrue( aLock.isLocallyReadLocked() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Performs external-only read lock assertions on the given aLock.
      */
@@ -163,7 +163,7 @@ public class MROWLockTest extends TestCase
         assertTrue( !aLock.isExternallyWriteLocked() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Performs external-only write lock assertions on the given aLock.
      */
@@ -180,7 +180,7 @@ public class MROWLockTest extends TestCase
         assertTrue( aLock.isExternallyWriteLocked() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Performs external-only read and write lock assertions on the given aLock.
      */
@@ -197,7 +197,7 @@ public class MROWLockTest extends TestCase
         assertTrue( aLock.isExternallyWriteLocked() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Asserts that a lock is not locked.
      */
@@ -214,7 +214,7 @@ public class MROWLockTest extends TestCase
         assertTrue( !aLock.isExternallyWriteLocked() );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Asserts that no local locks are held. External locks are not checked.
      */
@@ -225,7 +225,7 @@ public class MROWLockTest extends TestCase
         assertTrue( !aLock.isLocallyWriteLocked() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Acquire read locks on multiple threads.
      */
@@ -259,7 +259,7 @@ public class MROWLockTest extends TestCase
         return threads;
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Release and terminate read locking threads created by acquireReadLocks.
      */
@@ -282,7 +282,7 @@ public class MROWLockTest extends TestCase
         System.out.println("Released.");
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests that read locks are reentrant and "is" methods work properly for read locks.
      */
@@ -290,7 +290,7 @@ public class MROWLockTest extends TestCase
     {
         MROWLock lock = new MROWLock();
         
-        //-------------------------------------------------------------
+
         // Test one level
         assertNotLocked(lock);
 
@@ -300,7 +300,7 @@ public class MROWLockTest extends TestCase
         lock.releaseRead(); // Back to unlocked
         assertNotLocked(lock);
 
-        //-------------------------------------------------------------
+
         // Test two level
         assertNotLocked(lock);
 
@@ -316,7 +316,7 @@ public class MROWLockTest extends TestCase
         lock.releaseRead(); // Back to unlocked
         assertNotLocked(lock);
 
-        //-------------------------------------------------------------
+
         // Test three level
         assertNotLocked(lock);
 
@@ -338,7 +338,7 @@ public class MROWLockTest extends TestCase
         lock.releaseRead(); // Back to unlocked
         assertNotLocked(lock);
         
-        //-------------------------------------------------------------
+
         // Test exception
         assertNotLocked(lock);
         try {
@@ -350,7 +350,7 @@ public class MROWLockTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests that write locks are reentrant and "is" methods work properly for write locks.
      */
@@ -358,7 +358,7 @@ public class MROWLockTest extends TestCase
     {
         MROWLock lock = new MROWLock();
         
-        //-------------------------------------------------------------
+
         // Test one level
         assertNotLocked(lock);
 
@@ -368,7 +368,7 @@ public class MROWLockTest extends TestCase
         lock.releaseWrite(); // Back to unlocked
         assertNotLocked(lock);
 
-        //-------------------------------------------------------------
+
         // Test two level
         assertNotLocked(lock);
 
@@ -384,7 +384,7 @@ public class MROWLockTest extends TestCase
         lock.releaseWrite(); // Back to unlocked
         assertNotLocked(lock);
 
-        //-------------------------------------------------------------
+
         // Test three level
         assertNotLocked(lock);
 
@@ -406,7 +406,7 @@ public class MROWLockTest extends TestCase
         lock.releaseWrite(); // Back to unlocked
         assertNotLocked(lock);
         
-        //-------------------------------------------------------------
+
         // Test exception
         assertNotLocked(lock);
         try {
@@ -418,7 +418,7 @@ public class MROWLockTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests that a read lock can be followed by a write lock and that after
      * releasing a write lock, the read lock is retained.
@@ -427,7 +427,7 @@ public class MROWLockTest extends TestCase
     {
         MROWLock lock = new MROWLock();
 
-        //-------------------------------------------------------------
+
         // Lock order: read/write/release write/release read
         assertNotLocked(lock);
 
@@ -444,7 +444,7 @@ public class MROWLockTest extends TestCase
         assertNotLocked(lock);
 
 
-        //-------------------------------------------------------------
+
         // Lock order: read/write/release read/release write
         assertNotLocked(lock);
 
@@ -461,7 +461,7 @@ public class MROWLockTest extends TestCase
         assertNotLocked(lock);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests multiple readers from multiple threads.
      */
@@ -470,7 +470,7 @@ public class MROWLockTest extends TestCase
         System.out.println("---> testMultipleReaders");
         MROWLock lock = new MROWLock();
 
-        //-------------------------------------------------------------
+
         assertNotLocked(lock);
 
         ReaderThread[] threads = acquireReadLocks(lock);
@@ -482,7 +482,7 @@ public class MROWLockTest extends TestCase
         assertNotLocked(lock);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests multiple readers blocking writer request.
      */
@@ -491,7 +491,7 @@ public class MROWLockTest extends TestCase
         System.out.println("---> testMultipleReadersBlockingWriter");
         MROWLock lock = new MROWLock();
 
-        //-------------------------------------------------------------
+
         assertNotLocked(lock);
 
         ReaderThread[] readerThreads = acquireReadLocks(lock);
@@ -549,7 +549,7 @@ public class MROWLockTest extends TestCase
         System.out.println("Finished.");
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests writer lock blocking multiple readers.
      */
@@ -558,7 +558,7 @@ public class MROWLockTest extends TestCase
         System.out.println("---> testWriterBlockingMultipleReaders");
         MROWLock lock = new MROWLock();
 
-        //-------------------------------------------------------------
+
         assertNotLocked(lock);
         
         // This thread will be the writer...
@@ -630,7 +630,7 @@ public class MROWLockTest extends TestCase
         System.out.println("Finished.");
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests writer lock blocking another writer.
      */
@@ -639,7 +639,7 @@ public class MROWLockTest extends TestCase
         System.out.println("---> testWriterBlockingWriter");
         MROWLock lock = new MROWLock();
 
-        //-------------------------------------------------------------
+
         assertNotLocked(lock);
 
         // This main thread will be the locking writer...
@@ -697,8 +697,8 @@ public class MROWLockTest extends TestCase
         System.out.println("Finished.");
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     private final class ReaderThread extends Thread
     {
         private MROWLock mLock;
@@ -707,13 +707,13 @@ public class MROWLockTest extends TestCase
         volatile boolean mRelease = false;
         volatile Exception mException = null;
         
-        //----------------------------------------------------------------------
+
         ReaderThread(MROWLock aLock)
         {
             mLock = aLock;
         }
         
-        //----------------------------------------------------------------------
+
         public void run() 
         {
             mAcquired = false;
@@ -747,8 +747,8 @@ public class MROWLockTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     private final class WriterThread extends Thread
     {
         private MROWLock mLock;
@@ -757,13 +757,13 @@ public class MROWLockTest extends TestCase
         volatile boolean mRelease = false;
         volatile Exception mException = null;
         
-        //----------------------------------------------------------------------
+
         WriterThread(MROWLock aLock)
         {
             mLock = aLock;
         }
         
-        //----------------------------------------------------------------------
+
         public void run() 
         {
             mAcquired = false;

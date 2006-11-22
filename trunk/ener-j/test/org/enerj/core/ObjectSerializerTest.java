@@ -55,25 +55,25 @@ public class ObjectSerializerTest extends TestCase
 {
     private static final String DATABASE_URI = "enerj://root:root@-/ObjectSerializerTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
     
-    //----------------------------------------------------------------------
+
     public ObjectSerializerTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(ObjectSerializerTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(ObjectSerializerTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Recursively compares two objects for equality.<p>
      * - If both objects are null, they are equal.<p>
@@ -240,7 +240,7 @@ public class ObjectSerializerTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Gets a random object for fillCollection.
      */
@@ -300,7 +300,7 @@ public class ObjectSerializerTest extends TestCase
         throw new RuntimeException("Shouldn't happen");
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Fills a collection with a random set of values.
      */
@@ -313,7 +313,7 @@ public class ObjectSerializerTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Fills a map with a random set of key/values.
      */
@@ -332,7 +332,7 @@ public class ObjectSerializerTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Fills a set with a random set of values. Values are all of the same type.
      */
@@ -344,7 +344,7 @@ public class ObjectSerializerTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Write aPersistable to database and then reload back into a new object.
      *
@@ -364,7 +364,7 @@ public class ObjectSerializerTest extends TestCase
         return persistable2;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Make sure basic write/read serialization works.
      *
@@ -399,7 +399,7 @@ public class ObjectSerializerTest extends TestCase
         database.close();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Make sure write/read serialization of nulls works.
      *
@@ -431,7 +431,7 @@ public class ObjectSerializerTest extends TestCase
         database.close();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Make sure write/read of BigDecimal works properly.
      *
@@ -464,7 +464,7 @@ public class ObjectSerializerTest extends TestCase
         database.close();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Make sure nested FCOs work.
      *
@@ -496,7 +496,7 @@ public class ObjectSerializerTest extends TestCase
         database.close();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Make sure TreeSet/Maps with Comparators work.
      *
@@ -532,7 +532,7 @@ public class ObjectSerializerTest extends TestCase
         database.close();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Make sure TreeSet/Maps with Bad Comparators throw exception.
      *
@@ -569,7 +569,7 @@ public class ObjectSerializerTest extends TestCase
         database.close();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Make sure basic write/read serialization works on a Non-Top-Level
      * Persistable.
@@ -602,7 +602,7 @@ public class ObjectSerializerTest extends TestCase
         database.close();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Make sure write/read serialization of nulls works on a Non-Top-Level
      * Persistable.
@@ -635,8 +635,8 @@ public class ObjectSerializerTest extends TestCase
         database.close();
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     private static class TestClass1
     {
@@ -730,12 +730,12 @@ public class ObjectSerializerTest extends TestCase
         @Persist(false)
         transient private int mIntOverriddenNonPersistent2;
 
-        //----------------------------------------------------------------------
+
         TestClass1()
         {
         }
 
-        //----------------------------------------------------------------------
+
         void setFieldValues()
         {
             mPrivateInt = 5;
@@ -836,7 +836,7 @@ public class ObjectSerializerTest extends TestCase
             mIntOverriddenPersistent2 = 932;
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Check that the mDupDateRef is the same object as mUtilDate after
          * loading from the DB. It was setup this way before the object was 
@@ -848,7 +848,7 @@ public class ObjectSerializerTest extends TestCase
             return mDupDateRef == mUtilDate;
         }
         
-        //----------------------------------------------------------------------
+
         void setObjectsToNull()
         {
             mByteObj = null;
@@ -897,14 +897,14 @@ public class ObjectSerializerTest extends TestCase
             mObject = null;
         }
         
-        //----------------------------------------------------------------------
+
         public void setZeroScaleBigDecimal()
         {
             mBigDecimal = new java.math.BigDecimal("12345678923479238479283292468013579");
             mBigDecimal.setScale(0);
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Tests for equality and returns normally if the objects are equal, or
          * throws AssertionFailedError if they are not.
@@ -984,8 +984,8 @@ public class ObjectSerializerTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     private static class TestClass2 extends TestClass1
     {
@@ -999,12 +999,12 @@ public class ObjectSerializerTest extends TestCase
         private double mDouble;
         private Byte mByteObj;
 
-        //----------------------------------------------------------------------
+
         TestClass2()
         {
         }
 
-        //----------------------------------------------------------------------
+
         void setFieldValues()
         {
             super.setFieldValues();
@@ -1020,14 +1020,14 @@ public class ObjectSerializerTest extends TestCase
             mByteObj = new Byte((byte)23);
         }
 
-        //----------------------------------------------------------------------
+
         void setObjectsToNull()
         {
             super.setObjectsToNull();
             mByteObj = null;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Tests for equality and returns normally if the objects are equal, or
          * throws AssertionFailedError if they are not.
@@ -1058,7 +1058,7 @@ public class ObjectSerializerTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     private static class TreeComparator implements Comparator
     {
         TreeComparator()
@@ -1074,7 +1074,7 @@ public class ObjectSerializerTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     private static class BadTreeComparator implements Comparator
     {
         BadTreeComparator(int aValue)
@@ -1090,8 +1090,8 @@ public class ObjectSerializerTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     private static class FCO1
     {
@@ -1099,12 +1099,12 @@ public class ObjectSerializerTest extends TestCase
         private TreeSet mTreeSet;
         private TreeMap mTreeMap;
 
-        //----------------------------------------------------------------------
+
         FCO1()
         {
         }
 
-        //----------------------------------------------------------------------
+
         void createTreesWithComparator()
         {
             Comparator comparator = new TreeComparator();
@@ -1122,7 +1122,7 @@ public class ObjectSerializerTest extends TestCase
             mTreeMap.put("Zebra", "Neigh");
         }
         
-        //----------------------------------------------------------------------
+
         void createTreesWithBadComparator()
         {
             Comparator comparator = new BadTreeComparator(5);
@@ -1140,7 +1140,7 @@ public class ObjectSerializerTest extends TestCase
             mTreeMap.put("Zebra", "Neigh");
         }
         
-        //----------------------------------------------------------------------
+
         void dumpTrees()
         {
             System.out.println("Maps---->");
@@ -1156,7 +1156,7 @@ public class ObjectSerializerTest extends TestCase
             System.out.println("<----");
         }
         
-        //----------------------------------------------------------------------
+
         void setFieldValues(EnerJDatabase aDatabase) throws Exception
         {
             mFCO2Ref = new FCO2();
@@ -1165,13 +1165,13 @@ public class ObjectSerializerTest extends TestCase
             storeAndLoad(aDatabase, (Persistable)(Object)mFCO2Ref);
         }
 
-        //----------------------------------------------------------------------
+
         void setObjectsToNull()
         {
             mFCO2Ref = null;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Tests for equality and returns normally if the objects are equal, or
          * throws AssertionFailedError if they are not.
@@ -1201,19 +1201,19 @@ public class ObjectSerializerTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     private static class FCO2
     {
         private FCO3 mFCO3Ref;
 
-        //----------------------------------------------------------------------
+
         FCO2()
         {
         }
 
-        //----------------------------------------------------------------------
+
         void setFieldValues(EnerJDatabase aDatabase) throws Exception
         {
             mFCO3Ref = new FCO3();
@@ -1222,13 +1222,13 @@ public class ObjectSerializerTest extends TestCase
             storeAndLoad(aDatabase, (Persistable)(Object)mFCO3Ref);
         }
 
-        //----------------------------------------------------------------------
+
         void setObjectsToNull()
         {
             mFCO3Ref = null;
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Tests for equality and returns normally if the objects are equal, or
          * throws AssertionFailedError if they are not.
@@ -1258,30 +1258,30 @@ public class ObjectSerializerTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     private static class FCO3
     {
         private int aValue;
 
-        //----------------------------------------------------------------------
+
         FCO3()
         {
         }
 
-        //----------------------------------------------------------------------
+
         void setFieldValues()
         {
             aValue = 38238;
         }
 
-        //----------------------------------------------------------------------
+
         void setObjectsToNull()
         {
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Tests for equality and returns normally if the objects are equal, or
          * throws AssertionFailedError if they are not.

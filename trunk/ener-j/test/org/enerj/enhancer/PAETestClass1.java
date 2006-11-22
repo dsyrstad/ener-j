@@ -34,7 +34,7 @@ class PAETestClass1
     private int mValue;
     PAETestClass2 mPersistable = null;
     
-    //----------------------------------------------------------------------
+
     PAETestClass1()
     {
         mValue = 5;
@@ -43,7 +43,7 @@ class PAETestClass1
         PersistableHelper.setNonTransactional(mPersistable);
     }
     
-    //----------------------------------------------------------------------
+
     void modifyPersistable()
     {
         // This should be enhanced

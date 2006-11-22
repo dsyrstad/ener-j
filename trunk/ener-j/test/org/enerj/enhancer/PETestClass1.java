@@ -33,7 +33,7 @@ class PETestClass1 extends TLPTestClass1
     private static int sSomeValue = 5;  // not persistent
     private int mValue;
     
-    //----------------------------------------------------------------------
+
     PETestClass1(int aValue)
     {
         super(aValue);

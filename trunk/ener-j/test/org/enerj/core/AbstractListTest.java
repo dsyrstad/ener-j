@@ -39,19 +39,19 @@ import java.util.List;
  */
 public abstract class AbstractListTest extends AbstractCollectionTest
 {
-    //----------------------------------------------------------------------
+
     public AbstractListTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests add(int, Object).
      */
     public final void testIndexedAdd() throws Exception
     {
-        //----------------------------------------------------------------
+
         // insert mid-list
         List testList = (List)createCollection();
         
@@ -74,7 +74,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
                 obj.equals( new CollectionTestObject("Obj-" + i) ) );
         }
 
-        //----------------------------------------------------------------
+
         // out of bounds -1 and > size()
         try {
             testList.add(-1, new Object() );
@@ -92,7 +92,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
             // Expected
         }
 
-        //----------------------------------------------------------------
+
         // index == size() to append.
         testList.clear();
         for (int i = 0; i < (listSize - 1); i++) {
@@ -110,7 +110,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
                 obj.equals( new CollectionTestObject("Obj-" + i) ) );
         }
 
-        //----------------------------------------------------------------
+
         // index == 0 to insert before everything
         testList.clear();
         for (int i = 1; i < listSize; i++) {
@@ -128,7 +128,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
                 obj.equals( new CollectionTestObject("Obj-" + i) ) );
         }
         
-        //----------------------------------------------------------------
+
         // index == 0 on empty list.
         testList.clear();
         testList.add(0, new CollectionTestObject("Obj-") );
@@ -138,7 +138,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
         assertTrue("First element should be equal", obj.equals( new CollectionTestObject("Obj-") ) );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests add(Object). List clarifies the Collection semantics slightly by saying that
      * add() appends the item to the end of the list.
@@ -159,13 +159,13 @@ public abstract class AbstractListTest extends AbstractCollectionTest
         assertTrue("Last element should be equal", obj.equals( new CollectionTestObject("APPENDED") ) );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests addAll(int, Collection).
      */
     public final void testIndexedAddAll() throws Exception
     {
-        //----------------------------------------------------------------
+
         // insert mid-list
         List testList = (List)createCollection();
         
@@ -202,7 +202,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
             }
         }
         
-        //----------------------------------------------------------------
+
         // out of bounds -1 and > size()
         try {
             testList.addAll(-1, list);
@@ -220,7 +220,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
             // Expected
         }
 
-        //----------------------------------------------------------------
+
         // index == size() to append.
         testList.clear();
         list.clear();
@@ -244,7 +244,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
                 obj.equals( new CollectionTestObject("Obj-" + i) ) );
         }
 
-        //----------------------------------------------------------------
+
         // index == 0 to insert before everything
         testList.clear();
         list.clear();
@@ -268,7 +268,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
                 obj.equals( new CollectionTestObject("Obj-" + i) ) );
         }
         
-        //----------------------------------------------------------------
+
         // index == 0 on empty list.
         testList.clear();
         list.clear();
@@ -287,7 +287,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests get(int).
      */
@@ -324,7 +324,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests equals(Object).
      */
@@ -347,7 +347,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
         assertTrue("Lists should not be equal", !testList.equals(list2) );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests hashCode().
      */
@@ -375,7 +375,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
         assertTrue("Hashcode should be correct", testList.hashCode() == hashCode);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests indexOf(Object).
      */
@@ -403,7 +403,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
         assertTrue("Index should be of first duplicate", testList.indexOf( new CollectionTestObject("Dup") ) == listSize );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests lastIndexOf(Object).
      */
@@ -431,7 +431,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
         assertTrue("Index should be of last duplicate", testList.lastIndexOf( new CollectionTestObject("Dup") ) == (listSize + 1) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests listIterator() and listIterator(int).
      */
@@ -455,7 +455,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
             throw new Exception(t);
         }
 
-        //----------------------------------------------------------------
+
         // out of bounds -1 and > size()
         List testList = (List)createCollection();
         try {
@@ -484,7 +484,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests remove(int).
      */
@@ -508,7 +508,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
             assertTrue("Value should be correct", testList.get(i).equals( new CollectionTestObject("Obj-" + i) ) );
         }
 
-        //----------------------------------------------------------------
+
         // out of bounds -1 and >= size()
         try {
             testList.remove(-1);
@@ -528,7 +528,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
 
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests set(int, Object).
      */
@@ -554,7 +554,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
             }
         }
 
-        //----------------------------------------------------------------
+
         // out of bounds -1 and >= size()
         try {
             testList.set(-1, new Object() );
@@ -574,7 +574,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
 
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests subList(int, int).
      */
@@ -604,7 +604,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
         }
 
         
-        //----------------------------------------------------------------
+
         // out of bounds -1 and > size()
         try {
             testList.subList(-1, 2);
@@ -665,20 +665,20 @@ public abstract class AbstractListTest extends AbstractCollectionTest
 
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Tests List.listIterator().
      */
     private class FullListIteratorTest extends AbstractListIteratorTest
     {
-        //----------------------------------------------------------------------
+
         public FullListIteratorTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public Collection createIteratorCollection(Collection aCollection) throws Exception
         {
             Collection collection = createCollection();
@@ -686,39 +686,39 @@ public abstract class AbstractListTest extends AbstractCollectionTest
             return collection;
         }
 
-        //----------------------------------------------------------------------
+
         public Iterator createIterator(Collection aCollection) throws Exception
         {
             return ((List)aCollection).listIterator();
         }
 
-        //----------------------------------------------------------------------
+
         public boolean supportsRemove()
         {
             return true;
         }
 
-        //----------------------------------------------------------------------
+
         public int getStartingIndex()
         {
             return 0;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean supportsAdd()
         {
             return true;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean supportsSet()
         {
             return true;
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Tests List.listIterator(int).
      */
@@ -726,13 +726,13 @@ public abstract class AbstractListTest extends AbstractCollectionTest
     {
         private int mStartingIndex;
         
-        //----------------------------------------------------------------------
+
         public IndexedListIteratorTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public Collection createIteratorCollection(Collection aCollection) throws Exception
         {
             Collection collection = createCollection();
@@ -740,32 +740,32 @@ public abstract class AbstractListTest extends AbstractCollectionTest
             return collection;
         }
 
-        //----------------------------------------------------------------------
+
         public Iterator createIterator(Collection aCollection) throws Exception
         {
             mStartingIndex = aCollection.size() / 2 - 1;
             return ((List)aCollection).listIterator(mStartingIndex);
         }
 
-        //----------------------------------------------------------------------
+
         public boolean supportsRemove()
         {
             return true;
         }
 
-        //----------------------------------------------------------------------
+
         public int getStartingIndex()
         {
             return mStartingIndex;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean supportsAdd()
         {
             return true;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean supportsSet()
         {
             return true;

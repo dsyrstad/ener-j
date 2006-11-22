@@ -43,13 +43,13 @@ import org.enerj.core.*;
  */
 public abstract class AbstractSortedMapTest extends AbstractMapTest
 {
-    //----------------------------------------------------------------------
+
     public AbstractSortedMapTest(String aName) 
     {
         super(aName);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests comparator().
      */
@@ -63,7 +63,7 @@ public abstract class AbstractSortedMapTest extends AbstractMapTest
     }
 
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests firstKey() and that the entrySet() iterator is in order.
      */
@@ -86,7 +86,7 @@ public abstract class AbstractSortedMapTest extends AbstractMapTest
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests headMap().
      */
@@ -110,7 +110,7 @@ public abstract class AbstractSortedMapTest extends AbstractMapTest
         
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests lastKey().
      */
@@ -126,7 +126,7 @@ public abstract class AbstractSortedMapTest extends AbstractMapTest
         assertTrue("Should be first element", testSortedMap.lastKey().equals( new CollectionTestObject("Obj3") ) );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests subMap().
      */
@@ -153,7 +153,7 @@ public abstract class AbstractSortedMapTest extends AbstractMapTest
         
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests tailMap().
      */

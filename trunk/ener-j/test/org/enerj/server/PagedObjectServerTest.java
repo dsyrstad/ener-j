@@ -45,7 +45,7 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
     private File mTmpPageFile = null;
     private File mTmpLogFile = null;
     
-    //----------------------------------------------------------------------
+
     public PagedObjectServerTest(String aTestName) 
     {
         super(aTestName);
@@ -63,19 +63,19 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
     	}
     }
     
-    //----------------------------------------------------------------------
+
     private File getPageFile()
     {
     	return mTmpPageFile;
     }
     
-    //----------------------------------------------------------------------
+
     private File getLogFile()
     {
     	return mTmpPageFile;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates a new page server volume.
      */
@@ -103,13 +103,13 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
         PagedObjectServer.createDatabase("test", DB_NAME, 0L, 0L);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(PagedObjectServerTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     protected Properties getObjectServerProperties()
     {
         Properties props = new Properties( System.getProperties() );
@@ -131,7 +131,7 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
         return props;
     }
         
-    //----------------------------------------------------------------------
+
     protected String getObjectServerClassName()
     {
         return PagedObjectServer.class.getName();

@@ -36,7 +36,7 @@ import org.enerj.util.*;
 class RequestProcessorOverheadTester
 {
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) throws Exception
     {
         int numRequests = 1000000;
@@ -53,17 +53,17 @@ class RequestProcessorOverheadTester
         System.exit(1);
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     static final class Request extends RequestProcessor.Request
     {
         
-        //----------------------------------------------------------------------
+
         Request()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public void run()
         {
             complete(null);

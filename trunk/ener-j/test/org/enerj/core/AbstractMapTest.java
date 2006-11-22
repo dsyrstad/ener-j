@@ -43,26 +43,26 @@ import org.enerj.core.*;
  */
 public abstract class AbstractMapTest extends TestCase
 {
-    //----------------------------------------------------------------------
+
     public AbstractMapTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates an instance implementing Map. Subclass implements this
      * to create a specific type of Map.
      */
     abstract public Map createMap() throws Exception;
     
-    //----------------------------------------------------------------------
+
     /**
      * Should return true only if Map allows null keys.
      */
     abstract public boolean allowsNullKeys();
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests put(Object, Object), get(Object), clear(), size(), 
      * containsKey(Object), containsValue(Object), and isEmpty().
@@ -117,7 +117,7 @@ public abstract class AbstractMapTest extends TestCase
         assertTrue("Should be empty", testMap.isEmpty() );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests entrySet().
      */
@@ -138,7 +138,7 @@ public abstract class AbstractMapTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests equals().
      */
@@ -163,7 +163,7 @@ public abstract class AbstractMapTest extends TestCase
         assertTrue("Maps should not be equal", !testMap.equals(map2) );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests hashCode().
      */
@@ -188,7 +188,7 @@ public abstract class AbstractMapTest extends TestCase
         assertTrue("Hashcodes should match", testMap.hashCode() == hashCode);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests keySet().
      */
@@ -208,7 +208,7 @@ public abstract class AbstractMapTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests putAll(Map).
      */
@@ -236,7 +236,7 @@ public abstract class AbstractMapTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests remove(Object).
      */
@@ -276,7 +276,7 @@ public abstract class AbstractMapTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests values().
      */
@@ -296,39 +296,39 @@ public abstract class AbstractMapTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     private static final class TestMapEntry implements Map.Entry
     {
         private Object mKey;
         private Object mValue;
         
-        //----------------------------------------------------------------------
+
         TestMapEntry(Object aKey, Object aValue)
         {
             mKey = aKey;
             mValue = aValue;
         }
         
-        //----------------------------------------------------------------------
+
         public Object getKey()
         {
             return mKey;
         }
 
-        //----------------------------------------------------------------------
+
         public Object getValue()
         {
             return mValue;
         }
 
-        //----------------------------------------------------------------------
+
         public Object setValue(Object value)
         {
             throw new UnsupportedOperationException();
         }
 
-        //----------------------------------------------------------------------
+
         public boolean equals(Object o)
         {
             Map.Entry e2 = (Map.Entry)o;
@@ -336,7 +336,7 @@ public abstract class AbstractMapTest extends TestCase
                 (this.getValue()==null ? e2.getValue()==null : this.getValue().equals(e2.getValue()));
         }
 
-        //----------------------------------------------------------------------
+
         public int hashCode()
         {
             return (getKey()==null   ? 0 : getKey().hashCode()) ^

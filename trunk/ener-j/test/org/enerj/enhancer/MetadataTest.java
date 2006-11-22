@@ -43,25 +43,25 @@ public class MetadataTest extends TestCase
 
     private static boolean sEnhanced = false;
     
-    //----------------------------------------------------------------------
+
     public MetadataTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(MetadataTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(MetadataTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Syntax error tests.
      */
@@ -79,7 +79,7 @@ public class MetadataTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test bad keys for class and field.
      */
@@ -111,7 +111,7 @@ public class MetadataTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test bad key values for class and field.
      */
@@ -144,7 +144,7 @@ public class MetadataTest extends TestCase
     }
     
     
-    //--------------------------------------------------------------------------------
+
     /**
      * Checks that SimpleTestClass and SimpleTestClass2 are Persistables after enhancement.
      * We purposely avoid using Java to load the classes because the enhancer may have modified
@@ -159,7 +159,7 @@ public class MetadataTest extends TestCase
         assertTrue("SimpleTestClass2 must be Persistable", new ClassReflector("org.enerj.enhancer.subpackage.SimpleTestClass2").containsSuperInterface(persistableName) );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test "class *" defaults.
      */
@@ -172,7 +172,7 @@ public class MetadataTest extends TestCase
         checkForPersistableSimpleTestClasses();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test "class {packagename}" defaults.
      */
@@ -194,8 +194,8 @@ public class MetadataTest extends TestCase
                         new ClassReflector("org.enerj.enhancer.subpackage.SimpleTestInterface").containsSuperInterface(Persistable.class.getName()) );
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Metadata.
      */
@@ -203,20 +203,20 @@ public class MetadataTest extends TestCase
     {
         private int mInt;
 
-        //----------------------------------------------------------------------
+
         TestClass()
         {
         }
     }   
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Metadata. NEVER gets enhanced.
      */
     private static class TestClassNever
     {
-        //----------------------------------------------------------------------
+
         TestClassNever()
         {
         }

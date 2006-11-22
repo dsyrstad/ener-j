@@ -52,25 +52,25 @@ public class EnerJDatabaseTest extends TestCase
 
     private Exception mThreadException;
     
-    //----------------------------------------------------------------------
+
     public EnerJDatabaseTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args)
     {
         junit.swingui.TestRunner.run(EnerJDatabaseTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(EnerJDatabaseTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests that an objected created for one database cannot be reused in 
      * another.
@@ -126,7 +126,7 @@ public class EnerJDatabaseTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests that a Database instance cannot be used by another Thread concurrently
      * while a transaction is active.
@@ -219,7 +219,7 @@ public class EnerJDatabaseTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Test that JVM instances of the same OID are preserved between transactions, as long as the
      * instance is not GCed, as defined by JDO 5.5.4. 
@@ -261,7 +261,7 @@ public class EnerJDatabaseTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Test JDO 5.5.1:  a transient (but enhanced) instance referenced by persistent instances 
      * causes the transient object to get _persisted_ as if it were a new instance. This means that
@@ -313,7 +313,7 @@ public class EnerJDatabaseTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      *  Test non-transactional reads.
      */
@@ -386,53 +386,53 @@ public class EnerJDatabaseTest extends TestCase
 
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
  
-    //----------------------------------------------------------------------
+
     @Persist
     private static class TestClass1
     {
         private int mValue;
         
-        //----------------------------------------------------------------------
+
         TestClass1(int aValue)
         {
             mValue = aValue;
         }
             
-        //----------------------------------------------------------------------
+
         int getValue()
         {
             return mValue;
         }
 
-        //----------------------------------------------------------------------
+
         void setValue(int aValue)
         {
             mValue = aValue;
         }
     }
 
-    //----------------------------------------------------------------------
+
     @Persist
     private static class TestClass2
     {
         private TestClass1 mValue;
         
-        //----------------------------------------------------------------------
+
         TestClass2(TestClass1 aValue)
         {
             mValue = aValue;
         }
             
-        //----------------------------------------------------------------------
+
         TestClass1 getValue()
         {
             return mValue;
         }
 
-        //----------------------------------------------------------------------
+
         void setValue(TestClass1 aValue)
         {
             mValue = aValue;

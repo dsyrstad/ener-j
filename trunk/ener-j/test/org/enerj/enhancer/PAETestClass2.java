@@ -32,7 +32,7 @@ class PAETestClass2
 {
     int mExposedField;
     
-    //----------------------------------------------------------------------
+
     PAETestClass2(int aValue)
     {
         mExposedField = aValue;

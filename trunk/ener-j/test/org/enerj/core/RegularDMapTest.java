@@ -42,19 +42,19 @@ import org.enerj.core.*;
  */
 public class RegularDMapTest extends TestCase
 {
-    //----------------------------------------------------------------------
+
     public RegularDMapTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(RegularDMapTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         TestSuite suite = new TestSuite(RegularDMapTest.class);
@@ -65,7 +65,7 @@ public class RegularDMapTest extends TestCase
         return suite;
     }
     
-    //----------------------------------------------------------------------
+
     /*
      * You can have additional methods here..... 
      */
@@ -74,29 +74,29 @@ public class RegularDMapTest extends TestCase
         // Placeholder until a specific test is added.
     }
 
-    //----------------------------------------------------------------------
+
     // Inner classes used to test interfaces and abstract classes.
-    //----------------------------------------------------------------------
+
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests DMap interface of RegularDMap.
      */
     public static final class InternalDMapTest extends AbstractDMapTest
     {
-        //----------------------------------------------------------------------
+
         public InternalDMapTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public Map createMap() throws Exception
         {
             return new RegularDMap();
         }
 
-        //----------------------------------------------------------------------
+
         public boolean allowsNullKeys()
         {
             return true;
@@ -104,19 +104,19 @@ public class RegularDMapTest extends TestCase
     }
     
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests QueryableCollection interface of RegularDMap.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
-        //----------------------------------------------------------------------
+
         public InternalQueryableCollectionTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public QueryableCollection createQueryableCollection() throws Exception
         {
             return new RegularDMap();

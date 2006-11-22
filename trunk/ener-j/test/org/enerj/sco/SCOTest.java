@@ -54,25 +54,25 @@ public class SCOTest extends TestCase
 {
     private static final String DATABASE_URI = "enerj://root:root@-/SCOTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
     
-    //----------------------------------------------------------------------
+
     public SCOTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(SCOTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(SCOTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Write aPersistable to database and then reload back into a new object.
      *
@@ -92,7 +92,7 @@ public class SCOTest extends TestCase
         return persistable2;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Basic SCO tests.
      *
@@ -126,8 +126,8 @@ public class SCOTest extends TestCase
     }
     
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     private static class TestClass1
     {
@@ -152,12 +152,12 @@ public class SCOTest extends TestCase
         private java.util.IdentityHashMap mIdentityHashMap;
         private java.util.ArrayList mArrayListContainingSCO;
 
-        //----------------------------------------------------------------------
+
         TestClass1()
         {
         }
 
-        //----------------------------------------------------------------------
+
         void setFieldValues()
         {
             mUtilDate = new java.util.Date(); // Today 
@@ -191,7 +191,7 @@ public class SCOTest extends TestCase
             mArrayListContainingSCO.add( new java.util.Date() );
         }
 
-        //----------------------------------------------------------------------
+
         /**
          * Test mutator methods on the java.util.Collection interface.
          *
@@ -244,7 +244,7 @@ public class SCOTest extends TestCase
             assertTrue("Size should be zero", aCollection.size() == 0 );
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Test mutator methods on the java.util.List interface.
          *
@@ -283,7 +283,7 @@ public class SCOTest extends TestCase
 
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Test mutator methods on the java.util.Map interface.
          *
@@ -334,7 +334,7 @@ public class SCOTest extends TestCase
             assertTrue("Size should be zero", aMap.size() == 0 );
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Test mutator methods on java.util.LinkedList.
          *
@@ -372,7 +372,7 @@ public class SCOTest extends TestCase
             assertTrue("Value should be set", aLinkedList.getLast().equals( new Integer(9) ) );
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Test mutator methods on java.util.Vector.
          *
@@ -427,7 +427,7 @@ public class SCOTest extends TestCase
             assertTrue("Size should be set", aVector.size() == 4);
         }
 
-        //----------------------------------------------------------------------
+
         void testSCOClone()
         {
             SCOTracker[] scos = new SCOTracker[] {
@@ -455,7 +455,7 @@ public class SCOTest extends TestCase
             }
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * To be used after loading from DB (when SCO subclasses are created) 
          * to test Owner modification when SCO

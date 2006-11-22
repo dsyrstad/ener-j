@@ -42,25 +42,25 @@ public class HollowTest extends TestCase
 {
     private static final String DATABASE_URI = "enerj://root:root@-/HollowTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
 
-    //----------------------------------------------------------------------
+
     public HollowTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(HollowTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(HollowTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     private void checkHollow(Hollowable aHollowable, boolean hasPreHollow)
     {
         Persistable persistable = (Persistable)aHollowable;
@@ -76,7 +76,7 @@ public class HollowTest extends TestCase
         assertTrue("enerjPreHollow should have been called", !hasPreHollow || aHollowable.wasPreHollowCalled());
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Basic tests.
      */
@@ -90,8 +90,8 @@ public class HollowTest extends TestCase
         checkHollow( new NTLPWithoutCallback(), false);
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Interface for testing voHollow callback.
      */
@@ -101,8 +101,8 @@ public class HollowTest extends TestCase
         boolean wasPreHollowCalled();
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Hollow on a Top-Level Persistable with a private enerjPreHollow
      * callback.
@@ -116,7 +116,7 @@ public class HollowTest extends TestCase
         private int[] mIntArray;
         transient private boolean mHollowCalled = false;
         
-        //----------------------------------------------------------------------
+
         TLPWithPrivateCallback()
         {
             mInt = 5;
@@ -125,27 +125,27 @@ public class HollowTest extends TestCase
             mIntArray = new int[10];
         }
         
-        //----------------------------------------------------------------------
+
         public boolean areFieldsSet()
         {
             return mObj != null && mString != null && mIntArray != null;
         }
 
-        //----------------------------------------------------------------------
+
         private void enerjPreHollow()
         {
             mHollowCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPreHollowCalled()
         {
             return mHollowCalled;
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Hollow on a Top-Level Persistable with a public enerjPreHollow
      * callback.
@@ -159,7 +159,7 @@ public class HollowTest extends TestCase
         private int[] mIntArray;
         transient private boolean mHollowCalled = false;
         
-        //----------------------------------------------------------------------
+
         TLPWithPublicCallback()
         {
             mInt = 5;
@@ -168,27 +168,27 @@ public class HollowTest extends TestCase
             mIntArray = new int[10];
         }
         
-        //----------------------------------------------------------------------
+
         public boolean areFieldsSet()
         {
             return mObj != null && mString != null && mIntArray != null;
         }
 
-        //----------------------------------------------------------------------
+
         public void enerjPreHollow()
         {
             mHollowCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPreHollowCalled()
         {
             return mHollowCalled;
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Hollow on a Non-Top-Level Persistable with a private enerjPreHollow
      * callback.
@@ -202,7 +202,7 @@ public class HollowTest extends TestCase
         private int[] mIntArray;
         transient private boolean mHollowCalled = false;
         
-        //----------------------------------------------------------------------
+
         NTLPWithPrivateCallback()
         {
             mInt = 5;
@@ -211,27 +211,27 @@ public class HollowTest extends TestCase
             mIntArray = new int[10];
         }
         
-        //----------------------------------------------------------------------
+
        public boolean areFieldsSet()
         {
             return mObj != null && mString != null && mIntArray != null;
         }
 
-        //----------------------------------------------------------------------
+
         private void enerjPreHollow()
         {
             mHollowCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPreHollowCalled()
         {
             return super.wasPreHollowCalled() && mHollowCalled;
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Hollow on a Non-Top-Level Persistable with a public enerjPreHollow
      * callback. Note that the enerjPreHollow callback technically overrides the super
@@ -247,7 +247,7 @@ public class HollowTest extends TestCase
         private int[] mIntArray;
         transient private boolean mHollowCalled = false;
         
-        //----------------------------------------------------------------------
+
         NTLPWithPublicCallback()
         {
             mInt = 5;
@@ -256,27 +256,27 @@ public class HollowTest extends TestCase
             mIntArray = new int[10];
         }
         
-        //----------------------------------------------------------------------
+
         public boolean areFieldsSet()
         {
             return mObj != null && mString != null && mIntArray != null;
         }
 
-        //----------------------------------------------------------------------
+
         public void enerjPreHollow()
         {
             mHollowCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPreHollowCalled()
         {
             return super.wasPreHollowCalled() && mHollowCalled;
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Hollow on a Top-Level Persistable without a enerjPreHollow
      * callback.
@@ -290,7 +290,7 @@ public class HollowTest extends TestCase
         private int[] mIntArray;
         transient private boolean mHollowCalled = false;
         
-        //----------------------------------------------------------------------
+
         TLPWithoutCallback()
         {
             mInt = 5;
@@ -299,21 +299,21 @@ public class HollowTest extends TestCase
             mIntArray = new int[10];
         }
         
-        //----------------------------------------------------------------------
+
         public boolean areFieldsSet()
         {
             return mObj != null && mString != null && mIntArray != null;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPreHollowCalled()
         {
             return false; // not used
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Hollow on a Top-Level Persistable without a enerjPreHollow
      * callback.
@@ -327,7 +327,7 @@ public class HollowTest extends TestCase
         private int[] mIntArray;
         transient private boolean mHollowCalled = false;
         
-        //----------------------------------------------------------------------
+
         NTLPWithoutCallback()
         {
             mInt = 5;
@@ -336,13 +336,13 @@ public class HollowTest extends TestCase
             mIntArray = new int[10];
         }
         
-        //----------------------------------------------------------------------
+
         public boolean areFieldsSet()
         {
             return mObj != null && mString != null && mIntArray != null;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPreHollowCalled()
         {
             return false; // not used 

@@ -47,7 +47,7 @@ class TempODMGTester
 {
     private static final String URI = "enerj://root:root@-/TempODMGTest";
 
-    //----------------------------------------------------------------------
+
     private static void createDB() throws Exception
     {
         System.setProperty("enerj.dbpath", "databases/JUnit");
@@ -61,7 +61,7 @@ class TempODMGTester
         PagedObjectServer.createDatabase("Test", "TempODMGTest", 0L, 64000000L);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) throws Exception
     {
         int numAdds = 180000;
@@ -134,28 +134,28 @@ class TempODMGTester
         System.exit(1);
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     public static class Address
     {
         private String mName;
         private String mAddr;
         
-        //----------------------------------------------------------------------
+
         Address(String aName, String anAddr)
         {
             mName = aName;
             mAddr = anAddr;
         }
 
-        //----------------------------------------------------------------------
+
         String getName()
         {
             return mName;
         }
 
-        //----------------------------------------------------------------------
+
         String getAddr()
         {
             return mAddr;

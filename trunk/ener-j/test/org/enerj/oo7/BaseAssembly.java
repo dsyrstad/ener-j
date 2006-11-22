@@ -36,7 +36,7 @@ public class BaseAssembly extends Assembly
         super(id, buildDate);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the componentsPrivate.
      *
@@ -47,7 +47,7 @@ public class BaseAssembly extends Assembly
         return componentsPrivate;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets BaseAssembly.java.
      *
@@ -58,7 +58,7 @@ public class BaseAssembly extends Assembly
         componentsPrivate = someComponentsPrivate;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the componentsShared.
      *
@@ -69,7 +69,7 @@ public class BaseAssembly extends Assembly
         return componentsShared;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets BaseAssembly.java.
      *

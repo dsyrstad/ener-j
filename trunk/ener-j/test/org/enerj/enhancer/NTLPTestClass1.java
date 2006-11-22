@@ -32,21 +32,21 @@ class NTLPTestClass1 extends NTLPTestClassParent implements Cloneable
     private static int sSomeValue = 5;  // not persistent
     private int mValue;
     
-    //----------------------------------------------------------------------
+
     NTLPTestClass1(int aValue)
     {
         super(12);
         mValue = aValue;
     }
     
-    //----------------------------------------------------------------------
+
     public void someMethod()
     {
         mValue = 22;
         sSomeValue = 23;
     }
 
-    //----------------------------------------------------------------------
+
     public boolean equals(Object anObject)
     {
         if (!(anObject instanceof NTLPTestClass1)) {
@@ -57,7 +57,7 @@ class NTLPTestClass1 extends NTLPTestClassParent implements Cloneable
         return super.equals(obj) && (this.mValue == obj.mValue);
     }
     
-    //----------------------------------------------------------------------
+
     public Object clone() throws CloneNotSupportedException
     {
         NTLPTestClass1 clone = (NTLPTestClass1)super.clone();
