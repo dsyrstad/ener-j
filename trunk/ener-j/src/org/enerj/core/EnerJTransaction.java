@@ -214,7 +214,6 @@ public class EnerJTransaction implements Transaction
         sCurrentTransactionForThread.remove();
 
         // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
-        mIsTxnOpen = false;
         if (mTransactionDatabase != null) {
             mTransactionDatabase.setTransaction(null);
         }
@@ -244,53 +243,9 @@ public class EnerJTransaction implements Transaction
      */
     public void flush()
     {
-        if (mFlushIterator != null) {
-            return; // Prevent reentrancy
-        }
-        
-        try {
-            flushAndKeepModifiedList();
-        }
-        finally {
-            // Clear out modified objects.
-            getDatabase().clearModifiedList();
-        }
-    }
-
-
-    /**
-     * Flushes modified and referenced new objects to the server. Does not
-     * affect the state of the transaction. The modified list is NOT cleared.
-     */
-    private void flushAndKeepModifiedList()
-    {
         checkIsOpenAndOwnedByThread();
-        
-        // TODO Should move to EnerJDatabase.
-        try {
-            // Note that we start an iterator each item. We do this instead of
-            // calling storePersistable() recursively. Such recursion could become
-            // very deep. The iterator allows us to append new objects, 
-            // essentially flattening the recursion.
-            mFlushIterator = getDatabase().getModifiedListIterator();
-            while (mFlushIterator.hasNext()) {
-                Persistable persistable = mFlushIterator.next();
-                
-                // This can indirectly insert objects into the list due to
-                // ObjectSerializer.
-                mTransactionDatabase.storePersistable(persistable);
-            }
-            
-            mTransactionDatabase.flushSerializedObjectQueue();
-        }
-        catch (ODMGException e) {
-            throw new ODMGRuntimeException(e);
-        }
-        finally {
-            mFlushIterator = null;
-        }
+        getTransactionDatabase().flush();
     }
-
 
     /**
      * Clears the transaction list of modified and referenced new objects. Similar to a
@@ -302,7 +257,7 @@ public class EnerJTransaction implements Transaction
     public void clear()
     {
         checkIsOpenAndOwnedByThread();
-        
+        getTransactionDatabase().clear();
         // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
         for (Iterator<Persistable> iter = getDatabase().getModifiedListIterator(); iter.hasNext(); ) {
             Persistable persistable = iter.next();
@@ -442,9 +397,9 @@ public class EnerJTransaction implements Transaction
         
         // ODMG 3.0 - 2.10.3 says that an implicit leave occurs if another Transaction
         // is currently active on the caller's thread.
-        EnerJTransaction voTransaction = getCurrentTransaction();
-        if (voTransaction != null && voTransaction != this) {
-            voTransaction.leave();
+        EnerJTransaction txn = getCurrentTransaction();
+        if (txn != null && txn != this) {
+            txn.leave();
         }
 
         sCurrentTransactionForThread.set(this);
