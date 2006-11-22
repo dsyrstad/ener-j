@@ -44,13 +44,13 @@ import org.enerj.core.*;
  */
 public abstract class AbstractDListTest extends AbstractListTest
 {
-    //----------------------------------------------------------------------
+
     public AbstractDListTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests concat(DList).
      */

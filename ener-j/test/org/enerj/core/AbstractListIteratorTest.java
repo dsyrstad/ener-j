@@ -42,13 +42,13 @@ import org.enerj.core.*;
  */
 public abstract class AbstractListIteratorTest extends AbstractIteratorTest
 {
-    //----------------------------------------------------------------------
+
     public AbstractListIteratorTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the index into the collection on which createIterator() is based.
      *
@@ -56,7 +56,7 @@ public abstract class AbstractListIteratorTest extends AbstractIteratorTest
      */
     abstract public int getStartingIndex();
     
-    //----------------------------------------------------------------------
+
     /**
      * Check if iterator supports add(Object).
      *
@@ -65,7 +65,7 @@ public abstract class AbstractListIteratorTest extends AbstractIteratorTest
      */
     abstract public boolean supportsAdd();
     
-    //----------------------------------------------------------------------
+
     /**
      * Check if iterator supports set(Object).
      *
@@ -74,7 +74,7 @@ public abstract class AbstractListIteratorTest extends AbstractIteratorTest
      */
     abstract public boolean supportsSet();
     
-    //----------------------------------------------------------------------
+
     /**
      * Checks the iterator against a list of known objects. Iterator does
      * not have to be in the order of the list.<p>
@@ -91,7 +91,7 @@ public abstract class AbstractListIteratorTest extends AbstractIteratorTest
         checkListIterator((ListIterator)anIterator, aList, getStartingIndex() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Checks the iterator against a list of known objects. ListIterator does
      * must be in the order of the list.
@@ -136,7 +136,7 @@ public abstract class AbstractListIteratorTest extends AbstractIteratorTest
         assertTrue("Should be at start of iterator", anIterator.hasNext() );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Method to run all tests. Can be used with "new ListIteratorTest("runAllTests").runBare()" 
      * to test an ListIterator from another test method.
@@ -150,7 +150,7 @@ public abstract class AbstractListIteratorTest extends AbstractIteratorTest
         testSet();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests next(), hasNext(), previous(), hasPrevious(), nextIndex(),
      * previousIndex().
@@ -167,7 +167,7 @@ public abstract class AbstractListIteratorTest extends AbstractIteratorTest
         checkListIterator(iterator, list, getStartingIndex());
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests add(Object).
      */
@@ -215,7 +215,7 @@ public abstract class AbstractListIteratorTest extends AbstractIteratorTest
         checkListIterator(iterator, list, getStartingIndex() );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests set(Object).
      */

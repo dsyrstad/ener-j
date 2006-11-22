@@ -30,13 +30,13 @@ import org.enerj.annotations.PersistenceAware;
 @PersistenceAware
 class TLPTestClassPA
 {
-    //----------------------------------------------------------------------
+
     // Default constructor for Persistable sub-class.
     TLPTestClassPA()
     {
     }
     
-    //----------------------------------------------------------------------
+
     TLPTestClassPA(boolean aFlag)
     {
     }

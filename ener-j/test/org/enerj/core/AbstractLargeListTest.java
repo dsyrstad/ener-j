@@ -35,19 +35,19 @@ package org.enerj.core;
  */
 public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
 {
-    //----------------------------------------------------------------------
+
     public AbstractLargeListTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests insertElements(long, long) and getAtIndex(long).
      */
     public final void testInsertElementsAndGetAtIndex() throws Exception
     {
-        //----------------------------------------------------------------
+
         // insert mid-list
         LargeList testLargeList = (LargeList)createLargeCollection();
         
@@ -75,7 +75,7 @@ public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
             }
         }
 
-        //----------------------------------------------------------------
+
         // out of bounds -1 and > sizeAsLong()
         try {
             testLargeList.insertElements(-1L, 1L);
@@ -101,7 +101,7 @@ public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
             // Expected
         }
 
-        //----------------------------------------------------------------
+
         // index == sizeAsLong() to append.
         testLargeList.clear();
         for (long i = 0; i < (listSize - 1); i++) {
@@ -123,7 +123,7 @@ public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
             }
         }
 
-        //----------------------------------------------------------------
+
         // index == 0 to insert before everything
         testLargeList.clear();
         for (long i = 1; i < listSize; i++) {
@@ -146,7 +146,7 @@ public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
         }
 
         
-        //----------------------------------------------------------------
+
         // index == 0 on empty list.
         testLargeList.clear();
         testLargeList.insertElements(0L, 1L);
@@ -155,7 +155,7 @@ public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
         CollectionTestObject obj = (CollectionTestObject)testLargeList.getAtIndex(0L);
         assertNull("First element should be null", obj);
         
-        //----------------------------------------------------------------
+
         // test index == sizeAsLong() on getAtIndex - exception
         try {
             testLargeList.getAtIndex( testLargeList.sizeAsLong() );
@@ -166,7 +166,7 @@ public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests indexOfAsLong(Object).
      */
@@ -194,7 +194,7 @@ public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
         assertTrue("Index should be of first duplicate", testLargeList.indexOfAsLong( new CollectionTestObject("Dup") ) == listSize );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests lastIndexOfAsLong(Object).
      */
@@ -222,7 +222,7 @@ public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
         assertTrue("Index should be of last duplicate", testLargeList.lastIndexOfAsLong( new CollectionTestObject("Dup") ) == (listSize + 1) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests removeElements(long, long).
      */
@@ -249,7 +249,7 @@ public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
             assertTrue("Value should be correct", testLargeList.getAtIndex(i).equals( new CollectionTestObject("Obj-" + i) ) );
         }
 
-        //----------------------------------------------------------------
+
         // out of bounds -1 and >= size()
         try {
             testLargeList.removeElements(-1L, 1L);
@@ -277,7 +277,7 @@ public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
 
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests setAtIndex(int, Object).
      */
@@ -305,7 +305,7 @@ public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
             }
         }
 
-        //----------------------------------------------------------------
+
         // out of bounds -1
         try {
             testLargeList.setAtIndex(-1L, new Object() );
@@ -315,7 +315,7 @@ public abstract class AbstractLargeListTest extends AbstractLargeCollectionTest
             // Expected
         }
 
-        //----------------------------------------------------------------
+
         // Test growing list.
         testLargeList.clear();
         for (long i = 0; i < listSize; i++) {

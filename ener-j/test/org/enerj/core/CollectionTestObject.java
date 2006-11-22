@@ -42,14 +42,14 @@ public class CollectionTestObject implements Cloneable, Comparable
 {
     private String mValue;
     
-    //----------------------------------------------------------------------
+
     public CollectionTestObject(String aValue) 
     {
         assert aValue != null;
         mValue = aValue;
     }
     
-    //----------------------------------------------------------------------
+
     public boolean equals(Object anOther)
     {
         if ( !(anOther instanceof CollectionTestObject)) {
@@ -60,13 +60,13 @@ public class CollectionTestObject implements Cloneable, Comparable
         return mValue.equals(target.mValue);
     }
 
-    //----------------------------------------------------------------------
+
     public int hashCode()
     {
         return mValue.hashCode();
     }
     
-    //----------------------------------------------------------------------
+
     public Object clone()
     {
         try {
@@ -78,13 +78,13 @@ public class CollectionTestObject implements Cloneable, Comparable
         }
     }
 
-    //----------------------------------------------------------------------
+
     public String toString()
     {
         return mValue;
     }
 
-    //----------------------------------------------------------------------
+
     public int compareTo(Object anObject)
     {
         return mValue.compareTo(((CollectionTestObject)anObject).mValue);

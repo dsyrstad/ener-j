@@ -47,20 +47,20 @@ import org.enerj.core.*;
  */
 public abstract class AbstractLargeCollectionTest extends TestCase
 {
-    //----------------------------------------------------------------------
+
     public AbstractLargeCollectionTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates an instance implementing LargeCollection. Subclass implements this
      * to create a specific type of LargeCollection.
      */
     abstract public LargeCollection createLargeCollection() throws Exception;
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests sizeAsLong().
      */
@@ -76,7 +76,7 @@ public abstract class AbstractLargeCollectionTest extends TestCase
         assertTrue("Should have the correct number of elements", testLargeCollection.sizeAsLong() == (long)listSize);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests getModificationCount().
      */

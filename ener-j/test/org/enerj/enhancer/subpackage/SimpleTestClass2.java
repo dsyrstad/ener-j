@@ -31,7 +31,7 @@ public class SimpleTestClass2
 {
     private int mInt;
 
-    //----------------------------------------------------------------------
+
     public SimpleTestClass2()
     {
     }

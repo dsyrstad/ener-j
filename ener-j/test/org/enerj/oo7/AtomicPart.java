@@ -43,7 +43,7 @@ public class AtomicPart extends DesignObj
         this.docId = docId;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the docId.
      *
@@ -54,7 +54,7 @@ public class AtomicPart extends DesignObj
         return docId;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets AtomicPart.java.
      *
@@ -65,7 +65,7 @@ public class AtomicPart extends DesignObj
         docId = someDocId;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the from.
      *
@@ -76,7 +76,7 @@ public class AtomicPart extends DesignObj
         return from;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets AtomicPart.java.
      *
@@ -87,7 +87,7 @@ public class AtomicPart extends DesignObj
         from = someFrom;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the partOf.
      *
@@ -98,7 +98,7 @@ public class AtomicPart extends DesignObj
         return partOf;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets AtomicPart.java.
      *
@@ -109,7 +109,7 @@ public class AtomicPart extends DesignObj
         partOf = somePartOf;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the to.
      *
@@ -120,7 +120,7 @@ public class AtomicPart extends DesignObj
         return to;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets to.
      *
@@ -131,7 +131,7 @@ public class AtomicPart extends DesignObj
         to = someTo;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the x.
      *
@@ -142,7 +142,7 @@ public class AtomicPart extends DesignObj
         return x;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets X.
      *
@@ -153,7 +153,7 @@ public class AtomicPart extends DesignObj
         x = someX;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the y.
      *
@@ -164,7 +164,7 @@ public class AtomicPart extends DesignObj
         return y;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets AtomicPart.java.
      *

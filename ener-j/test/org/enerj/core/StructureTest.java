@@ -39,19 +39,19 @@ import junit.framework.TestSuite;
 public class StructureTest extends TestCase
 {
 
-    //----------------------------------------------------------------------
+
     public StructureTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(StructureTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests hashCode and equals.
      */
@@ -89,7 +89,7 @@ public class StructureTest extends TestCase
         assertFalse( struct2.equals(struct1) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests compareTo.
      */
@@ -161,7 +161,7 @@ public class StructureTest extends TestCase
         assertTrue(struct2.compareTo(struct1) < 0);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests clone.
      */
@@ -195,7 +195,7 @@ public class StructureTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests getMemberNames/Values.
      */

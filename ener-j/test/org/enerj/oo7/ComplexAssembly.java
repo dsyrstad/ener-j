@@ -37,7 +37,7 @@ public class ComplexAssembly extends Assembly
         this.module = module;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the module.
      *
@@ -48,7 +48,7 @@ public class ComplexAssembly extends Assembly
         return module;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets ComplexAssembly.java.
      *
@@ -59,7 +59,7 @@ public class ComplexAssembly extends Assembly
         module = someModule;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the subAssemblies.
      *
@@ -70,7 +70,7 @@ public class ComplexAssembly extends Assembly
         return subAssemblies;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets ComplexAssembly.java.
      *

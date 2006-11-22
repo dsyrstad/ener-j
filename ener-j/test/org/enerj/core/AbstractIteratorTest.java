@@ -42,13 +42,13 @@ import org.enerj.core.*;
  */
 public abstract class AbstractIteratorTest extends TestCase
 {
-    //----------------------------------------------------------------------
+
     public AbstractIteratorTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates an instance of a Collection that will be used to test the Iterator.
      * The returned collection is passed to createIterator to generate the Iterator
@@ -62,7 +62,7 @@ public abstract class AbstractIteratorTest extends TestCase
      */
     abstract public Collection createIteratorCollection(Collection aCollection) throws Exception;
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates an Iterator based on aCollection (a Collection instance returned
      * by createIteratorCollection).
@@ -74,7 +74,7 @@ public abstract class AbstractIteratorTest extends TestCase
      */
     abstract public Iterator createIterator(Collection aCollection) throws Exception;
     
-    //----------------------------------------------------------------------
+
     /**
      * Check if iterator supports remove().
      *
@@ -83,7 +83,7 @@ public abstract class AbstractIteratorTest extends TestCase
      */
     abstract public boolean supportsRemove();
     
-    //----------------------------------------------------------------------
+
     /**
      * Checks the iterator against a list of known objects. Iterator does
      * not have to be in the order of the list.
@@ -111,7 +111,7 @@ public abstract class AbstractIteratorTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Method to run all tests. Can be used with "new IteratorTest("runAllTests").runBare()" 
      * to test an Iterator from another test method.
@@ -122,7 +122,7 @@ public abstract class AbstractIteratorTest extends TestCase
         testRemove();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests hasNext(), next(). Not final so ListIterator can override.
      */
@@ -138,7 +138,7 @@ public abstract class AbstractIteratorTest extends TestCase
         checkIterator(iterator, list);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests remove().
      */

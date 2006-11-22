@@ -38,25 +38,25 @@ import org.enerj.core.Persistable;
  */
 public class OptionsTest extends TestCase 
 {
-    //----------------------------------------------------------------------
+
     public OptionsTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(OptionsTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(OptionsTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test that a warning is generated when no classes are enhanced.
      */
@@ -69,7 +69,7 @@ public class OptionsTest extends TestCase
         assertNull(lastException);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test that zero metadata files specified generates an error.
      */
@@ -81,7 +81,7 @@ public class OptionsTest extends TestCase
         assertTrue("No metadata files should generate error", returnCode != 0);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test --help.
      */
@@ -91,7 +91,7 @@ public class OptionsTest extends TestCase
         assertTrue("--help should generate error return code", returnCode != 0);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test no options.
      */
@@ -101,7 +101,7 @@ public class OptionsTest extends TestCase
         assertTrue("no options should generate error return code", returnCode != 0);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test invalid options.
      */
@@ -114,7 +114,7 @@ public class OptionsTest extends TestCase
         assertTrue("Missing --outdir param should generate error return code", returnCode != 0);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test nonexistent metadata file.
      */
@@ -129,7 +129,7 @@ public class OptionsTest extends TestCase
             cause.getMessage().indexOf(badFileName) >= 0);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests multiple metadata files.
      */
@@ -143,8 +143,8 @@ public class OptionsTest extends TestCase
         Persistable p3 = (Persistable)(Object)new org.enerj.enhancer.OptionsTest.TestClass3();
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Options.
      */
@@ -152,14 +152,14 @@ public class OptionsTest extends TestCase
     {
         private int mInt;
 
-        //----------------------------------------------------------------------
+
         TestClass()
         {
         }
     }   
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Options.
      */
@@ -167,14 +167,14 @@ public class OptionsTest extends TestCase
     {
         private int mInt;
 
-        //----------------------------------------------------------------------
+
         TestClass2()
         {
         }
     }   
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Options.
      */
@@ -182,7 +182,7 @@ public class OptionsTest extends TestCase
     {
         private int mInt;
 
-        //----------------------------------------------------------------------
+
         TestClass3()
         {
         }

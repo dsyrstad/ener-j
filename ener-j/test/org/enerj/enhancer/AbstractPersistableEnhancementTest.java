@@ -52,13 +52,13 @@ abstract class AbstractPersistableEnhancementTest extends TestCase
 {
     private static boolean sEnhanced = false;
     
-    //----------------------------------------------------------------------
+
     public AbstractPersistableEnhancementTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Check fields and methods.
      *
@@ -147,7 +147,7 @@ abstract class AbstractPersistableEnhancementTest extends TestCase
         assertTrue("Expected all method names to match", matches == anExpectedMethodsArray.length);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Make sure proper basic enhancement was done for fields and methods.
      *
@@ -184,7 +184,7 @@ abstract class AbstractPersistableEnhancementTest extends TestCase
         checkClone(aTestClass);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Make sure proper basic enhancement was done for fields and methods.
      *
@@ -278,7 +278,7 @@ abstract class AbstractPersistableEnhancementTest extends TestCase
         assertTrue("Expected written object and read object to be equal", persistable.equals(persistable2));
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Test clone if class implements it. NTLPTestClass1 and TLPTestClass1
      * implement Cloneable. The parent of NTLPTestClass1 does not.

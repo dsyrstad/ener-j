@@ -39,25 +39,25 @@ import junit.framework.TestSuite;
 public class LockSchedulerTest extends AbstractLockServerTest
 {
     
-    //----------------------------------------------------------------------
+
     public LockSchedulerTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args)
     {
         junit.swingui.TestRunner.run(LockSchedulerTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(LockSchedulerTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     protected Properties getWaitsForProperties()
     {
         Properties props = new Properties( System.getProperties() );
@@ -66,7 +66,7 @@ public class LockSchedulerTest extends AbstractLockServerTest
         return props;
     }
         
-    //----------------------------------------------------------------------
+
     protected Properties getTimestampProperties()
     {
         Properties props = new Properties( System.getProperties() );
@@ -75,7 +75,7 @@ public class LockSchedulerTest extends AbstractLockServerTest
         return props;
     }
     
-    //----------------------------------------------------------------------
+
     protected String getLockServerClassName()
     {
         return LockScheduler.class.getName();

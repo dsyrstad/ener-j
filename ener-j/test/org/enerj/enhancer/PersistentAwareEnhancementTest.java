@@ -44,25 +44,25 @@ public class PersistentAwareEnhancementTest extends TestCase
 {
     private static final String DATABASE_URI = "enerj://root:root@-/PersistentAwareTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
 
-    //----------------------------------------------------------------------
+
     public PersistentAwareEnhancementTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(PersistentAwareEnhancementTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(PersistentAwareEnhancementTest.class);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Make sure proper basic enhancement was done.
      *
@@ -102,7 +102,7 @@ public class PersistentAwareEnhancementTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Make sure proper getfield/putfield enhancement was done.
      *

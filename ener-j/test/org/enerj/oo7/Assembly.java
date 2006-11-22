@@ -33,7 +33,7 @@ public class Assembly extends DesignObj
         super(id, buildDate);
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Gets the superAssembly.
      *
@@ -44,7 +44,7 @@ public class Assembly extends DesignObj
         return superAssembly;
     }
 
-    //--------------------------------------------------------------------------------
+
     /**
      * Sets Assembly.java.
      *

@@ -41,19 +41,19 @@ import junit.framework.TestSuite;
  */
 public class StringifierTest extends TestCase 
 {
-    //----------------------------------------------------------------------
+
     public StringifierTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args)
     {
         junit.swingui.TestRunner.run(StringifierTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(StringifierTest.class);
@@ -92,8 +92,8 @@ public class StringifierTest extends TestCase
         assertEquals("sub-class false, false", StringUtil.toString(s, false, false), "org.enerj.util.StringifierTest$TestSubClass{subClassField=\"Subclass field\", .intField=5, .boolField=true, .strField=\"A String\", .integerField=5, .list=java.util.Arrays$ArrayList[2, \"A String in list\", 3], .map=java.util.HashMap{[key=\"Key1\", value=\"Value1\"], [key=\"Key2\", value=\"Value2\"]}, .strArray=[\"ArrayStr1\", \"ArrayStr2\", \"ArrayStr3\"], .nullObj=null}");
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     private static class TestClass
     {
         private int intField = 5;
@@ -113,8 +113,8 @@ public class StringifierTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     private static class TestSubClass extends TestClass 
     {
         private String subClassField = "Subclass field"; 

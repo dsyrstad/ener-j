@@ -45,25 +45,25 @@ public class SchemaTest extends TestCase
 {
     private static final String DATABASE_URI = "enerj://root:root@-/SchemaTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
     
-    //----------------------------------------------------------------------
+
     public SchemaTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(SchemaTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(SchemaTest.class);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests DatabaseRoot.
      */
@@ -79,7 +79,7 @@ public class SchemaTest extends TestCase
 
         DatabaseRoot root = db.getDatabaseRoot();
         
-        //----------------------------------------------------------------------
+
         // Test creation date
         // Sleep a bit so we're sure current time exceeds creation time
         try {  Thread.sleep(2L);  }  catch (Exception e) { }
@@ -88,7 +88,7 @@ public class SchemaTest extends TestCase
         Date anHourAgo = new Date( now.getTime() - (60L * 60L * 1000L) );
         assertTrue("Creation date should after a reasonable date", root.getCreationDate().after(anHourAgo) );
         
-        //----------------------------------------------------------------------
+
         // Test get/setDescription()
         final String desc = "A Database description";
         assertTrue("Current description should not be test description", !root.getDescription().equals(desc) );
@@ -96,7 +96,7 @@ public class SchemaTest extends TestCase
         root.setDescription(desc);
         assertTrue("Description should be test description", root.getDescription().equals(desc) );
         
-        //----------------------------------------------------------------------
+
         // Test getSchema().
         assertNotNull("Schema should be non-null", root.getSchema() );
         
@@ -104,7 +104,7 @@ public class SchemaTest extends TestCase
         db.close();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests Schema.
      */
@@ -120,7 +120,7 @@ public class SchemaTest extends TestCase
 
         Schema schema = db.getDatabaseRoot().getSchema();
         
-        //----------------------------------------------------------------------
+
         // Test creation date
         // Sleep a bit so we're sure current time exceeds creation time
         try {  Thread.sleep(2L);  }  catch (Exception e) { }
@@ -129,7 +129,7 @@ public class SchemaTest extends TestCase
         Date anHourAgo = new Date( now.getTime() - (60L * 60L * 1000L) );
         assertTrue("Creation date should after a reasonable date", schema.getCreationDate().after(anHourAgo) );
         
-        //----------------------------------------------------------------------
+
         // Test get/setDescription()
         final String desc = "A Schema description";
         assertTrue("Current description should not be test description", !schema.getDescription().equals(desc) );
@@ -137,7 +137,7 @@ public class SchemaTest extends TestCase
         schema.setDescription(desc);
         assertTrue("Description should be test description", schema.getDescription().equals(desc) );
 
-        //----------------------------------------------------------------------
+
         // Test addLogicalClass(), findLogicalClass().
         final String classPrefix = "org.enerj.somepkg.Class";
         final int numLogical = 10;
@@ -166,7 +166,7 @@ public class SchemaTest extends TestCase
         txn.flush();
         
 
-        //----------------------------------------------------------------------
+
         // Test getLogicalClasses().
         Iterator iterator = schema.getLogicalClasses().iterator();
         boolean[] checkList = new boolean[numLogical];
@@ -196,7 +196,7 @@ public class SchemaTest extends TestCase
         assertTrue("Number found should be correct", numFound == numLogical);
         assertTrue("TestClass should have been found", testClassFound);
         
-        //----------------------------------------------------------------------
+
         // Test removeLogicalClass().
         for (int i = 0; i < numLogical; i++) {
             schema.removeLogicalClass(classPrefix + i);
@@ -226,7 +226,7 @@ public class SchemaTest extends TestCase
 
         assertTrue("Test class should exist", found);
 
-        //----------------------------------------------------------------------
+
         // Test findClassVersion() and allocateClassId().
         LogicalClassSchema logicalClass = new LogicalClassSchema(schema, this.getClass().getName(), "");
         long cid = ObjectSerializer.LAST_SYSTEM_CID + 99938;
@@ -245,7 +245,7 @@ public class SchemaTest extends TestCase
         db.close();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests LogicalClassSchema.
      */
@@ -261,7 +261,7 @@ public class SchemaTest extends TestCase
 
         Schema schema = db.getDatabaseRoot().getSchema();
 
-        //----------------------------------------------------------------------
+
         // Test creation date
         LogicalClassSchema logicalClass = schema.findLogicalClass("org.enerj.core.SchemaTest$TestClass");
         // Sleep a bit so we're sure current time exceeds creation time
@@ -271,7 +271,7 @@ public class SchemaTest extends TestCase
         Date anHourAgo = new Date( now.getTime() - (60L * 60L * 1000L) );
         assertTrue("Creation date should after a reasonable date", logicalClass.getCreationDate().after(anHourAgo) );
 
-        //----------------------------------------------------------------------
+
         // Test get/setDescription()
         final String desc = "A Class description";
         assertTrue("Current description should not be test description", !logicalClass.getDescription().equals(desc) );
@@ -279,15 +279,15 @@ public class SchemaTest extends TestCase
         logicalClass.setDescription(desc);
         assertTrue("Description should be test description", logicalClass.getDescription().equals(desc) );
 
-        //----------------------------------------------------------------------
+
         // Test getSchema()
         assertTrue("Schema should match", logicalClass.getSchema() == schema);
         
-        //----------------------------------------------------------------------
+
         // Test getClassName()
         assertTrue("Class name should match", logicalClass.getClassName().equals("org.enerj.core.SchemaTest$TestClass") );
         
-        //----------------------------------------------------------------------
+
         // Test addVersion()
 
         logicalClass = new LogicalClassSchema(schema, "VersionTest", "");
@@ -316,7 +316,7 @@ public class SchemaTest extends TestCase
             }
         }
 
-        //----------------------------------------------------------------------
+
         // Test getVersions()
         ClassVersionSchema[] versions = logicalClass.getVersions();
         for (int i = 0; i < numVersions; i++) {
@@ -325,7 +325,7 @@ public class SchemaTest extends TestCase
         
         assertTrue("No Versions should exist", logicalClass2.getVersions().length == 0);
         
-        //----------------------------------------------------------------------
+
         // Test findVersion()
         for (int i = 0; i < numVersions; i++) {
             ClassVersionSchema version = logicalClass.findVersion(cids[i]);
@@ -335,14 +335,14 @@ public class SchemaTest extends TestCase
         long missingCID = ObjectSerializer.LAST_SYSTEM_CID - 1;
         assertNull("CID should not exist", logicalClass.findVersion(missingCID) );
 
-        //----------------------------------------------------------------------
+
         // Test getLatestVersion()
         ClassVersionSchema version = logicalClass.getLatestVersion();
         assertTrue("Version CID should match", version.getClassId() == cids[ numVersions - 1] );
         
         assertNull("No versions should exist", logicalClass2.getLatestVersion() );
 
-        //----------------------------------------------------------------------
+
         // Test removeVersion()
         for (int i = 0; i < numVersions; i++) {
             logicalClass.removeVersion(cids[i]);
@@ -367,7 +367,7 @@ public class SchemaTest extends TestCase
         db.close();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests ClassVersionSchema.
      */
@@ -392,7 +392,7 @@ public class SchemaTest extends TestCase
             new String[] { "W", "X", "Y", "Z" } );
         logicalClass.addVersion(version);
 
-        //----------------------------------------------------------------------
+
         // Test creation date
         // Sleep a bit so we're sure current time exceeds creation time
         try {  Thread.sleep(1000L);  }  catch (Exception e) { }
@@ -401,28 +401,28 @@ public class SchemaTest extends TestCase
         Date anHourAgo = new Date( now.getTime() - (60L * 60L * 1000L) );
         assertTrue("Creation date should after a reasonable date", version.getCreationDate().after(anHourAgo) );
 
-        //----------------------------------------------------------------------
+
         // Test getClassId()
         assertTrue("CID should match", version.getClassId() == versionCID);
 
-        //----------------------------------------------------------------------
+
         // Test getLogicalClassSchema()
         assertTrue("LogicalClass should match", version.getLogicalClassSchema() == logicalClass);
         
-        //----------------------------------------------------------------------
+
         // Test getOriginalBytecodes()
         byte[] bytecodes = version.getOriginalBytecodes();
         assertTrue("Original bytecodes should match", bytecodes.length == 1);
         assertTrue("byte[0] should match", bytecodes[0] == 0x01);
         
-        //----------------------------------------------------------------------
+
         // Test getEnhancedBytecodes()
         bytecodes = version.getEnhancedBytecodes();
         assertTrue("Enhanced bytecodes should match", bytecodes.length == 2);
         assertTrue("byte[0] should match", bytecodes[0] == 0x02);
         assertTrue("byte[1] should match", bytecodes[1] == 0x03);
         
-        //----------------------------------------------------------------------
+
         // Test getPersistentFieldNames()
         String[] fieldNames = version.getPersistentFieldNames();
         assertTrue("Field names should match", fieldNames.length == 3);
@@ -430,7 +430,7 @@ public class SchemaTest extends TestCase
         assertTrue("fieldNames[1] should match", fieldNames[1].equals("B") );
         assertTrue("fieldNames[2] should match", fieldNames[2].equals("C") );
         
-        //----------------------------------------------------------------------
+
         // Test getTransientFieldNames()
         fieldNames = version.getTransientFieldNames();
         assertTrue("Field names should match", fieldNames.length == 4);
@@ -439,7 +439,7 @@ public class SchemaTest extends TestCase
         assertTrue("fieldNames[2] should match", fieldNames[2].equals("Y") );
         assertTrue("fieldNames[3] should match", fieldNames[3].equals("Z") );
         
-        //----------------------------------------------------------------------
+
         // Test get/setProxyBytecodes()
         assertNull("Current proxy bytecodes should be null", version.getProxyBytecodes() );
         version.setProxyBytecodes(new byte[] { 0x0a, 0x0b, 0x0c });
@@ -457,26 +457,26 @@ public class SchemaTest extends TestCase
         db.close();
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     private static class TestClass
     {
         private int mValue;
         
-        //----------------------------------------------------------------------
+
         TestClass(int aValue)
         {
             mValue = aValue;
         }
             
-        //----------------------------------------------------------------------
+
         int getValue()
         {
             return mValue;
         }
 
-        //----------------------------------------------------------------------
+
         void setValue(int aValue)
         {
             mValue = aValue;

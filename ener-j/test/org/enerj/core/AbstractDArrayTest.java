@@ -37,13 +37,13 @@ import org.odmg.DArray;
  */
 public abstract class AbstractDArrayTest extends AbstractListTest
 {
-    //----------------------------------------------------------------------
+
     public AbstractDArrayTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests resize(int).
      */

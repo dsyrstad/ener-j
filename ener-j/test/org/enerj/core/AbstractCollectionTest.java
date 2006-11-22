@@ -47,20 +47,20 @@ import org.enerj.core.*;
  */
 abstract public class AbstractCollectionTest extends TestCase
 {
-    //----------------------------------------------------------------------
+
     public AbstractCollectionTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Creates an instance implementing Collection. Subclass implements this
      * to create a specific type of Collection.
      */
     abstract public Collection createCollection() throws Exception;
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests add(Object), clear(), size(), and contains().
      */
@@ -82,7 +82,7 @@ abstract public class AbstractCollectionTest extends TestCase
         assertTrue("Should have zero elements", testCollection.size() == 0);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests addAll(Collection).
      */
@@ -104,7 +104,7 @@ abstract public class AbstractCollectionTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests containsAll(Collection).
      */
@@ -129,7 +129,7 @@ abstract public class AbstractCollectionTest extends TestCase
         assertTrue("Should contain proper elements", testCollection.containsAll(list) );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests isEmpty().
      */
@@ -144,7 +144,7 @@ abstract public class AbstractCollectionTest extends TestCase
         assertTrue("Should not be empty", !testCollection.isEmpty() );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests iterator(). 
      */
@@ -168,7 +168,7 @@ abstract public class AbstractCollectionTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests remove(Object).
      */
@@ -198,7 +198,7 @@ abstract public class AbstractCollectionTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests removeAll(Collection).
      */
@@ -230,7 +230,7 @@ abstract public class AbstractCollectionTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests retainAll(Collection).
      */
@@ -261,7 +261,7 @@ abstract public class AbstractCollectionTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests toArray() and toArray(Object[]).
      */
@@ -289,7 +289,7 @@ abstract public class AbstractCollectionTest extends TestCase
         checkArray(array2, checkList2);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Helper for testToArray. Checks the result of toArray() against the aCheckList.
      * Elements of aCheckList are nulled on return.
@@ -317,20 +317,20 @@ abstract public class AbstractCollectionTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Tests Collection.iterator().
      */
     private class CollectionIteratorTest extends AbstractIteratorTest
     {
-        //----------------------------------------------------------------------
+
         public CollectionIteratorTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public Collection createIteratorCollection(Collection aCollection) throws Exception
         {
             Collection collection = createCollection();
@@ -338,13 +338,13 @@ abstract public class AbstractCollectionTest extends TestCase
             return collection;
         }
 
-        //----------------------------------------------------------------------
+
         public Iterator createIterator(Collection aCollection) throws Exception
         {
             return aCollection.iterator();
         }
 
-        //----------------------------------------------------------------------
+
         public boolean supportsRemove()
         {
             return true;

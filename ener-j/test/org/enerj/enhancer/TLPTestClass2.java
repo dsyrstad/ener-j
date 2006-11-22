@@ -34,7 +34,7 @@ class TLPTestClass2 extends java.util.Date
     private static int sSomeValue = 5;  // not persistent
     private int mValue;
     
-    //----------------------------------------------------------------------
+
     TLPTestClass2(boolean useToday)
     {
         // Generate some significant byte code before invoking superclass constructor.
@@ -43,14 +43,14 @@ class TLPTestClass2 extends java.util.Date
     }
     
     
-    //----------------------------------------------------------------------
+
     public void someMethod()
     {
         mValue = 22;
         sSomeValue = 23;
     }
 
-    //----------------------------------------------------------------------
+
     public boolean equals(Object anObject)
     {
         if (!(anObject instanceof TLPTestClass2)) {

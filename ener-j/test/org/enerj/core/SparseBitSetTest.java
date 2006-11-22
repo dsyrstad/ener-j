@@ -43,19 +43,19 @@ public class SparseBitSetTest extends TestCase
 {
     private static final int TEST_NODE_SIZE = 10;
 
-    //----------------------------------------------------------------------
+
     public static void main(String[] args)
     {
         junit.swingui.TestRunner.run(SparseBitSetTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(SparseBitSetTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests set(idx, true/false) randomly across the whole set.
      * Also tests the iterator against the same set.
@@ -104,7 +104,7 @@ public class SparseBitSetTest extends TestCase
         System.out.println("getNumBitsSet on small non-sparse set of 1 took " + duration + " ms");
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests set(idx, true/false) randomly across the whole set in random access order.
      */
@@ -140,7 +140,7 @@ public class SparseBitSetTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests set(idx) on all bits and the randomly clear(idx) across the whole set.
      */
@@ -180,7 +180,7 @@ public class SparseBitSetTest extends TestCase
         assertEquals(numBitsSet, bitset.getNumBitsSet() );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests large sparse set with only one bit set and tries to use an
      * index that's only valid as a long. Also validates that an exception is
@@ -236,7 +236,7 @@ public class SparseBitSetTest extends TestCase
 
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests isClear(), which indirectly tests the fact that cleared nodes are removed.
      * Tests getMaxSize().

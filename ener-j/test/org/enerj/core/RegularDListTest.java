@@ -42,19 +42,19 @@ import org.enerj.core.*;
  */
 public class RegularDListTest extends TestCase
 {
-    //----------------------------------------------------------------------
+
     public RegularDListTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(RegularDListTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         TestSuite suite = new TestSuite(RegularDListTest.class);
@@ -65,7 +65,7 @@ public class RegularDListTest extends TestCase
         return suite;
     }
     
-    //----------------------------------------------------------------------
+
     /*
      * You can have additional methods here..... 
      */
@@ -74,23 +74,23 @@ public class RegularDListTest extends TestCase
         // Placeholder until a specific test is added.
     }
 
-    //----------------------------------------------------------------------
+
     // Inner classes used to test interfaces and abstract classes.
-    //----------------------------------------------------------------------
+
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests DList interface of RegularDList.
      */
     public static final class InternalDListTest extends AbstractDListTest
     {
-        //----------------------------------------------------------------------
+
         public InternalDListTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public Collection createCollection() throws Exception
         {
             return new RegularDList();
@@ -98,19 +98,19 @@ public class RegularDListTest extends TestCase
     }
     
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests QueryableCollection interface of RegularDList.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
-        //----------------------------------------------------------------------
+
         public InternalQueryableCollectionTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public QueryableCollection createQueryableCollection() throws Exception
         {
             return new RegularDList();

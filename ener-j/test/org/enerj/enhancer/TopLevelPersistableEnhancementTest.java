@@ -43,25 +43,25 @@ public class TopLevelPersistableEnhancementTest extends AbstractPersistableEnhan
 {
     private static final String DATABASE_URI = "enerj://root:root@-/TLPETestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
     
-    //----------------------------------------------------------------------
+
     public TopLevelPersistableEnhancementTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(TopLevelPersistableEnhancementTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(TopLevelPersistableEnhancementTest.class);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Make sure proper basic enhancement was done for fields and methods.
      *
@@ -92,7 +92,7 @@ public class TopLevelPersistableEnhancementTest extends AbstractPersistableEnhan
         checkCommonEnhancement(aTestClass, expectedFields, expectedMethods, checkNew, aPersistentSize);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Make sure proper basic enhancement was done.
      *
@@ -113,7 +113,7 @@ public class TopLevelPersistableEnhancementTest extends AbstractPersistableEnhan
         checkFieldsAndMethods(PETestClass2.class, (String[])fields.clone(), (String[])methods.clone());
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test that the "new" flag is set on instantiation.
      *
@@ -146,7 +146,7 @@ public class TopLevelPersistableEnhancementTest extends AbstractPersistableEnhan
         assertTrue("Expected it to be not new and not modified", !persistable.enerj_IsNew() && !persistable.enerj_IsModified());
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test instantiation via TLPTestClass3(EnerJDatabase) constructor. The default constructor
      * of TLPTestClass3 should be used because its superclass does not have an
@@ -172,7 +172,7 @@ public class TopLevelPersistableEnhancementTest extends AbstractPersistableEnhan
         assertTrue("Expected it to be not modified", !persistable.enerj_IsModified() );
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Test missing no-arg constructor on superclass and the persistable class.
      * Should be a runtime error.

@@ -29,7 +29,7 @@ package org.enerj.enhancer.subpackage;
  */
 public interface SimpleTestInterface
 {
-    //----------------------------------------------------------------------
+
     public void someInterfaceMethod();
 }   
 

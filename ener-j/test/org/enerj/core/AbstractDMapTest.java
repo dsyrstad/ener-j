@@ -44,13 +44,13 @@ import org.enerj.core.*;
  */
 public abstract class AbstractDMapTest extends AbstractMapTest
 {
-    //----------------------------------------------------------------------
+
     public AbstractDMapTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Placeholder.
      */

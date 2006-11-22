@@ -32,20 +32,20 @@ class TLPTestClass1 implements Cloneable
     private static int sSomeValue = 5;  // not persistent
     private int mValue;
     
-    //----------------------------------------------------------------------
+
     TLPTestClass1(int aValue)
     {
         mValue = aValue;
     }
     
-    //----------------------------------------------------------------------
+
     public void someMethod()
     {
         mValue = 22;
         sSomeValue = 23;
     }
 
-    //----------------------------------------------------------------------
+
     public boolean equals(Object anObject)
     {
         if (!(anObject instanceof TLPTestClass1)) {
@@ -56,7 +56,7 @@ class TLPTestClass1 implements Cloneable
         return this.mValue == obj.mValue;
     }
 
-    //----------------------------------------------------------------------
+
     public Object clone() throws CloneNotSupportedException
     {
         TLPTestClass1 clone = (TLPTestClass1)super.clone();

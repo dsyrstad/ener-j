@@ -38,25 +38,25 @@ public class OQLLexerTest extends TestCase
 {
     private OQLLexer mLexer;
     
-    //----------------------------------------------------------------------
+
     public OQLLexerTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args)
     {
         junit.swingui.TestRunner.run(OQLLexerTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(OQLLexerTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Asserts that the next token from mLexer meets the given criteria.
      *
@@ -82,7 +82,7 @@ public class OQLLexerTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Asserts that the next token from mLexer meets the given criteria.
      *
@@ -99,7 +99,7 @@ public class OQLLexerTest extends TestCase
         assertTokenEquals(token, aTokenType, aValue, aLineNumber, aColumn);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests all valid tokens.
      */
@@ -167,7 +167,7 @@ public class OQLLexerTest extends TestCase
         assertNextTokenEquals(OQLTokens.TOK_EOF, null, 4, 4);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests ignored items like whitespace and comments.
      */
@@ -190,7 +190,7 @@ public class OQLLexerTest extends TestCase
         assertNextTokenEquals(OQLTokens.TOK_EOF, null, 8, 1);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests look ahead.
      */
@@ -234,7 +234,7 @@ public class OQLLexerTest extends TestCase
         assertNextTokenEquals(OQLTokens.TOK_EOF, null, -1, -1);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests ParserExceptions.
      */
@@ -373,7 +373,7 @@ public class OQLLexerTest extends TestCase
 
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests valid escape sequences in strings and characters.
      */
@@ -391,7 +391,7 @@ public class OQLLexerTest extends TestCase
         assertNextTokenEquals(OQLTokens.TOK_CHAR_LITERAL, "\u0040", -1, -1);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests non-nested mark()/resetToMark().
      */
@@ -428,7 +428,7 @@ public class OQLLexerTest extends TestCase
         assertNextTokenEquals(OQLTokens.TOK_EOF, null, -1, -1);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests nested mark()/resetToMark().
      */
@@ -473,7 +473,7 @@ public class OQLLexerTest extends TestCase
         assertNextTokenEquals(OQLTokens.TOK_EOF, null, -1, -1);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests mark()/clearMark().
      */

@@ -43,13 +43,13 @@ import org.enerj.core.*;
  */
 public abstract class AbstractSortedSetTest extends AbstractSetTest
 {
-    //----------------------------------------------------------------------
+
     public AbstractSortedSetTest(String aName) 
     {
         super(aName);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests comparator().
      */
@@ -62,7 +62,7 @@ public abstract class AbstractSortedSetTest extends AbstractSetTest
         Comparator comparator = testSortedSet.comparator();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests first().
      */
@@ -78,7 +78,7 @@ public abstract class AbstractSortedSetTest extends AbstractSetTest
         assertTrue("Should be first element", testSortedSet.first().equals( new CollectionTestObject("Obj1") ) );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests headSet().
      */
@@ -102,7 +102,7 @@ public abstract class AbstractSortedSetTest extends AbstractSetTest
         
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests last().
      */
@@ -119,7 +119,7 @@ public abstract class AbstractSortedSetTest extends AbstractSetTest
         assertTrue("Should be last element", testSortedSet.last().equals( new CollectionTestObject("Obj4") ) );
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests subSet().
      */
@@ -146,7 +146,7 @@ public abstract class AbstractSortedSetTest extends AbstractSetTest
         
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests tailSet().
      */

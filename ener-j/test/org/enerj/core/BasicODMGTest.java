@@ -44,25 +44,25 @@ public class BasicODMGTest extends TestCase
 {
     private static final String DATABASE_URI = "enerj://root:root@-/BasicODMGTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
     
-    //----------------------------------------------------------------------
+
     public BasicODMGTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args)
     {
         junit.swingui.TestRunner.run(BasicODMGTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(BasicODMGTest.class);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests Database.bind(), unbind(), lookup().
      */
@@ -87,7 +87,7 @@ public class BasicODMGTest extends TestCase
             db.close();
         }
 
-        //------------------------------------------------------------------------------------
+
         db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
 
         txn = impl.newTransaction();
@@ -104,7 +104,7 @@ public class BasicODMGTest extends TestCase
             db.close();
         }
 
-        //------------------------------------------------------------------------------------
+
         Database db2 = impl.newDatabase();
         db2.open(DATABASE_URI, Database.OPEN_READ_WRITE);
 
@@ -122,7 +122,7 @@ public class BasicODMGTest extends TestCase
             db2.close();
         }
 
-        //------------------------------------------------------------------------------------
+
         db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
 
         txn = impl.newTransaction();
@@ -146,7 +146,7 @@ public class BasicODMGTest extends TestCase
             db.close();
         }
 
-        //------------------------------------------------------------------------------------
+
         db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
 
         txn = impl.newTransaction();
@@ -165,7 +165,7 @@ public class BasicODMGTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests a do-nothing transaction open/begin/commit(or abort)/close.
      * Tests empty interal commit/abort object lists.
@@ -194,7 +194,7 @@ public class BasicODMGTest extends TestCase
         db.close();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests starting a transaction with an unopened Database.
      */
@@ -228,7 +228,7 @@ public class BasicODMGTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests closing a Database with an open transaction.
      */
@@ -254,26 +254,26 @@ public class BasicODMGTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     private static class TestClass1
     {
         private int mValue;
         
-        //----------------------------------------------------------------------
+
         TestClass1(int aValue)
         {
             mValue = aValue;
         }
             
-        //----------------------------------------------------------------------
+
         int getValue()
         {
             return mValue;
         }
 
-        //----------------------------------------------------------------------
+
         void setValue(int aValue)
         {
             mValue = aValue;

@@ -24,13 +24,13 @@ public class HtmlViewer
 
     private Exception mLastPageException;
 
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) throws Exception
     {
         new HtmlViewer("http://www.google.com");
     }
     
-    //----------------------------------------------------------------------
+
     /**
      */
     public HtmlViewer(String anUrl) throws IOException 
@@ -61,7 +61,7 @@ public class HtmlViewer
         mFrame.setVisible(true);
     }
 
-    //----------------------------------------------------------------------
+
     private void setUrlString(String aUrlString)
     {
         mLastPageException = null;
@@ -77,7 +77,7 @@ public class HtmlViewer
         finishPageOpen(aUrlString);
     }
 
-    //----------------------------------------------------------------------
+
     private void openPage(Object aParam)
     {
         String aUrlString = (String)aParam;
@@ -94,7 +94,7 @@ public class HtmlViewer
         }
     }
 
-    //----------------------------------------------------------------------
+
     private void finishPageOpen(Object aParam)
     {
         String aUrlString = (String)aParam;
@@ -106,8 +106,8 @@ public class HtmlViewer
 
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     private class ChangeUrlAction implements ActionListener
     {
         public void actionPerformed(ActionEvent anEvent)
@@ -117,19 +117,19 @@ public class HtmlViewer
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Listens for hyperlink events
      */
     private class Hyperactive implements HyperlinkListener 
     {
-        //----------------------------------------------------------------------
+
         Hyperactive() 
         {
         }
 
-        //----------------------------------------------------------------------
+
         public void hyperlinkUpdate(HyperlinkEvent e) 
         {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {

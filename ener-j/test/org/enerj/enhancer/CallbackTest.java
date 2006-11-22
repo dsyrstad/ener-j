@@ -51,25 +51,25 @@ public class CallbackTest extends TestCase
 
     private static boolean sEnhanced = false;
     
-    //----------------------------------------------------------------------
+
     public CallbackTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(CallbackTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(CallbackTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     private void checkCallbacks(Testable aTestable, boolean hasPostLoad, boolean hasPreStore, boolean hasPostStore)
         throws Exception
     {
@@ -105,7 +105,7 @@ public class CallbackTest extends TestCase
         assertTrue("enerjPostStore should not have been called", !hasPostStore || !aTestable.wasPostStoreCalled());
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Basic tests.
      */
@@ -119,8 +119,8 @@ public class CallbackTest extends TestCase
         checkCallbacks( new NTLPWithoutCallback(), false, false, false);
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Interface for testing callbacks.
      */
@@ -132,8 +132,8 @@ public class CallbackTest extends TestCase
         void reset();
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Callback on a Top-Level Persistable with a private voPreCallback
      * callback.
@@ -149,7 +149,7 @@ public class CallbackTest extends TestCase
         transient private boolean mPreStoreCalled = false;
         transient private boolean mPostStoreCalled = false;
         
-        //----------------------------------------------------------------------
+
         TLPWithPrivateCallback()
         {
             mInt = 5;
@@ -158,25 +158,25 @@ public class CallbackTest extends TestCase
             mIntArray = new int[10];
         }
         
-        //----------------------------------------------------------------------
+
         private void enerjPostLoad()
         {
             mPostLoadCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         private void enerjPreStore()
         {
             mPreStoreCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         private void enerjPostStore()
         {
             mPostStoreCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         public void reset()
         {
             mPostLoadCalled = false;
@@ -184,27 +184,27 @@ public class CallbackTest extends TestCase
             mPostStoreCalled = false;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPostLoadCalled()
         {
             return mPostLoadCalled;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPreStoreCalled()
         {
             return mPreStoreCalled;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPostStoreCalled()
         {
             return mPostStoreCalled;
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Callback on a Top-Level Persistable with a public voPreCallback
      * callback.
@@ -220,7 +220,7 @@ public class CallbackTest extends TestCase
         transient private boolean mPreStoreCalled = false;
         transient private boolean mPostStoreCalled = false;
         
-        //----------------------------------------------------------------------
+
         TLPWithPublicCallback()
         {
             mInt = 5;
@@ -229,25 +229,25 @@ public class CallbackTest extends TestCase
             mIntArray = new int[10];
         }
         
-        //----------------------------------------------------------------------
+
         public void enerjPostLoad()
         {
             mPostLoadCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         public void enerjPreStore()
         {
             mPreStoreCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         public void enerjPostStore()
         {
             mPostStoreCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         public void reset()
         {
             mPostLoadCalled = false;
@@ -255,27 +255,27 @@ public class CallbackTest extends TestCase
             mPostStoreCalled = false;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPostLoadCalled()
         {
             return mPostLoadCalled;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPreStoreCalled()
         {
             return mPreStoreCalled;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPostStoreCalled()
         {
             return mPostStoreCalled;
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Callback on a Non-Top-Level Persistable with a private voPreCallback
      * callback.
@@ -291,7 +291,7 @@ public class CallbackTest extends TestCase
         transient private boolean mPreStoreCalled = false;
         transient private boolean mPostStoreCalled = false;
         
-        //----------------------------------------------------------------------
+
         NTLPWithPrivateCallback()
         {
             mInt = 5;
@@ -300,25 +300,25 @@ public class CallbackTest extends TestCase
             mIntArray = new int[10];
         }
         
-        //----------------------------------------------------------------------
+
         private void enerjPostLoad()
         {
             mPostLoadCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         private void enerjPreStore()
         {
             mPreStoreCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         private void enerjPostStore()
         {
             mPostStoreCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         public void reset()
         {
             mPostLoadCalled = false;
@@ -326,27 +326,27 @@ public class CallbackTest extends TestCase
             mPostStoreCalled = false;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPostLoadCalled()
         {
             return super.wasPostLoadCalled() && mPostLoadCalled;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPreStoreCalled()
         {
             return super.wasPreStoreCalled() && mPreStoreCalled;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPostStoreCalled()
         {
             return super.wasPostStoreCalled() && mPostStoreCalled;
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Callback on a Non-Top-Level Persistable with a public voPreCallback
      * callback. Note that the voPreCallback callback technically overrides the super
@@ -364,7 +364,7 @@ public class CallbackTest extends TestCase
         transient private boolean mPreStoreCalled = false;
         transient private boolean mPostStoreCalled = false;
         
-        //----------------------------------------------------------------------
+
         NTLPWithPublicCallback()
         {
             mInt = 5;
@@ -373,25 +373,25 @@ public class CallbackTest extends TestCase
             mIntArray = new int[10];
         }
         
-        //----------------------------------------------------------------------
+
         public void enerjPostLoad()
         {
             mPostLoadCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         public void enerjPreStore()
         {
             mPreStoreCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         public void enerjPostStore()
         {
             mPostStoreCalled = true;
         }
 
-        //----------------------------------------------------------------------
+
         public void reset()
         {
             mPostLoadCalled = false;
@@ -399,27 +399,27 @@ public class CallbackTest extends TestCase
             mPostStoreCalled = false;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPostLoadCalled()
         {
             return super.wasPostLoadCalled() && mPostLoadCalled;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPreStoreCalled()
         {
             return super.wasPreStoreCalled() && mPreStoreCalled;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPostStoreCalled()
         {
             return super.wasPostStoreCalled() && mPostStoreCalled;
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Callback on a Top-Level Persistable without a voPreCallback
      * callback.
@@ -432,7 +432,7 @@ public class CallbackTest extends TestCase
         private String mString;
         private int[] mIntArray;
         
-        //----------------------------------------------------------------------
+
         TLPWithoutCallback()
         {
             mInt = 5;
@@ -441,32 +441,32 @@ public class CallbackTest extends TestCase
             mIntArray = new int[10];
         }
         
-        //----------------------------------------------------------------------
+
         public void reset()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPostLoadCalled()
         {
             return false;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPreStoreCalled()
         {
             return false;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPostStoreCalled()
         {
             return false;
         }
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class for Callback on a Top-Level Persistable without a voPreCallback
      * callback.
@@ -479,7 +479,7 @@ public class CallbackTest extends TestCase
         private String mString;
         private int[] mIntArray;
         
-        //----------------------------------------------------------------------
+
         NTLPWithoutCallback()
         {
             mInt = 5;
@@ -488,24 +488,24 @@ public class CallbackTest extends TestCase
             mIntArray = new int[10];
         }
         
-        //----------------------------------------------------------------------
+
         public void reset()
         {
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPostLoadCalled()
         {
             return false;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPreStoreCalled()
         {
             return false;
         }
 
-        //----------------------------------------------------------------------
+
         public boolean wasPostStoreCalled()
         {
             return false;

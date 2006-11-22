@@ -42,19 +42,19 @@ import org.enerj.core.*;
  */
 public class RegularDArrayTest extends TestCase
 {
-    //----------------------------------------------------------------------
+
     public RegularDArrayTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(RegularDArrayTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         TestSuite suite = new TestSuite(RegularDArrayTest.class);
@@ -65,7 +65,7 @@ public class RegularDArrayTest extends TestCase
         return suite;
     }
     
-    //----------------------------------------------------------------------
+
     /*
      * You can have additional methods here..... 
      */
@@ -74,23 +74,23 @@ public class RegularDArrayTest extends TestCase
         // Placeholder until a specific test is added.
     }
 
-    //----------------------------------------------------------------------
+
     // Inner classes used to test interfaces and abstract classes.
-    //----------------------------------------------------------------------
+
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests DArray interface of RegularDArray.
      */
     public static final class InternalDArrayTest extends AbstractDArrayTest
     {
-        //----------------------------------------------------------------------
+
         public InternalDArrayTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public Collection createCollection() throws Exception
         {
             return new RegularDArray();
@@ -98,19 +98,19 @@ public class RegularDArrayTest extends TestCase
     }
     
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests QueryableCollection interface of RegularDArray.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
-        //----------------------------------------------------------------------
+
         public InternalQueryableCollectionTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public QueryableCollection createQueryableCollection() throws Exception
         {
             return new RegularDArray();

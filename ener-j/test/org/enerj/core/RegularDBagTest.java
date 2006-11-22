@@ -42,19 +42,19 @@ import org.enerj.core.*;
  */
 public class RegularDBagTest extends TestCase
 {
-    //----------------------------------------------------------------------
+
     public RegularDBagTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(RegularDBagTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         TestSuite suite = new TestSuite(RegularDBagTest.class);
@@ -65,7 +65,7 @@ public class RegularDBagTest extends TestCase
         return suite;
     }
     
-    //----------------------------------------------------------------------
+
     /*
      * You can have additional methods here..... 
      */
@@ -74,23 +74,23 @@ public class RegularDBagTest extends TestCase
         // Placeholder until a specific test is added.
     }
 
-    //----------------------------------------------------------------------
+
     // Inner classes used to test interfaces and abstract classes.
-    //----------------------------------------------------------------------
+
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests DBag interface of RegularDBag.
      */
     public static final class InternalDBagTest extends AbstractDBagTest
     {
-        //----------------------------------------------------------------------
+
         public InternalDBagTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public Collection createCollection() throws Exception
         {
             return new RegularDBag();
@@ -98,19 +98,19 @@ public class RegularDBagTest extends TestCase
     }
     
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests QueryableCollection interface of RegularDBag.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
-        //----------------------------------------------------------------------
+
         public InternalQueryableCollectionTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public QueryableCollection createQueryableCollection() throws Exception
         {
             return new RegularDBag();

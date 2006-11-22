@@ -31,12 +31,12 @@ import org.enerj.core.*;
 @Persist(false)
 class TLPTestClassNP
 {
-    //----------------------------------------------------------------------
+
     private TLPTestClassNP(int x)
     {
     }
     
-    //----------------------------------------------------------------------
+
     TLPTestClassNP(boolean aFlag)
     {
     }

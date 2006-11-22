@@ -37,7 +37,7 @@ import java.util.Properties;
 class LockSchedulerTest2
 {
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) throws Exception
     {
         Properties props = new Properties( System.getProperties() );

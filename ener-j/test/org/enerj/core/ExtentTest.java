@@ -55,26 +55,26 @@ public class ExtentTest extends TestCase
     private File mTmpPageFile = new File("databases/JUnit/GeneralDB/GeneralDB.enerj");
     private File mTmpLogFile = new File("databases/JUnit/GeneralDB/GeneralDB.log");
 
-    //----------------------------------------------------------------------
+
     public ExtentTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args)
     {
         junit.swingui.TestRunner.run(ExtentTest.class);
         //new junit.swingui.TestRunner().start( new String[] { ExtentTest.class.getName(), "-noloading" } );
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(ExtentTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public void setUp() throws Exception
     {
         clearDBFiles();
@@ -84,13 +84,13 @@ public class ExtentTest extends TestCase
         System.out.println("Create DB took " + (System.currentTimeMillis() - start) + " ms");
     }
 
-    //----------------------------------------------------------------------
+
     public void tearDown() throws Exception
     {
         clearDBFiles();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      *  Delete database files.
      */
@@ -103,7 +103,7 @@ public class ExtentTest extends TestCase
         mTmpLogFile.delete();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests addition to extent via bind().
      */
@@ -152,7 +152,7 @@ public class ExtentTest extends TestCase
 
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests addition to extent via reachability.
      */
@@ -201,7 +201,7 @@ public class ExtentTest extends TestCase
 
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests addition to extent via makePersistent().
      */
@@ -285,7 +285,7 @@ public class ExtentTest extends TestCase
 
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests close() and closeAll().
      */
@@ -384,7 +384,7 @@ public class ExtentTest extends TestCase
 
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests extents with subclasses.
      */
@@ -500,7 +500,7 @@ public class ExtentTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests extents with many objects to verify the integrity of the objects returned.
      */
@@ -592,7 +592,7 @@ public class ExtentTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests that two iterators can maintain separate positions on same extent.
      * Note that testClose() also indirectly tests two iterators for closing purposes.
@@ -651,7 +651,7 @@ public class ExtentTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests that next() throws the proper exception when hasNext() returns false.
      * Also tests that remove() throws UnsupportedOperationException.
@@ -717,92 +717,92 @@ public class ExtentTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     private static class TestClass1
     {
         private int mValue;
         private Object mObj;
         
-        //----------------------------------------------------------------------
+
         TestClass1(int aValue)
         {
             mValue = aValue;
         }
 
-        //----------------------------------------------------------------------
+
         TestClass1(Object anObj)
         {
             mObj = anObj;
         }
             
-        //----------------------------------------------------------------------
+
         int getValue()
         {
             return mValue;
         }
 
-        //----------------------------------------------------------------------
+
         void setValue(int aValue)
         {
             mValue = aValue;
         }
 
-        //----------------------------------------------------------------------
+
         Object getObj()
         {
             return mObj;
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     private static class TestClass2
     {
         private int mValue;
         
-        //----------------------------------------------------------------------
+
         TestClass2(int aValue)
         {
             mValue = aValue;
         }
             
-        //----------------------------------------------------------------------
+
         int getValue()
         {
             return mValue;
         }
 
-        //----------------------------------------------------------------------
+
         void setValue(int aValue)
         {
             mValue = aValue;
         }
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     @Persist
     private static class TestClass3 extends TestClass1
     {
         private int mValue2;
 
-        //----------------------------------------------------------------------
+
         TestClass3(int aValue, int aValue2)
         {
             super(aValue);
             mValue2 = aValue2;
         }
 
-        //----------------------------------------------------------------------
+
         int getValue2()
         {
             return mValue2;
         }
 
-        //----------------------------------------------------------------------
+
         void setValue2(int aValue2)
         {
             mValue2 = aValue2;

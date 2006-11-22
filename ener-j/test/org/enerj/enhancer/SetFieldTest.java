@@ -42,25 +42,25 @@ public class SetFieldTest extends TestCase
 {
     private static final String DATABASE_URI = "enerj://root:root@-/SetFieldTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
 
-    //----------------------------------------------------------------------
+
     public SetFieldTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(SetFieldTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(SetFieldTest.class);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Test enerj_Set_
      */
@@ -72,8 +72,8 @@ public class SetFieldTest extends TestCase
         // If we get here without Exceptions, we succeeded.
     }
     
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
     /**
      * Test class
      */
@@ -84,12 +84,12 @@ public class SetFieldTest extends TestCase
         private String mString;
         private Object mObj;
         
-        //----------------------------------------------------------------------
+
         TestClass1()
         {
         }
         
-        //----------------------------------------------------------------------
+
         /**
          * Set mString to a value, to a null, and back.
          * Tests enerj_Set_'s proper handling of null values for the special case

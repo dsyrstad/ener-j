@@ -42,19 +42,19 @@ import org.enerj.core.*;
  */
 public class VeryLargeDArrayTest extends TestCase
 {
-    //----------------------------------------------------------------------
+
     public VeryLargeDArrayTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args) 
     {
         junit.swingui.TestRunner.run(VeryLargeDArrayTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         TestSuite suite = new TestSuite(VeryLargeDArrayTest.class);
@@ -65,7 +65,7 @@ public class VeryLargeDArrayTest extends TestCase
         return suite;
     }
     
-    //----------------------------------------------------------------------
+
     /*
      * You can have additional methods here..... 
      */
@@ -75,23 +75,23 @@ public class VeryLargeDArrayTest extends TestCase
         //  TODO  test large lists to a real database
     }
 
-    //----------------------------------------------------------------------
+
     // Inner classes used to test interfaces and abstract classes.
-    //----------------------------------------------------------------------
+
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests DArray interface of VeryLargeDArray.
      */
     public static final class InternalDArrayTest extends AbstractDArrayTest
     {
-        //----------------------------------------------------------------------
+
         public InternalDArrayTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public Collection createCollection() throws Exception
         {
             // Construct with small node size so multiple branches will be tested.
@@ -99,19 +99,19 @@ public class VeryLargeDArrayTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests LargeList interface of VeryLargeDArray.
      */
     public static final class InternalLargeListTest extends AbstractLargeListTest
     {
-        //----------------------------------------------------------------------
+
         public InternalLargeListTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public LargeCollection createLargeCollection() throws Exception
         {
             // Construct with small node size so multiple branches will be tested.
@@ -120,19 +120,19 @@ public class VeryLargeDArrayTest extends TestCase
     }
     
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests QueryableCollection interface of VeryLargeDArray.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
-        //----------------------------------------------------------------------
+
         public InternalQueryableCollectionTest(String aName)
         {
             super(aName);
         }
 
-        //----------------------------------------------------------------------
+
         public QueryableCollection createQueryableCollection() throws Exception
         {
             // Construct with small node size so multiple branches will be tested.

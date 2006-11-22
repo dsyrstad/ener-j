@@ -45,25 +45,25 @@ public class EnerJTransactionTest extends TestCase
 
     private Exception mThreadException;
     
-    //----------------------------------------------------------------------
+
     public EnerJTransactionTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     public static void main(String[] args)
     {
         junit.swingui.TestRunner.run(EnerJTransactionTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     public static Test suite() 
     {
         return new TestSuite(EnerJTransactionTest.class);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Test that a Transaction cannot be simulatenously shared between threads while it is open.
      */
@@ -104,7 +104,7 @@ public class EnerJTransactionTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Test leave/join thread (and implicit leave via join).
      */
@@ -151,7 +151,7 @@ public class EnerJTransactionTest extends TestCase
         }
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Test that abort() rolls back in database.
      */
@@ -215,53 +215,53 @@ public class EnerJTransactionTest extends TestCase
 
     }
 
-    //----------------------------------------------------------------------
-    //----------------------------------------------------------------------
+
+
  
-    //----------------------------------------------------------------------
+
     @Persist
     private static class TestClass1
     {
         private int mValue;
         
-        //----------------------------------------------------------------------
+
         TestClass1(int aValue)
         {
             mValue = aValue;
         }
             
-        //----------------------------------------------------------------------
+
         int getValue()
         {
             return mValue;
         }
 
-        //----------------------------------------------------------------------
+
         void setValue(int aValue)
         {
             mValue = aValue;
         }
     }
 
-    //----------------------------------------------------------------------
+
     @Persist
     private static class TestClass2
     {
         private TestClass1 mValue;
         
-        //----------------------------------------------------------------------
+
         TestClass2(TestClass1 aValue)
         {
             mValue = aValue;
         }
             
-        //----------------------------------------------------------------------
+
         TestClass1 getValue()
         {
             return mValue;
         }
 
-        //----------------------------------------------------------------------
+
         void setValue(TestClass1 aValue)
         {
             mValue = aValue;

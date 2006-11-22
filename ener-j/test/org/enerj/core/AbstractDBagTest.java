@@ -44,13 +44,13 @@ import org.enerj.core.*;
  */
 public abstract class AbstractDBagTest extends AbstractCollectionTest
 {
-    //----------------------------------------------------------------------
+
     public AbstractDBagTest(String aName) 
     {
         super(aName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests union(DBag).
      */
@@ -94,7 +94,7 @@ public abstract class AbstractDBagTest extends AbstractCollectionTest
         assertTrue("Size should be correct", dbag3.size() == 0);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests intersection(DBag).
      */
@@ -142,7 +142,7 @@ public abstract class AbstractDBagTest extends AbstractCollectionTest
         assertTrue("Size should be correct", dbag3.size() == 0);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests difference(DBag).
      */
@@ -198,7 +198,7 @@ public abstract class AbstractDBagTest extends AbstractCollectionTest
         assertTrue("Size should be correct", dbag3.size() == 0);
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests occurances(Object).
      */

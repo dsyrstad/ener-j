@@ -45,19 +45,19 @@ public abstract class AbstractObjectServerTest extends TestCase
     private ObjectServerSession mSession = null;
 
     
-    //----------------------------------------------------------------------
+
     public AbstractObjectServerTest(String aTestName) 
     {
         super(aTestName);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Gets the properties to connect to an ObjectServer to be tested.
      */
     abstract protected Properties getObjectServerProperties();
         
-    //----------------------------------------------------------------------
+
     /**
      * Gets the class name of the ObjectServer to be tested.
      */
@@ -65,7 +65,7 @@ public abstract class AbstractObjectServerTest extends TestCase
     
     abstract protected void createDB() throws Exception;
 
-    //----------------------------------------------------------------------
+
     /**
      * Connects to the ObjectServer.
      */
@@ -74,14 +74,14 @@ public abstract class AbstractObjectServerTest extends TestCase
         return (ObjectServerSession)PluginHelper.connect(getObjectServerClassName(), getObjectServerProperties());
     }
     
-    //----------------------------------------------------------------------
+
     protected void setUp() throws Exception
     {
         createDB();
         mSession = connectToObjectServer();
     }
 
-    //----------------------------------------------------------------------
+
     protected void tearDown() throws Exception
     {
         if (mSession != null) {
@@ -90,7 +90,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /** 
      * Helper for testOIDs.
      */
@@ -113,7 +113,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Allocates a certain number of OIDs.
      */
@@ -133,7 +133,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         return oids;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Generates a patterned byte array of aLength bytes using anOID and
      * aCID.
@@ -157,7 +157,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         return bytes;
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Stores anObjectCount objects of length aLength and verifies the store.
      */
@@ -185,7 +185,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         }
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Stores anObjectCount objects of length aLength and verifies the store.
      */
@@ -194,7 +194,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         storeObjects( allocateOIDs(anObjectCount), aLength);
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests getNewOIDBlock and getCIDForOID.
      */
@@ -218,7 +218,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject with a zero length object.
      */
@@ -232,7 +232,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject with an object that can fit within one page.
      */
@@ -245,7 +245,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject with an object that spans multiple pages.
      */
@@ -258,7 +258,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
 
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject replacing one object with a larger object in a single segment.
      */
@@ -273,7 +273,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject replacing one object with a larger object in a Multiple segments.
      */
@@ -288,7 +288,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject replacing one object with the same size object in a single segment.
      */
@@ -303,7 +303,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject replacing one zero-length object with another zero-length object.
      */
@@ -318,7 +318,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject replacing one object with the same size object in a Multiple segments.
      */
@@ -333,7 +333,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject replacing one object with a smaller object in a single segment.
      */
@@ -348,7 +348,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject replacing one object with a smaller object in same number of multiple segments.
      */
@@ -363,7 +363,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject replacing one object spanning multiple segments 
      * with a smaller object spanning a fewer number of segments, but more than 1.
@@ -379,7 +379,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject replacing one object spanning multiple segments 
      * with a smaller object spanning one segment.
@@ -395,7 +395,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject replacing one object in one segment
      * with a zero-length object with one segment.
@@ -411,7 +411,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests storeObject replacing one object spanning multiple segments
      * with a zero-length object with one segment.
@@ -427,7 +427,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         mSession.commitTransaction();
     }
     
-    //----------------------------------------------------------------------
+
     /**
      * Tests non-transactional reads.
      */
