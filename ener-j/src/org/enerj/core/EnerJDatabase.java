@@ -1325,5 +1325,93 @@ public class EnerJDatabase implements Database, Persister
         mIsTxnOpen = true;
     }
 
+    /**
+     * Flushes modified and referenced new objects to the server. Does not
+     * affect the state of the transaction. The current queue of pending 
+     * object modifications is cleared.
+     */
+    void flush()
+    {
+        if (mFlushIterator != null) {
+            return; // Prevent reentrancy
+        }
+        
+        try {
+            flushAndKeepModifiedList();
+        }
+        finally {
+            // Clear out modified objects.
+            getDatabase().clearModifiedList();
+        }
+    }
+
+    /**
+     * Flushes modified and referenced new objects to the server. Does not
+     * affect the state of the transaction. The modified list is NOT cleared.
+     */
+    private void flushAndKeepModifiedList()
+    {
+        try {
+            // Note that we start an iterator each item. We do this instead of
+            // calling storePersistable() recursively. Such recursion could become
+            // very deep. The iterator allows us to append new objects, 
+            // essentially flattening the recursion.
+            mFlushIterator = getModifiedListIterator();
+            while (mFlushIterator.hasNext()) {
+                Persistable persistable = mFlushIterator.next();
+                
+                // This can indirectly insert objects into the list due to
+                // ObjectSerializer.
+                storePersistable(persistable);
+            }
+            
+            flushSerializedObjectQueue();
+        }
+        catch (ODMGException e) {
+            throw new ODMGRuntimeException(e);
+        }
+        finally {
+            mFlushIterator = null;
+        }
+    }
+
+    /**
+     * Clears the transaction list of modified and referenced new objects. Similar to a
+     * abort(), but only on the client-side.
+     * These objects will not be flushed to the server. Modified objects are essentially rolled
+     * back in memory if RestoreValues was set, otherwise they are hollowed. The
+     * client cache is evicted. The transaction is closed.
+     */
+    public void clear()
+    {
+        for (Iterator<Persistable> iter = getDatabase().getModifiedListIterator(); iter.hasNext(); ) {
+            Persistable persistable = iter.next();
+            if (mRestoreValues) {
+                // Restore (rollback) the object
+                mTransactionDatabase.restoreAndClearPersistableImage(persistable);
+            }
+
+            if (persistable.enerj_IsNew()) {
+                // New objects are evicted from the cache and get their OID cleared.
+                mTransactionDatabase.getClientCache().evict( mTransactionDatabase.getOID(persistable) );
+                persistable.enerj_SetPrivateOID(ObjectSerializer.NULL_OID);
+            }
+        }
+
+        getDatabase().clearModifiedList();
+        
+        // See defined behavior on setRestoreValues.
+        if (mRestoreValues) {
+            mTransactionDatabase.getClientCache().makeObjectsNonTransactional();
+        }
+        else {
+            // Note: hollowObjects() invokes enerj_Hollow() which clears the cache lock state.
+            mTransactionDatabase.getClientCache().hollowObjects();
+        }
+        
+        mTransactionDatabase.getClientCache().clearPrefetches();
+        mTransactionDatabase.getClientCache().evictAll();
+        closeCurrentTransaction();
+    }
 }
 
