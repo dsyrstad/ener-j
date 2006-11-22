@@ -418,6 +418,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             // Ignore - shutdown may be in progress.
         }
 
+        getObjectServer().shutdown();
     }
 
     /** 

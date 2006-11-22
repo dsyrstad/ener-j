@@ -77,14 +77,6 @@ public class PagedObjectServer extends BaseObjectServer
 {
     private static final Logger sLogger = Logger.getLogger(PagedObjectServer.class.getName()); 
     
-    private static final String SCHEMA_CLASS_NAME = Schema.class.getName();
-    private static final Class[] sSchemaClasses = new Class[] { 
-        Schema.class, 
-        LogicalClassSchema.class,
-        ClassVersionSchema.class,
-    };
-    private static final String[] sObjectNameArray = { Object.class.getName() };
-    
     /** HashMap of database names to PagedObjectServers. */
     private static HashMap<String, PagedObjectServer> sCurrentServers = new HashMap<String, PagedObjectServer>(20);
 
@@ -579,26 +571,12 @@ public class PagedObjectServer extends BaseObjectServer
             }
         
             ObjectServerSession session = server.new Session(server, isSchemaSession);
-
-            if (EnerJDatabase.isThisTheClientJVM()) {
-                // Server is running locally. We need to run session in another thread. Create a proxy per session.
-                // TODO pool these?
-                RequestProcessor requestProcessor = new RequestProcessor("Local PagedObjectServer Thread", true);
-                ((BaseObjectServerSession)session).setRequestProcessor(requestProcessor);
-                session = (ObjectServerSession)RequestProcessorProxy.newInstance(session, requestProcessor);
-            }
-
             return session;
         } // End synchronized (sCurrentServers)
-        
     }
 
 
     // ...End of ObjectServer interface methods.
-
-
-
-
 
     /**
      * The ObjectServerSession object returned by this server.
@@ -671,7 +649,6 @@ public class PagedObjectServer extends BaseObjectServer
                 throw new DatabaseClosedException("Session is not connected");
             }
 
-
             // If transaction is active on session, roll it back.
             if (mTxn != null) {
                 //  TODO  Log in messages as forced rollback.
@@ -680,18 +657,6 @@ public class PagedObjectServer extends BaseObjectServer
 
             super.disconnect();
         }
-
-
-        /**
-         * @{inheritDoc}
-         */
-        public void shutdown() throws ODMGException
-        {
-            super.shutdown();
-            
-            getObjectServer().shutdown();
-        }
-
 
         public ClassInfo[] getClassInfoForOIDs(long[] someOIDs) throws ODMGException
         {

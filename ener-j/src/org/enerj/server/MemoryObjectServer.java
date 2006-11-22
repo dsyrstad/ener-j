@@ -35,16 +35,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.enerj.core.ClassVersionSchema;
+import org.enerj.core.EnerJTransaction;
+import org.enerj.core.LogicalClassSchema;
+import org.enerj.core.ObjectSerializer;
+import org.enerj.core.Persistable;
+import org.enerj.core.Schema;
+import org.enerj.core.SystemCIDMap;
 import org.odmg.DatabaseClosedException;
 import org.odmg.DatabaseNotFoundException;
 import org.odmg.LockNotGrantedException;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.TransactionNotInProgressException;
-import org.enerj.core.EnerJDatabase;
-import org.enerj.core.EnerJTransaction;
-import org.enerj.core.ObjectSerializer;
-import org.enerj.server.schema.DatabaseRoot;
 
 /**
  * In-memory ObjectServer.
@@ -73,8 +76,10 @@ public class MemoryObjectServer extends BaseObjectServer
      *
      * @throws ODMGException if an error occurs
      */
-    private MemoryObjectServer(String aDatabaseName, String aFileName) throws ODMGException
+    private MemoryObjectServer(String aDatabaseName, String aFileName, Properties someProperties) throws ODMGException
     {
+        super(someProperties);
+        
         //  TODO  synchronized around sDatabaseMap access.
         // Find or create database.
         MemoryDB db = (MemoryDB)sDatabaseMap.get(aDatabaseName);
@@ -113,7 +118,7 @@ public class MemoryObjectServer extends BaseObjectServer
     /**
      * Shuts down this ObjectServer.
      */
-    void shutdown() throws ODMGException
+    public void shutdown() throws ODMGException
     {
         synchronized (sCurrentServers) {
             sCurrentServers.remove( mDatabase.getDatabaseName() );
@@ -146,7 +151,7 @@ public class MemoryObjectServer extends BaseObjectServer
      * @param someProperties properties which specify the connect parameters.
      * The properties must contain the following keys:<br>
      * <ul>
-     * <li><i>vo.dbname</i> - the database name. </li>
+     * <li><i>enerj.dbname</i> - the database name. </li>
      * <li><i>MemoryObjectServer.file</i> - optional file name. If specified, the contents of the memory database are written to
      *  the file using Java Serialization when the database is closed. If the file
      *  exists when the database is opened again, the database is reloaded from the 
@@ -161,6 +166,14 @@ public class MemoryObjectServer extends BaseObjectServer
      *  (note that this is really an ODMGRuntimeException).
      */
     public static ObjectServerSession connect(Properties someProperties) throws ODMGException 
+    {
+        return connect(someProperties, getBooleanProperty(someProperties, ENERJ_SCHEMA_SESSION_PROPERTY));
+    }
+    
+    /**
+     * Helper for {@link MemoryObjectServer#connect(Properties)}. 
+     */
+    private static ObjectServerSession connect(Properties someProperties, boolean isSchemaSession) throws ODMGException 
     {
         String dbName = someProperties.getProperty(ObjectServer.ENERJ_DBNAME_PROP);
         if (dbName ==  null) {
@@ -177,12 +190,12 @@ public class MemoryObjectServer extends BaseObjectServer
         synchronized (sCurrentServers) {
             server = (MemoryObjectServer)sCurrentServers.get(dbName);
             if (server == null) {
-                server = new MemoryObjectServer(dbName, fileName);
+                server = new MemoryObjectServer(dbName, fileName, someProperties);
                 sCurrentServers.put(dbName, server);
             }
         } // End synchronized (sCurrentServers)
 
-        return new Session(server, server.mDatabase);
+        return new Session(server, server.mDatabase, isSchemaSession);
     }
 
     //----------------------------------------------------------------------
@@ -197,21 +210,68 @@ public class MemoryObjectServer extends BaseObjectServer
         if (mNeedsInit) {
             // Unset this now so we don't recursively init.
             mNeedsInit = false;
+            
+            Session session = null;
+            boolean completed = false;
             try {
-                // Open database locally
-                String uri = "enerj://root:root@-/" + mDatabase.mDatabaseName + 
-                    "?DefaultObjectServer.ObjectServerClass=" + this.getClass().getName();
-                EnerJDatabase enerj = new EnerJDatabase();
-                enerj.open(uri, EnerJDatabase.OPEN_READ_WRITE);
-                EnerJTransaction txn = new EnerJTransaction();
-                txn.begin(enerj);
-                DatabaseRoot root = new DatabaseRoot(mDatabase.mDatabaseName);
-                enerj.setDatabaseRoot(root);
-                txn.commit();
-                enerj.close();
+                // Create a session so that we can initialize the schema.
+                session = (Session)connect(getConnectProperties(), true);
+                session.beginTransaction();
+
+                Schema schema = new Schema("");
+                // Create Extent map.
+                ExtentMap extentMap = new ExtentMap();
+
+                // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
+                for (Class schemaClass : sSchemaClasses) {
+                    String schemaClassName = schemaClass.getName();
+                    LogicalClassSchema classSchema = new LogicalClassSchema(schema, schemaClassName, null);
+                    long cid = SystemCIDMap.getSystemCIDForClassName(schemaClassName);
+                    new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);
+                    
+                    // Create an extent for this class.
+                    extentMap.createExtentForClassName(schemaClassName);
+                }
+                
+                // Special OID for schema.
+                Persistable schemaPersistable = (Persistable)schema;
+                schemaPersistable.enerj_SetPrivateOID(BaseObjectServer.SCHEMA_OID);
+                session.addToModifiedList(schemaPersistable);
+                
+                // Special OID for ExtentMap.
+                Persistable extentMapPersistable = (Persistable)extentMap;
+                extentMapPersistable.enerj_SetPrivateOID(BaseObjectServer.EXTENTS_OID);
+                session.addToModifiedList(extentMapPersistable);
+                
+                session.flushModifiedObjects();
+                
+                session.commitTransaction();
+
+                completed = true;
             }
-            catch (ODMGException e) {
-                throw new ODMGRuntimeException("Error initializing DB", e);
+            catch (ODMGRuntimeException e) {
+                throw e;
+            }
+            catch (Exception e) {
+                throw new ODMGRuntimeException("Error creating database: " + e, e);
+            }
+            finally {
+                if (session != null) {
+                    if (!completed) {
+                        session.rollbackTransaction();
+                    }
+                    
+                    try {
+                        session.disconnect();
+                        session.shutdown(); // Shuts down the MemoryObjectServer for the database.
+                    }
+                    catch (ODMGException e) {
+                        if (completed) {
+                            throw new ODMGRuntimeException(e);
+                        }
+                        // else Ingore - in recovery
+                    }
+                }
             }
         }
     }
@@ -350,44 +410,24 @@ public class MemoryObjectServer extends BaseObjectServer
      */
     private static final class Session extends BaseObjectServerSession
     {
-        private MemoryObjectServer mObjectServer;
-        private boolean mConnected;
+        private boolean mIsSchemaSession = false;
         private MemoryTxn mTxn = null;
         private MemoryDB mDatabase;
-        private boolean mAllowNontransactionalReads = false;
+        
 
         //----------------------------------------------------------------------
         /**
          * Constructs a new Session in a connected state.
          *
-         * @param aObjectServer the ObjectServer to associate with the session.
+         * @param anObjectServer the ObjectServer to associate with the session.
          * @param aDatabase the MemoryDB associated with the session.
+         * @param isSchemaSession if true, this is the privileged schema session.
          */
-        Session(MemoryObjectServer aObjectServer, MemoryDB aDatabase)
+        Session(MemoryObjectServer anObjectServer, MemoryDB aDatabase, boolean isSchemaSession)
         {
-            mObjectServer = aObjectServer;
+            super(anObjectServer);
             mDatabase = aDatabase;
-            mConnected = true;
-        }
-        
-        //----------------------------------------------------------------------
-        /**
-         * Determines whether the session is connected.
-         *
-         * @return true if it is, false if not.
-         */
-        boolean isConnected()
-        {
-            return mConnected;
-        }
-        
-        //----------------------------------------------------------------------
-        /**
-         * Marks this session as disconnected.
-         */
-        void setDisconnected()
-        {
-            mConnected = false;
+            mIsSchemaSession = isSchemaSession;
         }
         
         //----------------------------------------------------------------------
@@ -416,6 +456,7 @@ public class MemoryObjectServer extends BaseObjectServer
         void setTransaction(MemoryTxn aTransaction)
         {
             mTxn = aTransaction;
+            setTransactionActive(mTxn != null);
         }
         
         //----------------------------------------------------------------------
@@ -423,63 +464,72 @@ public class MemoryObjectServer extends BaseObjectServer
         //----------------------------------------------------------------------
 
         //----------------------------------------------------------------------
-        public ObjectServer getObjectServer()
-        {
-            return mObjectServer;
-        }
-
-        //----------------------------------------------------------------------
         public void disconnect() throws ODMGException 
         {
             if (!isConnected()) {
-                throw new DatabaseClosedException("Not connected");
+                throw new DatabaseClosedException("Session is not connected");
             }
 
-            setDisconnected();
+            // If transaction is active on session, roll it back.
+            if (mTxn != null) {
+                //  TODO  Log in messages as forced rollback.
+                rollbackTransaction();
+            }
+
+            super.disconnect();
         }
 
         //----------------------------------------------------------------------
         public void shutdown() throws ODMGException
         {
-            mObjectServer.initDB();
-            if (isConnected()) {
-                disconnect();
-            }
-            
-            mObjectServer.shutdown();
+            ((MemoryObjectServer)getObjectServer()).initDB();
+            super.shutdown();
         }
 
-
-        //----------------------------------------------------------------------
-        public boolean getAllowNontransactionalReads() throws ODMGException
+        /* (non-Javadoc)
+         * @see org.enerj.server.ObjectServerSession#getClassInfoForOIDs(long[])
+         */
+        public ClassInfo[] getClassInfoForOIDs(long[] someOIDs) throws ODMGException
         {
-            return mAllowNontransactionalReads;
-        }
-
-        //----------------------------------------------------------------------
-        public void setAllowNontransactionalReads(boolean isNontransactional) throws ODMGException
-        {
-            mAllowNontransactionalReads = isNontransactional;
-        }
-
-        //----------------------------------------------------------------------
-        public synchronized long[] getCIDsForOIDs(long[] someOIDs) throws ODMGException
-        {
-            if (!mAllowNontransactionalReads) {
+            if (!getAllowNontransactionalReads()) {
                 MemoryTxn txn = getTransaction();
             }
             
-            long[] cids = new long[someOIDs.length];
+            ClassInfo[] classInfo = new ClassInfo[someOIDs.length];
             for (int i = 0; i < someOIDs.length; i++) {
                 if (someOIDs[i] != ObjectSerializer.NULL_OID) {
-                    MemoryDBEntry entry = mDatabase.getEntry(someOIDs[i]);
-                    if (entry != null) {
-                        cids[i] = entry.getObjectCID();
+                    long anOID = someOIDs[i];
+                    if (anOID == BaseObjectServer.SCHEMA_OID) {
+                        long cid = SystemCIDMap.getSystemCIDForClassName(SCHEMA_CLASS_NAME);
+                        classInfo[i] = new ClassInfo(cid, SCHEMA_CLASS_NAME);
+                    }
+                    else if (anOID != ObjectSerializer.NULL_OID) {
+                        long cid = ObjectSerializer.NULL_CID;
+                        // Get a read lock on the object otherwise the CID can change for the object after getting the CID.
+                        getLock(anOID, EnerJTransaction.READ, -1);
+                        MemoryDBEntry entry = mDatabase.getEntry(someOIDs[i]);
+                        if (entry != null) {
+                            cid = entry.getObjectCID();
+                        }
+                        
+                        // Resolve the class name. Try system CIDs first.
+                        String className = SystemCIDMap.getSystemClassNameForCID(cid);
+                        if (className == null) {
+                            Schema schema = getSchema();
+                            ClassVersionSchema version = schema.findClassVersion(cid);
+                            if (version != null) {
+                                className = version.getLogicalClassSchema().getClassName();
+                            }
+                        }
+                        
+                        if (cid != ObjectSerializer.NULL_CID && className != null) {
+                            classInfo[i] = new ClassInfo(cid, className);
+                        }
                     }
                 }
             }
             
-            return cids;
+            return classInfo;
         }
 
         //----------------------------------------------------------------------
@@ -496,13 +546,16 @@ public class MemoryObjectServer extends BaseObjectServer
                 MemoryDBEntry entry = new MemoryDBEntry(aCID, anOID, object.getImage());
                 mDatabase.storeEntry(entry);
             }
+            
+            super.storeObjects(someObjects);
         }
 
         //----------------------------------------------------------------------
         public synchronized byte[][] loadObjects(long[] someOIDs) throws ODMGException
         {
-            if (!mAllowNontransactionalReads) {
-                MemoryTxn txn = getTransaction();
+            if (!getAllowNontransactionalReads()) {
+                // Validate txn active - interface requirement
+                getTransaction();
             }
             
             byte[][] objects = new byte[someOIDs.length][];
@@ -520,11 +573,12 @@ public class MemoryObjectServer extends BaseObjectServer
         }
 
         //----------------------------------------------------------------------
-        public synchronized long[] getNewOIDBlock() throws ODMGException
+        public synchronized long[] getNewOIDBlock(int anOIDCount) throws ODMGException
         {
-            MemoryTxn txn = getTransaction();
+            // Validate txn active - interface requirement
+            getTransaction();
 
-            long[] oids = new long[10];
+            long[] oids = new long[anOIDCount];
             for (int i = 0; i < oids.length; i++) {
                 oids[i] = mDatabase.getNextNewOID();
             }
@@ -535,7 +589,10 @@ public class MemoryObjectServer extends BaseObjectServer
         //----------------------------------------------------------------------
         public synchronized void beginTransaction() throws ODMGRuntimeException 
         {
-            mObjectServer.initDB();
+            ((MemoryObjectServer)getObjectServer()).initDB();
+
+            super.beginTransaction();
+
             MemoryTxn txn = new MemoryTxn(this);
             setTransaction(txn);
         }
@@ -543,14 +600,16 @@ public class MemoryObjectServer extends BaseObjectServer
         //----------------------------------------------------------------------
         public synchronized void checkpointTransaction() throws ODMGRuntimeException 
         {
-            MemoryTxn txn = getTransaction();
+            super.checkpointTransaction();
+
             //  TODO 
         }
 
         //----------------------------------------------------------------------
         public synchronized void commitTransaction() throws ODMGRuntimeException 
         {
-            MemoryTxn txn = getTransaction();
+            super.commitTransaction();
+            
             setTransaction(null);
             //  TODO 
         }
@@ -558,18 +617,25 @@ public class MemoryObjectServer extends BaseObjectServer
         //----------------------------------------------------------------------
         public synchronized void getLock(long anOID, int aLockLevel, long aWaitTime) throws LockNotGrantedException 
         {
-            MemoryTxn txn = getTransaction();
+            if (getAllowNontransactionalReads() && aLockLevel == org.odmg.Transaction.READ) {
+                // Don't bother to check for a txn or get read locks if we're doing non-transactional reads.
+                return;
+            }
+
+            // Validate txn active - interface requirement
+            getTransaction();
+
             //  TODO 
         }
 
         //----------------------------------------------------------------------
         public synchronized void rollbackTransaction() throws ODMGRuntimeException 
         {
-            MemoryTxn txn = getTransaction();
+            super.rollbackTransaction();
+            
             setTransaction(null);
             //  TODO 
         }
-
 
         //----------------------------------------------------------------------
         // ...End of ObjectServerSession interface methods.

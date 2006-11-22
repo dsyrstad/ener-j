@@ -32,7 +32,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.enerj.server.ExtentIterator;
-import org.enerj.server.ObjectServerSession;
 import org.odmg.ODMGRuntimeException;
 
 
@@ -48,7 +47,7 @@ public class EnerJExtent implements Extent
     private Class mCandidateClass;
     private boolean mHasSubclasses;
     private Collection mCollection = null;
-    private Set mOpenIterators = new HashSet(5);
+    private Set<EnerJExtentIterator> mOpenIterators = new HashSet<EnerJExtentIterator>(5);
     private int mSize = -1; // -1 = not initialized.
 
     //----------------------------------------------------------------------
@@ -154,7 +153,7 @@ public class EnerJExtent implements Extent
     public int size()
     {
         if (mSize < 0) {
-            long size = mDatabase.getObjectServerSession().getExtentSize(mCandidateClass.getName(), mHasSubclasses);
+            long size = mDatabase.getExtentSize(mCandidateClass, mHasSubclasses);
             if (size > Integer.MAX_VALUE) {
                 throw new ArrayIndexOutOfBoundsException("Extent size of " + size + " exceeds size of int");
             }
@@ -251,8 +250,7 @@ public class EnerJExtent implements Extent
         //----------------------------------------------------------------------
         EnerJExtentIterator()
         {
-            ObjectServerSession session = mDatabase.getObjectServerSession();
-            mExtentIterator = session.createExtentIterator(mCandidateClass.getName(), mHasSubclasses);
+            mExtentIterator = mDatabase.getExtentIterator(mCandidateClass, mHasSubclasses);
         }
         
         //----------------------------------------------------------------------
