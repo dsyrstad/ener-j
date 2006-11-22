@@ -42,12 +42,16 @@ import java.util.List;
 import java.util.Properties;
 
 import org.enerj.annotations.SchemaAnnotation;
+import org.enerj.server.BaseObjectServerSession;
 import org.enerj.server.ClassInfo;
+import org.enerj.server.ExtentIterator;
 import org.enerj.server.ObjectServerSession;
 import org.enerj.server.PagedObjectServer;
 import org.enerj.server.PluginHelper;
 import org.enerj.server.SerializedObject;
 import org.enerj.util.ClassUtil;
+import org.enerj.util.RequestProcessor;
+import org.enerj.util.RequestProcessorProxy;
 import org.enerj.util.URIUtil;
 import org.odmg.ClassNotPersistenceCapableException;
 import org.odmg.Database;
@@ -98,6 +102,10 @@ public class EnerJDatabase implements Database, Persister
 
     /** True if the database is open. */
     private boolean mIsOpen = false;
+    /** True if the server for this database is running locally. Only valid if the database is open. */
+    private boolean mIsLocal = false;
+    /** If mIsLocal is true, this is the RequestProcessor proxying server requests. */
+    private RequestProcessor mLocalRequestProcessor = null;
     
     /** Current transaction that this database is bound to. */
     private EnerJTransaction mBoundToTransaction = null;
@@ -116,6 +124,8 @@ public class EnerJDatabase implements Database, Persister
     private List<SerializedObject> mSerializedObjectQueue = new ArrayList<SerializedObject>(100);
     /** Number of bytes in mSerializedObjectQueue. */
     private int mSerializedObjectQueueSize = 0;
+    
+
 
     //----------------------------------------------------------------------
     /**
@@ -716,6 +726,26 @@ public class EnerJDatabase implements Database, Persister
         return mClientCache;
     }
     
+    /**
+     * Gets an extent iterator for the given class. For Ener-J internal use only.
+     * Clients should use getExtent().iterator().
+     *
+     * @param aPersistentCapableClass the class to retrieve the extent for.
+     * @param wantSubClassInstances true if subclasses should be included in the extent.
+     * 
+     * @return the Extent.
+     */
+    ExtentIterator getExtentIterator(Class aPersistentCapableClass, boolean wantSubClassInstances)
+    {
+        ExtentIterator iterator = mObjectServerSession.createExtentIterator(aPersistentCapableClass.getName(), wantSubClassInstances);
+        if (mIsLocal) {
+            // Server is running locally so we have to proxy the iterator using the session's RequestProcessor.
+            iterator = (ExtentIterator)RequestProcessorProxy.newInstance(iterator, mLocalRequestProcessor);
+        }
+        
+        return iterator;
+    }
+    
     //--------------------------------------------------------------------------------
     /**
      * Gets the open transaction that is bound to this database.
@@ -759,17 +789,6 @@ public class EnerJDatabase implements Database, Persister
         mOIDCachePosition = 0;
     }
 
-    //----------------------------------------------------------------------
-    /**
-     * Gets the ObjectServerSession associated with this database.
-     *
-     * @return the ObjectServerSession, or null if the database is closed.
-     */
-    ObjectServerSession getObjectServerSession()
-    {
-        return mObjectServerSession;
-    }
-    
     //----------------------------------------------------------------------
     /**
      * Adds a new Persistable to the Persister's modified list.
@@ -1011,11 +1030,13 @@ public class EnerJDatabase implements Database, Persister
         
         String scheme = uri.getScheme();
         String pluginClassName;
+        mIsLocal = false;
         if (scheme.equals("enerj")) {
             if (host == null || host.length() == 0 || host.equals("-")) {
                 // Local connection with PagedObjectServer - default.
                 host = null;
                 pluginClassName = PagedObjectServer.class.getName();
+                mIsLocal = true;
             }
             else {
                 // TODO --  no remote plug-in yet...
@@ -1059,6 +1080,13 @@ public class EnerJDatabase implements Database, Persister
         
         mObjectServerSession = (ObjectServerSession)PluginHelper.connect(pluginClassName, props);
 
+        if (mIsLocal) {
+            // Server is running locally. We need to run session in another thread. Create a proxy per session.
+            // TODO pool these?
+            mLocalRequestProcessor = new RequestProcessor("Local PagedObjectServer Thread", true);
+            mObjectServerSession = (ObjectServerSession)RequestProcessorProxy.newInstance(mObjectServerSession, mLocalRequestProcessor);
+        }
+        
         initOpenDatabase();
     }
     
@@ -1184,7 +1212,6 @@ public class EnerJDatabase implements Database, Persister
         mObjectServerSession.removeFromExtent( getOID(persistable) );
     }
     
-    //--------------------------------------------------------------------------------
     /**
      * Gets an Extent for the given class.
      *
@@ -1196,6 +1223,19 @@ public class EnerJDatabase implements Database, Persister
     public Extent getExtent(Class aPersistentCapableClass, boolean wantSubClassInstances)
     {
         return new EnerJExtent(this, aPersistentCapableClass, wantSubClassInstances);
+    }
+    
+    /**
+     * Get the number of objects in the Extent.
+     * 
+     * @param aPersistentCapableClass the class to retrieve the extent for.
+     * @param wantSubClassInstances true if subclasses should be included in the extent.
+     *
+     * @return the number of objects in the extent.
+     */
+    public long getExtentSize(Class aPersistentCapableClass, boolean wantSubClassInstances)
+    {
+        return mObjectServerSession.getExtentSize(aPersistentCapableClass.getName(), wantSubClassInstances);
     }
     
     //----------------------------------------------------------------------
