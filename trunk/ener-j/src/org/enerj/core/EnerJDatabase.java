@@ -52,13 +52,12 @@ import org.enerj.server.PagedObjectServer;
 import org.enerj.server.PluginHelper;
 import org.enerj.server.SerializedObject;
 import org.enerj.util.ClassUtil;
-import org.enerj.util.RequestProcessor;
-import org.enerj.util.RequestProcessorProxy;
 import org.enerj.util.URIUtil;
 import org.odmg.ClassNotPersistenceCapableException;
 import org.odmg.Database;
 import org.odmg.DatabaseClosedException;
 import org.odmg.DatabaseOpenException;
+import org.odmg.LockNotGrantedException;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.ObjectNameNotFoundException;
@@ -107,7 +106,7 @@ public class EnerJDatabase implements Database, Persister
     /** True if the server for this database is running locally. Only valid if the database is open. */
     private boolean mIsLocal = false;
     /** If mIsLocal is true, this is the RequestProcessor proxying server requests. */
-    private RequestProcessor mLocalRequestProcessor = null;
+    //private RequestProcessor mLocalRequestProcessor = null;
     
     /** Current transaction that this database is bound to. */
     private EnerJTransaction mBoundToTransaction = null;
@@ -745,10 +744,10 @@ public class EnerJDatabase implements Database, Persister
     ExtentIterator getExtentIterator(Class aPersistentCapableClass, boolean wantSubClassInstances)
     {
         ExtentIterator iterator = mObjectServerSession.createExtentIterator(aPersistentCapableClass.getName(), wantSubClassInstances);
-        if (mIsLocal) {
+        //if (mIsLocal) {
             // Server is running locally so we have to proxy the iterator using the session's RequestProcessor.
-            iterator = (ExtentIterator)RequestProcessorProxy.newInstance(iterator, mLocalRequestProcessor);
-        }
+        //    iterator = (ExtentIterator)RequestProcessorProxy.newInstance(iterator, mLocalRequestProcessor);
+        //}
         
         return iterator;
     }
@@ -1087,12 +1086,12 @@ public class EnerJDatabase implements Database, Persister
         
         mObjectServerSession = (ObjectServerSession)PluginHelper.connect(pluginClassName, props);
 
-        if (mIsLocal) {
+        //if (mIsLocal) {
             // Server is running locally. We need to run session in another thread. Create a proxy per session.
             // TODO pool these?
-            mLocalRequestProcessor = new RequestProcessor("Local PagedObjectServer Thread", true);
-            mObjectServerSession = (ObjectServerSession)RequestProcessorProxy.newInstance(mObjectServerSession, mLocalRequestProcessor);
-        }
+        //    mLocalRequestProcessor = new RequestProcessor("Local PagedObjectServer Thread", true);
+        //    mObjectServerSession = (ObjectServerSession)RequestProcessorProxy.newInstance(mObjectServerSession, mLocalRequestProcessor);
+        //}
         
         initOpenDatabase();
     }
@@ -1203,7 +1202,7 @@ public class EnerJDatabase implements Database, Persister
         
         Persistable persistable = (Persistable)object;
 
-        //  TODO  decr GC count.
+        //  TODO  decr GC count.- in server
         
         /* // Handle case if it was added then deleted in same transaction.
         if (persistable.enerj_IsNew()) {
@@ -1341,7 +1340,7 @@ public class EnerJDatabase implements Database, Persister
         }
         finally {
             // Clear out modified objects.
-            getDatabase().clearModifiedList();
+            clearModifiedList();
         }
     }
 
@@ -1382,36 +1381,146 @@ public class EnerJDatabase implements Database, Persister
      * back in memory if RestoreValues was set, otherwise they are hollowed. The
      * client cache is evicted. The transaction is closed.
      */
-    public void clear()
+    void clear()
     {
-        for (Iterator<Persistable> iter = getDatabase().getModifiedListIterator(); iter.hasNext(); ) {
+        boolean restoreValues = getTransaction().getRestoreValues();
+        
+        for (Iterator<Persistable> iter = getModifiedListIterator(); iter.hasNext(); ) {
             Persistable persistable = iter.next();
-            if (mRestoreValues) {
+            if (restoreValues) {
                 // Restore (rollback) the object
-                mTransactionDatabase.restoreAndClearPersistableImage(persistable);
+                restoreAndClearPersistableImage(persistable);
             }
 
             if (persistable.enerj_IsNew()) {
                 // New objects are evicted from the cache and get their OID cleared.
-                mTransactionDatabase.getClientCache().evict( mTransactionDatabase.getOID(persistable) );
+                getClientCache().evict( getOID(persistable) );
                 persistable.enerj_SetPrivateOID(ObjectSerializer.NULL_OID);
             }
         }
 
-        getDatabase().clearModifiedList();
+        clearModifiedList();
         
-        // See defined behavior on setRestoreValues.
-        if (mRestoreValues) {
-            mTransactionDatabase.getClientCache().makeObjectsNonTransactional();
+        // See defined behavior on EnerJTransaction.setRestoreValues.
+        if (restoreValues) {
+            getClientCache().makeObjectsNonTransactional();
         }
         else {
             // Note: hollowObjects() invokes enerj_Hollow() which clears the cache lock state.
-            mTransactionDatabase.getClientCache().hollowObjects();
+            getClientCache().hollowObjects();
         }
         
-        mTransactionDatabase.getClientCache().clearPrefetches();
-        mTransactionDatabase.getClientCache().evictAll();
-        closeCurrentTransaction();
+        getClientCache().clearPrefetches();
+        getClientCache().evictAll();
+    }
+
+    /** 
+     * @see org.odmg.Transaction#abort()
+     */
+    void abort() 
+    {
+        mObjectServerSession.rollbackTransaction();
+
+        // Rollback modified objects and clear new objects.
+        clear();
+    }
+
+    /** 
+     * @see org.odmg.Transaction#checkpoint()
+     */
+    void checkpoint() 
+    {
+        // Go thru the modified list and store the objects.
+        flushAndKeepModifiedList();
+
+        // Go thru the modified list and clear the persistable image. Essentially
+        // a rollback after this call rolls back to this point.
+        boolean restoreValues = getTransaction().getRestoreValues();
+        if (restoreValues) {
+            for (Iterator<Persistable> iter = getModifiedListIterator(); iter.hasNext(); ) {
+                clearPersistableImage(iter.next());
+            }
+        }
+
+        clearModifiedList();
+        mObjectServerSession.checkpointTransaction();
+    }
+
+    /** 
+     * @see org.odmg.Transaction#commit()
+     */
+    void commit() 
+    {
+        // Flush pending modified objects out to server.
+        flush();
+
+        // See defined behavior on setRetainValues().
+        if (getTransaction().getRetainValues()) {
+            getClientCache().makeObjectsNonTransactional();
+        }
+        else {
+            // Note: hollowObjects() invokes enerj_Hollow() which clears the cache lock state.
+            getClientCache().hollowObjects();
+        }
+
+        getClientCache().clearPrefetches();
+        mObjectServerSession.commitTransaction();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Note: Ener-J will wait for the lock to become obtainable, or until an
+     * error (such as deadlock detected) occurs. Note also that you cannot downgrade
+     * a lock (e.g., go from WRITE to READ).
+     */
+    void lock(Object obj, int lockMode) throws LockNotGrantedException 
+    {
+        if ( !(obj instanceof Persistable)) {
+            throw new ClassNotPersistenceCapableException("Object parameter to lock is not a Persistable object");
+        }
+        
+        Persistable persistable = (Persistable)obj;
+        
+         // If already at the proper level, just return.
+        if (isAtLockLevel(persistable, lockMode)) {
+            return;
+        }       
+
+        //  TODO  allow lock timeout to be set on database or transaction. -1L means wait til we get it.
+        mObjectServerSession.getLock(getOID(persistable), lockMode, -1L);
+
+        persistable.enerj_SetLockLevel(lockMode);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Note: Ener-J will <em>not</em> wait for the lock to become obtainable.
+     * If the lock is not immediately obtainable, false is returned.
+     */
+    boolean tryLock(Object obj, int lockMode) 
+    {
+        if ( !(obj instanceof Persistable)) {
+            throw new ClassNotPersistenceCapableException("Object parameter to lock is not a Persistable object");
+        }
+        
+        Persistable persistable = (Persistable)obj;
+        
+        // If already at the proper level, just return.
+        if (isAtLockLevel(persistable, lockMode)) {
+            return true;
+        }       
+
+        try {
+            // Don't wait for lock.
+            mObjectServerSession.getLock(getOID(persistable), lockMode, 0L);
+            persistable.enerj_SetLockLevel(lockMode);
+        }
+        catch (LockNotGrantedException e) {
+            return false;
+        }
+
+        return true;
     }
 }
-
