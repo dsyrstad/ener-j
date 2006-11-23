@@ -1,12 +1,12 @@
 11/15/2006 - Persister/ObjectServer/Schema Refactoring
 --------------------------------------------------------
 
-- Create Database should move to ObjectServer.
++ Create Database should move to ObjectServer.
 
-- Extents and indexes handled outside of schema.
++ Extents and indexes handled outside of schema.
 
 - ObjectServer should have server-wide object write-thru cache. Looks up objects by OID. Updated on commit.
 
-- Most all of EnerJTransaction can move to EnerJDatabase. Then it just because a wrapper for the EJDB.
++ Most all of EnerJTransaction can move to EnerJDatabase. Then it just because a wrapper for the EJDB.
 
 - Needs tests for Persister and new ObjectServerSession methods.
