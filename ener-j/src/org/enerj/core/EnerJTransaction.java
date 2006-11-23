@@ -24,14 +24,8 @@
 
 package org.enerj.core;
 
-import java.util.Iterator;
-
-import org.odmg.ClassNotPersistenceCapableException;
-import org.odmg.Database;
 import org.odmg.DatabaseClosedException;
 import org.odmg.LockNotGrantedException;
-import org.odmg.ODMGException;
-import org.odmg.ODMGRuntimeException;
 import org.odmg.Transaction;
 import org.odmg.TransactionInProgressException;
 import org.odmg.TransactionNotInProgressException;
@@ -213,7 +207,6 @@ public class EnerJTransaction implements Transaction
     {
         sCurrentTransactionForThread.remove();
 
-        // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
         if (mTransactionDatabase != null) {
             mTransactionDatabase.setTransaction(null);
         }
@@ -258,53 +251,20 @@ public class EnerJTransaction implements Transaction
     {
         checkIsOpenAndOwnedByThread();
         getTransactionDatabase().clear();
-        // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
-        for (Iterator<Persistable> iter = getDatabase().getModifiedListIterator(); iter.hasNext(); ) {
-            Persistable persistable = iter.next();
-            if (mRestoreValues) {
-                // Restore (rollback) the object
-                mTransactionDatabase.restoreAndClearPersistableImage(persistable);
-            }
-
-            if (persistable.enerj_IsNew()) {
-                // New objects are evicted from the cache and get their OID cleared.
-                mTransactionDatabase.getClientCache().evict( mTransactionDatabase.getOID(persistable) );
-                persistable.enerj_SetPrivateOID(ObjectSerializer.NULL_OID);
-            }
-        }
-
-        getDatabase().clearModifiedList();
-        
-        // See defined behavior on setRestoreValues.
-        if (mRestoreValues) {
-            mTransactionDatabase.getClientCache().makeObjectsNonTransactional();
-        }
-        else {
-            // Note: hollowObjects() invokes enerj_Hollow() which clears the cache lock state.
-            mTransactionDatabase.getClientCache().hollowObjects();
-        }
-        
-        mTransactionDatabase.getClientCache().clearPrefetches();
-        mTransactionDatabase.getClientCache().evictAll();
         closeCurrentTransaction();
     }
     
-
     // Start of org.odmg.Transaction interface methods...
 
-
-
+    /** 
+     * {@inheritDoc}
+     * @see org.odmg.Transaction#abort()
+     */
     public void abort() 
     {
         checkIsOpenAndOwnedByThread();
-        // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
         try {
-            if (mTransactionDatabase != null && mTransactionDatabase.getObjectServerSession() != null) {
-                mTransactionDatabase.getObjectServerSession().rollbackTransaction();
-            }
-
-            // Rollback modified objects and clear new objects.
-            clear();
+            getTransactionDatabase().abort();
         }
         finally {
             // Whether or not the abort succeeded, close the current transaction.
@@ -333,62 +293,44 @@ public class EnerJTransaction implements Transaction
         begin(database);
     }
     
-
+    /** 
+     * {@inheritDoc}
+     * @see org.odmg.Transaction#checkpoint()
+     */
     public void checkpoint() 
     {
         checkIsOpenAndOwnedByThread();
-
-        // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
-
-        // Go thru the modified list and store the objects.
-        flushAndKeepModifiedList();
-
-        // Go thru the modified list and clear the persistable image. Essentially
-        // a rollback after this call rolls back to this point.
-        if (mRestoreValues) {
-            for (Iterator<Persistable> iter = getDatabase().getModifiedListIterator(); iter.hasNext(); ) {
-                mTransactionDatabase.clearPersistableImage(iter.next());
-            }
-        }
-
-        getDatabase().clearModifiedList();
-        mTransactionDatabase.getObjectServerSession().checkpointTransaction();
+        getTransactionDatabase().checkpoint();
     }
     
-
+    /** 
+     * {@inheritDoc}
+     * @see org.odmg.Transaction#commit()
+     */
     public void commit() 
     {
         checkIsOpenAndOwnedByThread();
-
-        // TODO A lot of this stuff should move to EnerJDatabase because it is manipulating it. 
         try {
-            // Flush pending modified objects out to server.
-            flush();
-
-            // See defined behavior on setRetainValues().
-            if (mRetainValues) {
-                mTransactionDatabase.getClientCache().makeObjectsNonTransactional();
-            }
-            else {
-                // Note: hollowObjects() invokes enerj_Hollow() which clears the cache lock state.
-                mTransactionDatabase.getClientCache().hollowObjects();
-            }
-
-            mTransactionDatabase.getClientCache().clearPrefetches();
-            mTransactionDatabase.getObjectServerSession().commitTransaction();
+            getTransactionDatabase().commit();
         }
         finally {
             closeCurrentTransaction();
         }
     }
     
-
+    /** 
+     * {@inheritDoc}
+     * @see org.odmg.Transaction#isOpen()
+     */
     public boolean isOpen() 
     {
         return mTransactionDatabase != null && mTransactionDatabase.isTransactionOpen();
     }
     
-
+    /** 
+     * {@inheritDoc}
+     * @see org.odmg.Transaction#join()
+     */
     public void join()
     {
         if (!isOpen()) {
@@ -405,14 +347,15 @@ public class EnerJTransaction implements Transaction
         sCurrentTransactionForThread.set(this);
     }
     
-
+    /** 
+     * {@inheritDoc}
+     * @see org.odmg.Transaction#leave()
+     */
     public void leave() 
     {
         checkIsOpenAndOwnedByThread();
-
         sCurrentTransactionForThread.remove();
     }
-    
 
     /**
      * {@inheritDoc}
@@ -424,25 +367,9 @@ public class EnerJTransaction implements Transaction
     public void lock(Object obj, int lockMode) throws LockNotGrantedException 
     {
         checkIsOpenAndOwnedByThread();
-
-        if ( !(obj instanceof Persistable)) {
-            throw new ClassNotPersistenceCapableException("Object parameter to lock is not a Persistable object");
-        }
-        
-        Persistable persistable = (Persistable)obj;
-        
-         // If already at the proper level, just return.
-        if (EnerJDatabase.isAtLockLevel(persistable, lockMode)) {
-            return;
-        }       
-
-        //  TODO  allow lock timeout to be set on database or transaction. -1L means wait til we get it.
-        mTransactionDatabase.getObjectServerSession().getLock(mTransactionDatabase.getOID(persistable), lockMode, -1L);
-
-        persistable.enerj_SetLockLevel(lockMode);
+        getTransactionDatabase().lock(obj, lockMode);
     }
     
-
     /**
      * {@inheritDoc}
      * <p>
@@ -452,32 +379,8 @@ public class EnerJTransaction implements Transaction
     public boolean tryLock(Object obj, int lockMode) 
     {
         checkIsOpenAndOwnedByThread();
-
-        if ( !(obj instanceof Persistable)) {
-            throw new ClassNotPersistenceCapableException("Object parameter to lock is not a Persistable object");
-        }
-        
-        Persistable persistable = (Persistable)obj;
-        
-        // If already at the proper level, just return.
-        if (EnerJDatabase.isAtLockLevel(persistable, lockMode)) {
-            return true;
-        }       
-
-        try {
-            // Don't wait for lock.
-            mTransactionDatabase.getObjectServerSession().getLock(mTransactionDatabase.getOID(persistable), lockMode, 0L);
-            persistable.enerj_SetLockLevel(lockMode);
-        }
-        catch (LockNotGrantedException e) {
-            return false;
-        }
-
-        return true;
+        return getTransactionDatabase().tryLock(obj, lockMode);
     }
     
-
     // ...End of org.odmg.Transaction interface methods.
-
 }
-
