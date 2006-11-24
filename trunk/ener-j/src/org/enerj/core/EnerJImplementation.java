@@ -84,19 +84,16 @@ public class EnerJImplementation implements Implementation
         if (anObject instanceof Persistable) {
             Persistable persistable = (Persistable)anObject;
             Persister persister = persistable.enerj_GetPersister();
-            if (persister == null || persister instanceof EnerJDatabase) {
-                EnerJDatabase db = (EnerJDatabase)persister; 
-                if (db == null) {
-                    EnerJTransaction txn = EnerJTransaction.getCurrentTransaction();
-                    if (txn == null) {
-                        return ObjectSerializer.NULL_OID; // Transient
-                    }
-                    
-                    db = txn.getDatabase();
+            if (persister == null) {
+x                EnerJTransaction txn = EnerJTransaction.getCurrentTransaction();
+                if (txn == null) {
+                    return ObjectSerializer.NULL_OID; // Transient
                 }
                 
-                return db.getOID(anObject);
+                persister = (Persister)txn.getDatabase();
             }
+        
+            return persister.getOID(anObject);
         }
         
         return ObjectSerializer.NULL_OID;

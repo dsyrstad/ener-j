@@ -77,28 +77,26 @@ public class SchemaTest extends TestCase
         Transaction txn = impl.newTransaction();
         txn.begin();
 
-        DatabaseRoot root = db.getDatabaseRoot();
-        
+        Schema schema = db.getSchema();
+        assertNotNull("Schema should be non-null", schema );
 
         // Test creation date
         // Sleep a bit so we're sure current time exceeds creation time
         try {  Thread.sleep(2L);  }  catch (Exception e) { }
         Date now = new Date();
-        assertTrue("Creation date should before now", root.getCreationDate().before(now) );
+        assertTrue("Creation date should before now", schema.getCreationDate().before(now) );
         Date anHourAgo = new Date( now.getTime() - (60L * 60L * 1000L) );
-        assertTrue("Creation date should after a reasonable date", root.getCreationDate().after(anHourAgo) );
+        assertTrue("Creation date should after a reasonable date", schema.getCreationDate().after(anHourAgo) );
         
 
         // Test get/setDescription()
         final String desc = "A Database description";
-        assertTrue("Current description should not be test description", !root.getDescription().equals(desc) );
+        assertTrue("Current description should not be test description", !schema.getDescription().equals(desc) );
         
-        root.setDescription(desc);
-        assertTrue("Description should be test description", root.getDescription().equals(desc) );
+        schema.setDescription(desc);
+        assertTrue("Description should be test description", schema.getDescription().equals(desc) );
         
 
-        // Test getSchema().
-        assertNotNull("Schema should be non-null", root.getSchema() );
         
         txn.commit();
         db.close();
@@ -118,7 +116,7 @@ public class SchemaTest extends TestCase
         EnerJTransaction txn = (EnerJTransaction)impl.newTransaction();
         txn.begin();
 
-        Schema schema = db.getDatabaseRoot().getSchema();
+        Schema schema = db.getSchema();
         
 
         // Test creation date
@@ -259,7 +257,7 @@ public class SchemaTest extends TestCase
         Transaction txn = impl.newTransaction();
         txn.begin();
 
-        Schema schema = db.getDatabaseRoot().getSchema();
+        Schema schema = db.getSchema();
 
 
         // Test creation date
@@ -381,7 +379,7 @@ public class SchemaTest extends TestCase
         Transaction txn = impl.newTransaction();
         txn.begin();
 
-        Schema schema = db.getDatabaseRoot().getSchema();
+        Schema schema = db.getSchema();
         LogicalClassSchema logicalClass = new LogicalClassSchema(schema, "VersionTest", "");
         schema.addLogicalClass(logicalClass);
 

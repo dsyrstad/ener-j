@@ -25,6 +25,7 @@ package org.enerj.server;
 
 import java.util.Map;
 
+import org.enerj.annotations.Persist;
 import org.enerj.core.RegularDMap;
 import org.enerj.core.SparseBitSet;
 
@@ -35,6 +36,7 @@ import org.enerj.core.SparseBitSet;
  * @version $Id: ExtentMap.java,v 1.4 2006/01/09 02:25:12 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
+@Persist
 class ExtentMap
 {
     // TODO Use a VeryLargeDMap? 

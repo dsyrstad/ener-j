@@ -31,6 +31,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
+import org.enerj.server.BaseObjectServer;
 import org.enerj.server.ClassInfo;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
@@ -330,5 +331,19 @@ public class PersistableHelper
             anObject.enerj_SetPersister(null);
             setNonTransactional(anObject);
         }
+    }
+    
+    
+    /**
+     * Set the OID and persister for aPersistable.
+     *
+     * @param aPersister the Persister managing the Persistable.
+     * @param anOID the OID to set.
+     * @param aPersistable the object to be updated.
+     */
+    public static void setOID(Persister aPersister, long anOID, Persistable aPersistable)
+    {
+        aPersistable.enerj_SetPrivateOID(anOID);
+        aPersistable.enerj_SetPersister(aPersister);
     }
 }

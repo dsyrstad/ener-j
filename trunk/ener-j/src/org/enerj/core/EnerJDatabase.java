@@ -685,7 +685,15 @@ public class EnerJDatabase implements Database, Persister
         
         mClientCache.setSavedImage(oid, null);
     }
-    
+
+    public Schema getSchema() throws ODMGException
+    {
+        if (!mIsOpen) {
+            throw new DatabaseClosedException("Database has not been opened");
+        }
+        
+        return mObjectServerSession.getSchema();
+    }
 
     /**
      * Evicts all cached objects from the local cache.
@@ -810,9 +818,8 @@ public class EnerJDatabase implements Database, Persister
     {
         checkBoundTransaction();
 
-        aPersistable.enerj_SetPersister(this);
         long oid = getNewOID();
-        aPersistable.enerj_SetPrivateOID(oid);
+        PersistableHelper.setOID(this, oid, aPersistable);
 
         // Make sure that the schema has this persistable's CID.
         updateSchema(aPersistable);
