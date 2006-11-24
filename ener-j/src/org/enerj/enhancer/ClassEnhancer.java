@@ -86,8 +86,8 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
     private static final String sSerializableClassNameSlashed = Type.getInternalName(Serializable.class);
     
     private static final String sPersisterConstructorSignature = '(' + Type.getDescriptor(Persister.class) + ")V";
-    private static final String sReadWriteObjectMethodSignature = '(' + sObjectSerializerClassNameSlashed + ")V";
-    private static final String sResolveObjectMethodSignature = '(' + sObjectSerializerClassNameSlashed + ";Z)V";
+    private static final String sReadWriteObjectMethodSignature = '(' + sObjectSerializerClassDescr + ")V";
+    private static final String sResolveObjectMethodSignature = '(' + sObjectSerializerClassDescr + "Z)V";
 
     private byte[] mOriginalClassBytes;
     private MetaData mMetaData;
@@ -115,8 +115,6 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
     private ArrayList<Field> mTransientFields = new ArrayList<Field>();
     // Map from field name to Field.
     private Map<String, Field> mDeclaredFields = new HashMap<String, Field>();
-
-    
 
     /**
      * Construct a ClassEnhancer. 

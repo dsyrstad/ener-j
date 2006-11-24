@@ -42,6 +42,7 @@ import org.enerj.core.EnerJTransaction;
 import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
+import org.enerj.core.PersistableHelper;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
 import org.enerj.server.logentry.BeginTransactionLogEntry;
@@ -253,6 +254,7 @@ public class PagedObjectServer extends BaseObjectServer
 			Properties someDBProps, File aDBDir) throws ODMGException {
 		
 		someDBProps.setProperty(ObjectServer.ENERJ_DBDIR_PROP, aDBDir.getParent() );
+        someDBProps.setProperty(ObjectServer.ENERJ_DBNAME_PROP, aDBName);
         String volumeFileName = StringUtil.substituteMacros( getRequiredProperty(someDBProps, FilePageServer.VOLUME_PROP), someDBProps);
         int pageSize = getRequiredIntProperty(someDBProps, FilePageServer.PAGE_SIZE_PROP);
 
@@ -316,12 +318,12 @@ public class PagedObjectServer extends BaseObjectServer
             
             // Special OID for schema.
             Persistable schemaPersistable = (Persistable)schema;
-            schemaPersistable.enerj_SetPrivateOID(BaseObjectServer.SCHEMA_OID);
+            PersistableHelper.setOID(session, BaseObjectServer.SCHEMA_OID, schemaPersistable);
             session.addToModifiedList(schemaPersistable);
             
             // Special OID for ExtentMap.
             Persistable extentMapPersistable = (Persistable)extentMap;
-            extentMapPersistable.enerj_SetPrivateOID(BaseObjectServer.EXTENTS_OID);
+            PersistableHelper.setOID(session, BaseObjectServer.EXTENTS_OID, extentMapPersistable);
             session.addToModifiedList(extentMapPersistable);
             
             session.flushModifiedObjects();
@@ -555,15 +557,39 @@ public class PagedObjectServer extends BaseObjectServer
      */
     private static ObjectServerSession connect(Properties someProperties, boolean isSchemaSession) throws ODMGException 
     {
+        // Look up {dbname}.properties on enerj.dbpath.  
+        String dbPath = someProperties.getProperty(ENERJ_DBPATH_PROP);
+        if (dbPath == null) {
+            dbPath = ".";
+        }
+        
+        String dbname = getRequiredProperty(someProperties, ENERJ_DBNAME_PROP);
+
+        Properties dbConfigProps = new Properties(someProperties);
+
+        String propFileName = dbname + File.separatorChar + dbname + ".properties";
+        File propFile = FileUtil.findFileOnPath(propFileName, dbPath);
+        // NOTE: It's OK not to find the property file. In this case, we just try to use URI/System properties.
+        if (propFile != null) {
+            // Combine the given properties and the ones from the config file, with the latter overriding the former.
+            try {
+                FileInputStream inPropFile = new FileInputStream(propFile);
+                dbConfigProps.load(inPropFile);
+                dbConfigProps.setProperty(ENERJ_DBDIR_PROP, propFile.getParent() );
+            }
+            catch (IOException e) {
+                throw new ODMGException("Error reading " + propFile, e);
+            }
+        } 
+
         // See if there is already a ObjectServer for this database.
         // Synchronize on sCurrentServers during the get/put process so that another thread
         // cannot create one at the same time.
-        String dbName = getRequiredProperty(someProperties, ObjectServer.ENERJ_DBNAME_PROP);
         synchronized (sCurrentServers) {
-            PagedObjectServer server = (PagedObjectServer)sCurrentServers.get(dbName);
+            PagedObjectServer server = (PagedObjectServer)sCurrentServers.get(dbname);
             if (server == null) {
                 server = new PagedObjectServer(someProperties);
-                sCurrentServers.put(dbName, server);
+                sCurrentServers.put(dbname, server);
             }
             
             if (server.mQuiescent) {

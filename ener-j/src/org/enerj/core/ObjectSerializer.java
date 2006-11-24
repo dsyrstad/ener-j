@@ -446,13 +446,7 @@ public class ObjectSerializer
      */
     private void writeFCO(Object aValue) throws IOException
     {
-        long oid = ObjectSerializer.NULL_OID;
-        if (aValue != null) {
-            Persistable persistable = (Persistable)aValue;
-            oid = persistable.enerj_GetPersister().getOID(persistable);
-        }
-
-        mWriteContext.mStream.writeLong(oid);
+        mWriteContext.mStream.writeLong( EnerJImplementation.getEnerJObjectId(aValue) );
     }
 
 

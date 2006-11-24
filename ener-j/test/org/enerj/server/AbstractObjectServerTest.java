@@ -98,11 +98,11 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         assertNotNull( someOIDs );
         assertTrue( someOIDs.length >= 1 );
-        long[] cids = mSession.getCIDsForOIDs(someOIDs);
+        ClassInfo[] classInfos = mSession.getClassInfoForOIDs(someOIDs);
         for (int i = 0; i < someOIDs.length; i++) {
             assertTrue( someOIDs[i] > ObjectSerializer.NULL_OID );
             
-            assertTrue( cids[i] == ObjectSerializer.NULL_CID );
+            assertTrue( classInfos[i].getCID() == ObjectSerializer.NULL_CID );
         }
         
         // Verify no duplicates within the block
@@ -123,7 +123,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         int idx = 0;
         int numToAlloc = anOIDCount;
         while (numToAlloc > 0) {
-            long[] oidBlock = mSession.getNewOIDBlock();
+            long[] oidBlock = mSession.getNewOIDBlock(10);
             int copyLength = (numToAlloc < oidBlock.length ? numToAlloc : oidBlock.length);
             System.arraycopy(oidBlock, 0, oids, idx, copyLength);
             idx += copyLength;
@@ -173,14 +173,15 @@ public abstract class AbstractObjectServerTest extends TestCase
 
         byte[][] loadedObjects = mSession.loadObjects(someOIDs);
         assertNotNull(objects);
-        long[] testCIDs = mSession.getCIDsForOIDs(someOIDs);
+        ClassInfo[] testClassInfos = mSession.getClassInfoForOIDs(someOIDs);
         for (int i = 0; i < someOIDs.length; i++) {
             byte[] obj = loadedObjects[i];
             assertTrue( obj.length == aLength );
 
-            assertTrue( testCIDs[i] == (cid + i) );
+            long testCID = testClassInfos[i].getCID();
+            assertTrue( testCID == (cid + i) );
 
-            byte[] testBytes = generateBytes(aLength, someOIDs[i], testCIDs[i]);
+            byte[] testBytes = generateBytes(aLength, someOIDs[i], testCID);
             assertTrue( Arrays.equals(testBytes, obj) );
         }
     }
@@ -201,10 +202,10 @@ public abstract class AbstractObjectServerTest extends TestCase
     public void testOIDs() throws Exception
     {
         mSession.beginTransaction();
-        long[] oids1 = mSession.getNewOIDBlock();
+        long[] oids1 = mSession.getNewOIDBlock(10);
         verifyOIDs(oids1);
 
-        long[] oids2 = mSession.getNewOIDBlock();
+        long[] oids2 = mSession.getNewOIDBlock(10);
         verifyOIDs(oids2);
 
         for (int i = 0; i < oids1.length; i++) {

@@ -621,6 +621,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public long getOID(Object anObject)
     {
+        mLogger.info("anObject = " + anObject.getClass());
         if ( !(anObject instanceof Persistable)) {
             return ObjectSerializer.NULL_OID;
         }
@@ -640,6 +641,8 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                 throw new ODMGRuntimeException(e);
             }
             
+            mLogger.info("New Object " + persistable.getClass() + " with oid " + oid);
+            PersistableHelper.setOID(this, oid, persistable);
             // This call adds the object to the cache too.
             addToModifiedList(persistable);
         }

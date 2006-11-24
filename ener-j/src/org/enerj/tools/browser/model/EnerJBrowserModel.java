@@ -39,18 +39,17 @@ import java.util.Map;
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
 
-import org.odmg.ODMGException;
-import org.odmg.QueryException;
-import org.enerj.core.Extent;
+import org.enerj.core.EnerJDatabase;
+import org.enerj.core.EnerJImplementation;
+import org.enerj.core.EnerJOQLQuery;
 import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
 import org.enerj.core.Schema;
 import org.enerj.core.Structure;
-import org.enerj.core.EnerJDatabase;
-import org.enerj.core.EnerJImplementation;
-import org.enerj.core.EnerJOQLQuery;
 import org.enerj.util.ClassUtil;
+import org.odmg.ODMGException;
+import org.odmg.QueryException;
 
 import com.vscorp.ui.model.CollectionObjectSource;
 import com.vscorp.ui.model.ObjectSource;
@@ -74,7 +73,8 @@ public class EnerJBrowserModel
     private String mDBURI;
     private EnerJDatabase mDB;
     private DefaultListModel mHistoryListModel;
-    private List<Extent> mExtents = null;
+    /** List of class names. */
+    private List<String> mExtents = null;
     private ActionListener mLinkListener;
 
 
@@ -140,15 +140,24 @@ public class EnerJBrowserModel
     }
 
 
-    public List<Extent> getExtents()
+    public List<String> getExtents()
     {
         if (mExtents == null) {
-            Schema schema = getDB().getDatabaseRoot().getSchema();
+            Schema schema; 
+            try {
+                schema = getDB().getSchema();
+            }
+            catch (ODMGException e) {
+                // TODO
+                e.printStackTrace();
+                return null;
+            }
+
             Collection<LogicalClassSchema> classSchemas = schema.getLogicalClasses();
             mExtents = new ArrayList( classSchemas.size() );
             for (Iterator<LogicalClassSchema> iter = classSchemas.iterator(); iter.hasNext(); ) {
                 LogicalClassSchema classSchema = iter.next();
-                mExtents.add( classSchema.getExtent() );
+                mExtents.add( classSchema.getClassName() );
             }
         }
         
@@ -166,15 +175,22 @@ public class EnerJBrowserModel
 
     public TableInfo getTableInfoForSchema()
     {
-        Object obj = getDB().getDatabaseRoot().getSchema();
-        addHistoryEntry(obj, "Schema");
-        return getTableInfoWithoutHistory(obj);
+        try {
+            Object obj = getDB().getSchema();
+            addHistoryEntry(obj, "Schema");
+            return getTableInfoWithoutHistory(obj);
+        }
+        catch (ODMGException e) {
+            // TODO
+            e.printStackTrace();
+            return null;
+        }
     }
     
 
     public TableInfo getTableInfoForBindery()
     {
-        Object obj = getDB().getDatabaseRoot().getBindery();
+        Object obj = null; // TODO getDB().getDatabaseRoot().getBindery();
         addHistoryEntry(obj, "Named Objects");
         return getTableInfoWithoutHistory(obj);
     }
