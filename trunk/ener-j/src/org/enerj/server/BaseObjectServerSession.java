@@ -41,6 +41,7 @@ import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
 import org.enerj.core.PersistableObjectCache;
 import org.enerj.core.Persister;
+import org.enerj.core.PersisterRegistry;
 import org.enerj.core.Schema;
 import org.enerj.core.SparseBitSet;
 import org.enerj.util.RequestProcessor;
@@ -77,10 +78,6 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     private PersistableObjectCache mObjectCache = new DefaultPersistableObjectCache(1000);
     /** List of Persistable objects created or modified during this transaction. */
     private ModifiedPersistableList mModifiedObjects = new ModifiedPersistableList();
-    /** If we're running locally within the client JVM, will have a RequestProcessor setup to proxy requests.
-     * Otherwise this will be null. */
-    private RequestProcessor mRequestProcessor = null;
-    
 
     /**
      * Construct a new BaseObjectServerSession.
@@ -114,25 +111,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     {
         mConnected = false;
     }
-    
-    /**
-     * @return the current RequestProcessor if the session is running in the client's JVM, else null.
-     */
-    RequestProcessor getRequestProcessor()
-    {
-        return mRequestProcessor;
-    }
-    
-    /**
-     * Sets the RequestProcessor that is the proxy to this session.
-     * 
-     * @param aRequestProcessor the RequestProcessor if the session is running in the client's JVM, else null.
-     */
-    void setRequestProcessor(RequestProcessor aRequestProcessor)
-    {
-        mRequestProcessor = aRequestProcessor;
-    }
-    
+
     /**
      * Flush pending extent updates out to the extents.
      */
@@ -146,27 +125,33 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             throw new ODMGRuntimeException(e);
         }
 
-        ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
-        for (long cid : mPendingNewOIDs.keySet()) {
-            TLongArrayList oids = mPendingNewOIDs.get(cid);
-            if (oids != null) {
-                ClassVersionSchema version = schema.findClassVersion(cid);
-                if (version != null) {
-                    SparseBitSet extent = extentMap.getExtent( version.getLogicalClassSchema().getClassName() );
-                    if (extent != null) {
-                        int size = oids.size();
-                        for (int i = 0; i < size; i++) {
-                            // TODO We need to track the extent size. Do this with a delta that is updated right
-                            // TODO at commit time.
-                            extent.set(oids.get(i), true);
+        PersisterRegistry.pushPersisterForThread(this);
+        try {
+            ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
+            for (long cid : mPendingNewOIDs.keySet()) {
+                TLongArrayList oids = mPendingNewOIDs.get(cid);
+                if (oids != null) {
+                    ClassVersionSchema version = schema.findClassVersion(cid);
+                    if (version != null) {
+                        SparseBitSet extent = extentMap.getExtent( version.getLogicalClassSchema().getClassName() );
+                        if (extent != null) {
+                            int size = oids.size();
+                            for (int i = 0; i < size; i++) {
+                                // TODO We need to track the extent size. Do this with a delta that is updated right
+                                // TODO at commit time.
+                                extent.set(oids.get(i), true);
+                            }
                         }
                     }
                 }
             }
+            
+            flushModifiedObjects();
+            mPendingNewOIDs.clear();
         }
-        
-        flushModifiedObjects();
-        mPendingNewOIDs.clear();
+        finally {
+            PersisterRegistry.popPersisterForThread();
+        }
     }
     
     
@@ -217,9 +202,15 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     public void bind(long anOID, String aName) throws ObjectNameNotUniqueException
     {
         checkTransactionActive();
-        Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
-        bindery.bind(anOID, aName);
-        flushModifiedObjects();
+        PersisterRegistry.pushPersisterForThread(this);
+        try {
+            Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
+            bindery.bind(anOID, aName);
+            flushModifiedObjects();
+        }
+        finally {
+            PersisterRegistry.popPersisterForThread();
+        }
     }
 
     /** 
@@ -228,8 +219,14 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public long lookup(String aName) throws ObjectNameNotFoundException
     {
-        Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
-        return bindery.lookup(aName);
+        PersisterRegistry.pushPersisterForThread(this);
+        try {
+            Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
+            return bindery.lookup(aName);
+        }
+        finally {
+            PersisterRegistry.popPersisterForThread();
+        }
     }
 
     /** 
@@ -239,9 +236,15 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     public void unbind(String aName) throws ObjectNameNotFoundException
     {
         checkTransactionActive();
-        Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
-        bindery.unbind(aName);
-        flushModifiedObjects();
+        PersisterRegistry.pushPersisterForThread(this);
+        try {
+            Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
+            bindery.unbind(aName);
+            flushModifiedObjects();
+        }
+        finally {
+            PersisterRegistry.popPersisterForThread();
+        }
     }
     
     /** 
@@ -266,18 +269,24 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             throw new ObjectNotPersistentException("Object is not persistent");
         }
         
-        ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
-        ClassVersionSchema version = schema.findClassVersion( classInfo.getCID() );
-        if (version != null) {
-            SparseBitSet extent = extentMap.getExtent( version.getLogicalClassSchema().getClassName() );
-            if (extent != null) {
-                extent.set(anOID, false);
+        PersisterRegistry.pushPersisterForThread(this);
+        try {
+            ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
+            ClassVersionSchema version = schema.findClassVersion( classInfo.getCID() );
+            if (version != null) {
+                SparseBitSet extent = extentMap.getExtent( version.getLogicalClassSchema().getClassName() );
+                if (extent != null) {
+                    extent.set(anOID, false);
+                }
             }
+    
+            // TODO remove from indexes
+    
+            flushModifiedObjects();
         }
-
-        // TODO remove from indexes
-
-        flushModifiedObjects();
+        finally {
+            PersisterRegistry.popPersisterForThread();
+        }
     }
 
     /** 
@@ -294,24 +303,30 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             throw new ODMGRuntimeException(e);
         }
 
-        ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
-        SparseBitSet extent = extentMap.getExtent(aClassName);
-        long result = 0;
-        if (extent != null) {
-            result += extent.getNumBitsSet();
-        }
-
-        if (wantSubclasses) {
-            Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
-            for (ClassVersionSchema classVersion : subclasses) {
-                extent = extentMap.getExtent( classVersion.getLogicalClassSchema().getClassName() );
-                if (extent != null) {
-                    result += extent.getNumBitsSet();
+        PersisterRegistry.pushPersisterForThread(this);
+        try {
+            ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
+            SparseBitSet extent = extentMap.getExtent(aClassName);
+            long result = 0;
+            if (extent != null) {
+                result += extent.getNumBitsSet();
+            }
+    
+            if (wantSubclasses) {
+                Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
+                for (ClassVersionSchema classVersion : subclasses) {
+                    extent = extentMap.getExtent( classVersion.getLogicalClassSchema().getClassName() );
+                    if (extent != null) {
+                        result += extent.getNumBitsSet();
+                    }
                 }
             }
+    
+            return result;
         }
-
-        return result;
+        finally {
+            PersisterRegistry.popPersisterForThread();
+        }
     }
 
     /** 
@@ -329,30 +344,31 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             throw new ODMGRuntimeException(e);
         }
 
-        List<SparseBitSet> extents = new ArrayList<SparseBitSet>();
-        ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
-        SparseBitSet extent = extentMap.getExtent(aClassName);
-        if (extent != null) {
-            extents.add(extent);
-        }
-
-        if (wantSubclasses) {
-            Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
-            for (ClassVersionSchema classVersion : subclasses) {
-                extent = extentMap.getExtent( classVersion.getLogicalClassSchema().getClassName() );
-                if (extent != null) {
-                    extents.add(extent);
+        PersisterRegistry.pushPersisterForThread(this);
+        try {
+            List<SparseBitSet> extents = new ArrayList<SparseBitSet>();
+            ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
+            SparseBitSet extent = extentMap.getExtent(aClassName);
+            if (extent != null) {
+                extents.add(extent);
+            }
+    
+            if (wantSubclasses) {
+                Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
+                for (ClassVersionSchema classVersion : subclasses) {
+                    extent = extentMap.getExtent( classVersion.getLogicalClassSchema().getClassName() );
+                    if (extent != null) {
+                        extents.add(extent);
+                    }
                 }
             }
+    
+            ExtentIterator extentIterator = new DefaultExtentIterator(extents);
+            return extentIterator;
         }
-
-        ExtentIterator extentIterator = new DefaultExtentIterator(extents);
-        // Proxy iterator using Session's RequestProcessor if running locally in the client's JVM.
-        if (mRequestProcessor != null) {
-            extentIterator = (ExtentIterator)RequestProcessorProxy.newInstance(extentIterator, mRequestProcessor);
+        finally {
+            PersisterRegistry.popPersisterForThread();
         }
-
-        return extentIterator;
     }
     
     /** 
@@ -364,9 +380,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         return mObjectServer.getSchema();
     }
     
-    
     /** 
-     * 
      * {@inheritDoc}
      * @see org.enerj.server.ObjectServerSession#addClassVersionToSchema(java.lang.String, long, java.lang.String[], byte[], java.lang.String[], java.lang.String[])
      */
