@@ -577,17 +577,23 @@ public class PagedObjectServer extends BaseObjectServer
         String propFileName = dbname + File.separatorChar + dbname + ".properties";
         File propFile = FileUtil.findFileOnPath(propFileName, dbPath);
         // NOTE: It's OK not to find the property file. In this case, we just try to use URI/System properties.
+        boolean foundPropFile = false;
         if (propFile != null) {
             // Combine the given properties and the ones from the config file, with the latter overriding the former.
             try {
                 FileInputStream inPropFile = new FileInputStream(propFile);
                 dbConfigProps.load(inPropFile);
                 dbConfigProps.setProperty(ENERJ_DBDIR_PROP, propFile.getParent() );
+                foundPropFile = true;
             }
             catch (IOException e) {
                 throw new ODMGException("Error reading " + propFile, e);
             }
         } 
+        
+        if (!foundPropFile && dbConfigProps.getProperty("PagedObjectServer.PageServerClass") == null) {
+            throw new ODMGException("Cannot open database " + dbname + " because it was not found or not configured properly.");
+        }
 
         // See if there is already a ObjectServer for this database.
         // Synchronize on sCurrentServers during the get/put process so that another thread
@@ -595,7 +601,7 @@ public class PagedObjectServer extends BaseObjectServer
         synchronized (sCurrentServers) {
             PagedObjectServer server = (PagedObjectServer)sCurrentServers.get(dbname);
             if (server == null) {
-                server = new PagedObjectServer(someProperties);
+                server = new PagedObjectServer(dbConfigProps);
                 sCurrentServers.put(dbname, server);
             }
             
@@ -721,7 +727,6 @@ public class PagedObjectServer extends BaseObjectServer
                         cid = storeRequest.mCID;
                     }
                     
-                    sLogger.info("ClassInfo for cid " + cid);
                     // Resolve the class name. Try system CIDs first.
                     String className = SystemCIDMap.getSystemClassNameForCID(cid);
                     if (className == null) {
@@ -748,23 +753,23 @@ public class PagedObjectServer extends BaseObjectServer
             // to the current version before writing.
 
             for (SerializedObject object : someObjects) {
-                long anOID = object.getOID();
-                long aCID = object.getCID();
+                long oid = object.getOID();
+                long cid = object.getCID();
 
-                // Prevent system cids from being stored unless this is the schema session.
-                if (!mIsSchemaSession && aCID <= ObjectSerializer.LAST_SYSTEM_CID) {
+                // Prevent schema OIDs from being stored unless this is the schema session.
+                if (!mIsSchemaSession && oid == SCHEMA_OID) {
                     throw new ODMGException("Client is not allowed to update schema via object modification.");
                 }
                 
                 // Make sure the object is WRITE locked.
-                getLock(anOID, EnerJTransaction.WRITE, -1);
+                getLock(oid, EnerJTransaction.WRITE, -1);
                 
                 Transaction txn = getTransaction();
     
-                StoreObjectLogEntry logEntry = new StoreObjectLogEntry( txn.getLogTransactionId(), anOID, aCID, object.getImage());
+                StoreObjectLogEntry logEntry = new StoreObjectLogEntry( txn.getLogTransactionId(), oid, cid, object.getImage());
                 mRedoLogServer.append(logEntry);
     
-                PagedStore.StoreObjectRequest request = mPagedStore.new StoreObjectRequest(aCID, anOID, object.getImage());
+                PagedStore.StoreObjectRequest request = mPagedStore.new StoreObjectRequest(cid, oid, object.getImage());
                 request.mLogEntryPosition = logEntry.getLogPosition();
     
                 // Throw update into the cache. It doesn't hit the database (PagedStore) until checkpoint or commit.
@@ -785,6 +790,11 @@ public class PagedObjectServer extends BaseObjectServer
             byte[][] objects = new byte[someOIDs.length][];
             int idx = 0;
             for (long oid : someOIDs) {
+                // Prevent schema OIDs from being stored unless this is the schema session.
+                if (!mIsSchemaSession && oid == SCHEMA_OID) {
+                    throw new ODMGException("Client is not allowed to read schema directly.");
+                }
+
                 // Check the update cache first and get the object from the store request, if there is one.
                 PagedStore.StoreObjectRequest storeRequest = mServerUpdateCache.lookupStoreRequest(oid);
                 if (storeRequest == null) {

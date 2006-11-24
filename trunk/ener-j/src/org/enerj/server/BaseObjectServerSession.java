@@ -44,6 +44,7 @@ import org.enerj.core.Persister;
 import org.enerj.core.PersisterRegistry;
 import org.enerj.core.Schema;
 import org.enerj.core.SparseBitSet;
+import org.enerj.core.SystemCIDMap;
 import org.enerj.util.RequestProcessor;
 import org.enerj.util.RequestProcessorProxy;
 import org.odmg.ODMGException;
@@ -62,7 +63,7 @@ import org.odmg.TransactionNotInProgressException;
  */
 abstract public class BaseObjectServerSession implements ObjectServerSession, Persister
 {
-    private static Logger sLogger = Logger.getLogger( BaseObjectServerSession.class.getName() ); 
+    private static Logger sLogger = Logger.getLogger( BaseObjectServerSession.class.getName() );
     
     private BaseObjectServer mObjectServer;
     private boolean mAllowNontransactionalReads = false;
@@ -119,7 +120,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     {
         Schema schema;
         try {
-            schema = getSchema();
+            schema = getSchemaOrNull();
         }
         catch (ODMGException e) {
             throw new ODMGRuntimeException(e);
@@ -189,6 +190,18 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     }
 
 
+    /**
+     * Gets the schema for the database.
+     *
+     * @return the Schema or null if it doesn't exist.
+     * 
+     * @throws ODMGException if an error occurs.
+     */
+    protected Schema getSchemaOrNull() throws ODMGException
+    {
+        return mObjectServer.getSchema();
+    }
+    
     // Start of ObjectServerSession interface methods...
 
 
@@ -383,7 +396,13 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public Schema getSchema() throws ODMGException
     {
-        return mObjectServer.getSchema();
+        Schema schema = getSchemaOrNull();
+        if (schema == null) {
+            sLogger.severe("Cannot find Schema");
+            throw new ODMGException("Internal Error: Schema does not exist.");
+        }
+        
+        return schema;
     }
     
     /** 
@@ -641,7 +660,6 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public long getOID(Object anObject)
     {
-        sLogger.info("anObject = " + anObject.getClass());
         if ( !(anObject instanceof Persistable)) {
             return ObjectSerializer.NULL_OID;
         }
@@ -661,7 +679,6 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                 throw new ODMGRuntimeException(e);
             }
             
-            sLogger.info("New Object " + persistable.getClass() + " with oid " + oid + " cid=" + persistable.enerj_GetClassId());
             PersistableHelper.setOID(this, oid, persistable);
             // This call adds the object to the cache too.
             addToModifiedList(persistable);

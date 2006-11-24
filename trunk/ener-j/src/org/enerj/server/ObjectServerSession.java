@@ -302,7 +302,7 @@ public interface ObjectServerSession
      *
      * @return the Schema.
      * 
-     * @throws ODMGException if an error occurs.
+     * @throws ODMGException if an error occurs (e.g., the schema does not exist).
      */
     public Schema getSchema() throws ODMGException;
     

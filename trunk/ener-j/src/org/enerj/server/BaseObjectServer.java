@@ -24,6 +24,7 @@ package org.enerj.server;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.LogicalClassSchema;
@@ -43,6 +44,8 @@ import org.odmg.ODMGException;
  */
 abstract public class BaseObjectServer implements ObjectServer
 {
+    private static final Logger sLogger = Logger.getLogger(BaseObjectServer.class.getName()); 
+
     /** System OID: the Schema. */
     public static final long SCHEMA_OID = 1L;
     /** System OID: the Bindery. */
@@ -168,7 +171,7 @@ abstract public class BaseObjectServer implements ObjectServer
     /**
      * Gets a read-only copy of the schema.
      *
-     * @return the Schema.
+     * @return the Schema or null if it does not exist (can happen during database creation).
      * 
      * @throws ODMGException if an error occurs.
      */
@@ -192,7 +195,7 @@ abstract public class BaseObjectServer implements ObjectServer
                     schemaSession.rollbackTransaction();
                 }
             }
-
+            
             return mCachedSchema;
         }
     }
