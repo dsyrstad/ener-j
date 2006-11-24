@@ -29,6 +29,7 @@ import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
+import org.enerj.core.PersisterRegistry;
 import org.enerj.core.Schema;
 import org.odmg.ODMGException;
 
@@ -181,8 +182,9 @@ abstract public class BaseObjectServer implements ObjectServer
         synchronized (mSchemaLock) {
             if (mCachedSchema != null) {
                 BaseObjectServerSession schemaSession = getSchemaSession();
-                schemaSession.beginTransaction();
+                PersisterRegistry.pushPersisterForThread(schemaSession);
                 try {
+                    schemaSession.beginTransaction();
                     mCachedSchema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
                     // Resolve all references in the schema. Also disassociate from this Persister. 
                     PersistableHelper.resolveObject((Persistable)mCachedSchema, true);
@@ -191,6 +193,7 @@ abstract public class BaseObjectServer implements ObjectServer
                     throw new ODMGException(e);
                 }
                 finally {
+                    PersisterRegistry.popPersisterForThread();
                     schemaSession.rollbackTransaction();
                 }
             }
@@ -220,9 +223,10 @@ abstract public class BaseObjectServer implements ObjectServer
         synchronized (mSchemaLock) {
             if (mCachedSchema != null) {
                 BaseObjectServerSession schemaSession = getSchemaSession();
-                schemaSession.beginTransaction();
+                PersisterRegistry.pushPersisterForThread(schemaSession);
                 boolean success = false;
                 try {
+                    schemaSession.beginTransaction();
                     Schema schema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
 
                     LogicalClassSchema logicalClass = schema.findLogicalClass(aClassName);
@@ -248,6 +252,7 @@ abstract public class BaseObjectServer implements ObjectServer
                     success = true;
                 }
                 finally {
+                    PersisterRegistry.popPersisterForThread();
                     if (!success) {
                         schemaSession.rollbackTransaction();
                     }

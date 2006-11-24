@@ -43,6 +43,7 @@ import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
+import org.enerj.core.PersisterRegistry;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
 import org.enerj.server.logentry.BeginTransactionLogEntry;
@@ -299,38 +300,44 @@ public class PagedObjectServer extends BaseObjectServer
 
             // Create a session so that we can initialize the schema.
             session = (Session)connect(someDBProps, true);
-            session.beginTransaction();
-
-            Schema schema = new Schema(aDescription);
-            // Create Extent map.
-            ExtentMap extentMap = new ExtentMap();
-
-            // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
-            for (Class schemaClass : sSchemaClasses) {
-                String schemaClassName = schemaClass.getName();
-                LogicalClassSchema classSchema = new LogicalClassSchema(schema, schemaClassName, null);
-                long cid = SystemCIDMap.getSystemCIDForClassName(schemaClassName);
-                new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);
+            PersisterRegistry.pushPersisterForThread(session);
+            try {
+                session.beginTransaction();
+    
+                Schema schema = new Schema(aDescription);
+                // Create Extent map.
+                ExtentMap extentMap = new ExtentMap();
+    
+                // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
+                for (Class schemaClass : sSchemaClasses) {
+                    String schemaClassName = schemaClass.getName();
+                    LogicalClassSchema classSchema = new LogicalClassSchema(schema, schemaClassName, null);
+                    long cid = SystemCIDMap.getSystemCIDForClassName(schemaClassName);
+                    new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);
+                    
+                    // Create an extent for this class.
+                    extentMap.createExtentForClassName(schemaClassName);
+                }
                 
-                // Create an extent for this class.
-                extentMap.createExtentForClassName(schemaClassName);
+                // Special OID for schema.
+                Persistable schemaPersistable = (Persistable)schema;
+                PersistableHelper.setOID(session, BaseObjectServer.SCHEMA_OID, schemaPersistable);
+                session.addToModifiedList(schemaPersistable);
+                
+                // Special OID for ExtentMap.
+                Persistable extentMapPersistable = (Persistable)extentMap;
+                PersistableHelper.setOID(session, BaseObjectServer.EXTENTS_OID, extentMapPersistable);
+                session.addToModifiedList(extentMapPersistable);
+                
+                session.flushModifiedObjects();
+                
+                session.commitTransaction();
+                
+                completed = true;
             }
-            
-            // Special OID for schema.
-            Persistable schemaPersistable = (Persistable)schema;
-            PersistableHelper.setOID(session, BaseObjectServer.SCHEMA_OID, schemaPersistable);
-            session.addToModifiedList(schemaPersistable);
-            
-            // Special OID for ExtentMap.
-            Persistable extentMapPersistable = (Persistable)extentMap;
-            PersistableHelper.setOID(session, BaseObjectServer.EXTENTS_OID, extentMapPersistable);
-            session.addToModifiedList(extentMapPersistable);
-            
-            session.flushModifiedObjects();
-            
-            session.commitTransaction();
-            
-            completed = true;
+            finally {
+                PersisterRegistry.popPersisterForThread();
+            }
         }
         catch (ODMGException e) {
             throw e;

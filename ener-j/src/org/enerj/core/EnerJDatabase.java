@@ -925,24 +925,6 @@ public class EnerJDatabase implements Database, Persister
     }
     
 
-    /**
-     * Common initialization used when opening a database.
-     */
-    private void initOpenDatabase()
-    {
-        // After successful open, check if we need to make it current.
-        if (sCurrentProcessDatabase == null) {
-            sCurrentProcessDatabase = this;
-        }
-        
-        if (!sCurrentThreadDatabaseMap.containsKey( Thread.currentThread() )) {
-            sCurrentThreadDatabaseMap.put( Thread.currentThread(), this);
-        }
-        
-        mIsOpen = true;
-    }
-    
-
     // Start of org.odmg.Database interface methods...
 
 
@@ -1100,10 +1082,23 @@ public class EnerJDatabase implements Database, Persister
         //    mObjectServerSession = (ObjectServerSession)RequestProcessorProxy.newInstance(mObjectServerSession, mLocalRequestProcessor);
         //}
         
-        initOpenDatabase();
+        // After successful open, check if we need to make it current.
+        if (sCurrentProcessDatabase == null) {
+            sCurrentProcessDatabase = this;
+        }
+        
+        if (!sCurrentThreadDatabaseMap.containsKey( Thread.currentThread() )) {
+            sCurrentThreadDatabaseMap.put( Thread.currentThread(), this);
+        }
+
+        PersisterRegistry.pushPersisterForThread(this);
+        mIsOpen = true;
     }
     
-
+    /** 
+     * {@inheritDoc}
+     * @see org.odmg.Database#close()
+     */
     public void close() throws ODMGException 
     {
         if (!mIsOpen) {
@@ -1128,6 +1123,14 @@ public class EnerJDatabase implements Database, Persister
 
             if (sCurrentThreadDatabaseMap.containsKey( Thread.currentThread() )) {
                 sCurrentThreadDatabaseMap.remove( Thread.currentThread() );
+            }
+            
+            // Pop ourselves as currrent Persister and do a sanity check to make sure we were the current.
+            if (PersisterRegistry.getCurrentPersisterForThread() == this) {
+                PersisterRegistry.popPersisterForThread();
+            }
+            else {
+                throw new ODMGException("This database was not the active Perister for the thread. Check open/close pairing.");
             }
         } // End finally
     }
