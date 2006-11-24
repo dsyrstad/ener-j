@@ -305,16 +305,16 @@ public class PagedObjectServer extends BaseObjectServer
                 session.beginTransaction();
     
                 Schema schema = new Schema(aDescription);
+    
                 // Create Extent map.
                 ExtentMap extentMap = new ExtentMap();
-    
+
                 // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
-                for (Class schemaClass : sSchemaClasses) {
-                    String schemaClassName = schemaClass.getName();
+                for (String schemaClassName : SystemCIDMap.getSystemClassNames()) {
                     LogicalClassSchema classSchema = new LogicalClassSchema(schema, schemaClassName, null);
                     long cid = SystemCIDMap.getSystemCIDForClassName(schemaClassName);
                     new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);
-                    
+
                     // Create an extent for this class.
                     extentMap.createExtentForClassName(schemaClassName);
                 }
@@ -323,7 +323,7 @@ public class PagedObjectServer extends BaseObjectServer
                 Persistable schemaPersistable = (Persistable)schema;
                 PersistableHelper.setOID(session, BaseObjectServer.SCHEMA_OID, schemaPersistable);
                 session.addToModifiedList(schemaPersistable);
-                
+
                 // Special OID for ExtentMap.
                 Persistable extentMapPersistable = (Persistable)extentMap;
                 PersistableHelper.setOID(session, BaseObjectServer.EXTENTS_OID, extentMapPersistable);
@@ -721,6 +721,7 @@ public class PagedObjectServer extends BaseObjectServer
                         cid = storeRequest.mCID;
                     }
                     
+                    sLogger.info("ClassInfo for cid " + cid);
                     // Resolve the class name. Try system CIDs first.
                     String className = SystemCIDMap.getSystemClassNameForCID(cid);
                     if (className == null) {

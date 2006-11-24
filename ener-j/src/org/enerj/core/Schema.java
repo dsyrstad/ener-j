@@ -49,7 +49,7 @@ public class Schema
     
     private static final Set EMPTY_SET = new HashSet(1);
 
-    // Note: All object references should be org.enerj.server.schema objects, or SCOs.
+    // Note: All object references should be objects defined in SystemCID, or SCOs.
     
     /** This database's version. */
     private int mDatabaseVersion = CURRENT_DATABASE_VERSION;

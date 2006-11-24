@@ -62,7 +62,7 @@ import org.odmg.TransactionNotInProgressException;
  */
 abstract public class BaseObjectServerSession implements ObjectServerSession, Persister
 {
-    private static Logger mLogger = Logger.getLogger( BaseObjectServerSession.class.getName() ); 
+    private static Logger sLogger = Logger.getLogger( BaseObjectServerSession.class.getName() ); 
     
     private BaseObjectServer mObjectServer;
     private boolean mAllowNontransactionalReads = false;
@@ -91,7 +91,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         Runtime.getRuntime().addShutdownHook(mShutdownHook);
 
         mConnected = true;
-        mLogger.info("Session " + this + " is connected.");
+        sLogger.info("Session " + this + " is connected.");
     }
 
     /**
@@ -123,6 +123,12 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
         catch (ODMGException e) {
             throw new ODMGRuntimeException(e);
+        }
+
+        // Is Schema being built?
+        if (schema == null) {
+            mPendingNewOIDs.clear();
+            return;
         }
 
         PersisterRegistry.pushPersisterForThread(this);
@@ -411,7 +417,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void disconnect() throws ODMGException 
     {
-        mLogger.info("Session " + this + " is disconnecting.");
+        sLogger.info("Session " + this + " is disconnecting.");
         setDisconnected();
     }
 
@@ -635,7 +641,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public long getOID(Object anObject)
     {
-        mLogger.info("anObject = " + anObject.getClass());
+        sLogger.info("anObject = " + anObject.getClass());
         if ( !(anObject instanceof Persistable)) {
             return ObjectSerializer.NULL_OID;
         }
@@ -655,7 +661,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                 throw new ODMGRuntimeException(e);
             }
             
-            mLogger.info("New Object " + persistable.getClass() + " with oid " + oid);
+            sLogger.info("New Object " + persistable.getClass() + " with oid " + oid + " cid=" + persistable.enerj_GetClassId());
             PersistableHelper.setOID(this, oid, persistable);
             // This call adds the object to the cache too.
             addToModifiedList(persistable);
