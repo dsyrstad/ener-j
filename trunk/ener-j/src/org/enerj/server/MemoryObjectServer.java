@@ -223,8 +223,7 @@ public class MemoryObjectServer extends BaseObjectServer
                 ExtentMap extentMap = new ExtentMap();
 
                 // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
-                for (Class schemaClass : sSchemaClasses) {
-                    String schemaClassName = schemaClass.getName();
+                for (String schemaClassName : SystemCIDMap.getSystemClassNames()) {
                     LogicalClassSchema classSchema = new LogicalClassSchema(schema, schemaClassName, null);
                     long cid = SystemCIDMap.getSystemCIDForClassName(schemaClassName);
                     new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);

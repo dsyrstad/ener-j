@@ -46,9 +46,17 @@ public class SystemCIDMap
     /** Key is value is Long (CID), String (classname). */
     private static HashMap<Long, String> sCIDToNameMap = new HashMap<Long, String>(64);
     static {
+        // NOTE! These CIDs must NEVER change!
         sNameToCIDMap.put("org.enerj.core.Schema",               1L);
         sNameToCIDMap.put("org.enerj.core.ClassVersionSchema",   2L);
         sNameToCIDMap.put("org.enerj.core.LogicalClassSchema",   3L);
+        sNameToCIDMap.put("org.enerj.core.RegularDMap",          4L);
+        sNameToCIDMap.put("org.enerj.core.RegularDSet",          5L);
+        sNameToCIDMap.put("org.enerj.server.ExtentMap",          6L);
+        sNameToCIDMap.put("org.enerj.core.SparseBitSet",         7L);
+        sNameToCIDMap.put("org.enerj.core.SparseBitSet$RootNode", 8L);
+        sNameToCIDMap.put("org.enerj.core.SparseBitSet$SecondLevelNode", 9L);
+        sNameToCIDMap.put("org.enerj.core.SparseBitSet$LeafNode", 10L);
         
         for (Map.Entry<String, Long> entry : (Set<Map.Entry<String, Long>>)sNameToCIDMap.entrySet()) {
             sCIDToNameMap.put(entry.getValue(), entry.getKey());
@@ -105,11 +113,11 @@ public class SystemCIDMap
     /**
      * Gets all of the system persistable class names.
      *
-     * @return an Iterator of Strings representing all of the system persistable class names.
+     * @return a Set of Strings representing all of the system persistable class names.
      */
-    public static Iterator<String> getSystemClassNames()
+    public static Set<String> getSystemClassNames()
     {
-        return sNameToCIDMap.keySet().iterator();
+        return sNameToCIDMap.keySet();
     }
     
 

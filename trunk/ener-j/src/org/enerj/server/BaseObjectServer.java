@@ -53,11 +53,6 @@ abstract public class BaseObjectServer implements ObjectServer
     static final String ENERJ_SCHEMA_SESSION_PROPERTY = "enerj.schemaSession";
     
     protected static final String SCHEMA_CLASS_NAME = Schema.class.getName();
-    protected static final Class[] sSchemaClasses = new Class[] { 
-        Schema.class, 
-        LogicalClassSchema.class,
-        ClassVersionSchema.class,
-    };
     protected static final String[] sObjectNameArray = { Object.class.getName() };
     
     /** Properties that were used to create the server/session. */

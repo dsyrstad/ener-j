@@ -24,6 +24,7 @@ package org.enerj.core;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.enerj.annotations.Persist;
 
@@ -38,7 +39,7 @@ import org.enerj.annotations.Persist;
 @Persist
 public class LogicalClassSchema
 {
-    // Note: All object references should be org.enerj.server.schema objects, or SCOs.
+    // Note: All object references should be objects defined in SystemCID, or SCOs.
 
     /** The Schema which contains this class. */
     private Schema mSchema;
@@ -53,7 +54,7 @@ public class LogicalClassSchema
     private String mClassName;
 
     /** The versions of the class. In order of earliest to latest. This is an array of ClassVersionSchema. */
-    private ArrayList<ClassVersionSchema> mClassVersions;
+    private List<ClassVersionSchema> mClassVersions;
 
 
     /**

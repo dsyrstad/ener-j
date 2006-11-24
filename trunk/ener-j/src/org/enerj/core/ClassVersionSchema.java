@@ -39,7 +39,7 @@ import org.enerj.annotations.Persist;
 @Persist
 public class ClassVersionSchema 
 {
-    // Note: All object references should be org.enerj.server.schema objects, or SCOs.
+    // Note: All object references should be objects defined in SystemCID, or SCOs.
 
     /** The LogicalClassSchema which contains this class. */
     private LogicalClassSchema mLogicalClassSchema;
