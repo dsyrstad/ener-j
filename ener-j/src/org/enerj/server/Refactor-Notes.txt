@@ -4,6 +4,6 @@
 - ObjectServer should have server-wide object write-thru cache. Looks up objects by OID. Updated on commit.
 
 - Needs tests for Persister and new ObjectServerSession methods.
+- Tests for PersistableHelper.resolveObject()
 
-- Get rid of references to EnerJTransaction.getCurrentTransaction() in PersistableHelper. This may
-  cause problems in the server. Instead ask Persister if a transaction is active.
+- Implement flush high water mark in EnerJDatabase.

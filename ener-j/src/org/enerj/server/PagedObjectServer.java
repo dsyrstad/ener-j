@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,7 +92,13 @@ public class PagedObjectServer extends BaseObjectServer
     /** List of active transactions. List of PagedObjectServer.Transaction. Synchronized
      * around mTransactionLock.
      */
-    private LinkedList<Transaction> mActiveTransactions = new LinkedList<Transaction>();
+    private List<Transaction> mActiveTransactions = new LinkedList<Transaction>();
+    
+    /** List of active sessions. */
+    private List<Session> mActiveSessions = new LinkedList<Session>();
+    
+    /** True if any session that connected was running locally in the client. */
+    private boolean mIsLocal = false;
     
     /** True if the server should become quiescent, i.e. don't allow new transactions to 
      * start. 
@@ -113,8 +120,6 @@ public class PagedObjectServer extends BaseObjectServer
     /** Synchronization lock for transaction-oriented methods. */
     private Object mTransactionLock = new Object();
     
-
-
     /**
      * Construct a PagedObjectServer.
      *
@@ -136,6 +141,9 @@ public class PagedObjectServer extends BaseObjectServer
         mServerUpdateCache = new UpdateCache(maxUpdateCacheSize, updateCacheInitialHashSize);
         
         mDBName = getRequiredProperty(someProperties, ObjectServer.ENERJ_DBNAME_PROP);
+        mIsLocal = getBooleanProperty(someProperties, ENERJ_CLIENT_LOCAL);
+        
+        sLogger.info("Server " + this + " is starting up " + (mIsLocal ? " in local mode" : "") + "...");
         
         try {
             mRedoLogServer = (RedoLogServer)PluginHelper.connect(logServerClassName, someProperties);
@@ -176,6 +184,8 @@ public class PagedObjectServer extends BaseObjectServer
         // Register a shutdown hook...
         mShutdownHook = new ShutdownHook(this);
         Runtime.getRuntime().addShutdownHook(mShutdownHook);
+
+        sLogger.info("Server " + this + " is started.");
     }
     
     /**
@@ -425,18 +435,33 @@ public class PagedObjectServer extends BaseObjectServer
      */
     public void shutdown() throws ODMGException
     {
+        if (mQuiescent) {
+            return; // Already shutting down...
+        }
+        
+        sLogger.info("Server " + this + " is shutting down...");
+        
         // Quiesce the system. Stops new connections and txns. 
         mQuiescent = true;
 
-        // TODO Shutdown sessions - force transactions to be aborted
-        // Transaction list must be clear. This is really an assertion.
-        //  TODO  need to kill transactions, maybe after waiting a couple of seconds....
-        if (mActiveTransactions.size() != 0) {
-            //  TODO  log msg
-            throw new ODMGException("Transaction list is not clear! INTERNAL ERROR!");
+        // Force any open sessions to disconnect and their open transactions to abort.
+        while (true) {
+            synchronized (sCurrentServers) {
+                if (mActiveSessions.isEmpty()) {
+                    break;
+                }
+
+                Session session = mActiveSessions.get(0);
+                session.disconnect();
+            }
         }
 
         synchronized (sCurrentServers) {
+            if (!mActiveTransactions.isEmpty()) {
+                //  TODO  log msg
+                throw new ODMGException("Transaction list is not clear! INTERNAL ERROR!");
+            }
+
             // Remove this server from the global list.
             sCurrentServers.remove(mDBName);
 
@@ -451,7 +476,6 @@ public class PagedObjectServer extends BaseObjectServer
             }
 
             try {
-                //  TODO  send paged store a disconnect request (or it sends itself one in the disconnect method.
                 mPagedStore.disconnect();
             }
             catch (PageServerException e) {
@@ -459,13 +483,11 @@ public class PagedObjectServer extends BaseObjectServer
             }
 
             if (mLockServer != null) {
-                //  TODO  send paged store a disconnect request (or it sends itself one in the disconnect method.
                 mLockServer.disconnect();
                 mLockServer = null;
             }
 
             if (mRedoLogServer != null) {
-                //  TODO  send paged store a disconnect request (or it sends itself one in the disconnect method.
                 mRedoLogServer.disconnect();
                 mRedoLogServer = null;
             }
@@ -475,8 +497,10 @@ public class PagedObjectServer extends BaseObjectServer
             Runtime.getRuntime().removeShutdownHook(mShutdownHook);
         }
         catch (Exception e) {
-            // Ignore - shutdown may be in progress.
+            // Ignore - shutdown is in progress.
         }
+
+        sLogger.info("Server " + this + " is shutdown.");
     }
 
 
@@ -568,9 +592,34 @@ public class PagedObjectServer extends BaseObjectServer
                 throw new ODMGException("Cannot connect. System in quiescent state.");
             }
         
-            ObjectServerSession session = server.new Session(server, isSchemaSession);
+            Session session = server.new Session(server, isSchemaSession);
+            server.mActiveSessions.add(session);
+            
             return session;
         } // End synchronized (sCurrentServers)
+    }
+    
+    /**
+     * Removes a session from the active session list.
+     */
+    private void removeSession(Session aSession)
+    {
+        boolean shutdown = false;
+        synchronized (sCurrentServers) {
+            mActiveSessions.remove(aSession);
+            // If no more sessions and running locally or if schema session is the only one left.
+            shutdown = mIsLocal && (mActiveSessions.isEmpty() ||
+                        (mActiveSessions.size() == 1 && mActiveSessions.get(0) == getSchemaSessionOrNull()));
+        }
+        
+        if (shutdown) {
+            try {
+                shutdown();
+            }
+            catch (ODMGException e) {
+                throw new ODMGRuntimeException(e);
+            }
+        }
     }
 
 
@@ -653,6 +702,7 @@ public class PagedObjectServer extends BaseObjectServer
                 rollbackTransaction();
             }
 
+            removeSession(this);
             super.disconnect();
         }
 
