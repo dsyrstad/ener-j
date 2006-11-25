@@ -24,9 +24,7 @@
 
 package org.enerj.core;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.ListIterator;
 
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
@@ -44,6 +42,13 @@ import org.odmg.ODMGRuntimeException;
  */
 public interface Persister
 {
+    
+    /**
+     * Determines if a transaction is currently active.
+     *
+     * @return true if a transaction is active, else false.
+     */
+    boolean isTransactionActive();
 
     /**
      * Loads the contents of aPersistable from the database. Other objects may be
@@ -131,11 +136,11 @@ public interface Persister
     
 
     /**
-     * Gets the list of modified objects.
+     * Gets an iterator on the list of modified objects.
      *
-     * @return the list of modified objects.
+     * @return an iterator on the list of modified objects.
      */
-    Iterator<Persistable> getModifiedListIterator();
+    ListIterator<Persistable> getModifiedListIterator();
     
     
 

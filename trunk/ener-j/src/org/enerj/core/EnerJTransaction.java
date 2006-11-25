@@ -223,7 +223,7 @@ public class EnerJTransaction implements Transaction
      */
     private void checkIsOpenAndOwnedByThread()
     {
-        if (!getTransactionDatabase().isTransactionOpen() || getCurrentTransaction() != this) {
+        if (!getTransactionDatabase().isTransactionActive() || getCurrentTransaction() != this) {
             throw new TransactionNotInProgressException("Transaction not in progress, or you are attempting to use it from the wrong thread");
         }
     }
@@ -324,7 +324,7 @@ public class EnerJTransaction implements Transaction
      */
     public boolean isOpen() 
     {
-        return mTransactionDatabase != null && mTransactionDatabase.isTransactionOpen();
+        return mTransactionDatabase != null && mTransactionDatabase.isTransactionActive();
     }
     
     /** 

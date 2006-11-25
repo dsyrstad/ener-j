@@ -22,8 +22,11 @@
 
 package org.enerj.core;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
+import gnu.trove.TLongObjectHashMap;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Tracks a list of modified Persistables. <p>
@@ -33,8 +36,14 @@ import java.util.LinkedHashMap;
  */
 public class ModifiedPersistableList
 {
-    /** List of Persistable objects created or modified during this transaction. Key is OID, value is the Persistable. */
-    private LinkedHashMap<Long,Persistable> mModifiedObjects = new LinkedHashMap<Long,Persistable>(1024, .75F, false);
+    // Note that we can't use a LinkedHashMap here because we need to return a ListIterator in order to 
+    // add objects while flushing.
+    
+    /** List of Persistable objects created or modified during this transaction. */
+    private List<Persistable> mModifiedObjectList = new ArrayList<Persistable>(1024);
+    
+    /** Map of the objects so that we can look them up by ID. Key is OID, value is the Persistable. */
+    private TLongObjectHashMap mModifiedObjectMap = new TLongObjectHashMap(1024, .75F);
 
     /**
      * Construct a ModifiedPersistables. 
@@ -44,24 +53,37 @@ public class ModifiedPersistableList
     }
     
     /**
-     * Add a Persistable to the list of modified objects.  
+     * Add a Persistable to the list of modified objects. Do not call this while iterating over the 
+     * iterator returned by {@link #getIterator()}. Instead, use {@link ListIterator#add(Object)} to 
+     * add the object to the iterator.
      *
      * @param aPersistable the object to be added. {@link Persistable#enerj_GetPrivateOID()} must
      *  be set. 
      */
     public void addToModifiedList(Persistable aPersistable)
     {
-        mModifiedObjects.put(aPersistable.enerj_GetPrivateOID(), aPersistable);
+        mModifiedObjectList.add(aPersistable);
+        addToModifiedMap(aPersistable);
     }
 
     /**
-     * Gets the list of modified objects.
+     * Adds the Persistable to the modified map, but not the list. 
      *
-     * @return the list of modified objects.
+     * @param aPersistable the object to be added.
      */
-    public Iterator<Persistable> getIterator()
+    private void addToModifiedMap(Persistable aPersistable)
     {
-        return mModifiedObjects.values().iterator();
+        mModifiedObjectMap.put(aPersistable.enerj_GetPrivateOID(), aPersistable);
+    }
+
+    /**
+     * Gets an iterator on the list of modified objects.
+     *
+     * @return an iterator on the list of modified objects.
+     */
+    public ListIterator<Persistable> getIterator()
+    {
+        return new MOListIterator();
     }
     
     /**
@@ -69,7 +91,8 @@ public class ModifiedPersistableList
      */
     public void clearModifiedList()
     {
-        mModifiedObjects.clear();
+        mModifiedObjectList.clear();
+        mModifiedObjectMap.clear();
     }
     
     
@@ -82,7 +105,65 @@ public class ModifiedPersistableList
      */
     public Persistable getModifiedObjectByOID(long anOID)
     {
-        return mModifiedObjects.get(anOID);
+        return (Persistable)mModifiedObjectMap.get(anOID);
     }
+    
+    /**
+     * Our version of ListIterator that delegates to the list's iterator. When a
+     * new object is being added, it is also placed in the map. <p>
+     */
+    private final class MOListIterator implements ListIterator<Persistable>
+    {
+        ListIterator<Persistable> delegate = mModifiedObjectList.listIterator();
+        
+        MOListIterator()
+        {
+        }
 
+        public void add(Persistable o)
+        {
+            delegate.add(o);
+            addToModifiedMap(o);
+        }
+
+        public boolean hasNext()
+        {
+            return delegate.hasNext();
+        }
+
+        public boolean hasPrevious()
+        {
+            return delegate.hasPrevious();
+        }
+
+        public Persistable next()
+        {
+            return delegate.next();
+        }
+
+        public int nextIndex()
+        {
+            return delegate.nextIndex();
+        }
+
+        public Persistable previous()
+        {
+            return delegate.previous();
+        }
+
+        public int previousIndex()
+        {
+            return delegate.previousIndex();
+        }
+
+        public void remove()
+        {
+            throw new UnsupportedOperationException("Remove not allowed on ModifiedPersistableList");
+        }
+
+        public void set(Persistable o)
+        {
+            throw new UnsupportedOperationException("Set not allowed on ModifiedPersistableList");
+        }
+    }
 }

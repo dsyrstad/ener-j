@@ -28,8 +28,8 @@ import gnu.trove.TLongArrayList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -44,9 +44,6 @@ import org.enerj.core.Persister;
 import org.enerj.core.PersisterRegistry;
 import org.enerj.core.Schema;
 import org.enerj.core.SparseBitSet;
-import org.enerj.core.SystemCIDMap;
-import org.enerj.util.RequestProcessor;
-import org.enerj.util.RequestProcessorProxy;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.ObjectNameNotFoundException;
@@ -79,6 +76,8 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     private PersistableObjectCache mObjectCache = new DefaultPersistableObjectCache(1000);
     /** List of Persistable objects created or modified during this transaction. */
     private ModifiedPersistableList mModifiedObjects = new ModifiedPersistableList();
+    /** Iterator that is active while we're in {@link #flushModifiedObjects()} objects. */
+    private ListIterator<Persistable> mFlushIterator = null;
 
     /**
      * Construct a new BaseObjectServerSession.
@@ -157,7 +156,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             mPendingNewOIDs.clear();
         }
         finally {
-            PersisterRegistry.popPersisterForThread();
+            PersisterRegistry.popPersisterForThread(this);
         }
     }
     
@@ -169,23 +168,45 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     protected void flushModifiedObjects()
     {
-        List<SerializedObject> images = new ArrayList<SerializedObject>(1000); 
-        for (Iterator<Persistable> iter = getModifiedListIterator(); iter.hasNext(); ) {
-            Persistable persistable = iter.next();
-            byte[] image = PersistableHelper.createSerializedImage(persistable);
-            images.add( new SerializedObject(persistable.enerj_GetPrivateOID(), persistable.enerj_GetClassId(), 
-                            image, persistable.enerj_IsNew()) );
+        // Are we already flushing? If so, we can just return.
+        if (mFlushIterator != null) {
+            return; 
         }
         
-        if (!images.isEmpty()) {
-            SerializedObject[] objs = new SerializedObject[images.size()];
-            objs = images.toArray(objs);
-            try {
-                storeObjects(objs);
+        List<SerializedObject> images = new ArrayList<SerializedObject>(1000);
+        mFlushIterator = getModifiedListIterator();
+        try {
+            while (mFlushIterator.hasNext() ) {
+                Persistable persistable = mFlushIterator.next();
+                int nextIndex = mFlushIterator.nextIndex();
+
+                byte[] image = PersistableHelper.createSerializedImage(persistable);
+                images.add( new SerializedObject(persistable.enerj_GetPrivateOID(), persistable.enerj_GetClassId(), 
+                                image, persistable.enerj_IsNew()) );
+
+                // Objects could have been inserted into the list before
+                // the cursor. We have to back up to the point just after the last
+                // object we retrieved to start processing the list there.
+                // Note that on the next iteration, more objects could be inserted
+                // before these, effectively reproducing recursion.
+                for (int i = mFlushIterator.nextIndex() - nextIndex; i > 0; --i) {
+                    mFlushIterator.previous();
+                }
             }
-            catch (ODMGException e) {
-                throw new ODMGRuntimeException(e);
+            
+            if (!images.isEmpty()) {
+                SerializedObject[] objs = new SerializedObject[images.size()];
+                objs = images.toArray(objs);
+                try {
+                    storeObjects(objs);
+                }
+                catch (ODMGException e) {
+                    throw new ODMGRuntimeException(e);
+                }
             }
+        }
+        finally {
+            mFlushIterator = null;
         }
     }
 
@@ -228,7 +249,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             flushModifiedObjects();
         }
         finally {
-            PersisterRegistry.popPersisterForThread();
+            PersisterRegistry.popPersisterForThread(this);
         }
     }
 
@@ -244,7 +265,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             return bindery.lookup(aName);
         }
         finally {
-            PersisterRegistry.popPersisterForThread();
+            PersisterRegistry.popPersisterForThread(this);
         }
     }
 
@@ -262,7 +283,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             flushModifiedObjects();
         }
         finally {
-            PersisterRegistry.popPersisterForThread();
+            PersisterRegistry.popPersisterForThread(this);
         }
     }
     
@@ -304,7 +325,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             flushModifiedObjects();
         }
         finally {
-            PersisterRegistry.popPersisterForThread();
+            PersisterRegistry.popPersisterForThread(this);
         }
     }
 
@@ -344,7 +365,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             return result;
         }
         finally {
-            PersisterRegistry.popPersisterForThread();
+            PersisterRegistry.popPersisterForThread(this);
         }
     }
 
@@ -386,7 +407,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             return extentIterator;
         }
         finally {
-            PersisterRegistry.popPersisterForThread();
+            PersisterRegistry.popPersisterForThread(this);
         }
     }
     
@@ -458,6 +479,15 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
 
         getObjectServer().shutdown();
+    }
+
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.core.Persister#isTransactionActive()
+     */
+    public boolean isTransactionActive()
+    {
+        return mTransactionActive;
     }
 
     /** 
@@ -588,7 +618,14 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             return;
         }
 
-        mModifiedObjects.addToModifiedList(aPersistable);
+        // If we're iterating (flushing), add to the iterator rather than the list directly.
+        if (mFlushIterator != null) {
+            mFlushIterator.add(aPersistable);
+        }
+        else {
+            mModifiedObjects.addToModifiedList(aPersistable);
+        }
+        
         // Make sure that it's cached.
         mObjectCache.add(aPersistable.enerj_GetPrivateOID(), aPersistable);
     }
@@ -606,7 +643,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      * {@inheritDoc}
      * @see org.enerj.core.Persister#getModifiedListIterator()
      */
-    public Iterator<Persistable> getModifiedListIterator()
+    public ListIterator<Persistable> getModifiedListIterator()
     {
         return mModifiedObjects.getIterator();
     }

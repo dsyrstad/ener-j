@@ -31,7 +31,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
-import org.enerj.server.BaseObjectServer;
 import org.enerj.server.ClassInfo;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
@@ -69,8 +68,7 @@ public class PersistableHelper
         aPersistable.enerj_SetPersister(null);
         aPersistable.enerj_SetLockLevel(EnerJTransaction.NO_LOCK);
 
-        EnerJTransaction txn = EnerJTransaction.getCurrentTransaction();
-        if (txn == null) {
+        if (isTransactionActive(aPersistable)) {
             // No transaction active. Set the object to nontransactional.
             setNonTransactional(aPersistable);
         }
@@ -92,7 +90,38 @@ public class PersistableHelper
         // This should act just as if the object was newed
         initPersistable(aPersistable);
     }
+
+    /**
+     * Determines if a transaction is active for the given persistable or thread if the persistable
+     * is not associated with a Persister.
+     *
+     * @param aPersistable the Persistable.
+     * 
+     * @return true if a transaction is active, else false.
+     */
+    private static final boolean isTransactionActive(Persistable aPersistable)
+    {
+        Persister persister = getPersister(aPersistable);
+        return persister != null && persister.isTransactionActive();
+    }
     
+    /**
+     * Gets the Persister for the given persistable or thread if the persistable
+     * is not associated with a Persister.
+     *
+     * @param aPersistable the Persistable.
+     * 
+     * @return the Persister, or null if no Persister exists.
+     */
+    private static final Persister getPersister(Persistable aPersistable)
+    {
+        Persister persister = aPersistable.enerj_GetPersister();
+        if (persister == null) {
+            persister = PersisterRegistry.getCurrentPersisterForThread();
+        }
+
+        return persister;
+    }
 
     /**
      * Verify that the specified object is loaded from the Persister. If it 
@@ -103,21 +132,23 @@ public class PersistableHelper
      */
     public static final void checkLoaded(Persistable aPersistable, boolean aSetFlag)
     {
+        Persister persister = getPersister(aPersistable);
+        
         // Are we in a transaction?
-        if (EnerJTransaction.getCurrentTransaction() == null) {
+        if (!isTransactionActive(aPersistable)) {
             if ((aSetFlag && aPersistable.enerj_AllowsNonTransactionalWrite()) ||
                 (!aSetFlag && aPersistable.enerj_AllowsNonTransactionalRead()) ) {
                 // Not in transaction, but stale operation is allowed.
-                // The object simply isn't refreshed from the database until a
+                // The object simply isn't refreshed from the Persister until a
                 // transaction starts.
-                // If the database allows non-transactional reads, fall-thru and
-                // load the object from the database if necessary.
+                // If the Persister allows non-transactional reads, fall-thru and
+                // load the object from the Persister if necessary.
                 try {
-                    if ( !aPersistable.enerj_GetPersister().getAllowNontransactionalReads()) {
+                    if ( !persister.getAllowNontransactionalReads()) {
                         return;
                     }
                 } catch (ODMGException e) {
-                    throw new ODMGRuntimeException("Can't check nontransaction read state", e);
+                    throw new ODMGRuntimeException("Cannot check non-transactional read state", e);
                 }
             }
             else {
@@ -129,7 +160,7 @@ public class PersistableHelper
         // If anInstance not loaded from DB and not New, load it now.
         if (!aPersistable.enerj_IsLoaded() && !aPersistable.enerj_IsNew()) {
             // Actually Load the object.
-            aPersistable.enerj_GetPersister().loadObject(aPersistable);
+            persister.loadObject(aPersistable);
         } // end if not loaded or new
     }
 

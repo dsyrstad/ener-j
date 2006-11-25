@@ -68,13 +68,20 @@ public class PersisterRegistry
     
     /**
      * Pops the current Persister from the stack for the given Thread. The next Persister in the
-     * stack, if any, becomes the active Persister for the thread. 
+     * stack, if any, becomes the active Persister for the thread.
+     * 
+     * @param aPersister the Persister expected to be popped. May be null if check is not desired. 
      *
      * @return the Persister that was popped.
+     * 
+     * @throws IllegalArgumentException if aPersister is not the Persister that was popped.
      */
-    public static Persister popPersisterForThread()
+    public static void popPersisterForThread(Persister aPersister)
     {
-        return getStackForThread().pop();
+        Persister persister = getStackForThread().pop();
+        if (aPersister != null && persister != aPersister) {
+            throw new IllegalArgumentException("Internal Error: Unexpected Persister was popped.");
+        }
     }
     
     /**

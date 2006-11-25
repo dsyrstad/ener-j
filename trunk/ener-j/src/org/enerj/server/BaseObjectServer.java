@@ -32,6 +32,7 @@ import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
 import org.enerj.core.PersisterRegistry;
 import org.enerj.core.Schema;
+import org.enerj.core.SystemCIDMap;
 import org.odmg.ODMGException;
 
 /**
@@ -150,6 +151,61 @@ abstract public class BaseObjectServer implements ObjectServer
     }
     
     /**
+     * Initialize primordial database objects needed to run the database.
+     *
+     * @param aSession a session on which to write the objects.
+     * @param aDescription a description for the database.
+     * 
+     * @throws ODMGException if an error occurs.
+     */
+    protected static void initDBObjects(BaseObjectServerSession aSession, String aDescription) throws ODMGException
+    {
+        PersisterRegistry.pushPersisterForThread(aSession);
+        try {
+            aSession.beginTransaction();
+
+            Schema schema = new Schema(aDescription);
+
+            // Create Extent map.
+            ExtentMap extentMap = new ExtentMap();
+
+            // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
+            for (String schemaClassName : SystemCIDMap.getSystemClassNames()) {
+                LogicalClassSchema classSchema = new LogicalClassSchema(schema, schemaClassName, null);
+                long cid = SystemCIDMap.getSystemCIDForClassName(schemaClassName);
+                new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);
+
+                // Create an extent for this class.
+                extentMap.createExtentForClassName(schemaClassName);
+            }
+
+            // Special OID for schema.
+            Persistable schemaPersistable = (Persistable)schema;
+            PersistableHelper.setOID(aSession, BaseObjectServer.SCHEMA_OID, schemaPersistable);
+            aSession.addToModifiedList(schemaPersistable);
+
+            // Special OID for ExtentMap.
+            Persistable extentMapPersistable = (Persistable)extentMap;
+            PersistableHelper.setOID(aSession, BaseObjectServer.EXTENTS_OID, extentMapPersistable);
+            aSession.addToModifiedList(extentMapPersistable);
+
+            // Create the bindery.
+            // Special OID for bindery.
+            Bindery bindery = new Bindery();
+            Persistable binderyPersistable = (Persistable)bindery;
+            PersistableHelper.setOID(aSession, BaseObjectServer.BINDERY_OID, binderyPersistable);
+            aSession.addToModifiedList(binderyPersistable);
+            
+            aSession.flushModifiedObjects();
+            
+            aSession.commitTransaction();
+        }
+        finally {
+            PersisterRegistry.popPersisterForThread(aSession);
+        }
+    }
+    
+    /**
      * Gets the privileged schema session. 
      *
      * @return the privileged schema session. 
@@ -161,7 +217,7 @@ abstract public class BaseObjectServer implements ObjectServer
             if (mSchemaSession == null) {
                 Properties sessionProps = new Properties(mProperties);
                 sessionProps.setProperty(ENERJ_SCHEMA_SESSION_PROPERTY, "true");
-                PluginHelper.connect(getClass().getName(), sessionProps);
+                mSchemaSession = (BaseObjectServerSession)PluginHelper.connect(getClass().getName(), sessionProps);
             }
 
             return mSchemaSession;
@@ -178,7 +234,7 @@ abstract public class BaseObjectServer implements ObjectServer
     Schema getSchema() throws ODMGException
     {
         synchronized (mSchemaLock) {
-            if (mCachedSchema != null) {
+            if (mCachedSchema == null) {
                 BaseObjectServerSession schemaSession = getSchemaSession();
                 PersisterRegistry.pushPersisterForThread(schemaSession);
                 try {
@@ -191,8 +247,10 @@ abstract public class BaseObjectServer implements ObjectServer
                     throw new ODMGException(e);
                 }
                 finally {
-                    PersisterRegistry.popPersisterForThread();
-                    schemaSession.rollbackTransaction();
+                    PersisterRegistry.popPersisterForThread(schemaSession);
+                    if (schemaSession != null) {
+                        schemaSession.rollbackTransaction();
+                    }
                 }
             }
             
@@ -250,7 +308,7 @@ abstract public class BaseObjectServer implements ObjectServer
                     success = true;
                 }
                 finally {
-                    PersisterRegistry.popPersisterForThread();
+                    PersisterRegistry.popPersisterForThread(schemaSession);
                     if (!success) {
                         schemaSession.rollbackTransaction();
                     }
