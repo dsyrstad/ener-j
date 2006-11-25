@@ -214,8 +214,10 @@ public class ObjectSerializer
     private ReadContext mReadContext;
     private WriteContext mWriteContext;
     /** Used to track Objects (FCOs and SCOs) that have already been resolved. */
-    // TODO Sun: A IdentityHashSet would really be nice!
+    // TODO Sun: An IdentityHashSet would really be nice!
     private IdentityHashMap<Object, Object> mResolvedObjects;
+    /** Current recursion depth of {@link #resolveObject(Object, boolean)}. */
+    private int mResolveDepth = 0;
 
     /**
      * Construct a new ObjectSerializer for resolving objects.
@@ -341,35 +343,47 @@ public class ObjectSerializer
             return;
         }
 
-        // If we haven't visited this object yet, resolve it.
-        if (!mResolvedObjects.containsKey(anObject)) {
-            // Mark this object as resolved BEFORE we start to resolve it. Otherwise we
-            // can get into infinite recursion.
-            mResolvedObjects.put(anObject, PLACEHOLDER);
+        if (mResolveDepth == 0) {
+            // Entering at top-level. Clear map.
+            mResolvedObjects.clear();
+        }
+        
+        try {
+            
+            ++mResolveDepth;
+            // If we haven't visited this object yet, resolve it.
+            if (!mResolvedObjects.containsKey(anObject)) {
+                // Mark this object as resolved BEFORE we start to resolve it. Otherwise we
+                // can get into infinite recursion.
+                mResolvedObjects.put(anObject, PLACEHOLDER);
 
-            if (anObject instanceof Persistable) {
-                Persistable persistable = (Persistable)anObject;
-                long oid = persistable.enerj_GetPrivateOID();
-                PersistableHelper.resolveObject(this, persistable, shouldDisassociate);
-            }
-            else {
-                // Is it a SCO
-                Class valueClass = anObject.getClass();
-                Serializer serializer = (Serializer)sClassToSerializer.get(valueClass);
-                if (serializer == null) {
-                    if (valueClass.isArray()) {
-                        // If we still have an array, it must be an array of Objects ("[L...;" or "[[...").
-                        // Because of the variability of these classes, these class types are not in the 
-                        // sClassToSerializer HashMap. Just set it up here.
-                        serializer = sObjectArraySerializer;
-                    }
-                    else {
-                        throw new org.odmg.ClassNotPersistenceCapableException("A persistent field of " + anObject.getClass() + " does not refer to a FCO nor SCO. Rather it refers to " + valueClass);
-                    }
+                if (anObject instanceof Persistable) {
+                    Persistable persistable = (Persistable)anObject;
+                    long oid = persistable.enerj_GetPrivateOID();
+                    PersistableHelper.resolveObject(this, persistable, shouldDisassociate);
                 }
-    
-                serializer.resolve(this, anObject, shouldDisassociate);
+                else {
+                    // Is it a SCO
+                    Class valueClass = anObject.getClass();
+                    Serializer serializer = (Serializer)sClassToSerializer.get(valueClass);
+                    if (serializer == null) {
+                        if (valueClass.isArray()) {
+                            // If we still have an array, it must be an array of Objects ("[L...;" or "[[...").
+                            // Because of the variability of these classes, these class types are not in the 
+                            // sClassToSerializer HashMap. Just set it up here.
+                            serializer = sObjectArraySerializer;
+                        }
+                        else {
+                            throw new org.odmg.ClassNotPersistenceCapableException("A persistent field of " + anObject.getClass() + " does not refer to a FCO nor SCO. Rather it refers to " + valueClass);
+                        }
+                    }
+        
+                    serializer.resolve(this, anObject, shouldDisassociate);
+                }
             }
+        }
+        finally {
+            --mResolveDepth;
         }
     }
 

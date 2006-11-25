@@ -24,12 +24,7 @@
 
 package org.enerj.core;
 
-import static org.enerj.server.ObjectServer.ENERJ_ACCESS_MODE_PROP;
-import static org.enerj.server.ObjectServer.ENERJ_DBNAME_PROP;
-import static org.enerj.server.ObjectServer.ENERJ_HOSTNAME_PROP;
-import static org.enerj.server.ObjectServer.ENERJ_PASSWORD_PROP;
-import static org.enerj.server.ObjectServer.ENERJ_PORT_PROP;
-import static org.enerj.server.ObjectServer.ENERJ_USERNAME_PROP;
+import static org.enerj.server.ObjectServer.*;
 import static org.odmg.Transaction.READ;
 import static org.odmg.Transaction.UPGRADE;
 import static org.odmg.Transaction.WRITE;
@@ -66,6 +61,8 @@ import org.odmg.ObjectNameNotUniqueException;
 import org.odmg.TransactionInProgressException;
 import org.odmg.TransactionNotInProgressException;
 
+import sun.awt.motif.MCustomCursor;
+
 /**
  * Ener-J implementation of org.odmg.Database.
  *
@@ -87,10 +84,8 @@ public class EnerJDatabase implements Database, Persister
      */
     private static EnerJDatabase sCurrentProcessDatabase = null;
 
-    /** HashMap keyed by Thread object. Value a EnerJDatabase. Entries are added when 
-     * a database is opened. Entries are removed when a database is closed.
-     */
-    private static IdentityHashMap sCurrentThreadDatabaseMap = new IdentityHashMap();
+    /** Current database for the thread.  */
+    private static ThreadLocal<EnerJDatabase> sCurrentDatabaseForThread = new ThreadLocal<EnerJDatabase>();
 
     /** Client-side object cache. */
     private PersistableObjectCache mClientCache = null;
@@ -188,7 +183,7 @@ public class EnerJDatabase implements Database, Persister
      */
     public static EnerJDatabase getCurrentDatabaseForThread()
     {
-        return (EnerJDatabase)sCurrentThreadDatabaseMap.get( Thread.currentThread() );
+        return sCurrentDatabaseForThread.get();
     }
 
 
@@ -313,9 +308,6 @@ public class EnerJDatabase implements Database, Persister
             long oid = someOIDs[i];
             
             Persistable persistable = PersistableHelper.createHollowPersistable(classInfo, oid, this);
-            if (isNontransactionalReadMode()) {
-                PersistableHelper.setNonTransactional(persistable);
-            }
             
             // Cache it
             mClientCache.add(oid, persistable);
@@ -1081,6 +1073,8 @@ public class EnerJDatabase implements Database, Persister
         if (query != null) {
             URIUtil.parseQuery(query, false, props);
         }
+
+        props.setProperty(ENERJ_CLIENT_LOCAL, Boolean.toString(mIsLocal));
         
         mObjectServerSession = (ObjectServerSession)PluginHelper.connect(pluginClassName, props);
 
@@ -1096,9 +1090,7 @@ public class EnerJDatabase implements Database, Persister
             sCurrentProcessDatabase = this;
         }
         
-        if (!sCurrentThreadDatabaseMap.containsKey( Thread.currentThread() )) {
-            sCurrentThreadDatabaseMap.put( Thread.currentThread(), this);
-        }
+        sCurrentDatabaseForThread.set(this);
 
         PersisterRegistry.pushPersisterForThread(this);
         mIsOpen = true;
@@ -1124,15 +1116,14 @@ public class EnerJDatabase implements Database, Persister
         finally {
             mObjectServerSession = null;
             mIsOpen = false;
+            mIsLocal = false;
         
             // Clear any current database.
             if (sCurrentProcessDatabase == this) {
                 sCurrentProcessDatabase = null;
             }
 
-            if (sCurrentThreadDatabaseMap.containsKey( Thread.currentThread() )) {
-                sCurrentThreadDatabaseMap.remove( Thread.currentThread() );
-            }
+            sCurrentDatabaseForThread.set(null);
             
             // Pop ourselves as a Persister.
             if (PersisterRegistry.getCurrentPersisterForThread() == this) {

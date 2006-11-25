@@ -88,6 +88,8 @@ public interface ObjectServer
     public static final String ENERJ_DBPATH_PROP = "enerj.dbpath";
     /** The directory where the database configuration was found. */
     public static final String ENERJ_DBDIR_PROP = "enerj.dbdir";
+    /** A boolean indicating whether the ObjectServer is running locally within the client. */
+    public static final String ENERJ_CLIENT_LOCAL = "enerj.clientLocal";
 
     
     /**

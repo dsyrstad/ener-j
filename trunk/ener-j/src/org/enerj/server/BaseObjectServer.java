@@ -206,12 +206,12 @@ abstract public class BaseObjectServer implements ObjectServer
     }
     
     /**
-     * Gets the privileged schema session. 
+     * Gets the privileged schema session, creating it if it doesn't exist. 
      *
      * @return the privileged schema session. 
      * @throws ODMGException if an error occurs.
      */
-    private BaseObjectServerSession getSchemaSession() throws ODMGException
+    protected BaseObjectServerSession getSchemaSession() throws ODMGException
     {
         synchronized (mSchemaLock) {
             if (mSchemaSession == null) {
@@ -224,6 +224,18 @@ abstract public class BaseObjectServer implements ObjectServer
         }
     }
     
+    /**
+     * Gets the privileged schema session. 
+     *
+     * @return the privileged schema session or null if it doesn't exist.
+     *  
+     * @throws ODMGException if an error occurs.
+     */
+    protected BaseObjectServerSession getSchemaSessionOrNull()
+    {
+        return mSchemaSession;
+    }
+
     /**
      * Gets a read-only copy of the schema.
      *

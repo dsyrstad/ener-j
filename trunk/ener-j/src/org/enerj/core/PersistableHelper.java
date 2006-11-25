@@ -224,6 +224,25 @@ public class PersistableHelper
         // Leave the OID set in case we need to reload this object.
     }
     
+    /**
+     * Determines if aPersister is in a non-transactional read mode.  
+     *
+     * @param aPersister
+     * 
+     * @return true if aPersister is not in a transaction and {@link Persister#getAllowNontransactionalReads()}
+     *  is true.
+     */
+    private static final boolean isNonTransactionalReadMode(Persister aPersister)
+    {
+        try {
+            // A transaction must not be active and the Persister must be set for non-transaction reads.
+            return !aPersister.isTransactionActive() &&
+                aPersister.getAllowNontransactionalReads();
+        }
+        catch (ODMGException e) {
+            throw new ODMGRuntimeException(e);
+        }
+    }
     
     /**
      * Creates a hollow object initialized by a ClassInfo definition.
@@ -260,6 +279,9 @@ public class PersistableHelper
             persistable.enerj_SetNew(false);
             persistable.enerj_SetModified(false);
             persistable.enerj_SetLoaded(false);
+            if (isNonTransactionalReadMode(aPersister)) {
+                setNonTransactional(persistable);
+            }
             
             return persistable;
         }
