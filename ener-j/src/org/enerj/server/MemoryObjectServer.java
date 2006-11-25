@@ -37,9 +37,7 @@ import java.util.Properties;
 
 import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.EnerJTransaction;
-import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.ObjectSerializer;
-import org.enerj.core.Persistable;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
 import org.odmg.DatabaseClosedException;
@@ -216,36 +214,7 @@ public class MemoryObjectServer extends BaseObjectServer
             try {
                 // Create a session so that we can initialize the schema.
                 session = (Session)connect(getConnectProperties(), true);
-                session.beginTransaction();
-
-                Schema schema = new Schema("");
-                // Create Extent map.
-                ExtentMap extentMap = new ExtentMap();
-
-                // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
-                for (String schemaClassName : SystemCIDMap.getSystemClassNames()) {
-                    LogicalClassSchema classSchema = new LogicalClassSchema(schema, schemaClassName, null);
-                    long cid = SystemCIDMap.getSystemCIDForClassName(schemaClassName);
-                    new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);
-                    
-                    // Create an extent for this class.
-                    extentMap.createExtentForClassName(schemaClassName);
-                }
-                
-                // Special OID for schema.
-                Persistable schemaPersistable = (Persistable)schema;
-                schemaPersistable.enerj_SetPrivateOID(BaseObjectServer.SCHEMA_OID);
-                session.addToModifiedList(schemaPersistable);
-                
-                // Special OID for ExtentMap.
-                Persistable extentMapPersistable = (Persistable)extentMap;
-                extentMapPersistable.enerj_SetPrivateOID(BaseObjectServer.EXTENTS_OID);
-                session.addToModifiedList(extentMapPersistable);
-                
-                session.flushModifiedObjects();
-                
-                session.commitTransaction();
-
+                initDBObjects(session, "");
                 completed = true;
             }
             catch (ODMGRuntimeException e) {

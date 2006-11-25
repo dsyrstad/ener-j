@@ -37,13 +37,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.enerj.core.ClassVersionSchema;
-import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJTransaction;
-import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.ObjectSerializer;
-import org.enerj.core.Persistable;
-import org.enerj.core.PersistableHelper;
-import org.enerj.core.PersisterRegistry;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
 import org.enerj.server.logentry.BeginTransactionLogEntry;
@@ -55,7 +50,6 @@ import org.enerj.server.logentry.StartDatabaseCheckpointLogEntry;
 import org.enerj.server.logentry.StoreObjectLogEntry;
 import org.enerj.util.FileUtil;
 import org.enerj.util.RequestProcessor;
-import org.enerj.util.RequestProcessorProxy;
 import org.enerj.util.StringUtil;
 import org.odmg.DatabaseClosedException;
 import org.odmg.DatabaseNotFoundException;
@@ -300,44 +294,8 @@ public class PagedObjectServer extends BaseObjectServer
 
             // Create a session so that we can initialize the schema.
             session = (Session)connect(someDBProps, true);
-            PersisterRegistry.pushPersisterForThread(session);
-            try {
-                session.beginTransaction();
-    
-                Schema schema = new Schema(aDescription);
-    
-                // Create Extent map.
-                ExtentMap extentMap = new ExtentMap();
-
-                // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
-                for (String schemaClassName : SystemCIDMap.getSystemClassNames()) {
-                    LogicalClassSchema classSchema = new LogicalClassSchema(schema, schemaClassName, null);
-                    long cid = SystemCIDMap.getSystemCIDForClassName(schemaClassName);
-                    new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);
-
-                    // Create an extent for this class.
-                    extentMap.createExtentForClassName(schemaClassName);
-                }
-                
-                // Special OID for schema.
-                Persistable schemaPersistable = (Persistable)schema;
-                PersistableHelper.setOID(session, BaseObjectServer.SCHEMA_OID, schemaPersistable);
-                session.addToModifiedList(schemaPersistable);
-
-                // Special OID for ExtentMap.
-                Persistable extentMapPersistable = (Persistable)extentMap;
-                PersistableHelper.setOID(session, BaseObjectServer.EXTENTS_OID, extentMapPersistable);
-                session.addToModifiedList(extentMapPersistable);
-                
-                session.flushModifiedObjects();
-                
-                session.commitTransaction();
-                
-                completed = true;
-            }
-            finally {
-                PersisterRegistry.popPersisterForThread();
-            }
+            initDBObjects(session, aDescription);
+            completed = true;
         }
         catch (ODMGException e) {
             throw e;
@@ -470,6 +428,7 @@ public class PagedObjectServer extends BaseObjectServer
         // Quiesce the system. Stops new connections and txns. 
         mQuiescent = true;
 
+        // TODO Shutdown sessions - force transactions to be aborted
         // Transaction list must be clear. This is really an assertion.
         //  TODO  need to kill transactions, maybe after waiting a couple of seconds....
         if (mActiveTransactions.size() != 0) {

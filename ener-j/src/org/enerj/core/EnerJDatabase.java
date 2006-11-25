@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Properties;
 
 import org.enerj.annotations.SchemaAnnotation;
@@ -131,7 +132,7 @@ public class EnerJDatabase implements Database, Persister
 
     /** Non-null if the transaction is in the process of flushing objects. This
      * represents the current position in mModifiedObjects. */
-    private Iterator<Persistable> mFlushIterator = null; 
+    private ListIterator<Persistable> mFlushIterator = null; 
     
     /**
      * Construct a unopened EnerJDatabase.
@@ -140,20 +141,18 @@ public class EnerJDatabase implements Database, Persister
     {
         init();
     }
-    
 
     /**
      * Common constructor initialization. 
      */
     private void init()
     {
+        // TODO Allow cache size to be set.
         mClientCache = new DefaultPersistableObjectCache(5000);
 
         // Initialize CID map with known system CIDs.
         // This is so we don't try to update the schema with system CIDs, since they
-        // must exist to update it. During DB creation, checking for these
-        // in the schema will cause all sorts of problems. The Schema class
-        // takes care of adding the system classes to the schema.
+        // must exist to update it.
         Iterator<Long> iter = SystemCIDMap.getSystemCIDs();
         while (iter.hasNext()) {
             mKnownSchemaCIDs.add( iter.next() );
@@ -224,11 +223,16 @@ public class EnerJDatabase implements Database, Persister
 
     // ... End of truly public EnerJ-specific methods.
 
-
-
     // Start of Persister interface...
 
-
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.core.Persister#isTransactionActive()
+     */
+    public boolean isTransactionActive()
+    {
+        return mIsTxnOpen;
+    }
 
     /**
      * {@inheritDoc}
@@ -237,7 +241,6 @@ public class EnerJDatabase implements Database, Persister
     {
         return mAllowNontransactionalReads;
     }
-
 
     /**
      * {@inheritDoc}
@@ -418,7 +421,13 @@ public class EnerJDatabase implements Database, Persister
 
         // Note that if we were to just call storePersistable() here, we could get
         // into a very deep recursion. See EnerJTransaction.flushAndKeepModifiedList() for more details.
-        mModifiedObjects.addToModifiedList(aPersistable);
+        // If we're flushing, we need to add it to the iterator rather than the list.
+        if (mFlushIterator != null) {
+            mFlushIterator.add(aPersistable);
+        }
+        else {
+            mModifiedObjects.addToModifiedList(aPersistable);
+        }
         
         if (!aPersistable.enerj_IsNew() && txn.getRestoreValues()) {
             savePersistableImage(aPersistable);
@@ -443,7 +452,7 @@ public class EnerJDatabase implements Database, Persister
      * {@inheritDoc}
      * @see org.enerj.core.Persister#getModifiedList()
      */
-    public Iterator<Persistable> getModifiedListIterator()
+    public ListIterator<Persistable> getModifiedListIterator()
     {
         return mModifiedObjects.getIterator();
     }
@@ -1125,9 +1134,9 @@ public class EnerJDatabase implements Database, Persister
                 sCurrentThreadDatabaseMap.remove( Thread.currentThread() );
             }
             
-            // Pop ourselves as currrent Persister and do a sanity check to make sure we were the current.
+            // Pop ourselves as a Persister.
             if (PersisterRegistry.getCurrentPersisterForThread() == this) {
-                PersisterRegistry.popPersisterForThread();
+                PersisterRegistry.popPersisterForThread(this);
             }
             else {
                 throw new ODMGException("This database was not the active Perister for the thread. Check open/close pairing.");
@@ -1287,17 +1296,6 @@ public class EnerJDatabase implements Database, Persister
             throw new ODMGRuntimeException("Bad lock level on object: " + currLock);
         }
     }
-
-    
-    /**
-     * Determines whether a transaction is open on this database.
-     * 
-     * @return true if a transaction is open.
-     */
-    boolean isTransactionOpen()
-    {
-        return mIsTxnOpen;
-    }
     
     /**
      * Begins a transaction to be associated explicitly with this Database.
@@ -1363,15 +1361,25 @@ public class EnerJDatabase implements Database, Persister
         try {
             // Note that we start an iterator each item. We do this instead of
             // calling storePersistable() recursively. Such recursion could become
-            // very deep. The iterator allows us to append new objects, 
+            // very deep. The iterator allows us to add new objects, 
             // essentially flattening the recursion.
             mFlushIterator = getModifiedListIterator();
             while (mFlushIterator.hasNext()) {
                 Persistable persistable = mFlushIterator.next();
+                int nextIndex = mFlushIterator.nextIndex();
                 
                 // This can indirectly insert objects into the list due to
                 // ObjectSerializer.
                 storePersistable(persistable);
+
+                // Objects could have been inserted into the list before
+                // the cursor. We have to back up to the point just after the last
+                // object we retrieved to start processing the list there.
+                // Note that on the next iteration, more objects could be inserted
+                // before these, effectively reproducing recursion.
+                for (int i = mFlushIterator.nextIndex() - nextIndex; i > 0; --i) {
+                    mFlushIterator.previous();
+                }
             }
             
             flushSerializedObjectQueue();
