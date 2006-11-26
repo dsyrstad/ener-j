@@ -24,7 +24,13 @@
 
 package org.enerj.core;
 
-import static org.enerj.server.ObjectServer.*;
+import static org.enerj.server.ObjectServer.ENERJ_ACCESS_MODE_PROP;
+import static org.enerj.server.ObjectServer.ENERJ_CLIENT_LOCAL;
+import static org.enerj.server.ObjectServer.ENERJ_DBNAME_PROP;
+import static org.enerj.server.ObjectServer.ENERJ_HOSTNAME_PROP;
+import static org.enerj.server.ObjectServer.ENERJ_PASSWORD_PROP;
+import static org.enerj.server.ObjectServer.ENERJ_PORT_PROP;
+import static org.enerj.server.ObjectServer.ENERJ_USERNAME_PROP;
 import static org.odmg.Transaction.READ;
 import static org.odmg.Transaction.UPGRADE;
 import static org.odmg.Transaction.WRITE;
@@ -34,7 +40,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -60,8 +65,6 @@ import org.odmg.ObjectNameNotFoundException;
 import org.odmg.ObjectNameNotUniqueException;
 import org.odmg.TransactionInProgressException;
 import org.odmg.TransactionNotInProgressException;
-
-import sun.awt.motif.MCustomCursor;
 
 /**
  * Ener-J implementation of org.odmg.Database.
@@ -127,7 +130,11 @@ public class EnerJDatabase implements Database, Persister
 
     /** Non-null if the transaction is in the process of flushing objects. This
      * represents the current position in mModifiedObjects. */
-    private ListIterator<Persistable> mFlushIterator = null; 
+    private ListIterator<Persistable> mFlushIterator = null;
+    
+    /** The high-water mark for flushing. */
+    // TODO This should be settable.
+    private int mFlushLevel = 5000;
     
     /**
      * Construct a unopened EnerJDatabase.
@@ -411,18 +418,30 @@ public class EnerJDatabase implements Database, Persister
             return; // Ignore if txn not active.
         }
 
+        boolean restoreValues = txn.getRestoreValues();
+        
         // Note that if we were to just call storePersistable() here, we could get
         // into a very deep recursion. See EnerJTransaction.flushAndKeepModifiedList() for more details.
         // If we're flushing, we need to add it to the iterator rather than the list.
+        boolean shouldFlush = false;
         if (mFlushIterator != null) {
             mFlushIterator.add(aPersistable);
         }
         else {
             mModifiedObjects.addToModifiedList(aPersistable);
+            // Only flush if not restore values. Otherwise we have to keep them locally.
+            // TODO We could still flush if we loaded values back from the database.
+            if (!restoreValues && mModifiedObjects.getSize() >= mFlushLevel) {
+                shouldFlush = true;
+            }
         }
         
-        if (!aPersistable.enerj_IsNew() && txn.getRestoreValues()) {
+        if (!aPersistable.enerj_IsNew() && restoreValues) {
             savePersistableImage(aPersistable);
+        }
+        
+        if (shouldFlush) {
+            flush();
         }
     }
 
