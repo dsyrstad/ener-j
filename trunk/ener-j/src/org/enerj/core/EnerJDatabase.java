@@ -135,7 +135,7 @@ public class EnerJDatabase implements Database, Persister
     
     /** The high-water mark for flushing. */
     // TODO This should be settable.
-    private int mFlushLevel = 5000;
+    private int mFlushLevel = 500;
     
     /**
      * Construct a unopened EnerJDatabase.
