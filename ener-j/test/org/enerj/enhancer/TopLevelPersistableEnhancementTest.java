@@ -32,6 +32,7 @@ import junit.framework.TestSuite;
 
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
+import org.enerj.core.Persister;
 
 /**
  * Tests enhancement of Top-level Persistable classes.
@@ -41,9 +42,6 @@ import org.enerj.core.PersistableHelper;
  */
 public class TopLevelPersistableEnhancementTest extends AbstractPersistableEnhancementTest 
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/TLPETestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
-    
-
     public TopLevelPersistableEnhancementTest(String aTestName) 
     {
         super(aTestName);
@@ -73,19 +71,19 @@ public class TopLevelPersistableEnhancementTest extends AbstractPersistableEnhan
     {
         String[] expectedFields = new String[] { "enerj_sClassId", "enerj_mVersion", "enerj_mModified",
             "enerj_mNew", "enerj_mLoaded", "enerj_mAllowNonTransactionalReads", "enerj_mAllowNonTransactionalWrites", 
-            "enerj_mOID", "enerj_mDatabase", "enerj_mLockLevel", "mValue", "sSomeValue",
+            "enerj_mOID", "enerj_mPersister", "enerj_mLockLevel", "mValue", "sSomeValue",
         };
 
         String classSuffix = aTestClass.getName().replace('.', '_');
         String[] expectedMethods = { "enerj_GetVersion", "enerj_IsModified", "enerj_IsNew", 
             "enerj_IsLoaded", "enerj_AllowsNonTransactionalRead", 
             "enerj_AllowsNonTransactionalWrite", "enerj_GetPrivateOID",
-            "enerj_GetDatabase", "enerj_SetVersion", "enerj_SetPrivateOID",
-            "enerj_SetDatabase", "enerj_SetModified", "enerj_SetNew", "enerj_SetLoaded",
+            "enerj_GetPersister", "enerj_SetVersion", "enerj_SetPrivateOID",
+            "enerj_SetPersister", "enerj_SetModified", "enerj_SetNew", "enerj_SetLoaded",
             "enerj_SetAllowNonTransactionalRead", "enerj_SetAllowNonTransactionalWrite", 
             "enerj_Get_" + classSuffix + "_mValue", "enerj_Set_" + classSuffix + "_mValue",
             "enerj_Get_" + classSuffix + "_sSomeValue", "enerj_Set_" + classSuffix + "_sSomeValue",
-            "enerj_GetClassId", "enerj_GetClassIdStatic", "enerj_ReadObject", "enerj_WriteObject", "enerj_Hollow", "enerj_GetLockLevel", "enerj_SetLockLevel",
+            "enerj_GetClassId", "enerj_GetClassIdStatic", "enerj_ReadObject", "enerj_WriteObject", "enerj_ResolveObject", "enerj_Hollow", "enerj_GetLockLevel", "enerj_SetLockLevel",
             "someMethod", "equals", "clone"
         };
         
@@ -135,7 +133,7 @@ public class TopLevelPersistableEnhancementTest extends AbstractPersistableEnhan
         // Construct like the database will. Neither the New nor modified flags should be 
         // set because the superclass no-arg constructor is used.
         Constructor constructor = 
-            TLPTestClass2.class.getConstructor(new Class[] { org.enerj.core.EnerJDatabase.class });
+            TLPTestClass2.class.getConstructor(new Class[] { Persister.class });
         obj = (TLPTestClass2)constructor.newInstance(new Object[] { null } );
         // The above shouldn't have thrown an exception.
         assertNotNull("Construction should not return null", obj);
@@ -159,7 +157,7 @@ public class TopLevelPersistableEnhancementTest extends AbstractPersistableEnhan
     {
         // Construct like the database will.
         Constructor constructor = 
-            TLPTestClass3.class.getConstructor(new Class[] { org.enerj.core.EnerJDatabase.class });
+            TLPTestClass3.class.getConstructor(new Class[] { Persister.class });
         TLPTestClass3 obj = (TLPTestClass3)constructor.newInstance(new Object[] { null } );
         // The above shouldn't have thrown an exception.
         assertNotNull("Construction should not return null", obj);
@@ -184,7 +182,7 @@ public class TopLevelPersistableEnhancementTest extends AbstractPersistableEnhan
         try {
             // Construct like the database will.
             Constructor constructor = 
-                TLPTestClass6.class.getConstructor(new Class[] { org.enerj.core.EnerJDatabase.class });
+                TLPTestClass6.class.getConstructor(new Class[] { Persister.class });
             TLPTestClass6 obj = (TLPTestClass6)constructor.newInstance(new Object[] { null } );
             fail("Expected InvocationTargetException");
         }

@@ -6,4 +6,5 @@
 - Needs tests for Persister and new ObjectServerSession methods.
 - Tests for PersistableHelper.resolveObject()
 
-- Implement flush high water mark in EnerJDatabase.
+- Problem with DumpRedoLog on large logs that weren't committed it hangs at end. I think this is in ArchivingRedoLogServer 
+ buffered reader.

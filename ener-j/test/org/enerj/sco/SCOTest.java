@@ -52,7 +52,7 @@ import org.enerj.core.EnerJImplementation;
  */
 public class SCOTest extends TestCase
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/SCOTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj.mem://root:root@-/SCOTestDB";
     
 
     public SCOTest(String aTestName) 
@@ -101,7 +101,7 @@ public class SCOTest extends TestCase
     public void testSCOs() throws Exception
     {
         EnerJDatabase database = (EnerJDatabase)EnerJImplementation.getInstance().newDatabase();
-        database.open("enerj://root:root@-/SCOTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer", EnerJDatabase.OPEN_READ_WRITE);
+        database.open("enerj.mem://root:root@-/SCOTestDB", EnerJDatabase.OPEN_READ_WRITE);
         
         org.odmg.Transaction txn = EnerJImplementation.getInstance().newTransaction();
         txn.begin();

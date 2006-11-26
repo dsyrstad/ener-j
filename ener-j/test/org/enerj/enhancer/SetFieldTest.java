@@ -40,7 +40,7 @@ import org.enerj.core.PersistableHelper;
  */
 public class SetFieldTest extends TestCase 
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/SetFieldTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj.mem://root:root@-/SetFieldTestDB";
 
 
     public SetFieldTest(String aTestName) 

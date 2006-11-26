@@ -42,7 +42,7 @@ import org.enerj.core.Persistable;
  */
 public class PersistentAwareEnhancementTest extends TestCase 
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/PersistentAwareTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj.mem://root:root@-/PersistentAwareTestDB";
 
 
     public PersistentAwareEnhancementTest(String aTestName) 

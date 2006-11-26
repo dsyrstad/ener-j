@@ -31,6 +31,7 @@ import junit.framework.TestSuite;
 
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
+import org.enerj.core.Persister;
 
 /**
  * Tests enhancement of Non-Top-level Persistable classes.
@@ -40,9 +41,6 @@ import org.enerj.core.PersistableHelper;
  */
 public class NonTLPersistableEnhancementTest extends AbstractPersistableEnhancementTest 
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/NTLPETestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
-
-
     public NonTLPersistableEnhancementTest(String aTestName) 
     {
         super(aTestName);
@@ -78,7 +76,7 @@ public class NonTLPersistableEnhancementTest extends AbstractPersistableEnhancem
             expectedMethods = new String[] { 
                 "enerj_Get_" + classSuffix + "_mValue", "enerj_Set_" + classSuffix + "_mValue",
                 "enerj_Get_" + classSuffix + "_sSomeValue", "enerj_Set_" + classSuffix + "_sSomeValue",
-                "enerj_GetClassId", "enerj_GetClassIdStatic", "enerj_ReadObject", "enerj_WriteObject",  "enerj_Hollow",
+                "enerj_GetClassId", "enerj_GetClassIdStatic", "enerj_ReadObject", "enerj_WriteObject",  "enerj_ResolveObject", "enerj_Hollow",
                 "someMethod", "equals", "clone"
             };
         }
@@ -86,7 +84,7 @@ public class NonTLPersistableEnhancementTest extends AbstractPersistableEnhancem
             expectedMethods = new String[] { 
                 "enerj_Get_" + classSuffix + "_mValue", "enerj_Set_" + classSuffix + "_mValue",
                 "enerj_Get_" + classSuffix + "_sSomeValue", "enerj_Set_" + classSuffix + "_sSomeValue",
-                "enerj_GetClassId", "enerj_GetClassIdStatic", "enerj_ReadObject", "enerj_WriteObject",  "enerj_Hollow",
+                "enerj_GetClassId", "enerj_GetClassIdStatic", "enerj_ReadObject", "enerj_WriteObject",  "enerj_ResolveObject", "enerj_Hollow",
                 "someMethod", "equals"
             };
         }
@@ -131,7 +129,7 @@ public class NonTLPersistableEnhancementTest extends AbstractPersistableEnhancem
         // Construct like the database will. Neither the New nor modified flags should be 
         // set because the superclass (EnerJDatabase) constructor is used.
         Constructor constructor = 
-            NTLPTestClass1.class.getConstructor(new Class[] { org.enerj.core.EnerJDatabase.class });
+            NTLPTestClass1.class.getConstructor(new Class[] { Persister.class });
         Persistable persistable = (Persistable)constructor.newInstance(new Object[] { null } );
         // The above shouldn't have thrown an exception.
         assertNotNull("Construction should not return null", persistable);

@@ -40,7 +40,7 @@ import org.enerj.core.PersistableHelper;
  */
 public class HollowTest extends TestCase 
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/HollowTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj.mem://root:root@-/HollowTestDB";
 
 
     public HollowTest(String aTestName) 

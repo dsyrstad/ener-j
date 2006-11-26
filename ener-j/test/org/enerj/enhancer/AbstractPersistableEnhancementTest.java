@@ -36,11 +36,12 @@ import java.lang.reflect.Modifier;
 
 import junit.framework.TestCase;
 
+import org.enerj.core.EnerJDatabase;
+import org.enerj.core.EnerJImplementation;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
-import org.enerj.core.EnerJDatabase;
-import org.enerj.core.EnerJImplementation;
+import org.enerj.core.Persister;
 
 /**
  * Common tests for enhancement of Persistable classes.
@@ -50,9 +51,6 @@ import org.enerj.core.EnerJImplementation;
  */
 abstract class AbstractPersistableEnhancementTest extends TestCase 
 {
-    private static boolean sEnhanced = false;
-    
-
     public AbstractPersistableEnhancementTest(String aTestName) 
     {
         super(aTestName);
@@ -196,7 +194,7 @@ abstract class AbstractPersistableEnhancementTest extends TestCase
     {
         // This should not throw an exception.
         Constructor constructor = 
-            aTestClass.getConstructor(new Class[] { org.enerj.core.EnerJDatabase.class });
+            aTestClass.getConstructor(new Class[] { Persister.class });
         
         // Construct like the database will. Neither the New nor modified flags should be 
         // set because the superclass (EnerJDatabase) constructor is used.
@@ -296,13 +294,13 @@ abstract class AbstractPersistableEnhancementTest extends TestCase
         System.out.println("Testing checkClone on " + aTestClass);
 
         EnerJDatabase database = (EnerJDatabase)EnerJImplementation.getInstance().newDatabase();
-        database.open("enerj://root:root@-/TestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer", EnerJDatabase.OPEN_READ_WRITE);
+        database.open("enerj.mem://root:root@-/TestDB", EnerJDatabase.OPEN_READ_WRITE);
         
         org.odmg.Transaction txn = EnerJImplementation.getInstance().newTransaction();
         txn.begin();
 
         // Construct like the database will.
-        Constructor constructor = aTestClass.getConstructor(new Class[] { org.enerj.core.EnerJDatabase.class });
+        Constructor constructor = aTestClass.getConstructor(new Class[] { Persister.class });
         Persistable persistable = (Persistable)constructor.newInstance(new Object[] { null } );
         
         // Reset new and set modified and loaded to make sure these are properly reset by the clone method.

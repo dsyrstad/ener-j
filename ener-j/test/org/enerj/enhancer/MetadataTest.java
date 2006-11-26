@@ -39,7 +39,7 @@ import org.enerj.util.asm.ClassReflector;
  */
 public class MetadataTest extends TestCase 
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/MetadataTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj.mem://root:root@-/MetadataTestDB";
 
     private static boolean sEnhanced = false;
     
