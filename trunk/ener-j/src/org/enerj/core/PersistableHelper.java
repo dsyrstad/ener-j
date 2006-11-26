@@ -68,7 +68,7 @@ public class PersistableHelper
         aPersistable.enerj_SetPersister(null);
         aPersistable.enerj_SetLockLevel(EnerJTransaction.NO_LOCK);
 
-        if (isTransactionActive(aPersistable)) {
+        if (!isTransactionActive(aPersistable)) {
             // No transaction active. Set the object to nontransactional.
             setNonTransactional(aPersistable);
         }

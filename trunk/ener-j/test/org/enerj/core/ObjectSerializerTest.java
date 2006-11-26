@@ -53,7 +53,7 @@ import junit.framework.TestSuite;
  */
 public class ObjectSerializerTest extends TestCase
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/ObjectSerializerTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
+    private static final String DATABASE_URI = "enerj.mem://root:root@-/ObjectSerializerTestDB";
     
 
     public ObjectSerializerTest(String aTestName) 

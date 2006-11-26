@@ -48,6 +48,7 @@ import java.util.Properties;
 import org.enerj.annotations.SchemaAnnotation;
 import org.enerj.server.ClassInfo;
 import org.enerj.server.ExtentIterator;
+import org.enerj.server.MemoryObjectServer;
 import org.enerj.server.ObjectServerSession;
 import org.enerj.server.PagedObjectServer;
 import org.enerj.server.PluginHelper;
@@ -957,7 +958,8 @@ public class EnerJDatabase implements Database, Persister
      * <i>enerj[.subprotocol]://[username[:password]@]hostname[:port]/dbname[?parameters]</i> -- connects to the
      * database server at 'hostname' serving database 'dbname'. If hostname is '-', a server
      * is instantiated in the client's JVM and the database is opened locally. If subprotocol is 
-     * not specified, the default Ener-J plug-ins are used.<p> 
+     * not specified, the default Ener-J plug-ins are used. The subprotocol "mem" is recoginized to 
+     * create an in-memory database.<p> 
      * <i>dbname</i> -- a server
      * is instantiated in the client's JVM using the default Ener-J plug-ins and the database is opened locally.
      * However, if the <code>enerj.dburi</code> system property is set, it is used as the base URI and dbname is
@@ -1040,7 +1042,7 @@ public class EnerJDatabase implements Database, Persister
         }
 
         if (dbname == null || dbname.length() == 0) {
-            throw new ODMGException("Malformed URI, must a database name: " + uriString);
+            throw new ODMGException("Malformed URI, must have a database name: " + uriString);
         }
         
         String scheme = uri.getScheme();
@@ -1061,7 +1063,12 @@ public class EnerJDatabase implements Database, Persister
         else if (scheme.startsWith("enerj.")) {
             // TODO handle sub-protocols. Use PluginHelper to resolve. PluginHelper registers plugins via system prop enerj.plugins
             String subprotocol = scheme.substring("enerj.".length() );
-            throw new ODMGException("Unknown subprotocol '" + subprotocol + "': " + uriString);
+            if (subprotocol.equals("mem")) {
+                pluginClassName = MemoryObjectServer.class.getName();
+            }
+            else {
+                throw new ODMGException("Unknown subprotocol '" + subprotocol + "': " + uriString);
+            }
         }
         else {
             throw new ODMGException("Malformed URI, must have scheme of 'enerj': " + uriString);

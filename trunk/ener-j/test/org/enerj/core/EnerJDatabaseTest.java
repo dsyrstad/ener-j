@@ -45,10 +45,8 @@ import org.enerj.annotations.Persist;
  */
 public class EnerJDatabaseTest extends TestCase
 {
-    private static final String DATABASE_URI = "enerj://root:root@-/EnerJDatabaseTestDB?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
-    private static final String DATABASE2_URI = "enerj://root:root@-/EnerJDatabaseTestDB2?DefaultObjectServer.ObjectServerClass=org.enerj.server.MemoryObjectServer";
-
-    private static boolean sEnhanced = false;
+    private static final String DATABASE_URI = "enerj.mem://root:root@-/EnerJDatabaseTestDB";
+    private static final String DATABASE2_URI = "enerj.mem://root:root@-/EnerJDatabaseTestDB2";
 
     private Exception mThreadException;
     
