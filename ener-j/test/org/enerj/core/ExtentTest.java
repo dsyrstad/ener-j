@@ -504,7 +504,7 @@ public class ExtentTest extends TestCase
     /**
      * Tests extents with many objects to verify the integrity of the objects returned.
      */
-    public void testLargeExtents() throws Exception
+    public void xtestLargeExtents() throws Exception
     {
         final int NUM_OBJS = 100000;
 
