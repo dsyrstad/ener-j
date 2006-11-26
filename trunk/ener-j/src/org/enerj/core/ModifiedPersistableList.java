@@ -109,6 +109,16 @@ public class ModifiedPersistableList
     }
     
     /**
+     * Gets the number of objects in the list.
+     *
+     * @return the number of objects in the list.
+     */
+    public int getSize()
+    {
+        return mModifiedObjectList.size();
+    }
+    
+    /**
      * Our version of ListIterator that delegates to the list's iterator. When a
      * new object is being added, it is also placed in the map. <p>
      */
