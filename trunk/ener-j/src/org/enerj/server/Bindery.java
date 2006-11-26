@@ -81,8 +81,8 @@ public class Bindery
      */
     public long lookup(String aName) throws ObjectNameNotFoundException
     {
-        long oid = mBinderyMap.get(aName);
-        if (oid == ObjectSerializer.NULL_OID) {
+        Long oid = mBinderyMap.get(aName);
+        if (oid == null || oid == ObjectSerializer.NULL_OID) {
             throw new ObjectNameNotFoundException("No object named " + aName + " exists.");
         }
         
