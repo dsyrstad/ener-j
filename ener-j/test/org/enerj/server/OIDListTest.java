@@ -27,6 +27,8 @@ package org.enerj.server;
 import java.io.File;
 import java.util.Properties;
 
+import org.enerj.core.ObjectSerializer;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -42,8 +44,6 @@ public class OIDListTest extends TestCase
     // Page size of 512 gives 31 OIDs per page.
     private static final int PAGE_SIZE = 512;
     private static final int OIDS_PER_PAGE = (PAGE_SIZE - 8) / 16;
-    // Initial OID list size should be 2 because the NULL OID and Database Root OID are always allocated.
-    private int INITIAL_LIST_SIZE = 2;
     
     private File mTmpPageFile = null;
     private PageServer mPageServer = null;
@@ -122,17 +122,17 @@ public class OIDListTest extends TestCase
     {
         OIDList list = new OIDList(mPageServer, mPageServer.getLogicalFirstPageOffset() );
         
-        assertTrue( list.getListSize() == INITIAL_LIST_SIZE );
+        assertEquals(ObjectSerializer.FIRST_USER_OID, list.getListSize());
 
         long[] oids1 = list.allocateOIDBlock(40);
         assertNotNull( oids1 );
-        assertTrue( oids1.length == 40 );
-        assertTrue( list.getListSize() == (oids1.length + INITIAL_LIST_SIZE) );
+        assertEquals(40, oids1.length);
+        assertEquals((oids1.length + ObjectSerializer.FIRST_USER_OID), list.getListSize());
         
         // Make sure new oids are returned each time and that they're not the null OID.
         long[] oids2 = list.allocateOIDBlock(10);
-        assertTrue( oids2.length == 10 );
-        assertTrue( list.getListSize() == (oids1.length + oids2.length + INITIAL_LIST_SIZE) );
+        assertEquals(10, oids2.length);
+        assertEquals((oids1.length + oids2.length + ObjectSerializer.FIRST_USER_OID), list.getListSize());
         
         for (int i1 = 0; i1 < oids1.length; i1++) {
             assertTrue( oids1[i1] != 0L );
@@ -160,7 +160,7 @@ public class OIDListTest extends TestCase
             list.setOIDInfo(oids[i], oids[i] * 1000L, oids[i] * 1234567890L);
         }
 
-        assertTrue( list.getListSize() == (oids.length + INITIAL_LIST_SIZE) );
+        assertTrue( list.getListSize() == (oids.length + ObjectSerializer.FIRST_USER_OID) );
 
         for (int i = 0; i < oids.length; i++) {
             long cid = list.getCIDforOID(oids[i]);
@@ -178,7 +178,7 @@ public class OIDListTest extends TestCase
         mPageServer = connectToPageVolume();
         list = new OIDList(mPageServer, mPageServer.getLogicalFirstPageOffset() );
 
-        assertTrue( list.getListSize() == (oids.length + INITIAL_LIST_SIZE) );
+        assertTrue( list.getListSize() == (oids.length + ObjectSerializer.FIRST_USER_OID) );
 
         for (int i = 0; i < oids.length; i++) {
             long cid = list.getCIDforOID(oids[i]);
@@ -234,7 +234,7 @@ public class OIDListTest extends TestCase
         // Allocate last page (129th) and blank pages in between.
         list.setOIDInfo(lastOID, 12345L, 67890L);  
 
-        assertTrue( list.getListSize() == (oids.length + INITIAL_LIST_SIZE) );
+        assertTrue( list.getListSize() == (oids.length + ObjectSerializer.FIRST_USER_OID) );
         
         long cid;
         long offset;
@@ -261,7 +261,7 @@ public class OIDListTest extends TestCase
         mPageServer = connectToPageVolume();
         list = new OIDList(mPageServer, mPageServer.getLogicalFirstPageOffset() );
 
-        assertTrue( list.getListSize() == (oids.length + INITIAL_LIST_SIZE) );
+        assertTrue( list.getListSize() == (oids.length + ObjectSerializer.FIRST_USER_OID) );
 
         if (shouldAllocateFirstOID) {
             cid = list.getCIDforOID(firstOID);

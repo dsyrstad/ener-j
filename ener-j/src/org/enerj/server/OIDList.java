@@ -170,7 +170,6 @@ public class OIDList
     /**
      * Gets the size of the OID list. Some OIDs in the list may not be in use.
      * Unused OIDs can be detected by calling getObjectOffsetForOID() on an OID.
-     * If the method returns PageServer.NULL_OFFSET, the OID is not in use.
      *
      * @return the size of the OID list.
      */
