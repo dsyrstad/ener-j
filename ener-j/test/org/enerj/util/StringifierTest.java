@@ -46,13 +46,6 @@ public class StringifierTest extends TestCase
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args)
-    {
-        junit.swingui.TestRunner.run(StringifierTest.class);
-    }
-    
 
     public static Test suite() 
     {

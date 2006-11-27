@@ -39,22 +39,10 @@ import org.enerj.util.asm.ClassReflector;
  */
 public class MetadataTest extends TestCase 
 {
-    private static final String DATABASE_URI = "enerj.mem://root:root@-/MetadataTestDB";
-
-    private static boolean sEnhanced = false;
-    
-
     public MetadataTest(String aTestName) 
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(MetadataTest.class);
-    }
-    
 
     public static Test suite() 
     {

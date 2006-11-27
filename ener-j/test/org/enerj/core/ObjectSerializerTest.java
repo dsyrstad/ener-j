@@ -51,22 +51,12 @@ import junit.framework.TestSuite;
  * @version $Id: ObjectSerializerTest.java,v 1.2 2006/06/09 02:39:23 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class ObjectSerializerTest extends TestCase
+public class ObjectSerializerTest extends AbstractDatabaseTestCase
 {
-    private static final String DATABASE_URI = "enerj.mem://root:root@-/ObjectSerializerTestDB";
-    
-
     public ObjectSerializerTest(String aTestName) 
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(ObjectSerializerTest.class);
-    }
-    
 
     public static Test suite() 
     {

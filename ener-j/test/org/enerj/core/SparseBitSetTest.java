@@ -24,14 +24,14 @@
 
 package org.enerj.core;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
-import java.util.Collections;
-import java.util.Random;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Tests SparseBitSet.
@@ -42,13 +42,6 @@ import java.util.List;
 public class SparseBitSetTest extends TestCase
 {
     private static final int TEST_NODE_SIZE = 10;
-
-
-    public static void main(String[] args)
-    {
-        junit.swingui.TestRunner.run(SparseBitSetTest.class);
-    }
-    
 
     public static Test suite() 
     {

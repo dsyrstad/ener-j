@@ -263,7 +263,7 @@ public class PersistableHelper
             objClass = Class.forName(aClassInfo.getClassName());
         }
         catch (Exception e) {
-            throw new ODMGRuntimeException("Cannot find class " + aClassInfo.getClassName() + " for OID " + anOID, e);
+            throw new ODMGRuntimeException("Cannot find class " + aClassInfo + " for OID " + anOID, e);
         }
         
         

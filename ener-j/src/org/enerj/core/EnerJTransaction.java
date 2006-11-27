@@ -239,20 +239,6 @@ public class EnerJTransaction implements Transaction
         checkIsOpenAndOwnedByThread();
         getTransactionDatabase().flush();
     }
-
-    /**
-     * Clears the transaction list of modified and referenced new objects. Similar to a
-     * abort(), but only on the client-side.
-     * These objects will not be flushed to the server. Modified objects are essentially rolled
-     * back in memory if RestoreValues was set, otherwise they are hollowed. The
-     * client cache is evicted. The transaction is closed.
-     */
-    public void clear()
-    {
-        checkIsOpenAndOwnedByThread();
-        getTransactionDatabase().clear();
-        closeCurrentTransaction();
-    }
     
     // Start of org.odmg.Transaction interface methods...
 

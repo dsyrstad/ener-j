@@ -25,14 +25,13 @@
 package org.enerj.core;
 
 import junit.framework.Test;
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.enerj.annotations.Persist;
 import org.odmg.Database;
 import org.odmg.Implementation;
 import org.odmg.ObjectNameNotFoundException;
 import org.odmg.Transaction;
-import org.enerj.annotations.Persist;
 
 /**
  * Tests Basic ODMG functionality on Database and Transaction.
@@ -40,20 +39,11 @@ import org.enerj.annotations.Persist;
  * @version $Id: BasicODMGTest.java,v 1.2 2006/06/05 01:17:03 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class BasicODMGTest extends TestCase
+public class BasicODMGTest extends AbstractDatabaseTestCase
 {
-    private static final String DATABASE_URI = "enerj.mem://root:root@-/BasicODMGTestDB";
-    
-
     public BasicODMGTest(String aTestName) 
     {
         super(aTestName);
-    }
-    
-
-    public static void main(String[] args)
-    {
-        junit.swingui.TestRunner.run(BasicODMGTest.class);
     }
     
 

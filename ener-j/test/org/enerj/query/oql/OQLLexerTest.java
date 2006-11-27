@@ -24,9 +24,12 @@
 
 package org.enerj.query.oql;
 
-import java.io.*;
+import java.io.Reader;
+import java.io.StringReader;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Tests OQLLexer. <p>
@@ -43,13 +46,6 @@ public class OQLLexerTest extends TestCase
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args)
-    {
-        junit.swingui.TestRunner.run(OQLLexerTest.class);
-    }
-    
 
     public static Test suite() 
     {

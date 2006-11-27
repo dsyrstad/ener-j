@@ -24,7 +24,9 @@
 
 package org.enerj.util;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Tests MROWLock. <p>
@@ -34,19 +36,10 @@ import junit.framework.*;
  */
 public class MROWLockTest extends TestCase
 {
-    
-
     public MROWLockTest(String aTestName) 
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args)
-    {
-        junit.swingui.TestRunner.run(MROWLockTest.class);
-    }
-    
 
     public static Test suite() 
     {

@@ -24,23 +24,20 @@
 
 package org.enerj.core;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
 import junit.framework.Test;
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.enerj.annotations.Persist;
 import org.odmg.DList;
 import org.odmg.Database;
 import org.odmg.Implementation;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.Transaction;
-import org.enerj.annotations.Persist;
-import org.enerj.server.PagedObjectServer;
 
 /**
  * Tests Extent functionality on EnerJDatabase.
@@ -48,61 +45,17 @@ import org.enerj.server.PagedObjectServer;
  * @version $Id: ExtentTest.java,v 1.2 2006/06/09 02:39:24 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class ExtentTest extends TestCase
+public class ExtentTest extends AbstractDatabaseTestCase
 {
-    private static final String DATABASE_URI = "GeneralDB";
-
-    private File mTmpPageFile = new File("databases/JUnit/GeneralDB/GeneralDB.enerj");
-    private File mTmpLogFile = new File("databases/JUnit/GeneralDB/GeneralDB.log");
-
-
     public ExtentTest(String aTestName) 
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args)
-    {
-        junit.swingui.TestRunner.run(ExtentTest.class);
-        //new junit.swingui.TestRunner().start( new String[] { ExtentTest.class.getName(), "-noloading" } );
-    }
-    
 
     public static Test suite() 
     {
         return new TestSuite(ExtentTest.class);
     }
-    
-
-    public void setUp() throws Exception
-    {
-        clearDBFiles();
-        long start = System.currentTimeMillis();
-        System.setProperty("enerj.dbpath", "databases/JUnit");
-        PagedObjectServer.createDatabase("Test", "GeneralDB", 0L, 0L);
-        System.out.println("Create DB took " + (System.currentTimeMillis() - start) + " ms");
-    }
-
-
-    public void tearDown() throws Exception
-    {
-        clearDBFiles();
-    }
-
-
-    /**
-     *  Delete database files.
-     */
-    private void clearDBFiles()
-    {
-        System.out.println("Page file is " + mTmpPageFile.length() + " bytes");
-        mTmpPageFile.delete();
-
-        // Delete the log file
-        mTmpLogFile.delete();
-    }
-
 
     /**
      * Tests addition to extent via bind().

@@ -8,3 +8,5 @@
 
 - Problem with DumpRedoLog on large logs that weren't committed it hangs at end. I think this is in ArchivingRedoLogServer 
  buffered reader.
+ 
+- Add tests for serialization of  enum types. Figure out how they're stored.

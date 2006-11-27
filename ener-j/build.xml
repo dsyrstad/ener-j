@@ -235,7 +235,6 @@ Available targets:
 		<mkdir dir="${databases.dir}/${db}" />
 		
 		<echo file="${databases.dir}/${db}/${db}.properties">
-DefaultMetaObjectServer.ObjectServerClass=org.enerj.server.PagedObjectServer
 PagedObjectServer.PageServerClass=org.enerj.server.CachedPageServer
 PagedObjectServer.LockServerClass=org.enerj.server.LockScheduler
 PagedObjectServer.RedoLogServerClass=org.enerj.server.ArchivingRedoLogServer

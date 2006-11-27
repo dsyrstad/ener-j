@@ -30,16 +30,16 @@ package org.enerj.server;
  */
 public class ClassInfo
 {
-    private long CID;
-    private String className;
+    private long mCID;
+    private String mClassName;
 
     /**
      * Construct a ClassInfo. 
      */
     public ClassInfo(long aCID, String aClassName)
     {
-        CID = aCID;
-        className = aClassName;
+        mCID = aCID;
+        mClassName = aClassName;
     }
 
     /**
@@ -49,7 +49,7 @@ public class ClassInfo
      */
     public long getCID()
     {
-        return CID;
+        return mCID;
     }
 
     /**
@@ -59,6 +59,11 @@ public class ClassInfo
      */
     public String getClassName()
     {
-        return className;
+        return mClassName;
+    }
+    
+    public String toString()
+    {
+        return "ClassInfo:[" + mClassName + ':' + mCID + ']';
     }
 }

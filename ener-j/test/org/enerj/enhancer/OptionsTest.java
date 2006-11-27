@@ -43,13 +43,6 @@ public class OptionsTest extends TestCase
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(OptionsTest.class);
-    }
-    
 
     public static Test suite() 
     {

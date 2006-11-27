@@ -48,7 +48,6 @@ import java.util.Properties;
 import org.enerj.annotations.SchemaAnnotation;
 import org.enerj.server.ClassInfo;
 import org.enerj.server.ExtentIterator;
-import org.enerj.server.MemoryObjectServer;
 import org.enerj.server.ObjectServerSession;
 import org.enerj.server.PagedObjectServer;
 import org.enerj.server.PluginHelper;
@@ -125,9 +124,6 @@ public class EnerJDatabase implements Database, Persister
     private List<SerializedObject> mSerializedObjectQueue = new ArrayList<SerializedObject>(100);
     /** Number of bytes in mSerializedObjectQueue. */
     private int mSerializedObjectQueueSize = 0;
-    
-    /** True if the Transaction has started, but neither commit nor abort have been called. */
-    private boolean mIsTxnOpen = false;
 
     /** Non-null if the transaction is in the process of flushing objects. This
      * represents the current position in mModifiedObjects. */
@@ -234,7 +230,7 @@ public class EnerJDatabase implements Database, Persister
      */
     public boolean isTransactionActive()
     {
-        return mIsTxnOpen;
+        return getTransaction() != null;
     }
 
     /**
@@ -315,10 +311,13 @@ public class EnerJDatabase implements Database, Persister
             ClassInfo classInfo = classInfos[i];
             long oid = someOIDs[i];
             
-            Persistable persistable = PersistableHelper.createHollowPersistable(classInfo, oid, this);
-            
-            // Cache it
-            mClientCache.add(oid, persistable);
+            Persistable persistable = null;
+            if (classInfo != null) {
+                persistable = PersistableHelper.createHollowPersistable(classInfo, oid, this);                
+                
+                // Cache it
+                mClientCache.add(oid, persistable);
+            }
 
             objects[i] = persistable;
         }
@@ -958,8 +957,7 @@ public class EnerJDatabase implements Database, Persister
      * <i>enerj[.subprotocol]://[username[:password]@]hostname[:port]/dbname[?parameters]</i> -- connects to the
      * database server at 'hostname' serving database 'dbname'. If hostname is '-', a server
      * is instantiated in the client's JVM and the database is opened locally. If subprotocol is 
-     * not specified, the default Ener-J plug-ins are used. The subprotocol "mem" is recoginized to 
-     * create an in-memory database.<p> 
+     * not specified, the default Ener-J plug-ins are used. <p> 
      * <i>dbname</i> -- a server
      * is instantiated in the client's JVM using the default Ener-J plug-ins and the database is opened locally.
      * However, if the <code>enerj.dburi</code> system property is set, it is used as the base URI and dbname is
@@ -1063,12 +1061,7 @@ public class EnerJDatabase implements Database, Persister
         else if (scheme.startsWith("enerj.")) {
             // TODO handle sub-protocols. Use PluginHelper to resolve. PluginHelper registers plugins via system prop enerj.plugins
             String subprotocol = scheme.substring("enerj.".length() );
-            if (subprotocol.equals("mem")) {
-                pluginClassName = MemoryObjectServer.class.getName();
-            }
-            else {
-                throw new ODMGException("Unknown subprotocol '" + subprotocol + "': " + uriString);
-            }
+            throw new ODMGException("Unknown subprotocol '" + subprotocol + "': " + uriString);
         }
         else {
             throw new ODMGException("Malformed URI, must have scheme of 'enerj': " + uriString);
@@ -1321,7 +1314,7 @@ public class EnerJDatabase implements Database, Persister
      */
     void begin(EnerJTransaction aTransaction)
     {
-        if (mIsTxnOpen) {
+        if (isTransactionActive()) {
             throw new TransactionInProgressException("Transaction already started");
         }
         
@@ -1332,6 +1325,10 @@ public class EnerJDatabase implements Database, Persister
         if (!isOpen()) {
             throw new DatabaseClosedException("Database is not open yet.");
         }
+
+        // Clear-out any remnants of a previous transaction. 
+        clearModifiedList();
+        getClientCache().clearPrefetches();
 
         // On error, this must be cleared.
         // This must be called prior to begin logic because it may throw saying that the
@@ -1345,8 +1342,6 @@ public class EnerJDatabase implements Database, Persister
             setTransaction(null);
             throw e;
         }
-
-        mIsTxnOpen = true;
     }
 
     /**
@@ -1409,55 +1404,47 @@ public class EnerJDatabase implements Database, Persister
         }
     }
 
-    /**
-     * Clears the transaction list of modified and referenced new objects. Similar to a
-     * abort(), but only on the client-side.
-     * These objects will not be flushed to the server. Modified objects are essentially rolled
-     * back in memory if RestoreValues was set, otherwise they are hollowed. The
-     * client cache is evicted. The transaction is closed.
-     */
-    void clear()
-    {
-        boolean restoreValues = getTransaction().getRestoreValues();
-        
-        for (Iterator<Persistable> iter = getModifiedListIterator(); iter.hasNext(); ) {
-            Persistable persistable = iter.next();
-            if (restoreValues) {
-                // Restore (rollback) the object
-                restoreAndClearPersistableImage(persistable);
-            }
-
-            if (persistable.enerj_IsNew()) {
-                // New objects are evicted from the cache and get their OID cleared.
-                getClientCache().evict( getOID(persistable) );
-                persistable.enerj_SetPrivateOID(ObjectSerializer.NULL_OID);
-            }
-        }
-
-        clearModifiedList();
-        
-        // See defined behavior on EnerJTransaction.setRestoreValues.
-        if (restoreValues) {
-            getClientCache().makeObjectsNonTransactional();
-        }
-        else {
-            // Note: hollowObjects() invokes enerj_Hollow() which clears the cache lock state.
-            getClientCache().hollowObjects();
-        }
-        
-        getClientCache().clearPrefetches();
-        getClientCache().evictAll();
-    }
-
     /** 
      * @see org.odmg.Transaction#abort()
      */
     void abort() 
     {
-        mObjectServerSession.rollbackTransaction();
+        try {
+            mObjectServerSession.rollbackTransaction();
+    
+            // Rollback modified objects and clear new objects.
+            boolean restoreValues = getTransaction().getRestoreValues();
+            
+            for (Iterator<Persistable> iter = getModifiedListIterator(); iter.hasNext(); ) {
+                Persistable persistable = iter.next();
+                if (restoreValues) {
+                    // Restore (rollback) the object
+                    restoreAndClearPersistableImage(persistable);
+                }
 
-        // Rollback modified objects and clear new objects.
-        clear();
+                if (persistable.enerj_IsNew()) {
+                    // New objects are evicted from the cache and get their OID cleared.
+                    getClientCache().evict( getOID(persistable) );
+                    persistable.enerj_SetPrivateOID(ObjectSerializer.NULL_OID);
+                }
+            }
+
+            clearModifiedList();
+            
+            // See defined behavior on EnerJTransaction.setRestoreValues.
+            if (restoreValues) {
+                getClientCache().makeObjectsNonTransactional();
+            }
+            else {
+                // Note: hollowObjects() invokes enerj_Hollow() which clears the cache lock state.
+                getClientCache().hollowObjects();
+            }
+            
+            getClientCache().clearPrefetches();
+        }
+        finally {
+            setTransaction(null);
+        }
     }
 
     /** 
@@ -1486,20 +1473,25 @@ public class EnerJDatabase implements Database, Persister
      */
     void commit() 
     {
-        // Flush pending modified objects out to server.
-        flush();
-
-        // See defined behavior on setRetainValues().
-        if (getTransaction().getRetainValues()) {
-            getClientCache().makeObjectsNonTransactional();
+        try {
+            // Flush pending modified objects out to server.
+            flush();
+    
+            // See defined behavior on setRetainValues().
+            if (getTransaction().getRetainValues()) {
+                getClientCache().makeObjectsNonTransactional();
+            }
+            else {
+                // Note: hollowObjects() invokes enerj_Hollow() which clears the cache lock state.
+                getClientCache().hollowObjects();
+            }
+    
+            getClientCache().clearPrefetches();
+            mObjectServerSession.commitTransaction();
         }
-        else {
-            // Note: hollowObjects() invokes enerj_Hollow() which clears the cache lock state.
-            getClientCache().hollowObjects();
+        finally {
+            setTransaction(null);
         }
-
-        getClientCache().clearPrefetches();
-        mObjectServerSession.commitTransaction();
     }
 
     /**

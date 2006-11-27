@@ -46,13 +46,6 @@ public class TopLevelPersistableEnhancementTest extends AbstractPersistableEnhan
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(TopLevelPersistableEnhancementTest.class);
-    }
-    
 
     public static Test suite() 
     {
