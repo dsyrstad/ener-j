@@ -35,14 +35,14 @@ import java.util.Map;
 import java.util.Vector;
 
 import junit.framework.Test;
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.enerj.annotations.Persist;
-import org.enerj.core.Persistable;
-import org.enerj.core.PersistableHelper;
+import org.enerj.core.AbstractDatabaseTestCase;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJImplementation;
+import org.enerj.core.Persistable;
+import org.enerj.core.PersistableHelper;
 
 /**
  * Tests Mutable SCOs.
@@ -50,22 +50,12 @@ import org.enerj.core.EnerJImplementation;
  * @version $Id: SCOTest.java,v 1.4 2006/06/09 02:38:31 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class SCOTest extends TestCase
+public class SCOTest extends AbstractDatabaseTestCase
 {
-    private static final String DATABASE_URI = "enerj.mem://root:root@-/SCOTestDB";
-    
-
     public SCOTest(String aTestName) 
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(SCOTest.class);
-    }
-    
 
     public static Test suite() 
     {
@@ -101,7 +91,7 @@ public class SCOTest extends TestCase
     public void testSCOs() throws Exception
     {
         EnerJDatabase database = (EnerJDatabase)EnerJImplementation.getInstance().newDatabase();
-        database.open("enerj.mem://root:root@-/SCOTestDB", EnerJDatabase.OPEN_READ_WRITE);
+        database.open(DATABASE_URI, EnerJDatabase.OPEN_READ_WRITE);
         
         org.odmg.Transaction txn = EnerJImplementation.getInstance().newTransaction();
         txn.begin();

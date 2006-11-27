@@ -40,20 +40,10 @@ import org.enerj.core.PersistableHelper;
  */
 public class SetFieldTest extends TestCase 
 {
-    private static final String DATABASE_URI = "enerj.mem://root:root@-/SetFieldTestDB";
-
-
     public SetFieldTest(String aTestName) 
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(SetFieldTest.class);
-    }
-    
 
     public static Test suite() 
     {

@@ -24,15 +24,15 @@
 
 package org.enerj.enhancer;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-
-import org.enerj.annotations.Persist;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import org.enerj.annotations.Persist;
 
 /**
  * Tests enhancement of persistent and non-persistent fields.
@@ -42,22 +42,10 @@ import junit.framework.TestSuite;
  */
 public class PersistentFieldsTest extends TestCase
 {
-    private static final String DATABASE_URI = "enerj.mem://root:root@-/PF1TestDB";
-    private static final String DATABASE2_URI = "enerj.mem://root:root@-/PF2TestDB";
-    private static final String DATABASE3_URI = "enerj.mem://root:root@-/PF3TestDB";
-    
-
     public PersistentFieldsTest(String aTestName) 
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(PersistentFieldsTest.class);
-    }
-    
 
     public static Test suite() 
     {

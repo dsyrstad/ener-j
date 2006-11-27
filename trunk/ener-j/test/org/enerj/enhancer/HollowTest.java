@@ -40,20 +40,10 @@ import org.enerj.core.PersistableHelper;
  */
 public class HollowTest extends TestCase 
 {
-    private static final String DATABASE_URI = "enerj.mem://root:root@-/HollowTestDB";
-
-
     public HollowTest(String aTestName) 
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(HollowTest.class);
-    }
-    
 
     public static Test suite() 
     {

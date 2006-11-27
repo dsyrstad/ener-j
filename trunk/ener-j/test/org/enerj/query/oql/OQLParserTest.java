@@ -55,13 +55,6 @@ public class OQLParserTest extends TestCase
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args)
-    {
-        junit.swingui.TestRunner.run(OQLParserTest.class);
-    }
-    
 
     public static Test suite() 
     {

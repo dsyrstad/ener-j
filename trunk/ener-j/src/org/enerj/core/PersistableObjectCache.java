@@ -49,6 +49,10 @@ public interface PersistableObjectCache
      */
     void add(long anOID, Persistable aPersistable);
 
+    /**
+     * Resets the cache as if it was just created.
+     */
+    void reset();
 
     /**
      * Gets the cached object corresponding to anOID.

@@ -25,12 +25,11 @@
 package org.enerj.core;
 
 import junit.framework.Test;
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.enerj.annotations.Persist;
 import org.odmg.Database;
 import org.odmg.Implementation;
-import org.enerj.annotations.Persist;
 
 /**
  * Tests EnerJTransaction. This class does not repeat the basic ODMG Database tests
@@ -39,10 +38,8 @@ import org.enerj.annotations.Persist;
  * @version $Id: EnerJTransactionTest.java,v 1.3 2006/06/09 02:39:23 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class EnerJTransactionTest extends TestCase
+public class EnerJTransactionTest extends AbstractDatabaseTestCase
 {
-    private static final String DATABASE_URI = "enerj.mem://root:root@-/EnerJTransactionTestDB";
-
     private Exception mThreadException;
     
 
@@ -50,13 +47,6 @@ public class EnerJTransactionTest extends TestCase
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args)
-    {
-        junit.swingui.TestRunner.run(EnerJTransactionTest.class);
-    }
-    
 
     public static Test suite() 
     {

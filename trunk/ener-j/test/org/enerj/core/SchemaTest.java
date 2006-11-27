@@ -24,39 +24,29 @@
 
 package org.enerj.core;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import org.odmg.Database;
-import org.odmg.Implementation;
-import org.odmg.Transaction;
-import org.enerj.annotations.Persist;
-
 import java.util.Date;
 import java.util.Iterator;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
+import org.enerj.annotations.Persist;
+import org.odmg.Database;
+import org.odmg.Implementation;
+import org.odmg.Transaction;
+
 /**
- * Tests DatabaseRoot and Schema functionality.
+ * Tests Schema functionality.
  *
  * @version $Id: SchemaTest.java,v 1.3 2006/06/08 02:29:27 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class SchemaTest extends TestCase
+public class SchemaTest extends AbstractDatabaseTestCase
 {
-    private static final String DATABASE_URI = "enerj.mem://root:root@-/SchemaTestDB";
-    
-
     public SchemaTest(String aTestName) 
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(SchemaTest.class);
-    }
-    
 
     public static Test suite() 
     {

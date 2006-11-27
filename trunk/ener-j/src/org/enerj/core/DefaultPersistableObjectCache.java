@@ -96,6 +96,17 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
     }
     
 
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.core.PersistableObjectCache#reset()
+     */
+    public void reset()
+    {
+        clearPrefetches();
+        evictAll();
+    }
+
+
     /**
      * Finds the CacheWeakReference entry corresponding to anOID.
      * Calls cleanup() prior to the lookup.

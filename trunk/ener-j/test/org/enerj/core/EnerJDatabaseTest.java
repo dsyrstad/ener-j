@@ -27,14 +27,13 @@ package org.enerj.core;
 import java.util.Collection;
 
 import junit.framework.Test;
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.enerj.annotations.Persist;
 import org.odmg.Database;
 import org.odmg.Implementation;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.Transaction;
-import org.enerj.annotations.Persist;
 
 /**
  * Tests EnerJDatabase. This class does not repeat the basic ODMG Database tests
@@ -43,23 +42,14 @@ import org.enerj.annotations.Persist;
  * @version $Id: EnerJDatabaseTest.java,v 1.6 2006/06/09 02:39:23 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class EnerJDatabaseTest extends TestCase
+public class EnerJDatabaseTest extends AbstractDatabaseTestCase
 {
-    private static final String DATABASE_URI = "enerj.mem://root:root@-/EnerJDatabaseTestDB";
-    private static final String DATABASE2_URI = "enerj.mem://root:root@-/EnerJDatabaseTestDB2";
-
     private Exception mThreadException;
     
 
     public EnerJDatabaseTest(String aTestName) 
     {
         super(aTestName);
-    }
-    
-
-    public static void main(String[] args)
-    {
-        junit.swingui.TestRunner.run(EnerJDatabaseTest.class);
     }
     
 
@@ -100,6 +90,7 @@ public class EnerJDatabaseTest extends TestCase
         // Now try to bind it to another database.
         db = (EnerJDatabase)impl.newDatabase();
 
+        createDatabase2();
         db.open(DATABASE2_URI, Database.OPEN_READ_WRITE);
 
         txn = (EnerJTransaction)impl.newTransaction();

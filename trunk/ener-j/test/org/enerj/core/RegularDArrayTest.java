@@ -24,15 +24,13 @@
 
 package org.enerj.core;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.util.Collection;
 
-import junit.framework.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
-import org.odmg.*;
-import org.enerj.enhancer.*;
-import org.enerj.core.*;
+import org.odmg.QueryableCollection;
 
 /**
  * Tests org.enerj.core.RegularDArray.
@@ -47,13 +45,6 @@ public class RegularDArrayTest extends TestCase
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(RegularDArrayTest.class);
-    }
-    
 
     public static Test suite() 
     {

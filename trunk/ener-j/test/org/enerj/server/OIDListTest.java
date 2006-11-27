@@ -53,13 +53,6 @@ public class OIDListTest extends TestCase
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args)
-    {
-        junit.swingui.TestRunner.run(OIDListTest.class);
-    }
-    
 
     public static Test suite() 
     {

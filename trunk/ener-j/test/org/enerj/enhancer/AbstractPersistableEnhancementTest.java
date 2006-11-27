@@ -36,8 +36,6 @@ import java.lang.reflect.Modifier;
 
 import junit.framework.TestCase;
 
-import org.enerj.core.EnerJDatabase;
-import org.enerj.core.EnerJImplementation;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
@@ -291,14 +289,6 @@ abstract class AbstractPersistableEnhancementTest extends TestCase
             return;
         }
         
-        System.out.println("Testing checkClone on " + aTestClass);
-
-        EnerJDatabase database = (EnerJDatabase)EnerJImplementation.getInstance().newDatabase();
-        database.open("enerj.mem://root:root@-/TestDB", EnerJDatabase.OPEN_READ_WRITE);
-        
-        org.odmg.Transaction txn = EnerJImplementation.getInstance().newTransaction();
-        txn.begin();
-
         // Construct like the database will.
         Constructor constructor = aTestClass.getConstructor(new Class[] { Persister.class });
         Persistable persistable = (Persistable)constructor.newInstance(new Object[] { null } );
@@ -315,8 +305,6 @@ abstract class AbstractPersistableEnhancementTest extends TestCase
         assertTrue("Should be new", clone.enerj_IsNew());
         assertTrue("Should not be modified", !clone.enerj_IsModified());
         assertTrue("Should not be loaded", !clone.enerj_IsLoaded());
-        assertTrue("OIDs should be different", database.getOID(clone) != database.getOID(persistable));
-        txn.abort();
-        database.close();
+        assertTrue("OIDs should be different", clone.enerj_GetPrivateOID() != persistable.enerj_GetPrivateOID());
     }
 }

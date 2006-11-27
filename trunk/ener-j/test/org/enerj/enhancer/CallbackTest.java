@@ -47,22 +47,10 @@ import org.enerj.core.PersistableHelper;
  */
 public class CallbackTest extends TestCase 
 {
-    private static final String DATABASE_URI = "enerj.mem://root:root@-/CallbackTestDB";
-
-    private static boolean sEnhanced = false;
-    
-
     public CallbackTest(String aTestName) 
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(CallbackTest.class);
-    }
-    
 
     public static Test suite() 
     {

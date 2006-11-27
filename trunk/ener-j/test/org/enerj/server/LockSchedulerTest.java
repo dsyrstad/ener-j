@@ -38,19 +38,10 @@ import junit.framework.TestSuite;
  */
 public class LockSchedulerTest extends AbstractLockServerTest
 {
-    
-
     public LockSchedulerTest(String aTestName) 
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args)
-    {
-        junit.swingui.TestRunner.run(LockSchedulerTest.class);
-    }
-    
 
     public static Test suite() 
     {

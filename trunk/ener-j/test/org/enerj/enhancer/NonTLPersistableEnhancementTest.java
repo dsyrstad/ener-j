@@ -45,13 +45,6 @@ public class NonTLPersistableEnhancementTest extends AbstractPersistableEnhancem
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(NonTLPersistableEnhancementTest.class);
-    }
-    
 
     public static Test suite() 
     {

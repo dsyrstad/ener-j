@@ -24,15 +24,23 @@
 
 package org.enerj.core;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Stack;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
 
-import junit.framework.*;
-
-import org.odmg.*;
-import org.enerj.enhancer.*;
-import org.enerj.core.*;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Tests the java.util collection framework using our tests. This does two things:
@@ -50,13 +58,6 @@ public class JavaUtilCollectionsTest extends TestCase
     {
         super(aTestName);
     }
-    
-
-    public static void main(String[] args) 
-    {
-        junit.swingui.TestRunner.run(JavaUtilCollectionsTest.class);
-    }
-    
 
     public static Test suite() 
     {
