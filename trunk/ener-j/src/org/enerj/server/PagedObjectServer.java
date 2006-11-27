@@ -746,9 +746,7 @@ public class PagedObjectServer extends BaseObjectServer
                         }
                     }
                     
-                    if (cid != ObjectSerializer.NULL_CID && className != null) {
-                        classInfo[i] = new ClassInfo(cid, className);
-                    }
+                    classInfo[i] = new ClassInfo(cid, className);
                 }
             }
 

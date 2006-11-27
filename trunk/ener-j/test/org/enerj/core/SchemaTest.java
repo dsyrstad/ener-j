@@ -24,8 +24,11 @@
 
 package org.enerj.core;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -53,46 +56,6 @@ public class SchemaTest extends AbstractDatabaseTestCase
         return new TestSuite(SchemaTest.class);
     }
 
-
-    /**
-     * Tests DatabaseRoot.
-     */
-    public void testDatabaseRoot() throws Exception
-    {
-        Implementation impl = EnerJImplementation.getInstance();
-        EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
-        
-        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
-
-        Transaction txn = impl.newTransaction();
-        txn.begin();
-
-        Schema schema = db.getSchema();
-        assertNotNull("Schema should be non-null", schema );
-
-        // Test creation date
-        // Sleep a bit so we're sure current time exceeds creation time
-        try {  Thread.sleep(2L);  }  catch (Exception e) { }
-        Date now = new Date();
-        assertTrue("Creation date should before now", schema.getCreationDate().before(now) );
-        Date anHourAgo = new Date( now.getTime() - (60L * 60L * 1000L) );
-        assertTrue("Creation date should after a reasonable date", schema.getCreationDate().after(anHourAgo) );
-        
-
-        // Test get/setDescription()
-        final String desc = "A Database description";
-        assertTrue("Current description should not be test description", !schema.getDescription().equals(desc) );
-        
-        schema.setDescription(desc);
-        assertTrue("Description should be test description", schema.getDescription().equals(desc) );
-        
-
-        
-        txn.commit();
-        db.close();
-    }
-
-
     /**
      * Tests Schema.
      */
@@ -106,33 +69,35 @@ public class SchemaTest extends AbstractDatabaseTestCase
         EnerJTransaction txn = (EnerJTransaction)impl.newTransaction();
         txn.begin();
 
+        // Create some classes to add them to the schema.
+        db.makePersistent( new TestClass1(1) );
+        db.makePersistent( new TestClass2(2) );
+        db.makePersistent( new TestClass3(3) );
+
         Schema schema = db.getSchema();
         
-
         // Test creation date
         // Sleep a bit so we're sure current time exceeds creation time
-        try {  Thread.sleep(2L);  }  catch (Exception e) { }
+        try {  Thread.sleep(200L);  }  catch (Exception e) { }
         Date now = new Date();
         assertTrue("Creation date should before now", schema.getCreationDate().before(now) );
         Date anHourAgo = new Date( now.getTime() - (60L * 60L * 1000L) );
-        assertTrue("Creation date should after a reasonable date", schema.getCreationDate().after(anHourAgo) );
+        assertTrue("Creation date should be after a reasonable date", schema.getCreationDate().after(anHourAgo) );
+
+        // Make sure we can find our classes.
+        checkTestClassExistsAndHasOneVersion(schema, TestClass1.class);
+        checkTestClassExistsAndHasOneVersion(schema, TestClass2.class);
+        checkTestClassExistsAndHasOneVersion(schema, TestClass3.class);
         
-
-        // Test get/setDescription()
-        final String desc = "A Schema description";
-        assertTrue("Current description should not be test description", !schema.getDescription().equals(desc) );
-        
-        schema.setDescription(desc);
-        assertTrue("Description should be test description", schema.getDescription().equals(desc) );
-
-
-        // Test addLogicalClass(), findLogicalClass().
+        // Test adding classes to the schema. These don't actually get stored in the database, we're 
+        // just testing the methods.
         final String classPrefix = "org.enerj.somepkg.Class";
         final int numLogical = 10;
         for (int i = 0; i < numLogical; i++) {
             schema.addLogicalClass( new LogicalClassSchema(schema, classPrefix + i, "Description " + i) );
         }
         
+        // Test findLogicalClass().
         for (int i = 0; i < numLogical; i++) {
             LogicalClassSchema logicalClass = schema.findLogicalClass(classPrefix + i);
             assertNotNull("Logical class should not be null", logicalClass);
@@ -147,13 +112,6 @@ public class SchemaTest extends AbstractDatabaseTestCase
         catch (org.odmg.ObjectNameNotUniqueException e) {
             // Expected
         }
-        
-        // Create a TestClass and make it persistent so that it gets added to the schema. We have to flush
-        // to force this to happen now.
-        db.makePersistent( new TestClass(1) );
-        txn.flush();
-        
-
 
         // Test getLogicalClasses().
         Iterator iterator = schema.getLogicalClasses().iterator();
@@ -162,7 +120,7 @@ public class SchemaTest extends AbstractDatabaseTestCase
         boolean testClassFound = false;
         while ( iterator.hasNext() ) {
             LogicalClassSchema logicalClass = (LogicalClassSchema)iterator.next();
-            if (logicalClass.getClassName().equals("org.enerj.core.SchemaTest$TestClass")) {
+            if (logicalClass.getClassName().equals(TestClass1.class.getName())) {
                 testClassFound = true;
                 continue;
             }
@@ -229,190 +187,62 @@ public class SchemaTest extends AbstractDatabaseTestCase
         assertNotNull("Version should exist", classVersion);
         assertTrue("CID should match", classVersion.getClassId() == cid);
 
+// TODO        test remove class version.
+
         txn.commit();
         db.close();
     }
     
-
-    /**
-     * Tests LogicalClassSchema.
-     */
-    public void testLogicalClassSchema() throws Exception
+    private void checkTestClassExistsAndHasOneVersion(Schema aSchema, Class aClass) throws Exception
     {
-        Implementation impl = EnerJImplementation.getInstance();
-        EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
+        LogicalClassSchema logicalClass = aSchema.findLogicalClass(aClass.getName());
+
+        assertSame(aSchema, logicalClass.getSchema());
+        assertEquals(aClass.getName(), logicalClass.getClassName());
         
-        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
+        ClassVersionSchema[] versions = logicalClass.getVersions(); 
+        assertEquals(1, versions.length);
+        assertEquals(versions[0], logicalClass.getLatestVersion());
+        assertEquals(versions[0], logicalClass.findVersion(versions[0].getClassId()));
 
-        Transaction txn = impl.newTransaction();
-        txn.begin();
-
-        Schema schema = db.getSchema();
-
-
-        // Test creation date
-        LogicalClassSchema logicalClass = schema.findLogicalClass("org.enerj.core.SchemaTest$TestClass");
-        // Sleep a bit so we're sure current time exceeds creation time
-        try {  Thread.sleep(2L);  }  catch (Exception e) { }
-        Date now = new Date();
-        assertTrue("Creation date should before now", logicalClass.getCreationDate().before(now) );
-        Date anHourAgo = new Date( now.getTime() - (60L * 60L * 1000L) );
-        assertTrue("Creation date should after a reasonable date", logicalClass.getCreationDate().after(anHourAgo) );
-
-
-        // Test get/setDescription()
-        final String desc = "A Class description";
-        assertTrue("Current description should not be test description", !logicalClass.getDescription().equals(desc) );
+        assertSame(logicalClass, versions[0].getLogicalClassSchema());
         
-        logicalClass.setDescription(desc);
-        assertTrue("Description should be test description", logicalClass.getDescription().equals(desc) );
+        assertEquals(2, versions[0].getSuperTypeNames().length);
+        List<String> superTypes = Arrays.asList(versions[0].getSuperTypeNames());
+        assertTrue(superTypes.contains(Persistable.class.getName()));
+        assertTrue(superTypes.contains(Object.class.getName()));
 
+        assertEquals(1, versions[0].getPersistentFieldNames().length);
+        assertEquals("mValue", versions[0].getPersistentFieldNames()[0] );
 
-        // Test getSchema()
-        assertTrue("Schema should match", logicalClass.getSchema() == schema);
-        
-
-        // Test getClassName()
-        assertTrue("Class name should match", logicalClass.getClassName().equals("org.enerj.core.SchemaTest$TestClass") );
-        
-
-        // Test addVersion()
-
-        logicalClass = new LogicalClassSchema(schema, "VersionTest", "");
-        schema.addLogicalClass(logicalClass);
-
-        // This is a class with no versions for testing.
-        LogicalClassSchema logicalClass2 = new LogicalClassSchema(schema, "VersionTest2", "");
-        schema.addLogicalClass(logicalClass2);
-
-        final int numVersions = 10;
-        long[] cids = new long[numVersions];
-        long cidCounter = ObjectSerializer.LAST_SYSTEM_CID;
-        for (int i = 0; i < numVersions; i++) {
-            cids[i] = cidCounter++;
-            ClassVersionSchema version = new ClassVersionSchema(logicalClass, cids[i],  new String[0],
-                new byte[0], new byte[0], new String[0], new String[0]);
-            logicalClass.addVersion(version);
-            
-            // Try to add it again - should get exception
-            try {
-                logicalClass.addVersion(version);
-                fail("Expected an Exception");
-            }
-            catch (org.odmg.ObjectNameNotUniqueException e) {
-                // Expected
-            }
+        assertEquals(1, versions[0].getTransientFieldNames().length);
+        assertEquals("mTransient", versions[0].getTransientFieldNames()[0] );
+    }
+    
+    private void checkLogicalClassSchema(LogicalClassSchema aLogicalClassSchema) throws Exception
+    {
+        for (ClassVersionSchema version : aLogicalClassSchema.getVersions()) { 
+            checkClassVersionSchema(version);
         }
-
-
-        // Test getVersions()
-        ClassVersionSchema[] versions = logicalClass.getVersions();
-        for (int i = 0; i < numVersions; i++) {
-            assertTrue("Version CID should match", versions[i].getClassId() == cids[i]);
-        }
-        
-        assertTrue("No Versions should exist", logicalClass2.getVersions().length == 0);
-        
-
-        // Test findVersion()
-        for (int i = 0; i < numVersions; i++) {
-            ClassVersionSchema version = logicalClass.findVersion(cids[i]);
-            assertTrue("Version CID should match", version.getClassId() == cids[i]);
-        }
-
-        long missingCID = ObjectSerializer.LAST_SYSTEM_CID - 1;
-        assertNull("CID should not exist", logicalClass.findVersion(missingCID) );
-
-
-        // Test getLatestVersion()
-        ClassVersionSchema version = logicalClass.getLatestVersion();
-        assertTrue("Version CID should match", version.getClassId() == cids[ numVersions - 1] );
-        
-        assertNull("No versions should exist", logicalClass2.getLatestVersion() );
-
-
-        // Test removeVersion()
-        for (int i = 0; i < numVersions; i++) {
-            logicalClass.removeVersion(cids[i]);
-            
-            assertNull("Version should not exist", logicalClass.findVersion(cids[i]) );
-            
-            // Try to remove it again
-            try {
-                logicalClass.removeVersion(cids[i]);
-                fail("Expected an Exception");
-            }
-            catch (org.odmg.ObjectNameNotFoundException e) {
-                // Expected
-            }
-        }
-        
-        // Cleanup
-        schema.removeLogicalClass("VersionTest");
-        schema.removeLogicalClass("VersionTest2");
-
-        txn.commit();
-        db.close();
     }
 
-
-    /**
-     * Tests ClassVersionSchema.
-     */
-    public void testClassVersionSchema() throws Exception
+    private void checkClassVersionSchema(ClassVersionSchema aClassVersionSchema) throws Exception
     {
-        Implementation impl = EnerJImplementation.getInstance();
-        EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
-        
-        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
-
-        Transaction txn = impl.newTransaction();
-        txn.begin();
-
-        Schema schema = db.getSchema();
-        LogicalClassSchema logicalClass = new LogicalClassSchema(schema, "VersionTest", "");
-        schema.addLogicalClass(logicalClass);
-
-        long versionCID = ObjectSerializer.LAST_SYSTEM_CID + 2928;
-        ClassVersionSchema version = new ClassVersionSchema(logicalClass, versionCID, new String[0],
-            new byte[] { 0x01 }, new byte[] { 0x02, 0x03 },
-            new String[] { "A", "B", "C" }, 
-            new String[] { "W", "X", "Y", "Z" } );
-        logicalClass.addVersion(version);
-
-
-        // Test creation date
-        // Sleep a bit so we're sure current time exceeds creation time
-        try {  Thread.sleep(1000L);  }  catch (Exception e) { }
-        Date now = new Date();
-        assertTrue("Creation date should before now", version.getCreationDate().before(now) );
-        Date anHourAgo = new Date( now.getTime() - (60L * 60L * 1000L) );
-        assertTrue("Creation date should after a reasonable date", version.getCreationDate().after(anHourAgo) );
-
-
-        // Test getClassId()
-        assertTrue("CID should match", version.getClassId() == versionCID);
-
-
-        // Test getLogicalClassSchema()
-        assertTrue("LogicalClass should match", version.getLogicalClassSchema() == logicalClass);
-        
-
         // Test getOriginalBytecodes()
-        byte[] bytecodes = version.getOriginalBytecodes();
+        byte[] bytecodes = aClassVersionSchema.getOriginalBytecodes();
         assertTrue("Original bytecodes should match", bytecodes.length == 1);
         assertTrue("byte[0] should match", bytecodes[0] == 0x01);
         
 
         // Test getEnhancedBytecodes()
-        bytecodes = version.getEnhancedBytecodes();
+        bytecodes = aClassVersionSchema.getEnhancedBytecodes();
         assertTrue("Enhanced bytecodes should match", bytecodes.length == 2);
         assertTrue("byte[0] should match", bytecodes[0] == 0x02);
         assertTrue("byte[1] should match", bytecodes[1] == 0x03);
         
 
         // Test getPersistentFieldNames()
-        String[] fieldNames = version.getPersistentFieldNames();
+        String[] fieldNames = aClassVersionSchema.getPersistentFieldNames();
         assertTrue("Field names should match", fieldNames.length == 3);
         assertTrue("fieldNames[0] should match", fieldNames[0].equals("A") );
         assertTrue("fieldNames[1] should match", fieldNames[1].equals("B") );
@@ -420,7 +250,7 @@ public class SchemaTest extends AbstractDatabaseTestCase
         
 
         // Test getTransientFieldNames()
-        fieldNames = version.getTransientFieldNames();
+        fieldNames = aClassVersionSchema.getTransientFieldNames();
         assertTrue("Field names should match", fieldNames.length == 4);
         assertTrue("fieldNames[0] should match", fieldNames[0].equals("W") );
         assertTrue("fieldNames[1] should match", fieldNames[1].equals("X") );
@@ -429,31 +259,77 @@ public class SchemaTest extends AbstractDatabaseTestCase
         
 
         // Test get/setProxyBytecodes()
-        assertNull("Current proxy bytecodes should be null", version.getProxyBytecodes() );
-        version.setProxyBytecodes(new byte[] { 0x0a, 0x0b, 0x0c });
-        bytecodes = version.getProxyBytecodes();
+        assertNull("Current proxy bytecodes should be null", aClassVersionSchema.getProxyBytecodes() );
+        aClassVersionSchema.setProxyBytecodes(new byte[] { 0x0a, 0x0b, 0x0c });
+        bytecodes = aClassVersionSchema.getProxyBytecodes();
         assertTrue("Proxy bytecodes should match", bytecodes.length == 3);
         assertTrue("byte[0] should match", bytecodes[0] == 0x0a);
         assertTrue("byte[1] should match", bytecodes[1] == 0x0b);
         assertTrue("byte[2] should match", bytecodes[2] == 0x0c);
         
-
-        // Cleanup
-        schema.removeLogicalClass("VersionTest");
-
-        txn.commit();
-        db.close();
     }
-    
 
 
     @Persist
-    private static class TestClass
+    private static class TestClass1
     {
+        transient int mTransient;
         private int mValue;
         
 
-        TestClass(int aValue)
+        TestClass1(int aValue)
+        {
+            mValue = aValue;
+        }
+            
+
+        int getValue()
+        {
+            return mValue;
+        }
+
+
+        void setValue(int aValue)
+        {
+            mValue = aValue;
+        }
+    }
+
+
+    @Persist
+    private static class TestClass2
+    {
+        transient int mTransient;
+        private int mValue;
+        
+
+        TestClass2(int aValue)
+        {
+            mValue = aValue;
+        }
+            
+
+        int getValue()
+        {
+            return mValue;
+        }
+
+
+        void setValue(int aValue)
+        {
+            mValue = aValue;
+        }
+    }
+
+
+    @Persist
+    private static class TestClass3
+    {
+        private static int mTransient;
+        private int mValue;
+        
+
+        TestClass3(int aValue)
         {
             mValue = aValue;
         }

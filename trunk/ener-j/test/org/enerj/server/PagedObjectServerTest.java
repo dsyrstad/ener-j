@@ -90,7 +90,6 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
         getLogFile().delete();
         
         Properties props = getObjectServerProperties();
-        props.setProperty("DefaultObjectServer.ObjectServerClass", getObjectServerClassName());
         
         File dbdir = getPageFile().getParentFile();
         System.setProperty(ObjectServer.ENERJ_DBPATH_PROP, dbdir.getAbsolutePath());
@@ -128,6 +127,7 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
         props.setProperty("FilePageServer.pageSize", "8192");
         props.setProperty("LockScheduler.initialNumObjs", "20000");
         props.setProperty("LockScheduler.deadlockAlgorithm", "Waits-For");
+        props.setProperty(ObjectServer.ENERJ_CLIENT_LOCAL, "true");
         return props;
     }
         

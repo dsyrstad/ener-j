@@ -615,7 +615,7 @@ public class EnerJDatabase implements Database, Persister
      *
      * @param aPersistable the persistable.
      */
-    void updateSchema(Persistable aPersistable)
+    private void updateSchema(Persistable aPersistable)
     {
         long cid = aPersistable.enerj_GetClassId();
 
