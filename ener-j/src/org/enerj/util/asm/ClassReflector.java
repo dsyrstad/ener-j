@@ -55,14 +55,14 @@ public class ClassReflector implements ClassVisitor
     public ClassReflector(byte[] someClassBytecodes)
     {
         ClassReader classReader = new ClassReader(someClassBytecodes);
-        classReader.accept(this, false);        
+        classReader.accept(this, 0);        
     }
     
     public ClassReflector(String aClassName) throws ClassNotFoundException
     {
         byte[] someClassBytecodes = ClassUtil.getBytecode(aClassName);
         ClassReader classReader = new ClassReader(someClassBytecodes);
-        classReader.accept(this, false);        
+        classReader.accept(this, 0);        
     }
     
     public void visit(int someVersion, int access, String someName, String someSignature, String someSuperName, String[] someInterfaces)

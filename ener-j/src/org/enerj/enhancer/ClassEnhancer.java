@@ -200,11 +200,13 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
             if (mIsPersistable) { 
                 // Create the schema info and add it as an annotation to the enhanced class file.
                 AnnotationVisitor av = cv.visitAnnotation(sSchemaAnnotationDescr, true);
-                av.visit("classID", Long.valueOf(mClassId) );
                 av.visit("originalByteCodes", mOriginalClassBytes);
-                
+                av.visit("classID", Long.valueOf(mClassId) );
+
                 AnnotationVisitor av1;
                 
+                // TODO for some reason this doesn't write the values. Getting the generated annotation
+                // value yields an empty array.
                 av1 = av.visitArray("persistentFieldNames");
                 List<Field> somePersistentFields = getPersistentFields();
                 for (int i = 0; i < somePersistentFields.size(); i++) {
@@ -222,7 +224,6 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
                 }
         
                 av1.visitEnd();
-        
                 av.visitEnd();
             }
         }
@@ -230,7 +231,6 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
             throw new EnhancerException("Error processing class " + aName, e);
         }
     }
-
 
     /** 
      * {@inheritDoc}

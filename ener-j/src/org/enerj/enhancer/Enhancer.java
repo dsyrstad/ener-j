@@ -309,11 +309,11 @@ public class Enhancer
         byte[] originalClassBytes = ClassUtil.getBytecode(aClassName);
 
         ClassReader classReader = new ClassReader(originalClassBytes);
-        ClassWriter classWriter = new ClassWriter(true);
+        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         ClassEnhancer classEnhancer;
         try {
             classEnhancer = new ClassEnhancer(classWriter, aClassName, originalClassBytes, mMetaData);
-            classReader.accept(classEnhancer, null, false);
+            classReader.accept(classEnhancer, null, 0);
         }
         catch (AlreadyEnhancedException e) {
             System.out.println( e.getLocalizedMessage() );

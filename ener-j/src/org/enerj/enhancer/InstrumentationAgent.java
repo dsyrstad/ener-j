@@ -119,11 +119,11 @@ public class InstrumentationAgent implements ClassFileTransformer
                 //logger.finest("Enhancing " + dottedClassName);
                 //long start = System.currentTimeMillis();
                 ClassReader classReader = new ClassReader(aClassfileBuffer);
-                ClassWriter classWriter = new ClassWriter(true);
+                ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
                 ClassEnhancer classEnhancer;
     
                 classEnhancer = new ClassEnhancer(classWriter, dottedClassName, aClassfileBuffer, mMetaData);
-                classReader.accept(classEnhancer, null, false);
+                classReader.accept(classEnhancer, null, 0);
     
                 byte[] enhancedBytes = classWriter.toByteArray();
                 

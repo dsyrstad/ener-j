@@ -28,6 +28,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.enerj.annotations.SchemaAnnotation;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
@@ -42,7 +43,8 @@ import org.enerj.core.Persister;
  * @version $Id: EnhancerTemplate_Enhanced.java,v 1.3 2005/08/12 02:56:53 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, Cloneable
+@SchemaAnnotation(classID=12345, originalByteCodes={ 1, 2, 3 }, persistentFieldNames={ "fld1", "fld2" }, transientFieldNames={ "tfld1", "tfld2" })
+public class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, Cloneable
 {
     static int mPackageStaticInt;
     transient int mPackageTransientInt;
