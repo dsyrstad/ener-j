@@ -506,9 +506,9 @@ class MetaData
             // Do we have a SchemaAnnotation from a static enhancement?
             if (anno.desc.equals(sSchemaAnnotationDescr)) {
                 // Yep, class was statically enhanced. Build a class def from the annotation.
-                String[] persistentFields = (String[])anno.getArray("persistentFieldNames", String.class);
-                String[] transientFields = (String[])anno.getArray("transientFieldNames", String.class);
-                FieldDef[] fieldDefs = new FieldDef[ persistentFields.length + transientFields.length ];
+                List<String> persistentFields = (List<String>)anno.getValue("persistentFieldNames"); //anno.getArray("persistentFieldNames", String.class);
+                List<String> transientFields = (List<String>)anno.getValue("transientFieldNames"); //anno.getArray("transientFieldNames", String.class);
+                FieldDef[] fieldDefs = new FieldDef[ persistentFields.size() + transientFields.size() ];
                 int i = 0;
                 for (String fieldName : persistentFields) {
                     fieldDefs[i++] = new FieldDef(fieldName, FieldDef.PERSISTENT_YES, null, null);
