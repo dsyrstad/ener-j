@@ -170,7 +170,7 @@ public class SchemaTest extends AbstractDatabaseTestCase
         assertNotNull("Version should exist", classVersion);
         assertTrue("CID should match", classVersion.getClassId() == cid);
 
-// TODO        test remove class version.
+        // TODO        test remove class version.
 
         txn.commit();
         db.close();
