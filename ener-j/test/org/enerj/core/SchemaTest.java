@@ -25,7 +25,6 @@
 package org.enerj.core;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -34,12 +33,8 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.enerj.annotations.Persist;
-import org.enerj.annotations.SchemaAnnotation;
-import org.enerj.enhancer.Enhancer;
-import org.enerj.enhancer.templates.EnhancerTemplate_Enhanced;
 import org.odmg.Database;
 import org.odmg.Implementation;
-import org.odmg.Transaction;
 
 /**
  * Tests Schema functionality.
@@ -73,10 +68,6 @@ public class SchemaTest extends AbstractDatabaseTestCase
         txn.begin();
 
         // Create some classes to add them to the schema.
-        Object obj = new EnhancerTemplate_Enhanced(1);
-        SchemaAnnotation schemaAnn = obj.getClass().getAnnotation(SchemaAnnotation.class);
-        
-
         db.makePersistent( new TestClass1(1) );
         db.makePersistent( new TestClass2(2) );
         db.makePersistent( new TestClass3(3) );
@@ -204,12 +195,11 @@ public class SchemaTest extends AbstractDatabaseTestCase
         assertTrue(superTypes.contains(Persistable.class.getName()));
         assertTrue(superTypes.contains(Object.class.getName()));
 
-        // TODO See annotation generation in ClassEnhancer. Generation of string arrays doesn't work currently.
-        //assertEquals(1, versions[0].getPersistentFieldNames().length);
-        //assertEquals("mValue", versions[0].getPersistentFieldNames()[0] );
+        assertEquals(1, versions[0].getPersistentFieldNames().length);
+        assertEquals("mValue", versions[0].getPersistentFieldNames()[0] );
 
-        //assertEquals(1, versions[0].getTransientFieldNames().length);
-        //assertEquals("mTransient", versions[0].getTransientFieldNames()[0] );
+        assertEquals(1, versions[0].getTransientFieldNames().length);
+        assertEquals("mTransient", versions[0].getTransientFieldNames()[0] );
     }
     
     private void checkLogicalClassSchema(LogicalClassSchema aLogicalClassSchema) throws Exception
