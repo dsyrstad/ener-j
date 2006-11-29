@@ -183,7 +183,11 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                 byte[] image = PersistableHelper.createSerializedImage(persistable);
                 images.add( new SerializedObject(persistable.enerj_GetPrivateOID(), persistable.enerj_GetClassId(), 
                                 image, persistable.enerj_IsNew()) );
-
+                
+                // Mark object as not new and and not modified now that it will be flushed.
+                persistable.enerj_SetModified(false);
+                persistable.enerj_SetNew(false);
+                
                 // Objects could have been inserted into the list before
                 // the cursor. We have to back up to the point just after the last
                 // object we retrieved to start processing the list there.
@@ -207,6 +211,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
         finally {
             mFlushIterator = null;
+            clearModifiedList();
         }
     }
 
@@ -594,6 +599,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         checkTransactionActive();
         updateExtents();
         mObjectCache.evictAll();
+        clearModifiedList();
     }
 
     /** 
@@ -605,6 +611,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         checkTransactionActive();
         mPendingNewOIDs.clear();
         mObjectCache.evictAll();
+        clearModifiedList();
     }
 
     /** 

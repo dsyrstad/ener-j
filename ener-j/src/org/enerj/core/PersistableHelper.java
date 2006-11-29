@@ -144,7 +144,7 @@ public class PersistableHelper
                 // If the Persister allows non-transactional reads, fall-thru and
                 // load the object from the Persister if necessary.
                 try {
-                    if ( !persister.getAllowNontransactionalReads()) {
+                    if (persister == null || !persister.getAllowNontransactionalReads()) {
                         return;
                     }
                 } catch (ODMGException e) {
@@ -152,7 +152,7 @@ public class PersistableHelper
                 }
             }
             else {
-                throw new TransactionNotInProgressException();
+                throw new TransactionNotInProgressException("When checking loaded status of persistable " + aPersistable.getClass().getName() + '@' + Integer.toHexString( System.identityHashCode(aPersistable) ) );
             }
         }
 
@@ -382,6 +382,8 @@ public class PersistableHelper
         anObject.enerj_ResolveObject(anObjectSerializer, shouldDisassociate);
         if (shouldDisassociate) {
             anObject.enerj_SetPersister(null);
+            anObject.enerj_SetModified(false);
+            anObject.enerj_SetNew(false);
             setNonTransactional(anObject);
         }
     }

@@ -312,7 +312,7 @@ public class EnerJDatabase implements Database, Persister
             long oid = someOIDs[i];
             
             Persistable persistable = null;
-            if (classInfo != null) {
+            if (classInfo != null && classInfo.getClassName() != null && classInfo.getCID() != ObjectSerializer.NULL_CID) {
                 persistable = PersistableHelper.createHollowPersistable(classInfo, oid, this);                
                 
                 // Cache it
@@ -1381,7 +1381,8 @@ public class EnerJDatabase implements Database, Persister
                 int nextIndex = mFlushIterator.nextIndex();
                 
                 // This can indirectly insert objects into the list due to
-                // ObjectSerializer.
+                // ObjectSerializer. Note that storePersistable() marks the object as 
+                // not new and and not modified now that it will be flushed.
                 storePersistable(persistable);
 
                 // Objects could have been inserted into the list before
