@@ -131,7 +131,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             return;
         }
 
-        PersisterRegistry.pushPersisterForThread(this);
+        pushAsPersister();
         try {
             ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
             for (long cid : mPendingNewOIDs.keySet()) {
@@ -156,7 +156,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             mPendingNewOIDs.clear();
         }
         finally {
-            PersisterRegistry.popPersisterForThread(this);
+            popAsPersister();
         }
     }
     
@@ -215,6 +215,34 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
     }
 
+    /**
+     * Pushes this session as the Persister and clears the Persistable state.
+     * This should be used instead of a direct call to {@link PersisterRegistry#pushPersisterForThread(Persister)}. 
+     */
+    void pushAsPersister()
+    {
+        PersisterRegistry.pushPersisterForThread(this);
+        resetPersistables();
+    }
+    
+    /**
+     * Pops this session as the Persister and clears the Persistable state.
+     * This should be used instead of a direct call to {@link PersisterRegistry#popPersisterForThread(Persister)}. 
+     */
+    void popAsPersister()
+    {
+        resetPersistables();
+        PersisterRegistry.popPersisterForThread(this);
+    }
+    
+    /**
+     * Resets the persistable cache and modified list of the Persister.
+     */
+    private void resetPersistables()
+    {
+        mObjectCache.reset();
+        clearModifiedList();
+    }
 
     /**
      * Gets the schema for the database.
@@ -247,14 +275,14 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     public void bind(long anOID, String aName) throws ObjectNameNotUniqueException
     {
         checkTransactionActive();
-        PersisterRegistry.pushPersisterForThread(this);
+        pushAsPersister();
         try {
             Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
             bindery.bind(anOID, aName);
             flushModifiedObjects();
         }
         finally {
-            PersisterRegistry.popPersisterForThread(this);
+            popAsPersister();
         }
     }
 
@@ -264,13 +292,13 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public long lookup(String aName) throws ObjectNameNotFoundException
     {
-        PersisterRegistry.pushPersisterForThread(this);
+        pushAsPersister();
         try {
             Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
             return bindery.lookup(aName);
         }
         finally {
-            PersisterRegistry.popPersisterForThread(this);
+            popAsPersister();
         }
     }
 
@@ -281,14 +309,14 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     public void unbind(String aName) throws ObjectNameNotFoundException
     {
         checkTransactionActive();
-        PersisterRegistry.pushPersisterForThread(this);
+        pushAsPersister();
         try {
             Bindery bindery = (Bindery)getObjectForOID(BaseObjectServer.BINDERY_OID);
             bindery.unbind(aName);
             flushModifiedObjects();
         }
         finally {
-            PersisterRegistry.popPersisterForThread(this);
+            popAsPersister();
         }
     }
     
@@ -314,7 +342,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             throw new ObjectNotPersistentException("Object is not persistent");
         }
         
-        PersisterRegistry.pushPersisterForThread(this);
+        pushAsPersister();
         try {
             ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
             ClassVersionSchema version = schema.findClassVersion( classInfo.getCID() );
@@ -330,7 +358,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             flushModifiedObjects();
         }
         finally {
-            PersisterRegistry.popPersisterForThread(this);
+            popAsPersister();
         }
     }
 
@@ -348,7 +376,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             throw new ODMGRuntimeException(e);
         }
 
-        PersisterRegistry.pushPersisterForThread(this);
+        pushAsPersister();
         try {
             ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
             SparseBitSet extent = extentMap.getExtent(aClassName);
@@ -370,7 +398,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             return result;
         }
         finally {
-            PersisterRegistry.popPersisterForThread(this);
+            popAsPersister();
         }
     }
 
@@ -389,7 +417,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             throw new ODMGRuntimeException(e);
         }
 
-        PersisterRegistry.pushPersisterForThread(this);
+        pushAsPersister();
         try {
             List<SparseBitSet> extents = new ArrayList<SparseBitSet>();
             ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
@@ -412,7 +440,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             return extentIterator;
         }
         finally {
-            PersisterRegistry.popPersisterForThread(this);
+            popAsPersister();
         }
     }
     
@@ -571,7 +599,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             throw new TransactionInProgressException("Transaction already in progress.");
         }
 
-        mObjectCache.evictAll();
+        mObjectCache.reset();
         if (mPendingNewOIDs == null) {
             mPendingNewOIDs = new HashMap<Long, TLongArrayList>(128);
         }
@@ -598,7 +626,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     {
         checkTransactionActive();
         updateExtents();
-        mObjectCache.evictAll();
+        mObjectCache.reset();
         clearModifiedList();
     }
 
@@ -610,7 +638,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     {
         checkTransactionActive();
         mPendingNewOIDs.clear();
-        mObjectCache.evictAll();
+        mObjectCache.reset();
         clearModifiedList();
     }
 
@@ -690,6 +718,8 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             
             if (persistable == null && classInfo[idx] != null) {
                 persistable = PersistableHelper.createHollowPersistable(classInfo[idx], oid, this);
+                // Cache the object.
+                mObjectCache.add(oid, persistable);
             }
 
             objects[idx++] = persistable;

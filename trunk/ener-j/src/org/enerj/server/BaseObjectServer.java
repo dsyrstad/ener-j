@@ -30,7 +30,6 @@ import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
-import org.enerj.core.PersisterRegistry;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
 import org.odmg.ODMGException;
@@ -160,7 +159,7 @@ abstract public class BaseObjectServer implements ObjectServer
      */
     protected static void initDBObjects(BaseObjectServerSession aSession, String aDescription) throws ODMGException
     {
-        PersisterRegistry.pushPersisterForThread(aSession);
+        aSession.pushAsPersister();
         try {
             aSession.beginTransaction();
 
@@ -201,7 +200,7 @@ abstract public class BaseObjectServer implements ObjectServer
             aSession.commitTransaction();
         }
         finally {
-            PersisterRegistry.popPersisterForThread(aSession);
+            aSession.popAsPersister();
         }
     }
     
@@ -248,7 +247,7 @@ abstract public class BaseObjectServer implements ObjectServer
         synchronized (mSchemaLock) {
             if (mCachedSchema == null) {
                 BaseObjectServerSession schemaSession = getSchemaSession();
-                PersisterRegistry.pushPersisterForThread(schemaSession);
+                schemaSession.pushAsPersister();
                 try {
                     schemaSession.beginTransaction();
                     mCachedSchema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
@@ -259,10 +258,8 @@ abstract public class BaseObjectServer implements ObjectServer
                     throw new ODMGException(e);
                 }
                 finally {
-                    PersisterRegistry.popPersisterForThread(schemaSession);
-                    if (schemaSession != null) {
-                        schemaSession.rollbackTransaction();
-                    }
+                    schemaSession.rollbackTransaction();
+                    schemaSession.popAsPersister();
                 }
             }
             
@@ -291,7 +288,7 @@ abstract public class BaseObjectServer implements ObjectServer
         synchronized (mSchemaLock) {
             if (mCachedSchema != null) {
                 BaseObjectServerSession schemaSession = getSchemaSession();
-                PersisterRegistry.pushPersisterForThread(schemaSession);
+                schemaSession.pushAsPersister();
                 boolean success = false;
                 try {
                     schemaSession.beginTransaction();
@@ -320,9 +317,9 @@ abstract public class BaseObjectServer implements ObjectServer
                     success = true;
                 }
                 finally {
-                    PersisterRegistry.popPersisterForThread(schemaSession);
                     if (!success) {
                         schemaSession.rollbackTransaction();
+                        schemaSession.popAsPersister();
                     }
                 }
             }
