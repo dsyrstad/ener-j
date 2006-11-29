@@ -44,7 +44,7 @@ import org.enerj.core.Persister;
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
 @SchemaAnnotation(classID=12345, originalByteCodes={ 1, 2, 3 }, persistentFieldNames={ "fld1", "fld2" }, transientFieldNames={ "tfld1", "tfld2" })
-public class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, Cloneable
+class EnhancerTemplate_Enhanced extends java.util.Date implements Persistable, Cloneable
 {
     static int mPackageStaticInt;
     transient int mPackageTransientInt;

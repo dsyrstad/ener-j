@@ -196,36 +196,6 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
             }
     
             cv.visit(aVersion, someAccessModifiers, aName, aSignature, aSuperClassName, someInterfaces);
-    
-            if (mIsPersistable) { 
-                // Create the schema info and add it as an annotation to the enhanced class file.
-                AnnotationVisitor av = cv.visitAnnotation(sSchemaAnnotationDescr, true);
-                av.visit("originalByteCodes", mOriginalClassBytes);
-                av.visit("classID", Long.valueOf(mClassId) );
-
-                AnnotationVisitor av1;
-                
-                // TODO for some reason this doesn't write the values. Getting the generated annotation
-                // value yields an empty array.
-                av1 = av.visitArray("persistentFieldNames");
-                List<Field> somePersistentFields = getPersistentFields();
-                for (int i = 0; i < somePersistentFields.size(); i++) {
-                    Field field = (Field)somePersistentFields.get(i);
-                    av1.visit(null, field.getName());
-                }
-                
-                av1.visitEnd();
-        
-                av1 = av.visitArray("transientFieldNames");
-                List<Field> someTransientFields = getTransientFields();
-                for (int i = 0; i < someTransientFields.size(); i++) {
-                    Field field = (Field)someTransientFields.get(i);
-                    av1.visit(null, field.getName());
-                }
-        
-                av1.visitEnd();
-                av.visitEnd();
-            }
         }
         catch (MetaDataException e) {
             throw new EnhancerException("Error processing class " + aName, e);
@@ -373,6 +343,30 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
         }
 
         if (mIsPersistable) {
+            // Create the schema info and add it as an annotation to the enhanced class file.
+            AnnotationVisitor av = cv.visitAnnotation(sSchemaAnnotationDescr, true);
+            av.visit("originalByteCodes", mOriginalClassBytes);
+            av.visit("classID", Long.valueOf(mClassId) );
+
+            AnnotationVisitor av1 = av.visitArray("persistentFieldNames");
+            List<Field> somePersistentFields = getPersistentFields();
+            for (int i = 0; i < somePersistentFields.size(); i++) {
+                Field field = (Field)somePersistentFields.get(i);
+                av1.visit(null, field.getName());
+            }
+            
+            av1.visitEnd();
+    
+            av1 = av.visitArray("transientFieldNames");
+            List<Field> someTransientFields = getTransientFields();
+            for (int i = 0; i < someTransientFields.size(); i++) {
+                Field field = (Field)someTransientFields.get(i);
+                av1.visit(null, field.getName());
+            }
+    
+            av1.visitEnd();
+            av.visitEnd();
+
             // Emit constructor used to instantiate objects from the databse.
             emitSpecialConstructor();
 

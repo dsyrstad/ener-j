@@ -127,6 +127,7 @@ public class ExtentTest extends AbstractDatabaseTestCase
             db.close();
         }
 
+        try { Thread.sleep(6000); } catch (Exception e) { }
         db = (EnerJDatabase)impl.newDatabase();
         db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
 
