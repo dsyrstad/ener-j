@@ -488,7 +488,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void disconnect() throws ODMGException 
     {
-        sLogger.info("Session " + this + " is disconnecting.");
+        sLogger.info("Session " + this + " is disconnected.");
         setDisconnected();
     }
 
