@@ -86,7 +86,7 @@ public class DefaultExtentIterator implements ExtentIterator
                 SparseBitSet.Iterator iterator = extent.getIterator();
                 if (iterator.hasNext()) {
                     mCurrentIterator = iterator;
-                    break;
+                    return true;
                 }
             }
 
