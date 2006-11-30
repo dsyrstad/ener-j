@@ -702,8 +702,8 @@ public class PagedObjectServer extends BaseObjectServer
                 rollbackTransaction();
             }
 
-            removeSession(this);
             super.disconnect();
+            removeSession(this);
         }
 
         public ClassInfo[] getClassInfoForOIDs(long[] someOIDs) throws ODMGException

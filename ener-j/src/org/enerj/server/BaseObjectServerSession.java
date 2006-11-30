@@ -143,8 +143,6 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                         if (extent != null) {
                             int size = oids.size();
                             for (int i = 0; i < size; i++) {
-                                // TODO We need to track the extent size. Do this with a delta that is updated right
-                                // TODO at commit time.
                                 extent.set(oids.get(i), true);
                             }
                         }

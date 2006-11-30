@@ -319,8 +319,9 @@ abstract public class BaseObjectServer implements ObjectServer
                 finally {
                     if (!success) {
                         schemaSession.rollbackTransaction();
-                        schemaSession.popAsPersister();
                     }
+
+                    schemaSession.popAsPersister();
                 }
             }
 
