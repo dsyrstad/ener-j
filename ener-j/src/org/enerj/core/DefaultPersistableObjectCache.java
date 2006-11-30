@@ -128,6 +128,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
      */
     public Persistable get(long anOID)
     {
+        cleanup();
         CacheWeakReference ref = findEntry(anOID);
         if (ref == null) {
             return null;

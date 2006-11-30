@@ -108,8 +108,6 @@ public class PagedObjectServer extends BaseObjectServer
     /** Our shutdown hook. */
     private static Thread mShutdownHook = null;
 
-    /** True if a non-quiescent database checkpoint is in progress. */
-    private boolean mCheckpointInProgress = false;
     /** Time of last database checkpoint (System.currentTimeInMillis()). */
     private long mLastCheckpointTime = 0L;
 
@@ -143,7 +141,8 @@ public class PagedObjectServer extends BaseObjectServer
         mDBName = getRequiredProperty(someProperties, ObjectServer.ENERJ_DBNAME_PROP);
         mIsLocal = getBooleanProperty(someProperties, ENERJ_CLIENT_LOCAL);
         
-        sLogger.info("Server " + this + " is starting up " + (mIsLocal ? " in local mode" : "") + "...");
+        String localModeMsg = (mIsLocal ? " in local mode" : "");
+        sLogger.fine("Server " + this + " is starting up" + localModeMsg + "...");
         
         try {
             mRedoLogServer = (RedoLogServer)PluginHelper.connect(logServerClassName, someProperties);
@@ -185,7 +184,7 @@ public class PagedObjectServer extends BaseObjectServer
         mShutdownHook = new ShutdownHook(this);
         Runtime.getRuntime().addShutdownHook(mShutdownHook);
 
-        sLogger.info("Server " + this + " is started.");
+        sLogger.info("Server " + this + " is started" + localModeMsg + '.');
     }
     
     /**
@@ -293,7 +292,9 @@ public class PagedObjectServer extends BaseObjectServer
 
             // Pre-allocate first page so it's all zeros.
             // Make sure page server knows that first page is allocated.
-            PageServer pageServer = FilePageServer.connect(someDBProps); 
+            Properties tmpDBProps = new Properties(someDBProps);
+            tmpDBProps.setProperty(ENERJ_CLIENT_LOCAL, "true");
+            PageServer pageServer = FilePageServer.connect(tmpDBProps); 
             long allocatedPage = pageServer.allocatePage();
             long logicalFirstPage = pageServer.getLogicalFirstPageOffset();
             if (allocatedPage != 0 || logicalFirstPage != 0) {
@@ -303,7 +304,7 @@ public class PagedObjectServer extends BaseObjectServer
             pageServer.disconnect();
 
             // Create a session so that we can initialize the schema.
-            session = (Session)connect(someDBProps, true);
+            session = (Session)connect(tmpDBProps, true);
             initDBObjects(session, aDescription);
             completed = true;
         }
@@ -320,7 +321,9 @@ public class PagedObjectServer extends BaseObjectServer
                 }
                 
                 session.disconnect();
-                session.shutdown(); // Shuts down the PagedObjectServer for the database.
+                // Shuts down the PagedObjectServer for the database. This should happen
+                // on the session disconnect because we're local, but just in case...
+                session.shutdown();
             }
 
             if (!completed) {
@@ -360,8 +363,9 @@ public class PagedObjectServer extends BaseObjectServer
      *
      * @throws ODMGRuntimeException if an error occurs.
      */
-    private void startCheckpoint() throws ODMGRuntimeException
+    private void startDatabaseCheckpoint() throws ODMGRuntimeException
     {
+        sLogger.fine("Starting DB chkpt");
         int numActiveTxns = mActiveTransactions.size();
         long[] txnIds = new long[numActiveTxns];
         long[] txnPositions = new long[numActiveTxns];
@@ -377,7 +381,9 @@ public class PagedObjectServer extends BaseObjectServer
             mRedoLogServer.append(logEntry);
 
             PagedStore.EndDatabaseCheckpointRequest request = mPagedStore.new EndDatabaseCheckpointRequest();
-            mPagedStore.queueStorageRequest(request);
+            // We must wait for this to complete because the PagedStore calls back to our endDatabaseCheckpoint
+            // once all pages have been synced.
+            mPagedStore.queueStorageRequestAndWait(request);
         }
         catch (ODMGRuntimeException e) {
             throw e;
@@ -385,8 +391,6 @@ public class PagedObjectServer extends BaseObjectServer
         catch (Exception e) {
             throw new ODMGRuntimeException(e.toString(), e);
         }
-
-        mCheckpointInProgress = true;
     }
     
 
@@ -407,8 +411,8 @@ public class PagedObjectServer extends BaseObjectServer
         int numActiveTxns = mActiveTransactions.size();
         long timeSinceLastCheckpoint = System.currentTimeMillis() - mLastCheckpointTime;
         //  TODO  make the number of active transactions  and time delay a parameter?
-        if (!mCheckpointInProgress && (numActiveTxns == 0 || (numActiveTxns < 5 && timeSinceLastCheckpoint > 10000L))) {
-            startCheckpoint();
+        if (numActiveTxns == 0 || (numActiveTxns < 5 && timeSinceLastCheckpoint > 10000L)) {
+            startDatabaseCheckpoint();
         }
         
         mTransactionLock.notifyAll();
@@ -422,7 +426,7 @@ public class PagedObjectServer extends BaseObjectServer
      */
     void endDatabaseCheckpoint() throws ODMGException
     {
-        mCheckpointInProgress = false;
+        sLogger.fine("Ending DB chkpoint");
         mLastCheckpointTime = System.currentTimeMillis();
 
         EndDatabaseCheckpointLogEntry logEntry = new EndDatabaseCheckpointLogEntry();
@@ -439,7 +443,7 @@ public class PagedObjectServer extends BaseObjectServer
             return; // Already shutting down...
         }
         
-        sLogger.info("Server " + this + " is shutting down...");
+        sLogger.fine("Server " + this + " is shutting down...");
         
         // Quiesce the system. Stops new connections and txns. 
         mQuiescent = true;
@@ -464,35 +468,33 @@ public class PagedObjectServer extends BaseObjectServer
 
             // Remove this server from the global list.
             sCurrentServers.remove(mDBName);
-
-            // Checkpoint now. Should be a clean checkpoint.
-            if (!mCheckpointInProgress) {
-                try {
-                    startCheckpoint();
-                }
-                catch (Exception e) {
-                    //  TODO  log message, but keep going...
-                }
-            }
-
-            try {
-                mPagedStore.disconnect();
-            }
-            catch (PageServerException e) {
-                throw new ODMGException("Could not close PageServer properly - database may be corrupt", e);
-            }
-
-            if (mLockServer != null) {
-                mLockServer.disconnect();
-                mLockServer = null;
-            }
-
-            if (mRedoLogServer != null) {
-                mRedoLogServer.disconnect();
-                mRedoLogServer = null;
-            }
         } // End synchronized
         
+        // Checkpoint now. Should be a clean (no active transaction) checkpoint.
+        try {
+            startDatabaseCheckpoint();
+        }
+        catch (Exception e) {
+            //  TODO  log message, but keep going...
+        }
+
+        try {
+            mPagedStore.disconnect();
+        }
+        catch (PageServerException e) {
+            throw new ODMGException("Could not close PageServer properly - database may be corrupt", e);
+        }
+
+        if (mLockServer != null) {
+            mLockServer.disconnect();
+            mLockServer = null;
+        }
+
+        if (mRedoLogServer != null) {
+            mRedoLogServer.disconnect();
+            mRedoLogServer = null;
+        }
+
         try {
             Runtime.getRuntime().removeShutdownHook(mShutdownHook);
         }

@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.logging.Logger;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -176,7 +177,6 @@ public class ExtentTest extends AbstractDatabaseTestCase
             db.close();
         }
 
-        try { Thread.sleep(6000); } catch (Exception e) { }
         db = (EnerJDatabase)impl.newDatabase();
         db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
 

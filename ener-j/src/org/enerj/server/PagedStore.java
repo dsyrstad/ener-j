@@ -229,8 +229,6 @@ class PagedStore
         
         Exception requestException = aRequest.getException();
         if (requestException != null) {
-            //  TODO  this code doesn't provide client-side stack trace. Need to create a new
-            //  TODO  exception of same type with cause of current exception and re-throw.
             if (requestException instanceof ODMGException) {
                 throw (ODMGException)requestException;
             }
@@ -975,8 +973,7 @@ class PagedStore
 
         EndDatabaseCheckpointRequest()
         {
-            // We don't wait this request.
-            setMonitored(false);
+            // We wait for this request to complete.
         }
 
 

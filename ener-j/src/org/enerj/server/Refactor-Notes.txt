@@ -10,3 +10,4 @@
  buffered reader.
  
 - Add tests for serialization of  enum types. Figure out how they're stored.
+
