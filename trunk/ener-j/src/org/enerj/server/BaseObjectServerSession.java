@@ -24,12 +24,11 @@
 
 package org.enerj.server;
 
-import gnu.trove.TLongArrayList;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -65,7 +64,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     private BaseObjectServer mObjectServer;
     private boolean mAllowNontransactionalReads = false;
     /** New OIDs that need to be added to their extents on commit. Key is CID, value is a list of OIDs. */
-    private HashMap<Long, TLongArrayList> mPendingNewOIDs = null;
+    private Map<Long, List<Long>> mPendingNewOIDs = null;
     /** Our shutdown hook. */
     private Thread mShutdownHook = null;
     /** True if session is connected. */
@@ -135,7 +134,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         try {
             ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
             for (long cid : mPendingNewOIDs.keySet()) {
-                TLongArrayList oids = mPendingNewOIDs.get(cid);
+                List<Long> oids = mPendingNewOIDs.get(cid);
                 if (oids != null) {
                     ClassVersionSchema version = schema.findClassVersion(cid);
                     if (version != null) {
@@ -553,10 +552,10 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
 
             if (object.isNew()) {
                 // Queue this object to be added to its extent on commit - only after delegate stores successfully.
-                TLongArrayList oids = mPendingNewOIDs.get(cid);
+                List<Long> oids = mPendingNewOIDs.get(cid);
                 if (oids == null) {
                     // First instance of the CID to be stored in this txn, create new list.
-                    oids = new TLongArrayList(1000);
+                    oids = new ArrayList<Long>(1000);
                     mPendingNewOIDs.put(cid, oids);
                 }
                 
@@ -599,7 +598,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
 
         mObjectCache.reset();
         if (mPendingNewOIDs == null) {
-            mPendingNewOIDs = new HashMap<Long, TLongArrayList>(128);
+            mPendingNewOIDs = new HashMap<Long, List<Long>>(128);
         }
         else {
             mPendingNewOIDs.clear();
