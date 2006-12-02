@@ -27,6 +27,7 @@ package org.enerj.server;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import org.enerj.core.CorruptDatabaseException;
 import org.enerj.server.logentry.StoreObjectLogEntry;
@@ -80,6 +81,8 @@ import org.odmg.ODMGRuntimeException;
  */
 class PagedStore
 {
+    private static final Logger sLogger = Logger.getLogger(PagedStore.class.getName());
+    
     private static final int PAGE_FREE_LENGTH_SIZE = 2;
     private static final int OID_SIZE = 8;
     private static final int OBJ_LENGTH_SIZE = 4;
@@ -175,6 +178,8 @@ class PagedStore
             mPageServer.disconnect();
             mPageServer = null;
         }
+        
+        sLogger.fine("PagedStore disconnected/shutdown");
     }
     
 

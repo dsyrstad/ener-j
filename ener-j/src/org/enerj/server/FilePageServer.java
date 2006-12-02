@@ -34,6 +34,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import org.enerj.util.StringUtil;
 
@@ -48,15 +49,13 @@ import org.enerj.util.StringUtil;
  */
 public class FilePageServer implements PageServer
 {
+    private static final Logger sLogger = Logger.getLogger(FilePageServer.class.getName());
+
     public static final String VOLUME_PROP = "FilePageServer.volume";
     public static final String PAGE_SIZE_PROP = "FilePageServer.pageSize";
     
-    /** mVolumeFile and mVolumeChannel both reference the same file while it is open. 
-     * Note that RandomAccessFile and FileChannel, by themselves, are thread-safe. 
-     */
+    /** Note that RandomAccessFile and FileChannel, by themselves, are thread-safe. */
     private RandomAccessFile mVolumeFile = null;
-    private FileChannel mVolumeChannel = null;
-    private FileLock mFileLock = null;
 
     /** The volume's header information. This attribute is read-only, but the 
      * contents of the header are read/write. 
@@ -102,25 +101,25 @@ public class FilePageServer implements PageServer
         String openMode = (mReadOnly ? "r" : "rw");
         boolean success = false;
         try {
-            mVolumeFile = new RandomAccessFile(aVolumeFileName, openMode);
-            mVolumeChannel = mVolumeFile.getChannel();
+            mVolumeFile = new RandomAccessFile(file, openMode);
+            FileChannel volumeChannel = mVolumeFile.getChannel();
             // Keep an exclusive lock on the entire file until we close it.
-            mFileLock = mVolumeChannel.tryLock();
-            if (mFileLock == null) {
+            FileLock fileLock = volumeChannel.tryLock();
+            if (fileLock == null) {
                 throw new PageServerException("Cannot lock volume: " + aVolumeFileName);
             }
 
             mHeader = new VolumeHeader();
-            mHeader.read(mVolumeChannel);
+            mHeader.read(volumeChannel);
 
             if (mHeader.isOpen() &&  !shouldForceOpen) {
                 throw new VolumeNeedsRecoveryException("Volume was not properly closed: " + aVolumeFileName);
             }
 
             mHeader.setOpenFlag(true);
-            mHeader.write(mVolumeChannel);
+            mHeader.write(volumeChannel);
             // Sync to disk now and update time stamps...
-            mVolumeChannel.force(true);
+            volumeChannel.force(true);
 
             // Page size doesn't change - so keep a local copy of it
             mPageSize = mHeader.getPageSize();
@@ -146,8 +145,6 @@ public class FilePageServer implements PageServer
                     }
 
                     mVolumeFile = null;
-                    mVolumeChannel = null;
-                    mFileLock = null;
                 }
             }
         } // End finally
@@ -335,13 +332,10 @@ public class FilePageServer implements PageServer
     {
         try {
             mHeader.setOpenFlag(false);
-            mHeader.write(mVolumeChannel);
+            FileChannel channel = mVolumeFile.getChannel();
+            mHeader.write(channel);
             // Sync to disk now and update time stamps...
-            mVolumeChannel.force(true);
-            if (!mFileLock.isValid()) {
-            	throw new PageServerException("FileLock is not valid");
-            }
-            
+            channel.force(true);
             mVolumeFile.close();
         }
         catch (Throwable t) {
@@ -349,10 +343,10 @@ public class FilePageServer implements PageServer
         }
         finally {
             mVolumeFile = null;
-            mVolumeChannel = null;
             mHeader = null;
-            mFileLock = null;
         }
+
+        sLogger.fine("FilePageServer disconnected/shutdown");
     }
 
 
@@ -408,7 +402,7 @@ public class FilePageServer implements PageServer
         long physicalPageOffset = mHeader.convertLogicalToPhysical(aLogicalPageOffset);
         int currPosition = aBuffer.position();
         try {
-            mVolumeChannel.read(aBuffer, physicalPageOffset + anOffset);
+            mVolumeFile.getChannel().read(aBuffer, physicalPageOffset + anOffset);
         }
         catch (Throwable t) {
             throw new PageServerException("Error loading page at " + aLogicalPageOffset + ": " + t, t);
@@ -432,7 +426,7 @@ public class FilePageServer implements PageServer
         long physicalPageOffset = mHeader.convertLogicalToPhysical(aLogicalPageOffset);
         int currPosition = aBuffer.position();
         try {
-            mVolumeChannel.write(aBuffer, physicalPageOffset + anOffset);
+            mVolumeFile.getChannel().write(aBuffer, physicalPageOffset + anOffset);
         }
         catch (Throwable t) {
             throw new PageServerException("Error storing page at " + aLogicalPageOffset + ": " + t, t);
@@ -503,8 +497,9 @@ public class FilePageServer implements PageServer
     public void syncAllPages() throws PageServerException
     {
         try {
-            mHeader.write(mVolumeChannel);
-            mVolumeChannel.force(false);
+            FileChannel channel = mVolumeFile.getChannel();
+            mHeader.write(channel);
+            channel.force(false);
         }
         catch (Throwable t) {
             throw new PageServerException("Error syncing pages: " + t, t);

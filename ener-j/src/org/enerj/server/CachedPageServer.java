@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import org.odmg.ODMGException;
 
@@ -42,6 +43,8 @@ import org.odmg.ODMGException;
  */
 public class CachedPageServer implements PageServer
 {
+    private static final Logger sLogger = Logger.getLogger(CachedPageServer.class.getName());
+
     /** The delegate PageServer being cached. */
     private PageServer mDelegate = null;
     /** A LRU to MRU ordered HashMap which represents the Cache. Key is logical page offset as a Long.
@@ -226,6 +229,8 @@ public class CachedPageServer implements PageServer
             mDelegate = null;
             mCache = null;
         }
+        
+        sLogger.fine("CahcedPageServer is disconnected/shutdown");
     }
 
 

@@ -91,7 +91,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         Runtime.getRuntime().addShutdownHook(mShutdownHook);
 
         mConnected = true;
-        sLogger.info("Session " + this + " is connected.");
+        sLogger.fine("Session " + this + " is connected.");
     }
 
     /**
@@ -488,7 +488,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public void disconnect() throws ODMGException 
     {
-        sLogger.info("Session " + this + " is disconnected.");
+        sLogger.fine("Session " + this + " is disconnected.");
         setDisconnected();
     }
 
