@@ -22,11 +22,11 @@
 
 package org.enerj.core;
 
-import gnu.trove.TLongObjectHashMap;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 /**
  * Tracks a list of modified Persistables. <p>
@@ -43,7 +43,7 @@ public class ModifiedPersistableList
     private List<Persistable> mModifiedObjectList = new ArrayList<Persistable>(1024);
     
     /** Map of the objects so that we can look them up by ID. Key is OID, value is the Persistable. */
-    private TLongObjectHashMap mModifiedObjectMap = new TLongObjectHashMap(1024, .75F);
+    private Map<Long, Persistable> mModifiedObjectMap = new HashMap<Long, Persistable>(1024, .75F);
 
     /**
      * Construct a ModifiedPersistables. 

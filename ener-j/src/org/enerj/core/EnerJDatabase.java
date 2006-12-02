@@ -34,16 +34,17 @@ import static org.enerj.server.ObjectServer.ENERJ_USERNAME_PROP;
 import static org.odmg.Transaction.READ;
 import static org.odmg.Transaction.UPGRADE;
 import static org.odmg.Transaction.WRITE;
-import gnu.trove.TLongHashSet;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Properties;
+import java.util.Set;
 
 import org.enerj.annotations.SchemaAnnotation;
 import org.enerj.server.ClassInfo;
@@ -77,9 +78,6 @@ public class EnerJDatabase implements Database, Persister
 {
     /** Maximum size of mSerializedObjectQueue. TODO make this configurable */
     private static final int sMaxSerializedObjectQueueSize = 100000;
-    
-    /** If true, this indicates to the server that the server is running in the client's JVM. */
-    private static boolean sIsThisTheClientJVM = false;
 
     /** Current Open Database for JVM. Used when no curent open thread database exists. (i.e.,
      * Database was opened in a thread, but now the thread is gone). Entry exists until
@@ -94,11 +92,11 @@ public class EnerJDatabase implements Database, Persister
     private PersistableObjectCache mClientCache = null;
 
     /** List of Persistable objects created or modified during this transaction. */
-    private ModifiedPersistableList mModifiedObjects = new ModifiedPersistableList();
+    private ModifiedPersistableList mModifiedObjects;
     
     /** Cache of CIDs known to be in the database. Used so that we can avoid
      * grabbing a DatabaseRoot and read-locking it. */
-    private TLongHashSet mKnownSchemaCIDs = new TLongHashSet(127); 
+    private Set<Long> mKnownSchemaCIDs; 
 
     /** True if the database is open. */
     private boolean mIsOpen = false;
@@ -121,7 +119,7 @@ public class EnerJDatabase implements Database, Persister
     private int mOIDCachePosition = 0;
     
     /** Queue of serialized objects waiting to be flushed to database. */
-    private List<SerializedObject> mSerializedObjectQueue = new ArrayList<SerializedObject>(100);
+    private List<SerializedObject> mSerializedObjectQueue;
     /** Number of bytes in mSerializedObjectQueue. */
     private int mSerializedObjectQueueSize = 0;
 
@@ -138,26 +136,7 @@ public class EnerJDatabase implements Database, Persister
      */
     public EnerJDatabase()
     {
-        init();
     }
-
-    /**
-     * Common constructor initialization. 
-     */
-    private void init()
-    {
-        // TODO Allow cache size to be set.
-        mClientCache = new DefaultPersistableObjectCache(5000);
-
-        // Initialize CID map with known system CIDs.
-        // This is so we don't try to update the schema with system CIDs, since they
-        // must exist to update it.
-        Iterator<Long> iter = SystemCIDMap.getSystemCIDs();
-        while (iter.hasNext()) {
-            mKnownSchemaCIDs.add( iter.next() );
-        }
-    }
-    
 
     // Start of truly public EnerJ-specific methods...
 
@@ -790,17 +769,6 @@ public class EnerJDatabase implements Database, Persister
     {
         return mBoundToTransaction;
     }
-    
-    /**
-     * For server use only. 
-     * 
-     * @return true if the server is running in the client's JVM.
-     */
-    public static boolean isThisTheClientJVM() 
-    {
-        return sIsThisTheClientJVM;
-    }
-    
 
     /**
      * Sets the current transaction for the database.
@@ -976,9 +944,6 @@ public class EnerJDatabase implements Database, Persister
         if (mIsOpen) {
             throw new DatabaseOpenException("Database is already open");
         }
-
-        // This won't be true if EnerJDatabase is accessed without a prior call to open(). 
-        sIsThisTheClientJVM = true;
         
         // Make properties from the URI
         // Copy the system properties as defaults.
@@ -1097,6 +1062,20 @@ public class EnerJDatabase implements Database, Persister
         
         mObjectServerSession = (ObjectServerSession)PluginHelper.connect(pluginClassName, props);
 
+        // TODO Allow cache size to be set.
+        mClientCache = new DefaultPersistableObjectCache(5000);
+        mModifiedObjects = new ModifiedPersistableList();
+        mSerializedObjectQueue = new ArrayList<SerializedObject>(100);
+        mKnownSchemaCIDs = new HashSet<Long>(127);
+
+        // Initialize CID map with known system CIDs.
+        // This is so we don't try to update the schema with system CIDs, since they
+        // must exist to update it.
+        Iterator<Long> iter = SystemCIDMap.getSystemCIDs();
+        while (iter.hasNext()) {
+            mKnownSchemaCIDs.add( iter.next() );
+        }
+
         //if (mIsLocal) {
             // Server is running locally. We need to run session in another thread. Create a proxy per session.
             // TODO pool these?
@@ -1134,6 +1113,10 @@ public class EnerJDatabase implements Database, Persister
         }
         finally {
             mObjectServerSession = null;
+            mClientCache = null;
+            mModifiedObjects = null;
+            mBoundToTransaction = null;
+            mKnownSchemaCIDs = null;
             mIsOpen = false;
             mIsLocal = false;
         
@@ -1142,7 +1125,7 @@ public class EnerJDatabase implements Database, Persister
                 sCurrentProcessDatabase = null;
             }
 
-            sCurrentDatabaseForThread.set(null);
+            sCurrentDatabaseForThread.remove();
             
             // Pop ourselves as a Persister.
             if (PersisterRegistry.getCurrentPersisterForThread() == this) {

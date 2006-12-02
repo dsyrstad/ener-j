@@ -227,6 +227,7 @@ Available targets:
                 <pathelement location="${asm.jar}"/>
 			</classpath>
             <sysproperty key="enerj.dbpath" value="${databases.dir}"/>
+        	<arg value="--pre-alloc"/> <arg value="48000000"/>
             <arg value="${db}" />
         </java>
 	</target>

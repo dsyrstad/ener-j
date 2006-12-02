@@ -24,11 +24,11 @@
 
 package org.enerj.query.oql;
 
-import gnu.trove.TLongArrayList;
-
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.RandomAccess;
 
 import org.enerj.core.EnerJDatabase;
@@ -47,7 +47,7 @@ public class ResultList extends AbstractList implements RandomAccess
     private Collection mQueryCollection;
     /** Current iterator used while building mList from mCollection */
     private Iterator mQueryIterator = null;
-    private TLongArrayList mOIDList;
+    private List<Long> mOIDList;
     private int mSize = -1; // -1 = not initialized.
     
 
@@ -59,7 +59,7 @@ public class ResultList extends AbstractList implements RandomAccess
     public ResultList(Collection aQueryCollection)
     {
         mQueryCollection = aQueryCollection;
-        mOIDList = new TLongArrayList(1000);
+        mOIDList = new ArrayList<Long>(1000);
     }
     
 
