@@ -184,7 +184,7 @@ public class PagedObjectServer extends BaseObjectServer
         mShutdownHook = new ShutdownHook(this);
         Runtime.getRuntime().addShutdownHook(mShutdownHook);
 
-        sLogger.info("Server " + this + " is started" + localModeMsg + '.');
+        sLogger.fine("Server " + this + " is started" + localModeMsg + '.');
     }
     
     /**
@@ -255,8 +255,10 @@ public class PagedObjectServer extends BaseObjectServer
      *  TODO  Allow multiple volumes to be specfiied.
      */
 	private static void createDatabase(String aDescription, String aDBName, long aMaximumSize, long aPreAllocatedSize, 
-			Properties someDBProps, File aDBDir) throws ODMGException {
-		
+			Properties someDBProps, File aDBDir) throws ODMGException 
+    {
+	    sLogger.fine("Creating database: " + aDBName);
+        
 		someDBProps.setProperty(ObjectServer.ENERJ_DBDIR_PROP, aDBDir.getParent() );
         someDBProps.setProperty(ObjectServer.ENERJ_DBNAME_PROP, aDBName);
         String volumeFileName = StringUtil.substituteMacros( getRequiredProperty(someDBProps, FilePageServer.VOLUME_PROP), someDBProps);
@@ -502,7 +504,7 @@ public class PagedObjectServer extends BaseObjectServer
             // Ignore - shutdown is in progress.
         }
 
-        sLogger.info("Server " + this + " is shutdown.");
+        sLogger.fine("Server " + this + " is shutdown.");
     }
 
 

@@ -59,54 +59,6 @@ public class ExtentTest extends AbstractDatabaseTestCase
     }
 
     /**
-     * Tests addition to extent via reachability.
-     */
-    public void testViaReachability() throws Exception
-    {
-        Implementation impl = EnerJImplementation.getInstance();
-        EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
-        
-        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
-
-        Transaction txn = impl.newTransaction();
-        txn.begin();
-
-        try {
-            db.bind(new TestClass1( new TestClass2(10) ), "obj");
-        }
-        finally {
-            txn.commit();
-            db.close();
-        }
-
-        db = (EnerJDatabase)impl.newDatabase();
-        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
-
-        txn = impl.newTransaction();
-        txn.begin();
-
-        try {
-            Extent extent = db.getExtent(TestClass2.class, true);
-
-            assertEquals(extent.getCandidateClass(), TestClass2.class);
-            assertTrue( extent.hasSubclasses() );
-            Iterator iterator = extent.iterator();
-
-            assertTrue( iterator.hasNext() );
-            TestClass2 obj = (TestClass2)iterator.next();
-            assertEquals(obj.getValue(), 10);
-            assertFalse( iterator.hasNext() );
-            
-            extent.close(iterator);
-        }
-        finally {
-            txn.commit();
-            db.close();
-        }
-
-    }
-
-    /**
      * Tests addition to extent via bind().
      */
     public void testViaBind() throws Exception
@@ -143,6 +95,54 @@ public class ExtentTest extends AbstractDatabaseTestCase
             assertTrue( iterator.hasNext() );
             TestClass1 obj = (TestClass1)iterator.next();
             assertEquals(obj.getValue(), 5);
+            assertFalse( iterator.hasNext() );
+            
+            extent.close(iterator);
+        }
+        finally {
+            txn.commit();
+            db.close();
+        }
+
+    }
+
+    /**
+     * Tests addition to extent via reachability.
+     */
+    public void testViaReachability() throws Exception
+    {
+        Implementation impl = EnerJImplementation.getInstance();
+        EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
+        
+        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
+
+        Transaction txn = impl.newTransaction();
+        txn.begin();
+
+        try {
+            db.bind(new TestClass1( new TestClass2(10) ), "obj");
+        }
+        finally {
+            txn.commit();
+            db.close();
+        }
+
+        db = (EnerJDatabase)impl.newDatabase();
+        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
+
+        txn = impl.newTransaction();
+        txn.begin();
+
+        try {
+            Extent extent = db.getExtent(TestClass2.class, true);
+
+            assertEquals(extent.getCandidateClass(), TestClass2.class);
+            assertTrue( extent.hasSubclasses() );
+            Iterator iterator = extent.iterator();
+
+            assertTrue( iterator.hasNext() );
+            TestClass2 obj = (TestClass2)iterator.next();
+            assertEquals(obj.getValue(), 10);
             assertFalse( iterator.hasNext() );
             
             extent.close(iterator);

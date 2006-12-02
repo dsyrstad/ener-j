@@ -37,6 +37,8 @@ import org.enerj.server.PagedObjectServer;
  */
 public abstract class AbstractDatabaseTestCase extends TestCase
 {
+    private static final Logger sLogger = Logger.getLogger(AbstractDatabaseTestCase.class.getName());
+    
     private static final String DBNAME = "GeneralDB";
     private static final String DBNAME2 = "GeneralDB2";
     private static final String PARENT_DIR = "databases/JUnit/";
@@ -80,6 +82,7 @@ public abstract class AbstractDatabaseTestCase extends TestCase
     public void tearDown() throws Exception
     {
         clearDBFiles();
+        sLogger.fine("Deleting database files");
     }
 
 

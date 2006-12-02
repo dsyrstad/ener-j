@@ -41,7 +41,7 @@ import org.odmg.ODMGException;
  */
 public class ArchivingRedoLogServer implements RedoLogServer
 {
-    private static Logger logger = Logger.getLogger(ArchivingRedoLogServer.class.getName());
+    private static Logger sLogger = Logger.getLogger(ArchivingRedoLogServer.class.getName());
     
     private String mLogFileName;
     
@@ -94,7 +94,7 @@ public class ArchivingRedoLogServer implements RedoLogServer
         mLogFileName = aLogFileName;
         
         try {
-            logger.fine("Opening ArchivingRedoLogServer on log file " + mLogFileName);
+            sLogger.fine("Opening ArchivingRedoLogServer on log file " + mLogFileName);
             
             mRandomAccessLogFile = new BufferedRandomAccessLogFile(mLogFileName, "rw");
             // Lock the log so no other process can manipulate it.
@@ -175,6 +175,8 @@ public class ArchivingRedoLogServer implements RedoLogServer
                 mRandomAccessLogFile = null;
             }
         }
+        
+        sLogger.fine("ArchivingRedoLogServer disconnected");
     }
 
 
