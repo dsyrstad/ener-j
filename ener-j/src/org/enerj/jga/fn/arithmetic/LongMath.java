@@ -44,8 +44,8 @@ class LongMath implements IntegerArithmetic<Long> {
      
     static final long serialVersionUID = 7284047144544492350L;
 
-    static private final Long ZERO = new Long(0L);
-    static private final Long ONE  = new Long(1L);
+    static private final Long ZERO = (0L);
+    static private final Long ONE  = (1L);
     
     /**
      * Returns the given value in the appropriate type
@@ -53,7 +53,7 @@ class LongMath implements IntegerArithmetic<Long> {
      */
 
     public Long valueOf(Number value) throws IllegalArgumentException {
-        return new Long(value.longValue());
+        return (value.longValue());
     }
 
     /**
@@ -78,7 +78,7 @@ class LongMath implements IntegerArithmetic<Long> {
     */
 
     public Long plus (Long x, Long y) {
-        return new Long(x.longValue() + y.longValue());
+        return (x.longValue() + y.longValue());
     }
 
    /**
@@ -87,7 +87,7 @@ class LongMath implements IntegerArithmetic<Long> {
     */
      
     public Long minus (Long x, Long y) {
-        return new Long(x.longValue() - y.longValue());
+        return (x.longValue() - y.longValue());
     }
      
    /**
@@ -96,7 +96,7 @@ class LongMath implements IntegerArithmetic<Long> {
     */
 
     public Long multiplies (Long x, Long y){
-        return new Long(x.longValue() * y.longValue());
+        return (x.longValue() * y.longValue());
     }
          
 
@@ -106,7 +106,7 @@ class LongMath implements IntegerArithmetic<Long> {
      */
 
     public Long divides (Long x, Long y) {
-        return new Long(x.longValue() / y.longValue());
+        return (x.longValue() / y.longValue());
     }
      
     /**
@@ -115,7 +115,7 @@ class LongMath implements IntegerArithmetic<Long> {
      */
 
     public Long negate (Long x) {
-        return new Long(-x.longValue());
+        return (-x.longValue());
     }
     
    /**
@@ -124,7 +124,7 @@ class LongMath implements IntegerArithmetic<Long> {
     */
      
     public Long modulus (Long x, Long y) {
-        return new Long(x.longValue() % y.longValue());
+        return (x.longValue() % y.longValue());
     }
 
     /**
@@ -133,7 +133,7 @@ class LongMath implements IntegerArithmetic<Long> {
      */
 
     public Long and (Long x, Long y) {
-        return new Long(x.longValue() & y.longValue());
+        return (x.longValue() & y.longValue());
     }
 
     /**
@@ -142,7 +142,7 @@ class LongMath implements IntegerArithmetic<Long> {
      */
 
     public Long or (Long x, Long y) {
-        return new Long(x.longValue() | y.longValue());
+        return (x.longValue() | y.longValue());
     }
 
     /**
@@ -151,7 +151,7 @@ class LongMath implements IntegerArithmetic<Long> {
      */
 
     public Long xor (Long x, Long y) {
-        return new Long(x.longValue() ^ y.longValue());
+        return (x.longValue() ^ y.longValue());
     }
 
     /**
@@ -160,7 +160,7 @@ class LongMath implements IntegerArithmetic<Long> {
      */
 
     public Long not (Long x) {
-        return new Long(~x.longValue());
+        return (~x.longValue());
     }
 
     /**
@@ -168,7 +168,7 @@ class LongMath implements IntegerArithmetic<Long> {
      */
 
     public Long shiftLeft(Long x, Integer y) {
-        return new Long(x.longValue() << y.intValue());
+        return (x.longValue() << y.intValue());
     }        
 
     /**
@@ -176,7 +176,7 @@ class LongMath implements IntegerArithmetic<Long> {
      */
 
     public Long signedShiftRight(Long x, Integer y) {
-        return new Long(x.longValue() >> y.intValue());
+        return (x.longValue() >> y.intValue());
     }
 
     /**
@@ -185,6 +185,6 @@ class LongMath implements IntegerArithmetic<Long> {
      */
 
     public Long unsignedShiftRight(Long x, Integer y) {
-        return new Long(x.longValue() >>> y.intValue());
+        return (x.longValue() >>> y.intValue());
     }
 }

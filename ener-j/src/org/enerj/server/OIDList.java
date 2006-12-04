@@ -24,13 +24,10 @@
 
 package org.enerj.server;
 
-import java.io.*;
-import java.nio.*;
-import java.util.*;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
-import org.odmg.*;
-
-import org.enerj.core.*;
+import org.enerj.core.ObjectSerializer;
 
 /** 
  * Manages the list of OIDs for PagedObjectServer. Could be used in other ObjectServers as well

@@ -1545,7 +1545,7 @@ public class ObjectSerializer
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
             long value = aContext.mStream.readLong();
-            return new Long(value);
+            return value; // Autoboxing converts value to a Long.
         }
 
         public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException

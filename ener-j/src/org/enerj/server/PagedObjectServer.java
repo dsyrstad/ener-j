@@ -971,8 +971,7 @@ public class PagedObjectServer extends BaseObjectServer
             }
 
             //  TODO  check granularity here...
-            Object lockObj = new Long(anOID);
-            //Object lockObj = new Long(1);   // Database - make static, class is CID
+            Object lockObj = anOID;
 
             LockMode lockMode;
             switch (aLockLevel) {
@@ -1247,7 +1246,7 @@ public class PagedObjectServer extends BaseObjectServer
         PagedStore.StoreObjectRequest lookupStoreRequest(long anOID)
         {
             synchronized (mHashMap) {
-                return (PagedStore.StoreObjectRequest)mHashMap.get( new Long(anOID) );
+                return (PagedStore.StoreObjectRequest)mHashMap.get(anOID);
             }
         }
 
@@ -1265,7 +1264,7 @@ public class PagedObjectServer extends BaseObjectServer
         void removeStoreRequest(PagedStore.StoreObjectRequest aStoreRequest)
         {
             synchronized (mHashMap) {
-                Long oid = new Long(aStoreRequest.mOID);
+                Long oid = aStoreRequest.mOID;
                 PagedStore.StoreObjectRequest cachedStoreRequest = (PagedStore.StoreObjectRequest)mHashMap.get(oid);
                 
                 // Must be the exact same request.
@@ -1303,7 +1302,7 @@ public class PagedObjectServer extends BaseObjectServer
         void cacheUpdateRequest(PagedStore.UpdateRequest anUpdateRequest, Transaction aTransaction)
         {
             PagedStore.StoreObjectRequest prevStoreRequest = null;
-            Long oid = new Long(anUpdateRequest.mOID);
+            Long oid = anUpdateRequest.mOID;
 
             if (anUpdateRequest instanceof PagedStore.StoreObjectRequest) {
                 PagedStore.StoreObjectRequest storeRequest = (PagedStore.StoreObjectRequest)anUpdateRequest;
