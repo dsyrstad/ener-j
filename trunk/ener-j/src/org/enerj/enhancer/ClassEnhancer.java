@@ -1287,7 +1287,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
     {
         MethodVisitor mv = cv.visitMethod(ACC_STATIC, "<clinit>", sNoArgMethodSignature, null, null);
         mv.visitCode();
-        mv.visitLdcInsn( new Long(mClassId) );
+        mv.visitLdcInsn( (Long)mClassId );
         mv.visitFieldInsn(PUTSTATIC, mThisClassNameSlashed, sClassIdFieldName, "J");
         mv.visitInsn(RETURN);
         mv.visitMaxs(0, 0);
@@ -1497,7 +1497,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
             else if (mIsClinit && anOpcode == RETURN) {
                 // Existing <clinit>, insert instructions to initialize class ID. Then flag that we did it.
                 mEnhancedClinit = true;
-                mv.visitLdcInsn( new Long(mClassId) );
+                mv.visitLdcInsn( (Long)mClassId );
                 mv.visitFieldInsn(PUTSTATIC, mThisClassNameSlashed, sClassIdFieldName, "J");
             }
             

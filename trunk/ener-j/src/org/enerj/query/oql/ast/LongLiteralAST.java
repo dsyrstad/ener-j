@@ -86,6 +86,6 @@ public class LongLiteralAST extends BaseAST
             return new ConstantUnary( new Integer((int)mValue) );
     	}
     	
-        return new ConstantUnary( new Long(mValue) );
+        return new ConstantUnary((Long)mValue );
     }
 }

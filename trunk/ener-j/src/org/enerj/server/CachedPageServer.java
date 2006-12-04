@@ -144,7 +144,7 @@ public class CachedPageServer implements PageServer
      */
     private void addCachedPage(Page aPage) throws PageServerException
     {
-        Long logicalOffset = new Long(aPage.mLogicalPageOffset);
+        Long logicalOffset = aPage.mLogicalPageOffset;
         // This put will cause removeEldestEntry to be called, which may cause mDirtyLRUPage to
         // be set. We have to store the LRU page here, rather than in removeEldestEntry, because the
         // store may throw an exception.
@@ -170,7 +170,7 @@ public class CachedPageServer implements PageServer
      */
     private Page getCachedPage(long aLogicalPageOffset)
     {
-        return (Page)mCache.get( new Long(aLogicalPageOffset) );
+        return (Page)mCache.get(aLogicalPageOffset);
     }
     
 
@@ -349,7 +349,7 @@ public class CachedPageServer implements PageServer
     {
         // We don't care if the cached page is dirty or not if we're freeing it.
         mDelegate.freePage(aLogicalPageOffset);
-        Page page = (Page)mCache.remove( new Long(aLogicalPageOffset) );
+        Page page = (Page)mCache.remove(aLogicalPageOffset);
         if (page != null) {
             freePage(page);
         }            

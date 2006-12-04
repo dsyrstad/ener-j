@@ -97,7 +97,7 @@ public class Count<T> extends UnaryFunctor<Iterator<? extends T>,Long> {
             finder.next();
         }
      
-        return new Long(count);
+        return count;
     }
 
     /**

@@ -94,7 +94,7 @@ public class SystemCIDMap
      */
     public static String getSystemClassNameForCID(long aCID)
     {
-        return (String)sCIDToNameMap.get( new Long(aCID) );
+        return (String)sCIDToNameMap.get(aCID);
     }
 
 
