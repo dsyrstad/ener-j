@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import org.enerj.core.ObjectSerializer;
+import org.enerj.core.Schema;
+import org.enerj.core.SparseBitSet;
 
 import junit.framework.TestCase;
 
@@ -163,10 +165,12 @@ public abstract class AbstractObjectServerTest extends TestCase
      */
     private void storeObjects(long[] someOIDs, int aLength) throws Exception
     {
-        long cid = System.currentTimeMillis();
+        Schema schema = mSession.getSchema();
+        // Use SparseBitSet's CID as a valid cid to test.
+        long sparseBitSetCID = schema.findLogicalClass(SparseBitSet.class.getName()).getLatestVersion().getClassId();
         SerializedObject[] objects = new SerializedObject[someOIDs.length];
         for (int i = 0; i < someOIDs.length; i++) {
-            objects[i] = new SerializedObject(someOIDs[i], cid + i, generateBytes(aLength, someOIDs[i], cid + i), true);
+            objects[i] = new SerializedObject(someOIDs[i], sparseBitSetCID, generateBytes(aLength, someOIDs[i], sparseBitSetCID), true);
         }
 
         mSession.storeObjects(objects);
@@ -179,7 +183,7 @@ public abstract class AbstractObjectServerTest extends TestCase
             assertTrue( obj.length == aLength );
 
             long testCID = testClassInfos[i].getCID();
-            assertTrue( testCID == (cid + i) );
+            assertEquals(sparseBitSetCID, testCID);
 
             byte[] testBytes = generateBytes(aLength, someOIDs[i], testCID);
             assertTrue( Arrays.equals(testBytes, obj) );
