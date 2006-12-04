@@ -4,6 +4,20 @@ $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/Notes.txt,v 1.1 2005/08/16 04
 Notes:
 ------
 
+- DefaultPersistableObjectCache is variable depending on the state of GCing. There's been at least one
+  difficult/weird bug (ExtentTest) that was potentially due to the variable state of the cache. 
+  
+- Relationship of Persistence structure:
+                         Persister
+                            /\
+                           /  \
+                          /    \
+       PersistableHelper +------+ ObjectSerializer
+                          \    /
+                           \  /
+                            \/
+                        Persistable
+
 - OLD: Does ODMG specify if Database or Transaction exceptions during a transaction affect the
   state of the transaction? I'm thinking of DeadlockWouldOccurException or some other ODMGRuntimeException
   would automagically rollback the transaction. Hmm.. ODMG and JDO are silent on this. So

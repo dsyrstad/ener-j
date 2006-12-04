@@ -5,5 +5,4 @@ See core for main notes...
 Notes:
 ------
 
-- openMosix is a possibility for clustering. However, it relies on the concept of
-multiple processes to break-up work.
+- 

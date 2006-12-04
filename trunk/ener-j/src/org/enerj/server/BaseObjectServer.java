@@ -171,8 +171,11 @@ abstract public class BaseObjectServer implements ObjectServer
             // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
             for (String schemaClassName : SystemCIDMap.getSystemClassNames()) {
                 LogicalClassSchema classSchema = new LogicalClassSchema(schema, schemaClassName, null);
+                schema.addLogicalClass(classSchema);
+                
                 long cid = SystemCIDMap.getSystemCIDForClassName(schemaClassName);
-                new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);
+                ClassVersionSchema version = new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);
+                classSchema.addVersion(version);
 
                 // Create an extent for this class.
                 extentMap.createExtentForClassName(schemaClassName);

@@ -137,13 +137,15 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                 List<Long> oids = mPendingNewOIDs.get(cid);
                 if (oids != null) {
                     ClassVersionSchema version = schema.findClassVersion(cid);
-                    if (version != null) {
-                        SparseBitSet extent = extentMap.getExtent( version.getLogicalClassSchema().getClassName() );
-                        if (extent != null) {
-                            int size = oids.size();
-                            for (int i = 0; i < size; i++) {
-                                extent.set(oids.get(i), true);
-                            }
+                    if (version == null) {
+                        throw new ODMGRuntimeException("Cannot find class version in schema for CID " + Long.toHexString(cid));
+                    }
+                    
+                    SparseBitSet extent = extentMap.getExtent( version.getLogicalClassSchema().getClassName() );
+                    if (extent != null) {
+                        int size = oids.size();
+                        for (int i = 0; i < size; i++) {
+                            extent.set(oids.get(i), true);
                         }
                     }
                 }
