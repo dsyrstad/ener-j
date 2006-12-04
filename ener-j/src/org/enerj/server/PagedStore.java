@@ -79,7 +79,7 @@ import org.odmg.ODMGRuntimeException;
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see PagedObjectServer
  */
-class PagedStore
+public class PagedStore
 {
     private static final Logger sLogger = Logger.getLogger(PagedStore.class.getName());
     
@@ -130,7 +130,7 @@ class PagedStore
      *
      * @throws ODMGException if an error occurs.
      */
-    PagedStore(Properties someProperties, RedoLogServer aRedoLogServer, PagedObjectServer anObjectServer, 
+    public PagedStore(Properties someProperties, RedoLogServer aRedoLogServer, PagedObjectServer anObjectServer, 
                 boolean shouldForceOpen) throws org.odmg.ODMGException
     {
         if (shouldForceOpen) {
@@ -162,7 +162,7 @@ class PagedStore
      *
      * @throws PageServerException if an error occurs.
      */
-    void disconnect() throws PageServerException
+    public void disconnect() throws PageServerException
     {
         if (mStorageProcessor != null) {
             mStorageProcessor.shutdown();
@@ -182,6 +182,15 @@ class PagedStore
         sLogger.fine("PagedStore disconnected/shutdown");
     }
     
+    /**
+     * Gets the OIDList.
+     *
+     * @return the OIDList.
+     */
+    public OIDList getOIDList()
+    {
+        return mOIDList;
+    }
 
     /**
      * Helper for storage requests - RequestProcessor.queueRequestAndWait(). Traps non-ODMGExceptions
@@ -190,7 +199,7 @@ class PagedStore
      * @throws ODMGException if an error occurs.
      * @throws ODMGRuntimeException  if an error occurs.
      */
-    void queueStorageRequestAndWait(RequestProcessor.Request aRequest) throws ODMGException
+    public void queueStorageRequestAndWait(RequestProcessor.Request aRequest) throws ODMGException
     {
         queueStorageRequest(aRequest);
         waitForStorageRequest(aRequest);
@@ -205,7 +214,7 @@ class PagedStore
      * @throws ODMGException if an error occurs.
      * @throws ODMGRuntimeException  if an error occurs.
      */
-    void queueStorageRequest(RequestProcessor.Request aRequest) throws ODMGException
+    public void queueStorageRequest(RequestProcessor.Request aRequest) throws ODMGException
     {
         try {
             mStorageProcessor.queueRequest(aRequest);
@@ -223,7 +232,7 @@ class PagedStore
      * @throws ODMGException if an error occurs.
      * @throws ODMGRuntimeException  if an error occurs.
      */
-    void waitForStorageRequest(RequestProcessor.Request aRequest) throws ODMGException
+    public void waitForStorageRequest(RequestProcessor.Request aRequest) throws ODMGException
     {
         try {
             mStorageProcessor.waitForRequest(aRequest);

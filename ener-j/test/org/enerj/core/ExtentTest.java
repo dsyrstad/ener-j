@@ -120,14 +120,15 @@ public class ExtentTest extends AbstractDatabaseTestCase
         txn.begin();
 
         try {
-            db.bind(new TestClass1( new TestClass2(10) ), "obj");
+            TestClass1 testClass1  = new TestClass1( new TestClass2(10) );
+            db.bind(testClass1, "obj");
         }
         finally {
             txn.commit();
+            System.out.println("cid=" + Long.toHexString(((Persistable)new TestClass1(1)).enerj_GetClassId()) + "testClass2="+ Long.toHexString(((Persistable)new TestClass1(1)).enerj_GetClassId()));
             db.close();
         }
 
-//        System.gc();
         db = (EnerJDatabase)impl.newDatabase();
         db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
 
@@ -139,8 +140,8 @@ public class ExtentTest extends AbstractDatabaseTestCase
 
             assertEquals(extent.getCandidateClass(), TestClass2.class);
             assertTrue( extent.hasSubclasses() );
-            Iterator iterator = extent.iterator();
 
+            Iterator iterator = extent.iterator();
             assertTrue( iterator.hasNext() );
             TestClass2 obj = (TestClass2)iterator.next();
             assertEquals(obj.getValue(), 10);
@@ -150,7 +151,7 @@ public class ExtentTest extends AbstractDatabaseTestCase
         }
         finally {
             txn.commit();
-               db.close();
+            db.close();
         }
 
     }

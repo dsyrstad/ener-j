@@ -759,6 +759,10 @@ public class LockScheduler implements LockServer
             mActive = false;
         }
 
+        public boolean isActive()
+        {
+            return mActive;
+        }
 
         // ...End of LockServerTransaction interface.
 

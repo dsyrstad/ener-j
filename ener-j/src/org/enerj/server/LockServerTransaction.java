@@ -82,4 +82,12 @@ public interface LockServerTransaction
      *
      */
     public void end();
+    
+    /**
+     * Determines if the transaction is still active.
+     *
+     * @return true if the transaction is active, else false.
+     */
+    public boolean isActive();
+    
 }

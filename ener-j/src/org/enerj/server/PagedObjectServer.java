@@ -955,7 +955,9 @@ public class PagedObjectServer extends BaseObjectServer
             txn.clearUpdateRequests();
 
             // Release all locks.
-            txn.getLockServerTransaction().end();
+            if (txn.getLockServerTransaction().isActive()) {
+                txn.getLockServerTransaction().end();
+            }
 
             // Transaction no longer active.
             setTransaction(null);
