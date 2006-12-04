@@ -28,7 +28,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
-import java.util.logging.Logger;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -125,7 +124,6 @@ public class ExtentTest extends AbstractDatabaseTestCase
         }
         finally {
             txn.commit();
-            System.out.println("cid=" + Long.toHexString(((Persistable)new TestClass1(1)).enerj_GetClassId()) + "testClass2="+ Long.toHexString(((Persistable)new TestClass1(1)).enerj_GetClassId()));
             db.close();
         }
 
@@ -160,7 +158,7 @@ public class ExtentTest extends AbstractDatabaseTestCase
     /**
      * Tests addition to extent via makePersistent().
      */
-    public void xtestViaMakePersistent() throws Exception
+    public void testViaMakePersistent() throws Exception
     {
         Implementation impl = EnerJImplementation.getInstance();
         EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
@@ -244,7 +242,7 @@ public class ExtentTest extends AbstractDatabaseTestCase
     /**
      * Tests close() and closeAll().
      */
-    public void xtestClose() throws Exception
+    public void testClose() throws Exception
     {
         Implementation impl = EnerJImplementation.getInstance();
         EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
@@ -343,7 +341,7 @@ public class ExtentTest extends AbstractDatabaseTestCase
     /**
      * Tests extents with subclasses.
      */
-    public void xtestSubclasses() throws Exception
+    public void testSubclasses() throws Exception
     {
         Implementation impl = EnerJImplementation.getInstance();
         EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
@@ -459,7 +457,7 @@ public class ExtentTest extends AbstractDatabaseTestCase
     /**
      * Tests extents with many objects to verify the integrity of the objects returned.
      */
-    public void xtestLargeExtents() throws Exception
+    public void testLargeExtents() throws Exception
     {
         final int NUM_OBJS = 100000;
 
@@ -552,7 +550,7 @@ public class ExtentTest extends AbstractDatabaseTestCase
      * Tests that two iterators can maintain separate positions on same extent.
      * Note that testClose() also indirectly tests two iterators for closing purposes.
      */
-    public void xtestTwoIterators() throws Exception
+    public void testTwoIterators() throws Exception
     {
         Implementation impl = EnerJImplementation.getInstance();
         EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
@@ -611,7 +609,7 @@ public class ExtentTest extends AbstractDatabaseTestCase
      * Tests that next() throws the proper exception when hasNext() returns false.
      * Also tests that remove() throws UnsupportedOperationException.
      */
-    public void xtestNextRemoveException() throws Exception
+    public void testNextRemoveException() throws Exception
     {
         Implementation impl = EnerJImplementation.getInstance();
         EnerJDatabase db = (EnerJDatabase)impl.newDatabase();

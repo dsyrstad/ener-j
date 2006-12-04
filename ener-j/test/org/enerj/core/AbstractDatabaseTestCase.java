@@ -81,9 +81,7 @@ public abstract class AbstractDatabaseTestCase extends TestCase
 
     public void tearDown() throws Exception
     {
-        // TODO UNCOMMENT clearDBFiles();
-        sLogger.warning("NOT DELETEING FILES");
-        sLogger.fine("Deleting database files");
+        clearDBFiles();
     }
 
 
