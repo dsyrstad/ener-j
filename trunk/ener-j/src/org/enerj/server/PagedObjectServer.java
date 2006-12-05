@@ -801,11 +801,6 @@ public class PagedObjectServer extends BaseObjectServer
             byte[][] objects = new byte[someOIDs.length][];
             int idx = 0;
             for (long oid : someOIDs) {
-                // Prevent schema OIDs from being stored unless this is the schema session.
-                if (!mIsSchemaSession && oid == SCHEMA_OID) {
-                    throw new ODMGException("Client is not allowed to read schema directly.");
-                }
-
                 // Check the update cache first and get the object from the store request, if there is one.
                 PagedStore.StoreObjectRequest storeRequest = mServerUpdateCache.lookupStoreRequest(oid);
                 if (storeRequest == null) {
