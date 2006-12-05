@@ -27,6 +27,7 @@ package org.enerj.core;
 import java.lang.ref.ReferenceQueue;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -50,10 +51,11 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
      * Persistable). List order is by most recently accessed. 
      */
     private LinkedHashMap<Long, CacheWeakReference> mCache;
-    /** A weakly referenced list of Persistables that have not been loaded yet, but probably will be. This
+    /** A weakly referenced LIFO queue of Persistables that have not been loaded yet, but probably will be. This
      * is used to do pre-fetching.
      */
-    private List<CacheWeakReference> mPrefetchList;
+    private LinkedList<CacheWeakReference> mPrefetchList;
+    private int mMaxPrefetchSize;
 
     /** ReferenceQueue for CacheWeakReferences stored in mClientCache. This allows us
      * to clean GCed objects out of the cache. 
@@ -73,7 +75,8 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         // The calculation below is to offset the effect of the load factor.
         mCache = new LinkedHashMap<Long, CacheWeakReference>(anInitialSize + (anInitialSize / 3), .75F, true);
 
-        mPrefetchList = new ArrayList<CacheWeakReference>(anInitialSize / 4); 
+        mMaxPrefetchSize = 50; // TODO This should match the extent iterator chunk size closely, it should be at least that big 
+        mPrefetchList = new LinkedList<CacheWeakReference>();
     }
     
 
@@ -90,7 +93,11 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
             mCache.put(anOID, weakRef);
             if (!aPersistable.enerj_IsNew() && !aPersistable.enerj_IsLoaded()) {
                 // Non-new Persistable that has not been loaded yet. It is a prefetch candidate.
-                mPrefetchList.add(weakRef);
+                // Implement LIFO policy
+                mPrefetchList.addFirst(weakRef);
+                if (mPrefetchList.size() > mMaxPrefetchSize) {
+                    mPrefetchList.removeLast();
+                }
             }
         }
     }

@@ -299,17 +299,17 @@ public class EnerJBrowserModel
         if (anObj instanceof Collection) {
             // A collection of size 1 is treated like a single object.
             Collection collection = (Collection)anObj;
-            Iterator iter = collection.iterator();
-            if (!iter.hasNext()) {
+            int size = collection.size();
+            if (size == 0) {
                 return getEmptyTableInfo();
             }
             
-            Object firstElement = iter.next();
-            if (!iter.hasNext() && anObj == aRealRefObject) {
-                return getTableInfo(firstElement);
+            if (size == 1 && anObj == aRealRefObject) {
+                return getTableInfo(collection.iterator().next());
             }
             
             // Determine the Collection type from the first element.
+            Object firstElement = collection.iterator().next(); // TODO clean up this could make one full scan if results are nearly empty, and TableInfo makes another 
             ObjectSourceTableColumn[] columns;
             if (firstElement instanceof Structure) {
                 String[] memberNames = ((Structure)firstElement).getMemberNames();
