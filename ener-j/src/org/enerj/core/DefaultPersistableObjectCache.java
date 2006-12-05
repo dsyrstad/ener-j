@@ -88,16 +88,18 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
     {
         cleanup();
         
-        if (!mCache.containsKey(anOID)) {
-            CacheWeakReference weakRef = new CacheWeakReference(anOID, aPersistable, mCacheReferenceQueue);
+        CacheWeakReference weakRef = mCache.get(anOID); 
+        if (weakRef == null) {
+            weakRef = new CacheWeakReference(anOID, aPersistable, mCacheReferenceQueue);
             mCache.put(anOID, weakRef);
-            if (!aPersistable.enerj_IsNew() && !aPersistable.enerj_IsLoaded()) {
-                // Non-new Persistable that has not been loaded yet. It is a prefetch candidate.
-                // Implement LIFO policy
-                mPrefetchList.addFirst(weakRef);
-                if (mPrefetchList.size() > mMaxPrefetchSize) {
-                    mPrefetchList.removeLast();
-                }
+        }
+
+        // Non-new Persistable that has not been loaded yet. It is a prefetch candidate.
+        // Implement LIFO policy
+        if (!aPersistable.enerj_IsNew() && !aPersistable.enerj_IsLoaded()) {
+            mPrefetchList.addFirst(weakRef);
+            if (mPrefetchList.size() > mMaxPrefetchSize) {
+                mPrefetchList.removeLast();
             }
         }
     }
@@ -265,7 +267,7 @@ public class DefaultPersistableObjectCache implements PersistableObjectCache
         List<Persistable> prefetches = new ArrayList<Persistable>(mPrefetchList.size());
         for (CacheWeakReference ref : mPrefetchList) {
             Persistable obj = (Persistable)ref.get();
-            if (obj != null && !obj.enerj_IsLoaded() && mCache.containsKey(obj.enerj_GetPrivateOID())) {
+            if (obj != null && !obj.enerj_IsLoaded()) {
                 prefetches.add(obj);
             }
         }

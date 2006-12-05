@@ -25,8 +25,8 @@ import java.util.Random;
 
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJImplementation;
-import org.enerj.core.RegularDMap;
-import org.odmg.DMap;
+import org.enerj.core.VeryLargeDArray;
+import org.odmg.DArray;
 import org.odmg.Database;
 import org.odmg.Implementation;
 import org.odmg.ODMGException;
@@ -45,7 +45,7 @@ public class OO7Loader
     private Implementation mImplementation;
     private Random mRandom;
     private EnerJDatabase mDB;
-    private DMap mAtomicPartByIDMap;
+    private DArray mAtomicPartByIDMap;
     private int mType;
     private int mSize;
     
@@ -85,7 +85,12 @@ public class OO7Loader
             result[idx] = new AtomicPart(idx + 1000, mRandom.nextInt(10000), mRandom.nextInt(), mRandom.nextInt(),
                             mRandom.nextInt());
 
-            mAtomicPartByIDMap.put(result[idx].getId(), result[idx]);
+            int id = result[idx].getId();
+            if (id >= mAtomicPartByIDMap.size()) {
+                mAtomicPartByIDMap.resize(id + 1);
+            }
+            
+            mAtomicPartByIDMap.set(id, result[idx]);
             mDB.makePersistent(result[idx]);
         }
         
@@ -212,7 +217,7 @@ public class OO7Loader
             }
             */
             
-            mAtomicPartByIDMap = new RegularDMap(1024*1024);
+            mAtomicPartByIDMap = new VeryLargeDArray();
             try {
                 mDB.unbind("AtomicPartsByID");
             }
