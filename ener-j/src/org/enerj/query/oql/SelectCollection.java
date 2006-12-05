@@ -104,6 +104,8 @@ public class SelectCollection extends BaseSelectCollection
     public int size()
     {
         if (mSize < 0) {
+            // TODO Query iterators should support a size() method. I.e., We should not have to retrieve
+            // all of the objects to calculate size.
             mSize = 0;
             for (Object obj : this) {
                 ++mSize;

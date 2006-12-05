@@ -299,13 +299,13 @@ public class EnerJBrowserModel
         if (anObj instanceof Collection) {
             // A collection of size 1 is treated like a single object.
             Collection collection = (Collection)anObj;
-            int size = collection.size();
-            if (size == 0) {
+            Iterator iter = collection.iterator();
+            if (!iter.hasNext()) {
                 return getEmptyTableInfo();
             }
             
-            Object firstElement = collection.iterator().next();
-            if (size == 1 && anObj == aRealRefObject) {
+            Object firstElement = iter.next();
+            if (!iter.hasNext() && anObj == aRealRefObject) {
                 return getTableInfo(firstElement);
             }
             

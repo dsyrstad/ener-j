@@ -38,24 +38,61 @@ public class LRUCache<K,V> extends LinkedHashMap<K,V>
     private static final long serialVersionUID = 1L;
 
     private int mMaxNumEntries;
+    private Notifiable<K,V> mNotifiable;
     
 
     /**
      * Construct a LRUCache. 
      *
      * @param aMaxNumEntries maximum number of entries allowed in the cache.
+     * @param aNotifiable a listener that is notified when an object is about to be dropped from the cache.
+     *  May be null if notification is not desired.
      */
-    public LRUCache(int aMaxNumEntries/* method for entry removal*/)
+    public LRUCache(int aMaxNumEntries, Notifiable<K,V> aNotifiable)
     {
         super((aMaxNumEntries * 3) / 4 + 1, .75F, true);
         
         mMaxNumEntries = aMaxNumEntries;
     }
     
-
-    protected boolean removeEldestEntry(Map.Entry anEldestEntry)
+    /**
+     * Sets the object to be notified. 
+     *
+     * @param aNotifiable a listener that is notified when an object is about to be dropped from the cache.
+     *  May be null if notification is not desired.
+     */
+    public void setNotifiable(Notifiable<K,V> aNotifiable)
     {
-         return size() > mMaxNumEntries;
+        mNotifiable = aNotifiable;
     }
 
+    protected boolean removeEldestEntry(Map.Entry<K,V> anEldestEntry)
+    {
+        boolean shouldRemove = size() > mMaxNumEntries;
+        
+        if (mNotifiable == null) {
+            return shouldRemove;
+        }
+        
+        if (shouldRemove) {
+            mNotifiable.removeEntry(anEldestEntry.getKey(), anEldestEntry.getValue());
+        }
+        
+        return false; // The notifiable will decide whether to remove the entry and the actual removal.
+    }
+
+    
+    /**
+     * Called by LRUCache to remove an entry from the cache. <p>
+     */
+    public interface Notifiable<K, V>
+    {
+        /**
+         * Removes the entry to drop it from the cache.
+         *
+         * @param key the key of the object to be removed.
+         * @param obj the object to be removed.
+         */
+        void removeEntry(K key, V obj);
+    }
 }
