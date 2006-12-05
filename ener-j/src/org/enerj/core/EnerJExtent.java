@@ -237,7 +237,7 @@ public class EnerJExtent implements Extent
 
     private final class EnerJExtentIterator implements java.util.Iterator
     {
-        private static final int DEFAULT_CHUNK_SIZE = 200;
+        private static final int DEFAULT_CHUNK_SIZE = 50;
 
         /** ExtentIterator returned from the session. */
         private ExtentIterator mExtentIterator;

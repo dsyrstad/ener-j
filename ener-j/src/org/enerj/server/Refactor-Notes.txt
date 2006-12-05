@@ -1,6 +1,8 @@
 11/15/2006 - Persister/ObjectServer/Schema Refactoring
 --------------------------------------------------------
 
+- Extent with subclasses should not include schema classes in extent because they cannot be retrieved directly.
+
 - ObjectServer should have server-wide object write-thru cache. Looks up objects by OID. Updated on commit.
 
 - Needs tests for Persister and new ObjectServerSession methods.
