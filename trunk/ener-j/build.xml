@@ -47,7 +47,7 @@ Available targets:
     	<property name="agent.jar" value="${lib.dir}/${agent-jarname}.jar" />
         <property name="class.path" value="${build.dest}:${junit.jar}:${asm.jar}"/>
         <property name="sourceLevel" value="1.5"/>
-        <property name="jvmopts"  value="-Xverify:none -XX:+UseParallelGC -XX:PermSize=20M -XX:MaxNewSize=32M -XX:NewSize=32M -Xms256m -Xmx512m" />
+        <property name="jvmopts"  value="-Xms512m -Xmx512m" />
 
     </target>
 
