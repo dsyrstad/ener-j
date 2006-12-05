@@ -22,6 +22,7 @@ package org.enerj.oo7;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -164,12 +165,17 @@ public class OO7Bench
 
     private void query1() throws ODMGException
     {
-        DMap map = (DMap)mDB.lookup("AtomicPartsByID");
+        List map = (List)mDB.lookup("AtomicPartsByID");
+        int size = map.size();
         int numParts = map.size();
         int numFound = 0;
         for (int i = 0; i < 10; i++) {
             int id = mRandom.nextInt(numParts) + 1000;
-            AtomicPart part = (AtomicPart)map.get(id);
+            AtomicPart part = null;
+            if (id < size) {
+                part = (AtomicPart)map.get(id);
+            }
+            
             if (part != null) {
                 numFound++;
             }

@@ -65,8 +65,10 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -138,7 +140,30 @@ public class ClassUtil
         return null;
     }
 
-
+    /**
+     * Get all of the declared fields for all classes in the class hierarchy. This is like
+     * {@link Class#getDeclaredFields()}, but does it for the entire class heirarchy. 
+     * 
+     * @param aClass the class.
+     * 
+     * @return the array of Fields. 
+     */
+    public static List<Field> getAllDeclaredFields(Class aClass)
+    {
+        Set<Class> superTypes = new HashSet<Class>();
+        superTypes.add(aClass);
+        getAllSuperTypes(aClass, superTypes);
+        List<Field> fieldList = new ArrayList<Field>(50);
+        for (Class targetClass : superTypes) {
+            for (Field field : targetClass.getDeclaredFields()) {
+                field.setAccessible(true);
+                fieldList.add(field);
+            }
+        }
+        
+        return fieldList;
+    }
+    
     /**
      * Maps the given class to one of the primitve class types if aClass is one of the wrapper types: 
      * Boolean, Integer, Double, Byte, Long, Float, Short, or Character.

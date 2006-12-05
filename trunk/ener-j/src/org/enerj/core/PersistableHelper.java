@@ -147,6 +147,7 @@ public class PersistableHelper
                     if (persister == null || !persister.getAllowNontransactionalReads()) {
                         return;
                     }
+                    // Else fall through and load object.
                 } catch (ODMGException e) {
                     throw new ODMGRuntimeException("Cannot check non-transactional read state", e);
                 }
@@ -161,7 +162,7 @@ public class PersistableHelper
         if (!aPersistable.enerj_IsLoaded() && !aPersistable.enerj_IsNew()) {
             // Actually Load the object.
             persister.loadObject(aPersistable);
-        } // end if not loaded or new
+        }
     }
 
 
