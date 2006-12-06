@@ -1,12 +1,17 @@
-11/15/2006 - Persister/ObjectServer/Schema Refactoring
+12/5/2006 - Persister/ObjectServer/Schema Refactoring
 --------------------------------------------------------
 
-- Maybe objs should be written async to db at same time as log to eliminate update cache requirement. If
-  we do this, only rollback involves reading the log to restore values in the db. This would also eliminate
-  the requirement of checking the update cache when reading objects. This change should be made in SVN 
-  isolatation so that it may be backed out.
+- OO7 bind map early.
+- OO7 Change RegularD... to VeryLarge...
+
+- Remove RegularD... add VeryLarge Equiv. Rename VeryLarge to PersitentList...
+
+- Test ByteBuffer vs. byte[]
+
+- Test PolePosition
 
 - ObjectServer should have server-wide object write-thru cache. Looks up objects by OID. Updated on commit.
+  Will this really help?
 
 - Needs tests for Persister and new ObjectServerSession methods.
 - Tests for PersistableHelper.resolveObject()
