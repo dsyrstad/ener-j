@@ -20,12 +20,12 @@
  *******************************************************************************/
 package org.enerj.oo7;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class BaseAssembly extends Assembly
 {
-    private ArrayList componentsShared;
-    private ArrayList componentsPrivate;
+    private List<CompositePart> componentsShared;
+    private List<CompositePart> componentsPrivate;
 
     public BaseAssembly()
     {
@@ -40,9 +40,9 @@ public class BaseAssembly extends Assembly
     /**
      * Gets the componentsPrivate.
      *
-     * @return a ArrayList.
+     * @return a List.
      */
-    public ArrayList getComponentsPrivate()
+    public List<CompositePart> getComponentsPrivate()
     {
         return componentsPrivate;
     }
@@ -51,9 +51,9 @@ public class BaseAssembly extends Assembly
     /**
      * Sets BaseAssembly.java.
      *
-     * @param someComponentsPrivate a ArrayList.
+     * @param someComponentsPrivate a List.
      */
-    public void setComponentsPrivate(ArrayList someComponentsPrivate)
+    public void setComponentsPrivate(List<CompositePart> someComponentsPrivate)
     {
         componentsPrivate = someComponentsPrivate;
     }
@@ -62,9 +62,9 @@ public class BaseAssembly extends Assembly
     /**
      * Gets the componentsShared.
      *
-     * @return a ArrayList.
+     * @return a List.
      */
-    public ArrayList getComponentsShared()
+    public List<CompositePart> getComponentsShared()
     {
         return componentsShared;
     }
@@ -73,9 +73,9 @@ public class BaseAssembly extends Assembly
     /**
      * Sets BaseAssembly.java.
      *
-     * @param someComponentsShared a ArrayList.
+     * @param someComponentsShared a List.
      */
-    public void setComponentsShared(ArrayList someComponentsShared)
+    public void setComponentsShared(List<CompositePart> someComponentsShared)
     {
         componentsShared = someComponentsShared;
     }

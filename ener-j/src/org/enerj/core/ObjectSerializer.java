@@ -55,6 +55,7 @@ import org.enerj.sco.JavaUtilTreeMapSCO;
 import org.enerj.sco.JavaUtilTreeSetSCO;
 import org.enerj.sco.JavaUtilVectorSCO;
 import org.enerj.sco.SCOTracker;
+import org.enerj.util.ByteArrayUtil;
 
 /**
  * Helper class for Persistable.enerj_ReadObject and enerj_WriteObject. 
@@ -1682,18 +1683,19 @@ public class ObjectSerializer
         public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
         {
             java.lang.String aValue = (java.lang.String)anObject;
-            byte[] bytes = aValue.getBytes("UTF8");
-            aContext.mStream.writeInt(bytes.length);
-            aContext.mStream.write(bytes);
+            byte[] bytes = new byte[ aValue.length() * 3 ];
+            int length = ByteArrayUtil.putModifiedUTF8(bytes, 0, aValue);
+            aContext.mStream.writeInt(length);
+            aContext.mStream.write(bytes, 0, length);
         }
 
 
         public Object read(ReadContext aContext, Persistable anOwner) throws IOException
         {
-            int len = aContext.mStream.readInt();
-            byte[] bytes = new byte[len];
+            int length = aContext.mStream.readInt();
+            byte[] bytes = new byte[length];
             aContext.mStream.readFully(bytes);
-            return new String(bytes, "UTF8");
+            return ByteArrayUtil.getModifiedUTF8(bytes, 0, length);
         }
 
         public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException

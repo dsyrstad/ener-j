@@ -1,14 +1,10 @@
 12/5/2006 - Persister/ObjectServer/Schema Refactoring
 --------------------------------------------------------
 
-- OO7 bind map early.
-- OO7 Change RegularD... to VeryLarge...
+- Test read/write of large objects that exceed page size (more than 2 pages).
 
-- Remove RegularD... add VeryLarge Equiv. Rename VeryLarge to PersitentList...
-
-- Change ObjectSerializer to use ByteArrayUtil.putUTF8
-
-- Try enabling writeThru on cachedPageServer and benchmarking.
+- LargePersistentHashMap/set. B+tree
+- Stream-based PersistentByteArray. Implements InputStream/OutputStream.
 
 - Test PolePosition
 

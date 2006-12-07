@@ -21,11 +21,13 @@
 package org.enerj.oo7;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJImplementation;
-import org.enerj.core.VeryLargeDArray;
+import org.enerj.core.PersistentArrayList;
+import org.enerj.core.LargePersistentArrayList;
 import org.odmg.DArray;
 import org.odmg.Database;
 import org.odmg.Implementation;
@@ -91,7 +93,8 @@ public class OO7Loader
             }
             
             mAtomicPartByIDMap.set(id, result[idx]);
-            mDB.makePersistent(result[idx]);
+//          This isn't really necessary since it's in the map, but it'll flush out of memory faster this way.
+            mDB.makePersistent(result[idx]); 
         }
         
         // Construct ring
@@ -116,10 +119,13 @@ public class OO7Loader
         CompositePart[] result = new CompositePart[(mType == TINY) ? 50 : 500];
         int documentSize = 10000; // 1 char = 2 bytes
         int atomicPerComp = (mType < MEDIUM) ? 20 : 200;
-        if (mType == TINY)
+        if (mType == TINY) {
             documentSize = 10;
-        else if (mType == SMALL)
+        }
+        else if (mType == SMALL) {
             documentSize = 1000;
+        }
+        
         // Build composites;
         for (int idx = 0; idx < result.length; idx++) {
             AtomicPart[] atomicParts = buildAtomicParts();
@@ -129,7 +135,7 @@ public class OO7Loader
             new Document(mRandom.nextInt(), randomString(5), randomString(documentSize), current);
             
             // Add some parts
-            ArrayList<AtomicPart> bag = new ArrayList<AtomicPart>(atomicPerComp);
+            List<AtomicPart> bag = (List<AtomicPart>)new PersistentArrayList(atomicPerComp);
             current.setParts(bag);
             current.setRootPart(atomicParts[0]);
             bag.add(current.getRootPart());
@@ -145,7 +151,8 @@ public class OO7Loader
     {
         if (level == 1) {
             BaseAssembly result = new BaseAssembly(mRandom.nextInt(), mRandom.nextInt());
-            ArrayList<CompositePart> bag = new ArrayList<CompositePart>(3);
+            // TODO - this could be a simple array - it is always 3
+            List<CompositePart> bag = new ArrayList<CompositePart>(3);
             result.setComponentsPrivate(bag);
             for (int idx = 0; idx < 3; idx++) {
                 bag.add(compositeParts[mRandom.nextInt(compositeParts.length)]);
@@ -155,7 +162,8 @@ public class OO7Loader
         }
         else {
             ComplexAssembly result = new ComplexAssembly(mRandom.nextInt(), mRandom.nextInt(), mod);
-            ArrayList<Assembly> bag = new ArrayList<Assembly>(3);
+            // TODO - this could be a simple array - it is always 3
+            List<Assembly> bag = new ArrayList<Assembly>(3);
             result.setSubAssemblies(bag);
             for (int idx = 0; idx < 3; idx++) {
                 Assembly asm = buildAssemblies(level - 1, mod, compositeParts);
@@ -217,7 +225,7 @@ public class OO7Loader
             }
             */
             
-            mAtomicPartByIDMap = new VeryLargeDArray();
+            mAtomicPartByIDMap = new LargePersistentArrayList();
             try {
                 mDB.unbind("AtomicPartsByID");
             }
@@ -225,12 +233,13 @@ public class OO7Loader
                 // Ignore
             }
             
+            mDB.bind(mAtomicPartByIDMap, "AtomicPartsByID");
+
             for (int idx = 0; idx < size; idx++) {
                 Module module = buildModule();
                 mDB.makePersistent(module);
             }
             
-            mDB.bind(mAtomicPartByIDMap, "AtomicPartsByID");
             //mDB.bind(modules, "Modules");
     
             // Commit

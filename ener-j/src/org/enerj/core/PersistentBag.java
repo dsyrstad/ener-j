@@ -20,7 +20,7 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/RegularDBag.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/PersistentBag.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
 
 package org.enerj.core;
 
@@ -47,46 +47,46 @@ import org.enerj.annotations.Persist;
  * your object is loaded. Also, any changes to the collection would cause your object
  * to also be written to the database. 
  *
- * @version $Id: RegularDBag.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
+ * @version $Id: PersistentBag.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.DBag
- * @see VeryLargeDArray
+ * @see LargePersistentArrayList
  */
 @Persist
-public class RegularDBag implements org.odmg.DBag, Cloneable
+public class PersistentBag implements org.odmg.DBag, Cloneable
 {
     /** The delegate bag. This is treated as an SCO when this FCO is persisted. */
     private Collection mDelegateBag;
     
 
     /**
-     * Constructs a RegularDBag backed by the given Collection. Changes to this DBag
+     * Constructs a PersistentBag backed by the given Collection. Changes to this DBag
      * are reflected in the delegate, and vice versa.
      *
      * @param aCollection the delegate "bag".
      */
-    public RegularDBag(Collection aCollection)
+    public PersistentBag(Collection aCollection)
     {
         mDelegateBag = aCollection;
     }
 
 
     /**
-     * Constructs an empty RegularDBag with the specified initial capacity. 
+     * Constructs an empty PersistentBag with the specified initial capacity. 
      *
      * @param anInitialCapacity the initial capacity of the bag. This does not 
      *  affect the bag size().
      */
-    public RegularDBag(int anInitialCapacity)
+    public PersistentBag(int anInitialCapacity)
     {
         mDelegateBag = new ArrayList(anInitialCapacity);
     }
 
 
     /**
-     * Constructs an empty RegularDBag with an initial capacity of 30. 
+     * Constructs an empty PersistentBag with an initial capacity of 30. 
      */
-    public RegularDBag()
+    public PersistentBag()
     {
         this(30);
     }
@@ -234,7 +234,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
      */
     public Object clone() throws CloneNotSupportedException
     {
-        RegularDBag clone = (RegularDBag)super.clone();
+        PersistentBag clone = (PersistentBag)super.clone();
         Collection bag = new ArrayList( mDelegateBag.size() );
         bag.addAll(mDelegateBag);
         clone.mDelegateBag = bag;
@@ -277,7 +277,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         int bag1Size = size();
         int bag2Size = anOtherBag.size();
         // Worst case: all items from both bags will be in the result.
-        DBag result = new RegularDBag(bag1Size + bag2Size);
+        DBag result = new PersistentBag(bag1Size + bag2Size);
         
         Iterator iterator1 = this.iterator();
         while (iterator1.hasNext()) {
@@ -326,7 +326,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         int bag1Size = size();
         int bag2Size = anOtherBag.size();
         // Worst case: all items from both bags will be in the result.
-        DBag result = new RegularDBag(bag1Size + bag2Size);
+        DBag result = new PersistentBag(bag1Size + bag2Size);
         
         Iterator iterator1;
         Collection bag2;
@@ -385,7 +385,7 @@ public class RegularDBag implements org.odmg.DBag, Cloneable
         int bag1Size = size();
         int bag2Size = anOtherBag.size();
         // All items from both bags will be in the result.
-        DBag result = new RegularDBag(bag1Size + bag2Size);
+        DBag result = new PersistentBag(bag1Size + bag2Size);
         
         result.addAll(this);
         result.addAll(anOtherBag);

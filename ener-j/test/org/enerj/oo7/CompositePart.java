@@ -21,14 +21,15 @@
 package org.enerj.oo7;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class CompositePart extends DesignObj
 {
     private Document document;
-    private ArrayList parts;
+    private List<AtomicPart> parts;
     private AtomicPart rootPart;
-    private ArrayList usedInShared;
-    private ArrayList usedInPrivate;
+    private List usedInShared;
+    private List usedInPrivate;
 
     public CompositePart()
     {
@@ -65,9 +66,9 @@ public class CompositePart extends DesignObj
     /**
      * Gets the parts.
      *
-     * @return a ArrayList.
+     * @return a List.
      */
-    public ArrayList getParts()
+    public List<AtomicPart> getParts()
     {
         return parts;
     }
@@ -78,7 +79,7 @@ public class CompositePart extends DesignObj
      *
      * @param someParts a ArrayList.
      */
-    public void setParts(ArrayList someParts)
+    public void setParts(List<AtomicPart> someParts)
     {
         parts = someParts;
     }
@@ -109,9 +110,9 @@ public class CompositePart extends DesignObj
     /**
      * Gets the usedInPrivate.
      *
-     * @return a ArrayList.
+     * @return a List.
      */
-    public ArrayList getUsedInPrivate()
+    public List getUsedInPrivate()
     {
         return usedInPrivate;
     }
@@ -120,9 +121,9 @@ public class CompositePart extends DesignObj
     /**
      * Sets CompositePart.java.
      *
-     * @param someUsedInPrivate a ArrayList.
+     * @param someUsedInPrivate a List.
      */
-    public void setUsedInPrivate(ArrayList someUsedInPrivate)
+    public void setUsedInPrivate(List someUsedInPrivate)
     {
         usedInPrivate = someUsedInPrivate;
     }
@@ -133,7 +134,7 @@ public class CompositePart extends DesignObj
      *
      * @return a ArrayList.
      */
-    public ArrayList getUsedInShared()
+    public List getUsedInShared()
     {
         return usedInShared;
     }
@@ -142,9 +143,9 @@ public class CompositePart extends DesignObj
     /**
      * Sets CompositePart.java.
      *
-     * @param someUsedInShared a ArrayList.
+     * @param someUsedInShared a List.
      */
-    public void setUsedInShared(ArrayList someUsedInShared)
+    public void setUsedInShared(List someUsedInShared)
     {
         usedInShared = someUsedInShared;
     }

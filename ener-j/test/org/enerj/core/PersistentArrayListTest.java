@@ -20,7 +20,7 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2001, 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/RegularDBagTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/RegularDArrayTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
 
 package org.enerj.core;
 
@@ -33,25 +33,25 @@ import junit.framework.TestSuite;
 import org.odmg.QueryableCollection;
 
 /**
- * Tests org.enerj.core.RegularDBag.
+ * Tests org.enerj.core.RegularDArray.
  *
- * @version $Id: RegularDBagTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
+ * @version $Id: RegularDArrayTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class RegularDBagTest extends TestCase
+public class PersistentArrayListTest extends TestCase
 {
 
-    public RegularDBagTest(String aTestName) 
+    public PersistentArrayListTest(String aTestName) 
     {
         super(aTestName);
     }
 
     public static Test suite() 
     {
-        TestSuite suite = new TestSuite(RegularDBagTest.class);
+        TestSuite suite = new TestSuite(PersistentArrayListTest.class);
         
-        suite.addTestSuite( RegularDBagTest.InternalDBagTest.class );
-        suite.addTestSuite( RegularDBagTest.InternalQueryableCollectionTest.class );
+        suite.addTestSuite( PersistentArrayListTest.InternalDArrayTest.class );
+        suite.addTestSuite( PersistentArrayListTest.InternalQueryableCollectionTest.class );
 
         return suite;
     }
@@ -71,12 +71,12 @@ public class RegularDBagTest extends TestCase
     
 
     /**
-     * Tests DBag interface of RegularDBag.
+     * Tests DArray interface of RegularDArray.
      */
-    public static final class InternalDBagTest extends AbstractDBagTest
+    public static final class InternalDArrayTest extends AbstractDArrayTest
     {
 
-        public InternalDBagTest(String aName)
+        public InternalDArrayTest(String aName)
         {
             super(aName);
         }
@@ -84,14 +84,14 @@ public class RegularDBagTest extends TestCase
 
         public Collection createCollection() throws Exception
         {
-            return new RegularDBag();
+            return new PersistentArrayList();
         }
     }
     
     
 
     /**
-     * Tests QueryableCollection interface of RegularDBag.
+     * Tests QueryableCollection interface of RegularDArray.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
@@ -104,7 +104,7 @@ public class RegularDBagTest extends TestCase
 
         public QueryableCollection createQueryableCollection() throws Exception
         {
-            return new RegularDBag();
+            return new PersistentArrayList();
         }
     }
 }

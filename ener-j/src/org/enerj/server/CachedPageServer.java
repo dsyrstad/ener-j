@@ -189,7 +189,7 @@ public class CachedPageServer implements PageServer
      * <li><i>CachedPageServer.writeThru</i> - if set to "true", stored pages are immediately stored to 
      *   the delegate page server. Otherwise, pages are stored to the delegate either when they fall off of the cache or
      *   when syncAllPages() is called.</li>   
-     * <li><i>PageServer.forceOpen</i> - forces the page server to open the volume if it wasn't closed properly. Optional.</li>
+     * <li><i>PageServer.forceOpen</i> - if set to "true", forces the page server to open the volume if it wasn't closed properly. Optional.</li>
      * </ul>
      * 
      * @return a PageServer. 
@@ -209,8 +209,7 @@ public class CachedPageServer implements PageServer
             throw new PageServerException("Invalid number of CachedPageServer.numberOfCachedPages: " + numPagesStr);
         }
         
-        boolean writeThru = (someProperties.getProperty("CachedPageServer.writeThru") != null);
-        boolean forceOpen = (someProperties.getProperty("PageServer.forceOpen") != null);
+        boolean writeThru = Boolean.valueOf( someProperties.getProperty("CachedPageServer.writeThru", "false") );
 
         String delegateClassName = someProperties.getProperty("CachedPageServer.delegatePageServerClass");
             

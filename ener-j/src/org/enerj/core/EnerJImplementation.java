@@ -198,35 +198,35 @@ public class EnerJImplementation implements Implementation
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final DList newDList()
     {
-        return new RegularDList();
+        return new PersistentLinkedList();
     }
 
 
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final DBag newDBag()
     {
-        return new RegularDBag();
+        return new PersistentBag();
     }
 
 
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final DSet newDSet()
     {
-        return new RegularDSet();
+        return new PersistentHashSet();
     }
 
 
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final DArray newDArray()
     {
-        return new RegularDArray();
+        return new PersistentArrayList();
     }
 
 
     // Javadoc will be copied from org.odmg.Implementation interface.
     public final DMap newDMap()
     {
-        return new RegularDMap();
+        return new PersistentHashMap();
     }
 
 

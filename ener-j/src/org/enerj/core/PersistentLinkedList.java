@@ -20,7 +20,7 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/RegularDList.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/PersistentList.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
 
 package org.enerj.core;
 
@@ -47,22 +47,22 @@ import org.enerj.annotations.Persist;
  * your object is loaded. Also, any changes to the collection would cause your object
  * to also be written to the database. 
  *
- * @version $Id: RegularDList.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
+ * @version $Id: PersistentList.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.DList
  * @see VeryLargeDList
  */
 @Persist
-public class RegularDList implements org.odmg.DList, Cloneable
+public class PersistentLinkedList implements org.odmg.DList, Cloneable
 {
     /** The delegate list. This is treated as an SCO when this FCO is persisted. */
     private LinkedList mLinkedList;
     
 
     /**
-     * Constructs an empty RegularDList. 
+     * Constructs an empty PersistentList. 
      */
-    public RegularDList()
+    public PersistentLinkedList()
     {
         mLinkedList = new LinkedList();
     }
@@ -270,7 +270,7 @@ public class RegularDList implements org.odmg.DList, Cloneable
      */
     public Object clone() throws CloneNotSupportedException
     {
-        RegularDList clone = (RegularDList)super.clone();
+        PersistentLinkedList clone = (PersistentLinkedList)super.clone();
         clone.mLinkedList = (LinkedList)mLinkedList.clone();
         return clone;
     }

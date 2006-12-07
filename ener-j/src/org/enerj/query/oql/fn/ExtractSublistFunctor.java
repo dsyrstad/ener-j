@@ -27,7 +27,7 @@ package org.enerj.query.oql.fn;
 import java.lang.reflect.Array;
 import java.util.List;
 
-import org.enerj.core.RegularDArray;
+import org.enerj.core.PersistentArrayList;
 import org.enerj.jga.fn.BinaryFunctor;
 import org.enerj.jga.fn.UnaryFunctor;
 
@@ -85,7 +85,7 @@ public class ExtractSublistFunctor extends BinaryFunctor
                 end = length - 1;
             }
 
-            List result = new RegularDArray( (end - start) + 1 );
+            List result = new PersistentArrayList( (end - start) + 1 );
             for (int i = start; i < end; i++) { 
                 result.add( Array.get(expr, i) );
             }

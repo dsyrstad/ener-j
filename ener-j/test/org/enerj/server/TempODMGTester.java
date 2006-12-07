@@ -34,7 +34,7 @@ import org.odmg.ObjectNameNotFoundException;
 import org.enerj.annotations.Persist;
 import org.enerj.core.EnerJImplementation;
 import org.enerj.core.EnerJTransaction;
-import org.enerj.core.VeryLargeDArray;
+import org.enerj.core.LargePersistentArrayList;
 
 
 /**
@@ -87,7 +87,7 @@ class TempODMGTester
             list = (DArray)db.lookup(binding);
         }
         catch (ObjectNameNotFoundException e) {
-            list = new VeryLargeDArray();
+            list = new LargePersistentArrayList();
             db.bind(list, binding);
         }
         

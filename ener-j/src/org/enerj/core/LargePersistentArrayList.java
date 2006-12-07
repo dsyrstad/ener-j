@@ -37,7 +37,7 @@ import org.enerj.annotations.Persist;
  * in a semi-sparse format. This type of array is useful when the array itself cannot
  * fit entirely in memory at one time. It is fairly expensive (in terms of performance and
  * storage) to use this type of DArray for smaller arrays. For arrays that can fit
- * reasonably in memory at once, you should use RegularDArray (which is returned by
+ * reasonably in memory at once, you should use PersistentArray (which is returned by
  * EnerJImplementation.newDArray()).
  * <p>
  * The array is implemented as a three-level tree of array nodes with
@@ -59,11 +59,11 @@ import org.enerj.annotations.Persist;
  * @version $Id: VeryLargeDArray.java,v 1.4 2006/06/09 02:39:38 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.DArray
- * @see RegularDArray
+ * @see PersistentArrayList
  * @see LargeList
  */
 @Persist
-public class VeryLargeDArray 
+public class LargePersistentArrayList 
     implements org.odmg.DArray, org.enerj.core.LargeList, java.util.RandomAccess, Cloneable
 {
     /** Number of elements in each node. */
@@ -85,7 +85,7 @@ public class VeryLargeDArray
      * @param aNodeSize the size of a single node in the tree. See class
      *  description for more information.
      */
-    public VeryLargeDArray(int aNodeSize)
+    public LargePersistentArrayList(int aNodeSize)
     {
         mNodeSize = aNodeSize;
         mNodeSizeSquared = (long)mNodeSize * (long)mNodeSize;
@@ -98,7 +98,7 @@ public class VeryLargeDArray
      * Constructs a new VeryLargeDArray with the default node size (1024). 
      * This node size supports a maximum of 1,073,741,824 (about 1 billion) elements.
      */
-    public VeryLargeDArray()
+    public LargePersistentArrayList()
     {
         this(1024);
     }
@@ -625,7 +625,7 @@ public class VeryLargeDArray
      */
     public Object clone() throws CloneNotSupportedException
     {
-        VeryLargeDArray clone = (VeryLargeDArray)super.clone();
+        LargePersistentArrayList clone = (LargePersistentArrayList)super.clone();
         clone.mRootNode = (Node)mRootNode.clone();
         return clone;
     }
