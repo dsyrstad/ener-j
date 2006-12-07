@@ -24,7 +24,6 @@
 
 package org.enerj.server;
 
-import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -151,7 +150,8 @@ public class CachedPageServer implements PageServer
         mDirtyLRUPage = null;
         Page oldPage = (Page)mCache.put(logicalOffset, aPage);
         if (mDirtyLRUPage != null) {
-            mDelegate.storePage(mDirtyLRUPage.mContents, mDirtyLRUPage.mLogicalPageOffset, 0);
+            mDelegate.storePage(mDirtyLRUPage.mContents, 0, mDirtyLRUPage.mContents.length, 
+                            mDirtyLRUPage.mLogicalPageOffset, 0);
             freePage(mDirtyLRUPage);
         }
         
@@ -270,34 +270,23 @@ public class CachedPageServer implements PageServer
     }
 
 
-    public void loadPage(ByteBuffer aBuffer, long aLogicalPageOffset, int anOffset) throws PageServerException
+    public void loadPage(byte[] aBuffer, int anIndex, int aLength, long aLogicalPageOffset, int anOffset) throws PageServerException
     {
         Page page = getCachedPage(aLogicalPageOffset);
         if (page == null) {
             page = allocatePage(aLogicalPageOffset);
             addCachedPage(page);
-            mDelegate.loadPage(page.mContents, aLogicalPageOffset, 0);
+            mDelegate.loadPage(page.mContents, 0, page.mContents.length, aLogicalPageOffset, 0);
         }
 
-        ByteBuffer pageBuf = page.mContents;
-        int currPosition = aBuffer.position();
-        try {
-            pageBuf.position(anOffset);
-            pageBuf.limit(anOffset + aBuffer.remaining() );
-            aBuffer.put(pageBuf);
-        }
-        finally {
-            pageBuf.position(0);
-            pageBuf.limit(mPageSize);
-            aBuffer.position(currPosition);
-        }
+        System.arraycopy(page.mContents, anOffset, aBuffer, anIndex, aLength);
     }
 
 
-    public void storePage(ByteBuffer aBuffer, long aLogicalPageOffset, int anOffset) throws PageServerException
+    public void storePage(byte[] aBuffer, int anIndex, int aLength, long aLogicalPageOffset, int anOffset) throws PageServerException
     {
         //  TODO  we should track the union of anOffset/aLength ranges in the cached page
-        //  TODO  and use them when storing to the delegate
+        //  TODO  and use them when storing to the delegate. 
 
         // We can't wait until the page is flushed to the delegate to find out that the
         // volume is read-only and the page can't be stored. So we check the delegate's 
@@ -314,20 +303,10 @@ public class CachedPageServer implements PageServer
         }
         // else page is already in cache, just update.
 
-        ByteBuffer pageBuf = page.mContents;
-        int currPosition = aBuffer.position();
-        try {
-            pageBuf.position(anOffset);
-            pageBuf.put(aBuffer);
-        }
-        finally {
-            pageBuf.position(0);
-            aBuffer.position(currPosition);
-        }
+        System.arraycopy(aBuffer, anIndex, page.mContents, anOffset, aLength);
         
         if (mWriteThru) {
-            pageBuf.position(anOffset);
-            mDelegate.storePage(pageBuf, aLogicalPageOffset, anOffset);
+            mDelegate.storePage(aBuffer, anIndex, aLength, aLogicalPageOffset, anOffset);
             // Page is no longer dirty.
             page.mModified = false;
         }
@@ -363,7 +342,7 @@ public class CachedPageServer implements PageServer
         while (iterator.hasNext()) {
             Page page = (Page)iterator.next();
             if (page.mModified) {
-                mDelegate.storePage(page.mContents, page.mLogicalPageOffset, 0);
+                mDelegate.storePage(page.mContents, 0, page.mContents.length, page.mLogicalPageOffset, 0);
                 page.mModified = false;
             }
         }
@@ -423,7 +402,7 @@ public class CachedPageServer implements PageServer
         /** Current page contents. The position must be left at zero and the limit at mPageSize.
          * after any operation.
          */
-        ByteBuffer mContents =  ByteBuffer.allocate(mPageSize);
+        byte[] mContents =  new byte[mPageSize];
         /** Modified page flag. */
         boolean mModified;
 
@@ -448,8 +427,6 @@ public class CachedPageServer implements PageServer
         {
             mLogicalPageOffset = aLogicalPageOffset;
             mModified = false;
-            mContents.position(0);
-            mContents.limit( mContents.capacity() );
         }
     }
 

@@ -24,14 +24,17 @@
 
 package org.enerj.server;
 
+import static org.enerj.util.ByteArrayUtil.getInt;
+import static org.enerj.util.ByteArrayUtil.getLong;
+import static org.enerj.util.ByteArrayUtil.putInt;
+import static org.enerj.util.ByteArrayUtil.putLong;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -102,24 +105,23 @@ public class FilePageServer implements PageServer
         boolean success = false;
         try {
             mVolumeFile = new RandomAccessFile(file, openMode);
-            FileChannel volumeChannel = mVolumeFile.getChannel();
             // Keep an exclusive lock on the entire file until we close it.
-            FileLock fileLock = volumeChannel.tryLock();
+            FileLock fileLock = mVolumeFile.getChannel().tryLock();
             if (fileLock == null) {
                 throw new PageServerException("Cannot lock volume: " + aVolumeFileName);
             }
 
             mHeader = new VolumeHeader();
-            mHeader.read(volumeChannel);
+            mHeader.read(mVolumeFile);
 
             if (mHeader.isOpen() &&  !shouldForceOpen) {
                 throw new VolumeNeedsRecoveryException("Volume was not properly closed: " + aVolumeFileName);
             }
 
             mHeader.setOpenFlag(true);
-            mHeader.write(volumeChannel);
+            mHeader.write(mVolumeFile);
             // Sync to disk now and update time stamps...
-            volumeChannel.force(true);
+            mVolumeFile.getChannel().force(true);
 
             // Page size doesn't change - so keep a local copy of it
             mPageSize = mHeader.getPageSize();
@@ -201,28 +203,25 @@ public class FilePageServer implements PageServer
         boolean success = false;
         try {
             volume = new RandomAccessFile(volumeFile, "rw");
-            FileChannel channel = volume.getChannel();
-            FileLock lock = channel.tryLock();
+            FileLock lock = volume.getChannel().tryLock();
             if (lock == null) {
                 throw new PageServerException("Cannot lock volume: " + volumeFile);
             }
             
             // Create and write the header.
             VolumeHeader hdr = new VolumeHeader(aPageSize, aDatabaseID, aLogicalFirstPageOffset, aMaximumSize);
-            hdr.write(channel);
+            hdr.write(volume);
             
             // Pre-allocate the file if necessary
             if (aPreAllocatedSize != 0) {
                 final int bufSize = 8192;
-                ByteBuffer buf = ByteBuffer.allocateDirect(bufSize);
+                byte[] buf = new byte[bufSize];
                 long startOffset = hdr.getPhysicalFirstPageOffset();
                 long bytesLeft = aPreAllocatedSize - startOffset;
-                channel.position(startOffset);
+                volume.seek(startOffset);
                 while (bytesLeft > 0) {
                     int numToWrite = (int)(bufSize > bytesLeft ? bytesLeft : bufSize);
-                    buf.position(0);
-                    buf.limit(numToWrite);
-                    numToWrite = channel.write(buf);
+                    volume.write(buf, 0, numToWrite);
                     bytesLeft -= numToWrite;
                 }
             }
@@ -332,14 +331,13 @@ public class FilePageServer implements PageServer
     {
         try {
             mHeader.setOpenFlag(false);
-            FileChannel channel = mVolumeFile.getChannel();
-            mHeader.write(channel);
+            mHeader.write(mVolumeFile);
             // Sync to disk now and update time stamps...
-            channel.force(true);
+            mVolumeFile.getChannel().force(true);
             mVolumeFile.close();
         }
-        catch (Throwable t) {
-            throw new PageServerException("Could not properly close volume: " + t, t);
+        catch (Exception e) {
+            throw new PageServerException("Could not properly close volume: " + e, e);
         }
         finally {
             mVolumeFile = null;
@@ -393,46 +391,40 @@ public class FilePageServer implements PageServer
     }
 
 
-    public void loadPage(ByteBuffer aBuffer, long aLogicalPageOffset, int anOffset) throws PageServerException
+    public void loadPage(byte[] aBuffer, int anIndex, int aLength, long aLogicalPageOffset, int anOffset) throws PageServerException
     {
-        if ((aBuffer.remaining() + anOffset) > getPageSize()) {
+        if ((aLength + anOffset) > getPageSize()) {
             throw new IllegalArgumentException("(aBuffer.remaining() + anOffset) > getPageSize()");
         }
         
         long physicalPageOffset = mHeader.convertLogicalToPhysical(aLogicalPageOffset);
-        int currPosition = aBuffer.position();
         try {
-            mVolumeFile.getChannel().read(aBuffer, physicalPageOffset + anOffset);
+            mVolumeFile.seek(physicalPageOffset + anOffset);
+            mVolumeFile.read(aBuffer, anIndex, aLength);
         }
-        catch (Throwable t) {
-            throw new PageServerException("Error loading page at " + aLogicalPageOffset + ": " + t, t);
-        }
-        finally {
-            aBuffer.position(currPosition);
+        catch (Exception e) {
+            throw new PageServerException("Error loading page at " + aLogicalPageOffset + ": " + e, e);
         }
     }
 
 
-    public void storePage(ByteBuffer aBuffer, long aLogicalPageOffset, int anOffset) throws PageServerException
+    public void storePage(byte[] aBuffer, int anIndex, int aLength, long aLogicalPageOffset, int anOffset) throws PageServerException
     {
         if (mReadOnly) {
             throw new PageServerException("Volume is read only");
         }
 
-        if ((aBuffer.remaining() + anOffset) > getPageSize()) {
+        if ((aLength + anOffset) > getPageSize()) {
             throw new IllegalArgumentException("(aBuffer.remaining() + anOffset) > getPageSize()");
         }
 
         long physicalPageOffset = mHeader.convertLogicalToPhysical(aLogicalPageOffset);
-        int currPosition = aBuffer.position();
         try {
-            mVolumeFile.getChannel().write(aBuffer, physicalPageOffset + anOffset);
+            mVolumeFile.seek(physicalPageOffset + anOffset);
+            mVolumeFile.write(aBuffer, anIndex, aLength);
         }
-        catch (Throwable t) {
-            throw new PageServerException("Error storing page at " + aLogicalPageOffset + ": " + t, t);
-        }
-        finally {
-            aBuffer.position(currPosition);
+        catch (Exception e) {
+            throw new PageServerException("Error storing page at " + aLogicalPageOffset + ": " + e, e);
         }
     }
 
@@ -497,9 +489,8 @@ public class FilePageServer implements PageServer
     public void syncAllPages() throws PageServerException
     {
         try {
-            FileChannel channel = mVolumeFile.getChannel();
-            mHeader.write(channel);
-            channel.force(false);
+            mHeader.write(mVolumeFile);
+            mVolumeFile.getChannel().force(false);
         }
         catch (Throwable t) {
             throw new PageServerException("Error syncing pages: " + t, t);
@@ -737,36 +728,46 @@ public class FilePageServer implements PageServer
         /**
          * Reads the header from the given FileChannel starting at NULL_OFFSET.
          */
-        void read(FileChannel aChannel) throws PageServerException
+        void read(RandomAccessFile aFile) throws PageServerException
         {
-            ByteBuffer hdr = ByteBuffer.allocate(1024);
+            byte[] hdr = new byte[1024];
             try {
-                aChannel.read(hdr, NULL_OFFSET);
-                // Get ready to extract the data that was read.
-                hdr.flip();
-
-                long signature = hdr.getLong();
+                aFile.seek(NULL_OFFSET);
+                aFile.readFully(hdr);
+                
+                int idx = 0;
+                long signature = getLong(hdr, idx);
+                idx += 8;
                 if (signature != sSignature) {
                     throw new PageServerException("Volume signature " + Long.toHexString(signature) + 
                         " != " + Long.toHexString(sSignature));
                 }
 
 
-                mHeaderVersion = hdr.getInt();
+                mHeaderVersion = getInt(hdr, idx);
+                idx += 4;
                 if (mHeaderVersion != CURRENT_HEADER_VERSION) {
                     //  TODO  In future migrate header...
                     throw new PageServerException("Header version " + mHeaderVersion + " is not valid");
                 }
 
-                mDatabaseID = hdr.getLong();
-                mLogicalFirstPageOffset = hdr.getLong();
-                mPhysicalFirstPageOffset = hdr.getLong();
-                mMaximumSize = hdr.getLong();
-                mPageSize = hdr.getInt();
-                mFreePageListHead = hdr.getLong();
-                mOpenFlag = (hdr.get() != 0);
-                mCreationDate = hdr.getLong();
-                mNextAllocationOffset = hdr.getLong();
+                mDatabaseID = getLong(hdr, idx);
+                idx += 8;
+                mLogicalFirstPageOffset = getLong(hdr, idx);
+                idx += 8;
+                mPhysicalFirstPageOffset = getLong(hdr, idx);
+                idx += 8;
+                mMaximumSize = getLong(hdr, idx);
+                idx += 8;
+                mPageSize = getInt(hdr, idx);
+                idx += 4;
+                mFreePageListHead = getLong(hdr, idx);
+                idx += 8;
+                mOpenFlag = (hdr[idx++] != 0);
+                mCreationDate = getLong(hdr, idx);
+                idx += 8;
+                mNextAllocationOffset = getLong(hdr, idx);
+                idx += 8;
             }
             catch (BufferUnderflowException e) {
                 throw new PageServerException("Underflow reading volume header:" + e.toString(), e);
@@ -781,25 +782,26 @@ public class FilePageServer implements PageServer
         /**
          * Writes the header to the given FileChannel starting at NULL_OFFSET.
          */
-        void write(FileChannel aChannel) throws PageServerException
+        void write(RandomAccessFile aFile) throws PageServerException
         {
-            ByteBuffer hdr = ByteBuffer.allocate(1024);
+            byte[] hdr = new byte[1024];
 
             try {
-                hdr.putLong(sSignature);
-                hdr.putInt(mHeaderVersion);
-                hdr.putLong(mDatabaseID);
-                hdr.putLong(mLogicalFirstPageOffset);
-                hdr.putLong(mPhysicalFirstPageOffset);
-                hdr.putLong(mMaximumSize);
-                hdr.putInt(mPageSize);
-                hdr.putLong(mFreePageListHead);
-                hdr.put( (byte)(mOpenFlag ? 1 : 0) );
-                hdr.putLong(mCreationDate);
-                hdr.putLong(mNextAllocationOffset);
+                int idx = 0;
+                idx += putLong(hdr, idx, sSignature);
+                idx += putInt(hdr, idx, mHeaderVersion);
+                idx += putLong(hdr, idx, mDatabaseID);
+                idx += putLong(hdr, idx, mLogicalFirstPageOffset);
+                idx += putLong(hdr, idx, mPhysicalFirstPageOffset);
+                idx += putLong(hdr, idx, mMaximumSize);
+                idx += putInt(hdr, idx, mPageSize);
+                idx += putLong(hdr, idx, mFreePageListHead);
+                hdr[idx++] = (byte)(mOpenFlag ? 1 : 0);
+                idx += putLong(hdr, idx, mCreationDate);
+                idx += putLong(hdr, idx, mNextAllocationOffset);
 
-                hdr.flip(); // Prepare to write
-                aChannel.write(hdr, NULL_OFFSET);
+                aFile.seek(NULL_OFFSET);
+                aFile.write(hdr);
             }
             catch (BufferOverflowException e) {
                 throw new PageServerException("Overflow writing volume header:" + e.toString(), e);
