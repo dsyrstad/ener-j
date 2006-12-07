@@ -20,11 +20,11 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2001, 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/VeryLargeDArrayTest.java,v 1.3 2006/05/05 13:47:37 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/RegularDMapTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
 
 package org.enerj.core;
 
-import java.util.Collection;
+import java.util.Map;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -33,26 +33,26 @@ import junit.framework.TestSuite;
 import org.odmg.QueryableCollection;
 
 /**
- * Tests org.enerj.core.VeryLargeDArray.
+ * Tests org.enerj.core.RegularDMap.
  *
- * @version $Id: VeryLargeDArrayTest.java,v 1.3 2006/05/05 13:47:37 dsyrstad Exp $
+ * @version $Id: RegularDMapTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class VeryLargeDArrayTest extends TestCase
+public class PersistentHashMapTest extends TestCase
 {
 
-    public VeryLargeDArrayTest(String aTestName) 
+    public PersistentHashMapTest(String aTestName) 
     {
         super(aTestName);
     }
 
     public static Test suite() 
     {
-        TestSuite suite = new TestSuite(VeryLargeDArrayTest.class);
+        TestSuite suite = new TestSuite(PersistentHashMapTest.class);
         
-        suite.addTestSuite( VeryLargeDArrayTest.InternalDArrayTest.class );
-        suite.addTestSuite( VeryLargeDArrayTest.InternalQueryableCollectionTest.class );
-        suite.addTestSuite( VeryLargeDArrayTest.InternalLargeListTest.class );
+        suite.addTestSuite( PersistentHashMapTest.InternalDMapTest.class );
+        suite.addTestSuite( PersistentHashMapTest.InternalQueryableCollectionTest.class );
+
         return suite;
     }
     
@@ -63,7 +63,6 @@ public class VeryLargeDArrayTest extends TestCase
     public void testNothing() throws Exception
     {
         // Placeholder until a specific test is added.
-        //  TODO  test large lists to a real database
     }
 
 
@@ -72,48 +71,33 @@ public class VeryLargeDArrayTest extends TestCase
     
 
     /**
-     * Tests DArray interface of VeryLargeDArray.
+     * Tests DMap interface of RegularDMap.
      */
-    public static final class InternalDArrayTest extends AbstractDArrayTest
+    public static final class InternalDMapTest extends AbstractDMapTest
     {
 
-        public InternalDArrayTest(String aName)
+        public InternalDMapTest(String aName)
         {
             super(aName);
         }
 
 
-        public Collection createCollection() throws Exception
+        public Map createMap() throws Exception
         {
-            // Construct with small node size so multiple branches will be tested.
-            return new VeryLargeDArray(100);  
-        }
-    }
-    
-
-    /**
-     * Tests LargeList interface of VeryLargeDArray.
-     */
-    public static final class InternalLargeListTest extends AbstractLargeListTest
-    {
-
-        public InternalLargeListTest(String aName)
-        {
-            super(aName);
+            return new PersistentHashMap();
         }
 
 
-        public LargeCollection createLargeCollection() throws Exception
+        public boolean allowsNullKeys()
         {
-            // Construct with small node size so multiple branches will be tested.
-            return new VeryLargeDArray(100);  
+            return true;
         }
     }
     
     
 
     /**
-     * Tests QueryableCollection interface of VeryLargeDArray.
+     * Tests QueryableCollection interface of RegularDMap.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
@@ -126,8 +110,7 @@ public class VeryLargeDArrayTest extends TestCase
 
         public QueryableCollection createQueryableCollection() throws Exception
         {
-            // Construct with small node size so multiple branches will be tested.
-            return new VeryLargeDArray(100);  
+            return new PersistentHashMap();
         }
     }
 }

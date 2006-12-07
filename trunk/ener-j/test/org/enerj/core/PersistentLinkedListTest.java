@@ -20,11 +20,11 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2001, 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/RegularDMapTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/RegularDListTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
 
 package org.enerj.core;
 
-import java.util.Map;
+import java.util.Collection;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -33,25 +33,25 @@ import junit.framework.TestSuite;
 import org.odmg.QueryableCollection;
 
 /**
- * Tests org.enerj.core.RegularDMap.
+ * Tests org.enerj.core.RegularDList.
  *
- * @version $Id: RegularDMapTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
+ * @version $Id: RegularDListTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class RegularDMapTest extends TestCase
+public class PersistentLinkedListTest extends TestCase
 {
 
-    public RegularDMapTest(String aTestName) 
+    public PersistentLinkedListTest(String aTestName) 
     {
         super(aTestName);
     }
 
     public static Test suite() 
     {
-        TestSuite suite = new TestSuite(RegularDMapTest.class);
+        TestSuite suite = new TestSuite(PersistentLinkedListTest.class);
         
-        suite.addTestSuite( RegularDMapTest.InternalDMapTest.class );
-        suite.addTestSuite( RegularDMapTest.InternalQueryableCollectionTest.class );
+        suite.addTestSuite( PersistentLinkedListTest.InternalDListTest.class );
+        suite.addTestSuite( PersistentLinkedListTest.InternalQueryableCollectionTest.class );
 
         return suite;
     }
@@ -71,33 +71,27 @@ public class RegularDMapTest extends TestCase
     
 
     /**
-     * Tests DMap interface of RegularDMap.
+     * Tests DList interface of RegularDList.
      */
-    public static final class InternalDMapTest extends AbstractDMapTest
+    public static final class InternalDListTest extends AbstractDListTest
     {
 
-        public InternalDMapTest(String aName)
+        public InternalDListTest(String aName)
         {
             super(aName);
         }
 
 
-        public Map createMap() throws Exception
+        public Collection createCollection() throws Exception
         {
-            return new RegularDMap();
-        }
-
-
-        public boolean allowsNullKeys()
-        {
-            return true;
+            return new PersistentLinkedList();
         }
     }
     
     
 
     /**
-     * Tests QueryableCollection interface of RegularDMap.
+     * Tests QueryableCollection interface of RegularDList.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
@@ -110,7 +104,7 @@ public class RegularDMapTest extends TestCase
 
         public QueryableCollection createQueryableCollection() throws Exception
         {
-            return new RegularDMap();
+            return new PersistentLinkedList();
         }
     }
 }

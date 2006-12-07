@@ -20,7 +20,7 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/RegularDMap.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/PersistentMap.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
 
 package org.enerj.core;
 
@@ -30,16 +30,16 @@ import org.odmg.*;
 import org.enerj.annotations.Persist;
 
 /**
- * Ener-J implementation of org.odmg.DMap which supports persistable dynamic maps
- * as first-class objects (FCOs). This type of map is useful when the map itself can
- * fit entirely in memory at one time.  If you have an map that cannot fit
- * reasonably in memory, you will have more than 2 billion objects in your collection,
- * or you want to conserve disk storage space, should use  TODO  VeryLargeDMap.
+ * Ener-J implementation of org.odmg.DMap which supports large persistable hash maps
+ * as first-class objects (FCOs). This type of map is useful when the map itself cannot
+ * fit entirely in memory at one time. The map never needs to be resized like a
+ * HashMap sometimes does. If you have an map that can fit
+ * reasonably in memory or you want to conserve disk storage space, consider {@link PersistentHashMap}.
  * <p>
- * The map is implemented as a container of java.util.HashMap. However,
- * if you reference this type of collection in your object, it is treated as a FCO,
+ * 
+ * If you reference this type of map in your object, it is treated as a FCO,
  * meaning that it will be loaded only when directly referenced (demand loaded).
- * It also allows the collection to be referenced from several different persistable
+ * It also allows the map to be referenced from several different persistable
  * objects, all sharing the same instance of the collection. 
  * <p>
  * If you were to reference a java.util.HashMap directly in your object (rather than this class), the
@@ -47,34 +47,34 @@ import org.enerj.annotations.Persist;
  * your object is loaded. Also, any changes to the collection would cause your object
  * to also be written to the database. 
  *
- * @version $Id: RegularDMap.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
+ * @version $Id: PersistentMap.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.DMap
- * @see VeryLargeDMap
+ * @see PersistentHashMap
  */
 @Persist
-public class RegularDMap implements org.odmg.DMap, Cloneable
+public class LargePersistentHashMap implements org.odmg.DMap, Cloneable
 {
     /** The delegate map. This is treated as an SCO when this FCO is persisted. */
     private HashMap mHashMap;
     
 
     /**
-     * Constructs a new RegularDMap with the specified initial capacity. 
+     * Constructs a new PersistentMap with the specified initial capacity. 
      * 
      * @param anInitialCapacity the initially allocated capacity of the map.
      *  This does not affect the size of the map.
      */
-    public RegularDMap(int anInitialCapacity)
+    public LargePersistentHashMap(int anInitialCapacity)
     {
         mHashMap = new HashMap(anInitialCapacity);
     }
     
 
     /**
-     * Constructs a new RegularDMap with an initial capacity of 100. 
+     * Constructs a new PersistentMap with an initial capacity of 100. 
      */
-    public RegularDMap()
+    public LargePersistentHashMap()
     {
         this(100);
     }
@@ -216,7 +216,7 @@ public class RegularDMap implements org.odmg.DMap, Cloneable
      */
     public Object clone() throws CloneNotSupportedException
     {
-        RegularDMap clone = (RegularDMap)super.clone();
+        LargePersistentHashMap clone = (LargePersistentHashMap)super.clone();
         clone.mHashMap = (HashMap)mHashMap.clone();
         return clone;
     }

@@ -20,7 +20,7 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2001, 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/RegularDSetTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/RegularDBagTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
 
 package org.enerj.core;
 
@@ -33,25 +33,25 @@ import junit.framework.TestSuite;
 import org.odmg.QueryableCollection;
 
 /**
- * Tests org.enerj.core.RegularDSet.
+ * Tests org.enerj.core.RegularDBag.
  *
- * @version $Id: RegularDSetTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
+ * @version $Id: RegularDBagTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class RegularDSetTest extends TestCase
+public class PersistentBagTest extends TestCase
 {
 
-    public RegularDSetTest(String aTestName) 
+    public PersistentBagTest(String aTestName) 
     {
         super(aTestName);
     }
 
     public static Test suite() 
     {
-        TestSuite suite = new TestSuite(RegularDSetTest.class);
+        TestSuite suite = new TestSuite(PersistentBagTest.class);
         
-        suite.addTestSuite( RegularDSetTest.InternalDSetTest.class );
-        suite.addTestSuite( RegularDSetTest.InternalQueryableCollectionTest.class );
+        suite.addTestSuite( PersistentBagTest.InternalDBagTest.class );
+        suite.addTestSuite( PersistentBagTest.InternalQueryableCollectionTest.class );
 
         return suite;
     }
@@ -71,12 +71,12 @@ public class RegularDSetTest extends TestCase
     
 
     /**
-     * Tests DSet interface of RegularDSet.
+     * Tests DBag interface of RegularDBag.
      */
-    public static final class InternalDSetTest extends AbstractDSetTest
+    public static final class InternalDBagTest extends AbstractDBagTest
     {
 
-        public InternalDSetTest(String aName)
+        public InternalDBagTest(String aName)
         {
             super(aName);
         }
@@ -84,14 +84,14 @@ public class RegularDSetTest extends TestCase
 
         public Collection createCollection() throws Exception
         {
-            return new RegularDSet();
+            return new PersistentBag();
         }
     }
     
     
 
     /**
-     * Tests QueryableCollection interface of RegularDSet.
+     * Tests QueryableCollection interface of RegularDBag.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
@@ -104,7 +104,7 @@ public class RegularDSetTest extends TestCase
 
         public QueryableCollection createQueryableCollection() throws Exception
         {
-            return new RegularDSet();
+            return new PersistentBag();
         }
     }
 }

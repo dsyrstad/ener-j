@@ -323,7 +323,9 @@ public class FilePageServer implements PageServer
         
         volume = StringUtil.substituteMacros(volume, someProperties);
         
-        return new FilePageServer(volume, someProperties.getProperty("PageServer.forceOpen") != null);
+        boolean forceOpen = Boolean.valueOf( someProperties.getProperty("PageServer.forceOpen", "false") );
+
+        return new FilePageServer(volume, forceOpen);
     }
 
 

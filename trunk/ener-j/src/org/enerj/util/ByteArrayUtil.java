@@ -22,6 +22,9 @@
 
 package org.enerj.util;
 
+import java.io.IOException;
+import java.io.UTFDataFormatException;
+
 
 
 /**
@@ -32,6 +35,8 @@ package org.enerj.util;
  */
 public class ByteArrayUtil
 {
+    private static final String UTF_MSG = "badly formed modified UTF-8 input";
+
     // No construction
     private ByteArrayUtil()
     {
@@ -187,63 +192,112 @@ public class ByteArrayUtil
     }
 
     /**
-     * Puts an UTF8 string into this byte vector. The byte vector is
-     * automatically enlarged if necessary.<p>
+     * Puts a string into the byte array buf encoded as modified UTF-8.<p>
      * 
      * Note: This was derived from ASM ByteVector.
      * 
-     * @param s a String.
+     * @param buf the buffer to be written to. Its length should be 3 times the length of str plus idx.
+     * @param idx the index to start writing at.
+     * @param str a String.
+     * 
+     * @return the length written to buf.
      */
-    /*public static void putUTF8(byte[] data, int idx, final String s) {
-        int charLength = s.length();
+    public static int putModifiedUTF8(byte[] buf, int idx, String str) 
+    {
+        int charLength = str.length();
 
-        int len = length;
-        // optimistic algorithm: instead of computing the byte length and then
-        // serializing the string (which requires two loops), we assume the byte
-        // length is equal to char length (which is the most frequent case), and
-        // we start serializing the string right away. During the serialization,
-        // if we find that this assumption is wrong, we continue with the
-        // general method.
-        data[len++] = (byte) (charLength >>> 8);
-        data[len++] = (byte) charLength;
+        int start = idx;
         for (int i = 0; i < charLength; ++i) {
-            char c = s.charAt(i);
+            char c = str.charAt(i);
             if (c >= '\001' && c <= '\177') {
-                data[len++] = (byte) c;
+                buf[idx++] = (byte) c;
+            } else if (c > '\u07FF') {
+                buf[idx++] = (byte) (0xE0 | c >> 12 & 0xF);
+                buf[idx++] = (byte) (0x80 | c >> 6 & 0x3F);
+                buf[idx++] = (byte) (0x80 | c & 0x3F);
             } else {
-                int byteLength = i;
-                for (int j = i; j < charLength; ++j) {
-                    c = s.charAt(j);
-                    if (c >= '\001' && c <= '\177') {
-                        byteLength++;
-                    } else if (c > '\u07FF') {
-                        byteLength += 3;
-                    } else {
-                        byteLength += 2;
-                    }
-                }
-                data[length] = (byte) (byteLength >>> 8);
-                data[length + 1] = (byte) byteLength;
-                if (length + 2 + byteLength > data.length) {
-                    length = len;
-                    enlarge(2 + byteLength);
-                    data = this.data;
-                }
-                for (int j = i; j < charLength; ++j) {
-                    c = s.charAt(j);
-                    if (c >= '\001' && c <= '\177') {
-                        data[len++] = (byte) c;
-                    } else if (c > '\u07FF') {
-                        data[len++] = (byte) (0xE0 | c >> 12 & 0xF);
-                        data[len++] = (byte) (0x80 | c >> 6 & 0x3F);
-                        data[len++] = (byte) (0x80 | c & 0x3F);
-                    } else {
-                        data[len++] = (byte) (0xC0 | c >> 6 & 0x1F);
-                        data[len++] = (byte) (0x80 | c & 0x3F);
-                    }
-                }
-                break;
+                buf[idx++] = (byte) (0xC0 | c >> 6 & 0x1F);
+                buf[idx++] = (byte) (0x80 | c & 0x3F);
             }
         }
-    }*/
+        
+        return idx - start;
+    }
+    
+    /**
+     * Gets a string from the byte array buf encoded as modified UTF-8.<p>
+     * 
+     * @param buf the buffer to be read. 
+     * @param idx the index to start reading at.
+     * @param length the length to be read.
+     * 
+     * @return the resulting string.
+     * 
+     * @throws IOException if an encoding error occurs.
+     */
+    public static String getModifiedUTF8(byte[] buf, int idx, int length) throws IOException
+    {
+        // In the worst case there is one char for every UTF byte. 
+        char[] chars = new char[length];
+        int charsIdx = 0;
+        
+        while (idx < length) {
+            int byte1 = (int) buf[idx] & 0xff;
+            switch (byte1 >> 4) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+                // 0xxxxxxx
+                idx++;
+                chars[charsIdx++] = (char) byte1;
+                break;
+                
+            case 12:
+            case 13:
+                // 110x xxxx, 10xx xxxx
+                idx += 2;
+                if (idx > length) {
+                    throw new UTFDataFormatException(UTF_MSG);
+                }
+                
+                int byte2 = (int)buf[idx - 1];
+                if ((byte2 & 0xc0) != 0x80) {
+                    throw new UTFDataFormatException(UTF_MSG);
+                }
+                
+                chars[charsIdx++] = (char)(((byte1 & 0x1f) << 6) | 
+                                            (byte2 & 0x3f));
+                break;
+                
+            case 14:
+                // 1110 xxxx, 10xx xxxx, 10xx xxxx 
+                idx += 3;
+                if (idx > length) {
+                    throw new UTFDataFormatException(UTF_MSG);
+                }
+                
+                byte2 = (int) buf[idx - 2];
+                int byte3 = (int) buf[idx - 1];
+                if (((byte2 & 0xc0) != 0x80) || ((byte3 & 0xc0) != 0x80)) {
+                    throw new UTFDataFormatException(UTF_MSG);
+                }
+                
+                chars[charsIdx++] = (char)(((byte1 & 0x0f) << 12) | 
+                                           ((byte2 & 0x3f) << 6) | 
+                                           ((byte3 & 0x3f) << 0));
+                break;
+                
+            default:
+                // 10xx xxxx, 1111 xxxx
+                throw new UTFDataFormatException(UTF_MSG);
+            }
+        }
+
+        return new String(chars, 0, charsIdx);
+    }
 }

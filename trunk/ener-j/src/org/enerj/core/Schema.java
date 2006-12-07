@@ -297,7 +297,7 @@ public class Schema
     {
         Set subclasses = (Set)mSubclassMap.get(aClassName);
         if (subclasses == null) {
-            subclasses = new RegularDSet(200);
+            subclasses = new PersistentHashSet(200);
             mSubclassMap.put(aClassName, subclasses);
         }
         

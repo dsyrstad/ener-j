@@ -20,7 +20,7 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/RegularDSet.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/PersistentSet.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
 
 package org.enerj.core;
 
@@ -44,45 +44,45 @@ import org.enerj.annotations.Persist;
  * your object is loaded. Also, any changes to the collection would cause your object
  * to also be written to the database. 
  *
- * @version $Id: RegularDSet.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
+ * @version $Id: PersistentSet.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.DSet
  */
 @Persist
-public class RegularDSet implements org.odmg.DSet, Cloneable
+public class PersistentHashSet implements org.odmg.DSet, Cloneable
 {
     /** The delegate Set. This is treated as an SCO when this FCO is persisted. */
     private Set mDelegateSet;
     
 
     /**
-     * Constructs a new RegularDSet backed by the given Set. Changes made to this
+     * Constructs a new PersistentSet backed by the given Set. Changes made to this
      * DSet are seen in the delegate Set, and vice-verse.  
      * 
      * @param aDelegateSet a delegate Set.
      */
-    public RegularDSet(Set aDelegateSet)
+    public PersistentHashSet(Set aDelegateSet)
     {
         mDelegateSet = aDelegateSet;
     }
     
 
     /**
-     * Constructs a new RegularDSet with the specified initial capacity. 
+     * Constructs a new PersistentSet with the specified initial capacity. 
      * 
      * @param anInitialCapacity the initially allocated capacity of the set.
      *  This does not affect the size of the set.
      */
-    public RegularDSet(int anInitialCapacity)
+    public PersistentHashSet(int anInitialCapacity)
     {
         mDelegateSet = new HashSet(anInitialCapacity, 1.0F);
     }
     
 
     /**
-     * Constructs a new RegularDSet with an initial capacity of 10. 
+     * Constructs a new PersistentSet with an initial capacity of 10. 
      */
-    public RegularDSet()
+    public PersistentHashSet()
     {
         this(10);
     }
@@ -199,7 +199,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         int set1Size = size();
         int set2Size = anOtherSet.size();
         // Worst case: all items from both sets will be in the result.
-        DSet result = new RegularDSet(set1Size + set2Size);
+        DSet result = new PersistentHashSet(set1Size + set2Size);
         
         Iterator iterator1 = this.iterator();
         while (iterator1.hasNext()) {
@@ -242,7 +242,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         int set1Size = size();
         int set2Size = anOtherSet.size();
         // Worst case: all items from both sets will be in the result.
-        DSet result = new RegularDSet(set1Size + set2Size);
+        DSet result = new PersistentHashSet(set1Size + set2Size);
         
         Iterator iterator1;
         Set set2;
@@ -294,7 +294,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
         int set1Size = size();
         int set2Size = anOtherSet.size();
         // All items from both sets will be in the result.
-        DSet result = new RegularDSet(set1Size + set2Size);
+        DSet result = new PersistentHashSet(set1Size + set2Size);
         
         result.addAll(this);
         result.addAll(anOtherSet);
@@ -424,7 +424,7 @@ public class RegularDSet implements org.odmg.DSet, Cloneable
      */
     public Object clone() throws CloneNotSupportedException
     {
-        RegularDSet clone = (RegularDSet)super.clone();
+        PersistentHashSet clone = (PersistentHashSet)super.clone();
         HashSet set = new HashSet( mDelegateSet.size(), 1.0F);
         set.addAll(mDelegateSet);
         clone.mDelegateSet = set;

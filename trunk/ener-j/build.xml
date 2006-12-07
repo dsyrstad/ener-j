@@ -246,6 +246,7 @@ ArchivingRedoLogServer.shouldArchive=true
 ArchivingRedoLogServer.requestedLogSize=0
 CachedPageServer.delegatePageServerClass=org.enerj.server.FilePageServer
 CachedPageServer.numberOfCachedPages=10000
+CachedPageServer.writeThru=false
 FilePageServer.volume=${enerj.dbdir}/${db}.enerj
 FilePageServer.pageSize=8192
 LockScheduler.initialNumObjs=20000

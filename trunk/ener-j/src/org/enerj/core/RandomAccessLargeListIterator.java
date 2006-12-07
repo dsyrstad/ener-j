@@ -37,7 +37,7 @@ import org.enerj.annotations.Persist;
  * @version $Id: RandomAccessLargeListIterator.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.DArray
- * @see RegularDArray
+ * @see PersistentArrayList
  * @see LargeList
  */
 @Persist

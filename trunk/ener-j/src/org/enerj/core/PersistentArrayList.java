@@ -20,7 +20,7 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/RegularDArray.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/PersistentArray.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
 
 package org.enerj.core;
 
@@ -47,34 +47,34 @@ import org.enerj.annotations.Persist;
  * your object is loaded. Also, any changes to the collection would cause your object
  * to also be written to the database. 
  *
- * @version $Id: RegularDArray.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
+ * @version $Id: PersistentArray.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.DArray
- * @see VeryLargeDArray
+ * @see LargePersistentArrayList
  */
 @Persist
-public class RegularDArray implements org.odmg.DArray, Cloneable
+public class PersistentArrayList implements org.odmg.DArray, Cloneable
 {
     /** The delegate array. This is treated as an SCO when this FCO is persisted. */
     private ArrayList mArrayList;
     
 
     /**
-     * Constructs a new RegularDArray with the specified initial capacity. 
+     * Constructs a new PersistentArray with the specified initial capacity. 
      * 
      * @param anInitialCapacity the initially allocated capacity of the array.
      *  This does not affect the size of the array.
      */
-    public RegularDArray(int anInitialCapacity)
+    public PersistentArrayList(int anInitialCapacity)
     {
         mArrayList = new ArrayList(anInitialCapacity);
     }
     
 
     /**
-     * Constructs a new RegularDArray with an initial capacity of 10. 
+     * Constructs a new PersistentArray with an initial capacity of 10. 
      */
-    public RegularDArray()
+    public PersistentArrayList()
     {
         this(10);
     }
@@ -300,7 +300,7 @@ public class RegularDArray implements org.odmg.DArray, Cloneable
      */
     public Object clone() throws CloneNotSupportedException
     {
-        RegularDArray clone = (RegularDArray)super.clone();
+        PersistentArrayList clone = (PersistentArrayList)super.clone();
         clone.mArrayList = (ArrayList)mArrayList.clone();
         return clone;
     }

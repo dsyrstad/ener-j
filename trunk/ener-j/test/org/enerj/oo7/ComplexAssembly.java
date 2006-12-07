@@ -20,12 +20,12 @@
  *******************************************************************************/
 package org.enerj.oo7;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ComplexAssembly extends Assembly
 {
     private Module module;
-    private ArrayList subAssemblies;
+    private List<Assembly> subAssemblies;
 
     public ComplexAssembly()
     {
@@ -63,9 +63,9 @@ public class ComplexAssembly extends Assembly
     /**
      * Gets the subAssemblies.
      *
-     * @return a ArrayList.
+     * @return a List<Assembly>.
      */
-    public ArrayList getSubAssemblies()
+    public List<Assembly> getSubAssemblies()
     {
         return subAssemblies;
     }
@@ -74,9 +74,9 @@ public class ComplexAssembly extends Assembly
     /**
      * Sets ComplexAssembly.java.
      *
-     * @param someSubAssemblies a ArrayList.
+     * @param someSubAssemblies a List<Assembly>.
      */
-    public void setSubAssemblies(ArrayList someSubAssemblies)
+    public void setSubAssemblies(List<Assembly> someSubAssemblies)
     {
         subAssemblies = someSubAssemblies;
     }

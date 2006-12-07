@@ -31,8 +31,8 @@ import java.util.Set;
 
 import org.odmg.DArray;
 import org.odmg.DSet;
-import org.enerj.core.RegularDArray;
-import org.enerj.core.RegularDSet;
+import org.enerj.core.PersistentArrayList;
+import org.enerj.core.PersistentHashSet;
 import org.enerj.jga.fn.UnaryFunctor;
 import org.enerj.util.TypeUtil;
 

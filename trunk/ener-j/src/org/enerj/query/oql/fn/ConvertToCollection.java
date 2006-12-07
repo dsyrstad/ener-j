@@ -31,8 +31,8 @@ import java.util.Set;
 
 import org.odmg.DArray;
 import org.odmg.DSet;
-import org.enerj.core.RegularDArray;
-import org.enerj.core.RegularDSet;
+import org.enerj.core.PersistentArrayList;
+import org.enerj.core.PersistentHashSet;
 import org.enerj.jga.fn.UnaryFunctor;
 
 /**
@@ -76,13 +76,13 @@ public class ConvertToCollection extends UnaryFunctor
         Object[] values = (Object[])mApplyFunctor.fn(arg);
         List valueList = Arrays.asList(values);
         if (mCollectionType == List.class) {
-            DArray dArray = new RegularDArray(values.length); 
+            DArray dArray = new PersistentArrayList(values.length); 
             dArray.addAll(valueList);
             return dArray;
         }
         
         // if (mCollectionType == Set.class)
-        DSet dSet = new RegularDSet(values.length);
+        DSet dSet = new PersistentHashSet(values.length);
         dSet.addAll(valueList);
         return dSet;
     }

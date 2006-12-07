@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.enerj.annotations.Persist;
 import org.enerj.core.ObjectSerializer;
-import org.enerj.core.RegularDMap;
+import org.enerj.core.PersistentHashMap;
 import org.odmg.ObjectNameNotFoundException;
 import org.odmg.ObjectNameNotUniqueException;
 
@@ -40,7 +40,7 @@ import org.odmg.ObjectNameNotUniqueException;
 public class Bindery
 {
     // TODO This should be a VeryLargeHashMap, or something of the like. Otherwise everything will contend on a single object.
-    private Map<String, Long> mBinderyMap  = (Map<String, Long>)new RegularDMap();
+    private Map<String, Long> mBinderyMap  = (Map<String, Long>)new PersistentHashMap();
     
     /**
      * Construct a Bindery. 

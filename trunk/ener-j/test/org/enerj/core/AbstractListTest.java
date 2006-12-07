@@ -364,7 +364,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
         int hashCode = 1;
         int idx = 0;
         for (Object obj : testList) {
-            if (testList instanceof VeryLargeDArray && idx >= 32) {
+            if (testList instanceof LargePersistentArrayList && idx >= 32) {
                 break;
             }
             
@@ -584,7 +584,7 @@ public abstract class AbstractListTest extends AbstractCollectionTest
         // restrictive...
         
         List testList = (List)createCollection();
-        if (testList instanceof VeryLargeDArray) {
+        if (testList instanceof LargePersistentArrayList) {
             //  TODO  we need to implement subList - but ignore for now so tests pass
             return;
         }

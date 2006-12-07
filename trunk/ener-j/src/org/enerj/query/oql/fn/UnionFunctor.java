@@ -27,8 +27,8 @@ package org.enerj.query.oql.fn;
 import java.util.Collection;
 import java.util.Set;
 
-import org.enerj.core.RegularDBag;
-import org.enerj.core.RegularDSet;
+import org.enerj.core.PersistentBag;
+import org.enerj.core.PersistentHashSet;
 import org.enerj.jga.fn.BinaryFunctor;
 
 /**
@@ -67,12 +67,12 @@ public class UnionFunctor extends BinaryFunctor
         Class arg1Type = arg1.getClass();
 
         if (Set.class.isAssignableFrom(arg0Type) && Set.class.isAssignableFrom(arg1Type)) {
-            RegularDSet arg0DSet = new RegularDSet( (Set)arg0 );
+            PersistentHashSet arg0DSet = new PersistentHashSet( (Set)arg0 );
             return arg0DSet.union((Set)arg1);
         }
         
         if (Collection.class.isAssignableFrom(arg0Type) && Collection.class.isAssignableFrom(arg1Type)) {
-            RegularDBag arg0DBag = new RegularDBag( (Collection)arg0 );
+            PersistentBag arg0DBag = new PersistentBag( (Collection)arg0 );
             return arg0DBag.union((Collection)arg1);
         }
         

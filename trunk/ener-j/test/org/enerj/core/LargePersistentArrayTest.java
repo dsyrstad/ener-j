@@ -20,7 +20,7 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2001, 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/RegularDListTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/VeryLargeDArrayTest.java,v 1.3 2006/05/05 13:47:37 dsyrstad Exp $
 
 package org.enerj.core;
 
@@ -33,26 +33,26 @@ import junit.framework.TestSuite;
 import org.odmg.QueryableCollection;
 
 /**
- * Tests org.enerj.core.RegularDList.
+ * Tests org.enerj.core.VeryLargeDArray.
  *
- * @version $Id: RegularDListTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
+ * @version $Id: VeryLargeDArrayTest.java,v 1.3 2006/05/05 13:47:37 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class RegularDListTest extends TestCase
+public class LargePersistentArrayTest extends TestCase
 {
 
-    public RegularDListTest(String aTestName) 
+    public LargePersistentArrayTest(String aTestName) 
     {
         super(aTestName);
     }
 
     public static Test suite() 
     {
-        TestSuite suite = new TestSuite(RegularDListTest.class);
+        TestSuite suite = new TestSuite(LargePersistentArrayTest.class);
         
-        suite.addTestSuite( RegularDListTest.InternalDListTest.class );
-        suite.addTestSuite( RegularDListTest.InternalQueryableCollectionTest.class );
-
+        suite.addTestSuite( LargePersistentArrayTest.InternalDArrayTest.class );
+        suite.addTestSuite( LargePersistentArrayTest.InternalQueryableCollectionTest.class );
+        suite.addTestSuite( LargePersistentArrayTest.InternalLargeListTest.class );
         return suite;
     }
     
@@ -63,6 +63,7 @@ public class RegularDListTest extends TestCase
     public void testNothing() throws Exception
     {
         // Placeholder until a specific test is added.
+        //  TODO  test large lists to a real database
     }
 
 
@@ -71,12 +72,12 @@ public class RegularDListTest extends TestCase
     
 
     /**
-     * Tests DList interface of RegularDList.
+     * Tests DArray interface of VeryLargeDArray.
      */
-    public static final class InternalDListTest extends AbstractDListTest
+    public static final class InternalDArrayTest extends AbstractDArrayTest
     {
 
-        public InternalDListTest(String aName)
+        public InternalDArrayTest(String aName)
         {
             super(aName);
         }
@@ -84,14 +85,35 @@ public class RegularDListTest extends TestCase
 
         public Collection createCollection() throws Exception
         {
-            return new RegularDList();
+            // Construct with small node size so multiple branches will be tested.
+            return new LargePersistentArrayList(100);  
+        }
+    }
+    
+
+    /**
+     * Tests LargeList interface of VeryLargeDArray.
+     */
+    public static final class InternalLargeListTest extends AbstractLargeListTest
+    {
+
+        public InternalLargeListTest(String aName)
+        {
+            super(aName);
+        }
+
+
+        public LargeCollection createLargeCollection() throws Exception
+        {
+            // Construct with small node size so multiple branches will be tested.
+            return new LargePersistentArrayList(100);  
         }
     }
     
     
 
     /**
-     * Tests QueryableCollection interface of RegularDList.
+     * Tests QueryableCollection interface of VeryLargeDArray.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
@@ -104,7 +126,8 @@ public class RegularDListTest extends TestCase
 
         public QueryableCollection createQueryableCollection() throws Exception
         {
-            return new RegularDList();
+            // Construct with small node size so multiple branches will be tested.
+            return new LargePersistentArrayList(100);  
         }
     }
 }
