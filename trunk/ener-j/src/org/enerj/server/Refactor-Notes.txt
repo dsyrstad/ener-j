@@ -6,7 +6,9 @@
 
 - Remove RegularD... add VeryLarge Equiv. Rename VeryLarge to PersitentList...
 
-- Test ByteBuffer vs. byte[]
+- Change ObjectSerializer to use ByteArrayUtil.putUTF8
+
+- Try enabling writeThru on cachedPageServer and benchmarking.
 
 - Test PolePosition
 

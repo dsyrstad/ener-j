@@ -24,7 +24,9 @@
 
 package org.enerj.server;
 
-import java.nio.ByteBuffer;
+import static org.enerj.util.ByteArrayUtil.getLong;
+import static org.enerj.util.ByteArrayUtil.putLong;
+
 import java.util.Arrays;
 
 import org.enerj.core.ObjectSerializer;
@@ -90,7 +92,7 @@ public class OIDList
     /** Number of OIDs that can fit on a page. Maintained as a long to avoid type promotions. */
     private long mOIDsPerPage;
     /** A working buffer that we can use. */
-    private ByteBuffer mBuffer;
+    private byte[] mBuffer;
 
 
     /**
@@ -106,7 +108,7 @@ public class OIDList
         mPageServer = aPageServer;
         mPageSize = mPageServer.getPageSize();
         mHeaderOffset = aHeaderOffset;
-        mBuffer = ByteBuffer.allocate(mPageSize);
+        mBuffer = new byte[mPageSize];
         mOIDsPerPage = (mPageSize - PTR_SIZE) / OID_SIZE;
         readHeader();
     }
@@ -119,11 +121,9 @@ public class OIDList
      */
     protected void readHeader() throws PageServerException
     {
-        mBuffer.position(0);
-        mBuffer.limit(HDR_SIZE);
-        mPageServer.loadPage(mBuffer, mHeaderOffset, 0);
-        mNumOIDs = mBuffer.getLong(0);
-        long head = mBuffer.getLong(PTR_SIZE);
+        mPageServer.loadPage(mBuffer, 0, HDR_SIZE, mHeaderOffset, 0);
+        mNumOIDs = getLong(mBuffer, 0);
+        long head = getLong(mBuffer, 8);
 
         // We always have at least one OID which is the null OID.
         // We also don't want to return the System OIDs. E.g., SCHEMA_OID (1). So start this 
@@ -138,12 +138,10 @@ public class OIDList
 
         // Load the page offsets into memory.
         long pageOffset = head;
-        mBuffer.position(0);
-        mBuffer.limit(PTR_SIZE);
         for (int i= 0; pageOffset != 0; ++i) {
             mOIDPages[i] = pageOffset;
-            mPageServer.loadPage(mBuffer, pageOffset, 0);
-            pageOffset = mBuffer.getLong(0);
+            mPageServer.loadPage(mBuffer, 0, PTR_SIZE, pageOffset, 0);
+            pageOffset = getLong(mBuffer, 0);
         }
     }
 
@@ -156,11 +154,9 @@ public class OIDList
      */
     public void writeHeader() throws PageServerException
     {
-        mBuffer.limit(HDR_SIZE);
-        mBuffer.putLong(0, mNumOIDs);
-        mBuffer.putLong(PTR_SIZE, mOIDPages[0]);
-        mBuffer.position(0);
-        mPageServer.storePage(mBuffer, mHeaderOffset, 0);
+        putLong(mBuffer, 0, mNumOIDs);
+        putLong(mBuffer, PTR_SIZE, mOIDPages[0]);
+        mPageServer.storePage(mBuffer, 0, HDR_SIZE, mHeaderOffset, 0);
     }
 
 
@@ -238,23 +234,19 @@ public class OIDList
         if (mOIDPages[(int)pageIndex] == PageServer.NULL_OFFSET) {
             int idx = (int)pageIndex;
             long nextPage = PageServer.NULL_OFFSET;
-            mBuffer.position(0);
-            mBuffer.limit(mPageSize);
-            Arrays.fill( mBuffer.array(), (byte)0);
+            Arrays.fill(mBuffer, (byte)0);
             for (; idx >= 0 && mOIDPages[idx] == PageServer.NULL_OFFSET; --idx) {
                 long pageOffset = mPageServer.allocatePage();
-                mBuffer.putLong(0, nextPage);
-                mPageServer.storePage(mBuffer, pageOffset, 0);
+                putLong(mBuffer, 0, nextPage);
+                mPageServer.storePage(mBuffer, 0, mPageSize, pageOffset, 0);
                 mOIDPages[idx] = pageOffset;
                 nextPage = pageOffset;
             }
             
             // Link last full page in list with the last one we allocated.
             if (idx >= 0) {
-                mBuffer.putLong(0, nextPage);
-                mBuffer.position(0);
-                mBuffer.limit(PTR_SIZE);
-                mPageServer.storePage(mBuffer, mOIDPages[idx], 0);
+                putLong(mBuffer, 0, nextPage);
+                mPageServer.storePage(mBuffer, 0, PTR_SIZE, mOIDPages[idx], 0);
             }
         }
 
@@ -292,10 +284,8 @@ public class OIDList
         long pageIndex = getPageIndexForOID(anOID);
         long pageOffset = mOIDPages[(int)pageIndex];
         int offsetWithinPage = getOffsetWithinPage(pageIndex, anOID);
-        mBuffer.position(0);
-        mBuffer.limit(CID_SIZE);
-        mPageServer.loadPage(mBuffer, pageOffset, offsetWithinPage + PTR_SIZE);
-        return mBuffer.getLong(0);
+        mPageServer.loadPage(mBuffer, 0, CID_SIZE, pageOffset, offsetWithinPage + PTR_SIZE);
+        return getLong(mBuffer, 0);
     }
 
 
@@ -314,10 +304,8 @@ public class OIDList
         long pageIndex = getPageIndexForOID(anOID);
         long pageOffset = mOIDPages[(int)pageIndex];
         int offsetWithinPage = getOffsetWithinPage(pageIndex, anOID);
-        mBuffer.position(0);
-        mBuffer.limit(PTR_SIZE);
-        mPageServer.loadPage(mBuffer, pageOffset, offsetWithinPage);
-        return mBuffer.getLong(0);
+        mPageServer.loadPage(mBuffer, 0, PTR_SIZE, pageOffset, offsetWithinPage);
+        return getLong(mBuffer, 0);
     }
 
 
@@ -337,15 +325,13 @@ public class OIDList
         long pageIndex = getPageIndexForOID(anOID);
         long pageOffset = mOIDPages[(int)pageIndex];
         int offsetWithinPage = getOffsetWithinPage(pageIndex, anOID);
-        mBuffer.position(0);
-        mBuffer.limit(PTR_SIZE + CID_SIZE);
-        mPageServer.loadPage(mBuffer, pageOffset, offsetWithinPage);
-        long currentOffset = mBuffer.getLong(0);
-        long currentCID = mBuffer.getLong(PTR_SIZE);
+        mPageServer.loadPage(mBuffer, 0, PTR_SIZE + CID_SIZE, pageOffset, offsetWithinPage);
+        long currentOffset = getLong(mBuffer, 0);
+        long currentCID = getLong(mBuffer, PTR_SIZE);
         if (anOffset != currentOffset || aCID != currentCID) {
-            mBuffer.putLong(0, anOffset);
-            mBuffer.putLong(PTR_SIZE, aCID);
-            mPageServer.storePage(mBuffer, pageOffset, offsetWithinPage);
+            putLong(mBuffer, 0, anOffset);
+            putLong(mBuffer, PTR_SIZE, aCID);
+            mPageServer.storePage(mBuffer, 0, PTR_SIZE + CID_SIZE, pageOffset, offsetWithinPage);
         }
     }
 }

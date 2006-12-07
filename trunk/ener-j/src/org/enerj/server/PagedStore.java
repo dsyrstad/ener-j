@@ -24,7 +24,13 @@
 
 package org.enerj.server;
 
-import java.nio.ByteBuffer;
+import static org.enerj.util.ByteArrayUtil.getInt;
+import static org.enerj.util.ByteArrayUtil.getLong;
+import static org.enerj.util.ByteArrayUtil.getUnsignedShort;
+import static org.enerj.util.ByteArrayUtil.putInt;
+import static org.enerj.util.ByteArrayUtil.putLong;
+import static org.enerj.util.ByteArrayUtil.putUnsignedShort;
+
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -109,9 +115,9 @@ public class PagedStore
     /** Offset into the page at mRemainingPagePtr where the rest of the page is free. */
     private int mRemainingPageOffset = 0;
     /** A page buffer for the StorageThread to work with. */
-    private ByteBuffer mStoragePageBuffer;
+    private byte[] mStoragePageBuffer;
     /** A page buffer full of 0xff bytes. Used for free space within a page. */
-    private ByteBuffer mFreeBuffer;
+    private byte[] mFreeBuffer;
 
     
 
@@ -148,9 +154,9 @@ public class PagedStore
         mStorageProcessor = new RequestProcessor("PagedStore:StorageProcessor:" + pageServerClassName);
         
         mOIDList = new OIDList(mPageServer, mPageServer.getLogicalFirstPageOffset() );
-        mStoragePageBuffer = ByteBuffer.allocate(mPageSize);
-        mFreeBuffer = ByteBuffer.allocate(mPageSize);
-        Arrays.fill(mFreeBuffer.array(), (byte)0xff);
+        mStoragePageBuffer = new byte[mPageSize];
+        mFreeBuffer = new byte[mPageSize];
+        Arrays.fill(mFreeBuffer, (byte)0xff);
         
         mRedoLogServer = aRedoLogServer;
         mObjectServer = anObjectServer;
@@ -253,38 +259,6 @@ public class PagedStore
             throw new ODMGException(requestException.toString(), requestException);
         }
     }
-
-
-    /**
-     * Helper for ByteBuffer to get a two byte unsigned short.
-     * 
-     * @param aByteBuffer a ByteBuffer to read from.
-     * @param aPosition the position in aByteBuffer.
-     *
-     * @return an int representing the unsigned short value.
-     */
-    private static int getUnsignedShort(ByteBuffer aByteBuffer, int aPosition)
-    {
-        int highByte = aByteBuffer.get(aPosition) & 0xff;
-        int lowByte = aByteBuffer.get(aPosition + 1) & 0xff;
-        return (highByte << 8) | lowByte;
-    }
-    
-
-    /**
-     * Helper for ByteBuffer to put a two byte unsigned short.
-     * 
-     * @param aByteBuffer a ByteBuffer to write to.
-     * @param aPosition the position in aByteBuffer.
-     * @param aValue an int representing the unsigned short value.
-     */
-    private static void putUnsignedShort(ByteBuffer aByteBuffer, int aPosition, int aValue)
-    {
-        aByteBuffer.put(aPosition, (byte)((aValue >> 8) & 0xff));
-        aByteBuffer.put(aPosition + 1, (byte)(aValue & 0xff));
-    }
-    
-
     /**
      * Given a storage pointer, get the offset to the start of the page.
      *
@@ -322,9 +296,7 @@ public class PagedStore
      */
     private int getPageFreeLength(long aPagePtr) throws PageServerException
     {
-        mStoragePageBuffer.position(0);
-        mStoragePageBuffer.limit(PAGE_FREE_LENGTH_SIZE);
-        mPageServer.loadPage(mStoragePageBuffer, aPagePtr, 0);
+        mPageServer.loadPage(mStoragePageBuffer, 0, PAGE_FREE_LENGTH_SIZE, aPagePtr, 0);
 
         int freeLength = getUnsignedShort(mStoragePageBuffer, 0);
         if (freeLength < 0 || freeLength >= (mPageSize - PAGE_FREE_LENGTH_SIZE)) {
@@ -361,10 +333,8 @@ public class PagedStore
                 aFreeLength + " at position " + aPagePtr);
         }
         
-        mStoragePageBuffer.position(0);
-        mStoragePageBuffer.limit(PAGE_FREE_LENGTH_SIZE);
         putUnsignedShort(mStoragePageBuffer, 0, aFreeLength);
-        mPageServer.storePage(mStoragePageBuffer, aPagePtr, 0);
+        mPageServer.storePage(mStoragePageBuffer, 0, PAGE_FREE_LENGTH_SIZE, aPagePtr, 0);
         //  TODO  compact if threshold reached.
         //  TODO  set mRemainingPagePtr if not set? -- do this in compact.
     }
@@ -416,9 +386,7 @@ public class PagedStore
             
             // Freeing the object and its header.
             int freeLength = hdr.mObjectSegmentLength + HEADER_SIZE;
-            mFreeBuffer.position(0);
-            mFreeBuffer.limit(freeLength);
-            mPageServer.storePage(mFreeBuffer, hdr.mPagePtr, hdr.mHeaderOffset);
+            mPageServer.storePage(mFreeBuffer, 0, freeLength, hdr.mPagePtr, hdr.mHeaderOffset);
             
             // Bump the page free length.
             changePageFreeLength(hdr.mPagePtr, freeLength);
@@ -442,7 +410,6 @@ public class PagedStore
         throws PageServerException
     {
         long currentObjectPtr = mOIDList.getObjectOffsetForOID(anOID);
-        ByteBuffer objectBuffer = ByteBuffer.wrap(aSerializedObject);
         
         // Are we replacing the object?
         if (currentObjectPtr != PageServer.NULL_OFFSET) {
@@ -492,9 +459,7 @@ public class PagedStore
                         hdr.write(hdr.mPagePtr + hdr.mHeaderOffset);
                     }
                     
-                    objectBuffer.position(lengthWritten);
-                    objectBuffer.limit(lengthWritten + length);
-                    mPageServer.storePage(objectBuffer, hdr.mPagePtr, hdr.mObjectOffset);
+                    mPageServer.storePage(aSerializedObject, lengthWritten, length, hdr.mPagePtr, hdr.mObjectOffset);
                     lastSegmentLengthWritten = length;
                     lengthWritten += length;
                     lengthLeft -= length;
@@ -514,9 +479,7 @@ public class PagedStore
                     int remainingSegmentLength = hdr.mObjectSegmentLength - lastSegmentLengthWritten;
                     
                     // Free remainder on this page.
-                    mFreeBuffer.position(0);
-                    mFreeBuffer.limit(remainingSegmentLength);
-                    mPageServer.storePage(mFreeBuffer, hdr.mPagePtr, hdr.mObjectOffset + lastSegmentLengthWritten);
+                    mPageServer.storePage(mFreeBuffer, 0, remainingSegmentLength, hdr.mPagePtr, hdr.mObjectOffset + lastSegmentLengthWritten);
                     changePageFreeLength(hdr.mPagePtr, remainingSegmentLength);
                 }
 
@@ -571,9 +534,7 @@ public class PagedStore
             hdr.mOverflowPtr = PageServer.NULL_OFFSET;
             hdr.mObjectSegmentLength = (spaceLeft > lengthNeeded ? lengthNeeded : spaceLeft) - HEADER_SIZE;
 
-            objectBuffer.position(lengthWritten);
-            objectBuffer.limit(lengthWritten + hdr.mObjectSegmentLength);
-            mPageServer.storePage(objectBuffer, mRemainingPagePtr, mRemainingPageOffset + HEADER_SIZE);
+            mPageServer.storePage(aSerializedObject, lengthWritten, hdr.mObjectSegmentLength, mRemainingPagePtr, mRemainingPageOffset + HEADER_SIZE);
             lengthWritten += hdr.mObjectSegmentLength;
             lengthLeft -= hdr.mObjectSegmentLength;
 
@@ -581,10 +542,7 @@ public class PagedStore
             mRemainingPageOffset += HEADER_SIZE + hdr.mObjectSegmentLength;
             spaceLeft = mPageSize - mRemainingPageOffset;
             if (spaceLeft > 0) {
-                mStoragePageBuffer.position(0);
-                mStoragePageBuffer.limit(spaceLeft);
-                Arrays.fill(mStoragePageBuffer.array(), 0, spaceLeft, (byte)0xff);
-                mPageServer.storePage(mStoragePageBuffer, mRemainingPagePtr, mRemainingPageOffset);
+                mPageServer.storePage(mFreeBuffer, 0, spaceLeft, mRemainingPagePtr, mRemainingPageOffset);
             }
             
             setPageFreeLength(mRemainingPagePtr, spaceLeft);
@@ -626,7 +584,6 @@ public class PagedStore
             int lengthRead = 0;
             int objectLength = 0;
             ObjectHeader hdr = new ObjectHeader();
-            ByteBuffer objectBuffer = null;
 
             while (objectPtr != PageServer.NULL_OFFSET) {
                 // Read the header.
@@ -635,7 +592,6 @@ public class PagedStore
                     objectLength = hdr.mObjectLength;
                     hdr.validateOIDAndLength(anOID, objectLength);
                     serializedObject = new byte[objectLength];
-                    objectBuffer = ByteBuffer.wrap(serializedObject);
                 }
                 else {
                     hdr.validateOIDAndLength(anOID, objectLength);
@@ -657,9 +613,7 @@ public class PagedStore
                 }
 
                 // Load this segment.
-                objectBuffer.position(lengthRead);
-                objectBuffer.limit(lengthRead + hdr.mObjectSegmentLength);
-                mPageServer.loadPage(objectBuffer, hdr.mPagePtr, hdr.mObjectOffset);
+                mPageServer.loadPage(serializedObject, lengthRead, hdr.mObjectSegmentLength, hdr.mPagePtr, hdr.mObjectOffset);
 
                 lengthRead += hdr.mObjectSegmentLength;
                 objectPtr = hdr.mOverflowPtr;
@@ -799,13 +753,11 @@ public class PagedStore
             mPagePtr = getPageFromPtr(anObjectPtr);
             mHeaderOffset  = getOffsetFromPtr(anObjectPtr);
 
-            mStoragePageBuffer.position(0);
-            mStoragePageBuffer.limit(HEADER_SIZE);
-            mPageServer.loadPage(mStoragePageBuffer, mPagePtr, mHeaderOffset);
+            mPageServer.loadPage(mStoragePageBuffer, 0, HEADER_SIZE, mPagePtr, mHeaderOffset);
 
-            mOID = mStoragePageBuffer.getLong(0);
-            mObjectLength = mStoragePageBuffer.getInt(OID_SIZE);
-            mOverflowPtr = mStoragePageBuffer.getLong(OID_SIZE + OBJ_LENGTH_SIZE);
+            mOID = getLong(mStoragePageBuffer, 0);
+            mObjectLength = getInt(mStoragePageBuffer, OID_SIZE);
+            mOverflowPtr = getLong(mStoragePageBuffer, OID_SIZE + OBJ_LENGTH_SIZE);
             mObjectSegmentLength = getUnsignedShort(mStoragePageBuffer, OID_SIZE + OBJ_LENGTH_SIZE + OVERFLOW_PTR_SIZE);
 
             mObjectOffset = mHeaderOffset + HEADER_SIZE;
@@ -821,14 +773,12 @@ public class PagedStore
             mPagePtr = getPageFromPtr(anObjectPtr);
             mHeaderOffset  = getOffsetFromPtr(anObjectPtr);
 
-            mStoragePageBuffer.position(0);
-            mStoragePageBuffer.limit(HEADER_SIZE);
-            mStoragePageBuffer.putLong(0, mOID);
-            mStoragePageBuffer.putInt(OID_SIZE, mObjectLength);
-            mStoragePageBuffer.putLong(OID_SIZE + OBJ_LENGTH_SIZE, mOverflowPtr);
+            putLong(mStoragePageBuffer, 0, mOID);
+            putInt(mStoragePageBuffer, OID_SIZE, mObjectLength);
+            putLong(mStoragePageBuffer, OID_SIZE + OBJ_LENGTH_SIZE, mOverflowPtr);
             putUnsignedShort(mStoragePageBuffer, OID_SIZE + OBJ_LENGTH_SIZE + OVERFLOW_PTR_SIZE, mObjectSegmentLength);
             
-            mPageServer.storePage(mStoragePageBuffer, mPagePtr, mHeaderOffset);
+            mPageServer.storePage(mStoragePageBuffer, 0, HEADER_SIZE, mPagePtr, mHeaderOffset);
         }
 
 

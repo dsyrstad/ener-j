@@ -24,9 +24,6 @@
 
 package org.enerj.server;
 
-import java.io.*;
-import java.nio.*;
-import java.util.*;
 
 
 /**
@@ -144,19 +141,18 @@ public interface PageServer
     /**
      * Loads partial contents of a page from the volume.
      * aBuffer.remaining() bytes are loaded.
-     * The entire page can be loaded by specifying anOffset = 0 and 
-     * aBuffer.remaining() of getAvailablePageSize().
-     * anOffset + aBuffer.remaining() must not exceed getAvailablePageSize().
-     * On return, aBuffer's position and limit will not be affected.
+     * anOffset + aLength must not exceed getAvailablePageSize().
      *
-     * @param aBuffer a ByteBuffer which will be loaded upon return.
+     * @param aBuffer a byte[] which will be loaded upon return.
+     * @param anIndex an index into aBuffer to starting loading to. 
+     * @param aLength the length to be loaded.
      * @param aLogicalPageOffset the logical offset to the beginning of the page.
      * @param anOffset the offset within the Page contents from which to start loading
      *  aBuffer.
      *
      * @throws PageServerException if an error occurs.
      */
-    public void loadPage(ByteBuffer aBuffer, long aLogicalPageOffset, int anOffset) throws PageServerException;
+    public void loadPage(byte[] aBuffer, int anIndex, int aLength, long aLogicalPageOffset, int anOffset) throws PageServerException;
 
 
     /**
@@ -165,14 +161,16 @@ public interface PageServer
      * anOffset + aBuffer.remaining() must not exceed getAvailablePageSize().
      * On return, aBuffer's position and limit will not be affected.
      *
-     * @param aBuffer a ByteBuffer to be stored.
+     * @param aBuffer a byte[] to be stored.
+     * @param anIndex an index into aBuffer to starting loading to. 
+     * @param aLength the length to be stored.
      * @param aLogicalPageOffset the logical offset to the beginning of the page.
      * @param anOffset the offset within the Page contents at which to start storing
      *  aBuffer.
      *
      * @throws PageServerException if an error occurs.
      */
-    public void storePage(ByteBuffer aBuffer, long aLogicalPageOffset, int anOffset) throws PageServerException;
+    public void storePage(byte[] aBuffer, int anIndex, int aLength, long aLogicalPageOffset, int anOffset) throws PageServerException;
 
 
     /**
