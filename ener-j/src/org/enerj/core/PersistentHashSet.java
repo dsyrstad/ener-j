@@ -49,19 +49,19 @@ import org.enerj.annotations.Persist;
  * @see org.odmg.DSet
  */
 @Persist
-public class PersistentHashSet implements org.odmg.DSet, Cloneable
+public class PersistentHashSet<E> implements org.odmg.DSet<E>, Cloneable
 {
     /** The delegate Set. This is treated as an SCO when this FCO is persisted. */
-    private Set mDelegateSet;
+    private Set<E> mDelegateSet;
     
 
     /**
      * Constructs a new PersistentSet backed by the given Set. Changes made to this
-     * DSet are seen in the delegate Set, and vice-verse.  
+     * DSet are seen in the delegate Set, and vice-versa.  
      * 
      * @param aDelegateSet a delegate Set.
      */
-    public PersistentHashSet(Set aDelegateSet)
+    public PersistentHashSet(Set<E> aDelegateSet)
     {
         mDelegateSet = aDelegateSet;
     }
@@ -75,7 +75,7 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
      */
     public PersistentHashSet(int anInitialCapacity)
     {
-        mDelegateSet = new HashSet(anInitialCapacity, 1.0F);
+        mDelegateSet = new HashSet<E>(anInitialCapacity, 1.0F);
     }
     
 
@@ -92,7 +92,7 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
 
 
 
-    public boolean add(Object o)
+    public boolean add(E o)
     {
         return mDelegateSet.add(o);
     }
@@ -164,7 +164,7 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
     }
     
 
-    public Object[] toArray(Object[] a) 
+    public <T> T[] toArray(T[] a) 
     {
         return mDelegateSet.toArray(a);
     }
@@ -179,9 +179,9 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
      * @return a newly created <code>DSet</code> instance that contains the elements
      * of this set minus those elements in <code>anOtherSet</code>.
      */
-    public DSet difference(DSet anOtherSet)
+    public DSet<E> difference(DSet<E> anOtherSet)
     {
-        return difference((Set)anOtherSet);
+        return difference((Set<E>)anOtherSet);
     }
     
 
@@ -194,16 +194,16 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
      * @return a newly created <code>DSet</code> instance that contains the elements
      * of this set minus those elements in <code>anOtherSet</code>.
      */
-    public DSet difference(Set anOtherSet) 
+    public DSet<E> difference(Set<E> anOtherSet) 
     {
         int set1Size = size();
         int set2Size = anOtherSet.size();
         // Worst case: all items from both sets will be in the result.
-        DSet result = new PersistentHashSet(set1Size + set2Size);
+        DSet<E> result = new PersistentHashSet<E>(set1Size + set2Size);
         
-        Iterator iterator1 = this.iterator();
+        Iterator<E> iterator1 = this.iterator();
         while (iterator1.hasNext()) {
-            Object obj = iterator1.next();
+            E obj = iterator1.next();
             if ( !anOtherSet.contains(obj) ) {
                 result.add(obj);
             }
@@ -222,9 +222,9 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
      * @return a newly created <code>DSet</code> instance that contains the
      * intersection of the two sets.
      */
-    public DSet intersection(DSet anOtherSet)
+    public DSet<E> intersection(DSet<E> anOtherSet)
     {
-        return intersection((Set)anOtherSet);
+        return intersection((Set<E>)anOtherSet);
     }
     
 
@@ -237,27 +237,24 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
      * @return a newly created <code>DSet</code> instance that contains the
      * intersection of the two sets.
      */
-    public DSet intersection(Set anOtherSet) 
+    public DSet<E> intersection(Set<E> anOtherSet) 
     {
         int set1Size = size();
         int set2Size = anOtherSet.size();
         // Worst case: all items from both sets will be in the result.
-        DSet result = new PersistentHashSet(set1Size + set2Size);
+        DSet<E> result = new PersistentHashSet<E>(set1Size + set2Size);
         
-        Iterator iterator1;
-        Set set2;
+        Iterator<E> iterator1;
         // Iterate over the smaller set
         if (set1Size > set2Size) {
             iterator1 = anOtherSet.iterator();
-            set2 = this;
         }
         else {
             iterator1 = this.iterator();
-            set2 = anOtherSet;
         }
 
         while (iterator1.hasNext()) {
-            Object obj = iterator1.next();
+            E obj = iterator1.next();
             if ( anOtherSet.contains(obj) ) {
                 result.add(obj);
             }
@@ -275,9 +272,9 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
      *
      * @return a newly created <code>DSet</code> instance that contains the union of the two sets.
      */
-    public DSet union(DSet anOtherSet)
+    public DSet<E> union(DSet<E> anOtherSet)
     {
-        return union((Set)anOtherSet);
+        return union((Set<E>)anOtherSet);
     }
 
 
@@ -289,12 +286,12 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
      *
      * @return a newly created <code>DSet</code> instance that contains the union of the two sets.
      */
-    public DSet union(Set anOtherSet) 
+    public DSet<E> union(Set<E> anOtherSet) 
     {
         int set1Size = size();
         int set2Size = anOtherSet.size();
         // All items from both sets will be in the result.
-        DSet result = new PersistentHashSet(set1Size + set2Size);
+        DSet<E> result = new PersistentHashSet<E>(set1Size + set2Size);
         
         result.addAll(this);
         result.addAll(anOtherSet);
@@ -313,7 +310,7 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
      * @return true if this set is a proper subset of the set referenced by
      * <code>anOtherSet</code>, otherwise false.
      */
-    public boolean properSubsetOf(DSet anOtherSet) 
+    public boolean properSubsetOf(DSet<E> anOtherSet) 
     {
         return subsetOf(anOtherSet) && anOtherSet.size() > size();
     }
@@ -330,7 +327,7 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
      * @return true if this set is a proper superset of the set referenced by
      * <code>anOtherSet</code>, otherwise false.
      */
-    public boolean properSupersetOf(DSet anOtherSet) 
+    public boolean properSupersetOf(DSet<E> anOtherSet) 
     {
         return supersetOf(anOtherSet) && size() > anOtherSet.size();
     }
@@ -344,7 +341,7 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
      * @return true if this set is a subset of the set referenced by <code>anOtherSet</code>,
      * otherwise false.
      */
-    public boolean subsetOf(DSet anOtherSet) 
+    public boolean subsetOf(DSet<E> anOtherSet) 
     {
         return anOtherSet.containsAll(this);
     }
@@ -364,7 +361,7 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
     }
     
 
-    public java.util.Iterator select(String str) throws org.odmg.QueryInvalidException 
+    public java.util.Iterator<E> select(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
@@ -378,14 +375,14 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
     }
     
 
-    public org.odmg.DCollection query(String str) throws org.odmg.QueryInvalidException 
+    public org.odmg.DCollection<E> query(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
 
-    public Object selectElement(String str) throws org.odmg.QueryInvalidException 
+    public E selectElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
@@ -424,10 +421,9 @@ public class PersistentHashSet implements org.odmg.DSet, Cloneable
      */
     public Object clone() throws CloneNotSupportedException
     {
-        PersistentHashSet clone = (PersistentHashSet)super.clone();
-        HashSet set = new HashSet( mDelegateSet.size(), 1.0F);
-        set.addAll(mDelegateSet);
-        clone.mDelegateSet = set;
+        PersistentHashSet<E> clone = (PersistentHashSet<E>)super.clone();
+        clone.mDelegateSet = new HashSet<E>( mDelegateSet.size(), 1.0F);
+        clone.mDelegateSet.addAll(mDelegateSet);
         return clone;
     }
     

@@ -12,7 +12,7 @@ package org.odmg;
 */
 // * @see java.lang.UnsupportedOperationException
 
-public interface DBag extends DCollection
+public interface DBag<E> extends DCollection<E>
 {
 /**
 * A new <code>DBag</code> instance is created that is the union of this object
@@ -25,7 +25,7 @@ public interface DBag extends DCollection
 * and <code>otherBag</code>.
 */
 // * @see	com.sun.java.util.collections.Collection#addAll
-	public	DBag	union(DBag otherBag);
+	public	DBag<E>	union(DBag<E> otherBag);
 
 /**
 * A new <code>DBag</code> instance is created that contains the intersection of
@@ -38,7 +38,7 @@ public interface DBag extends DCollection
 * object and <code>otherBag</code>.
 */
 // @see com.sun.java.util.collections.Collection#retainAll
-	public	DBag	intersection(DBag otherBag);
+	public	DBag<E>	intersection(DBag<E> otherBag);
 
 /**
 * A new <code>DBag</code> instance is created that contains the difference of
@@ -51,7 +51,7 @@ public interface DBag extends DCollection
 * minus the elements in <code>otherBag</code>.
 */
 // * @see com.sun.java.util.collections.Collection#removeAll
-	public	DBag	difference(DBag otherBag);
+	public	DBag<E>	difference(DBag<E> otherBag);
 
 /**
 * This method returns the number of occurrences of the object <code>obj</code>
@@ -59,6 +59,6 @@ public interface DBag extends DCollection
 * @param obj The value that may have elements in the collection.
 * @return The number of occurrences of <code>obj</code> in this collection.
 */
-	public	int		occurrences(Object obj);
+	public	int		occurrences(E obj);
 }
 

@@ -53,10 +53,10 @@ import org.enerj.annotations.Persist;
  * @see LargePersistentArrayList
  */
 @Persist
-public class PersistentBag implements org.odmg.DBag, Cloneable
+public class PersistentBag<E> implements org.odmg.DBag<E>, Cloneable
 {
     /** The delegate bag. This is treated as an SCO when this FCO is persisted. */
-    private Collection mDelegateBag;
+    private Collection<E> mDelegateBag;
     
 
     /**
@@ -65,7 +65,7 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
      *
      * @param aCollection the delegate "bag".
      */
-    public PersistentBag(Collection aCollection)
+    public PersistentBag(Collection<E> aCollection)
     {
         mDelegateBag = aCollection;
     }
@@ -79,7 +79,7 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
      */
     public PersistentBag(int anInitialCapacity)
     {
-        mDelegateBag = new ArrayList(anInitialCapacity);
+        mDelegateBag = new ArrayList<E>(anInitialCapacity);
     }
 
 
@@ -96,13 +96,13 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
 
 
 
-    public boolean add(Object o)
+    public boolean add(E o)
     {
         return mDelegateBag.add(o);
     }
     
 
-    public boolean addAll(Collection c)
+    public boolean addAll(Collection<? extends E> c)
     {
         return mDelegateBag.addAll(c);
     }
@@ -132,7 +132,7 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
     }
     
 
-    public Iterator iterator() 
+    public Iterator<E> iterator() 
     {
         return mDelegateBag.iterator();
     }
@@ -168,13 +168,13 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
     }
     
 
-    public Object[] toArray(Object[] a) 
+    public <T> T[] toArray(T[] a) 
     {
         return mDelegateBag.toArray(a);
     }
     
 
-    public java.util.Iterator select(String str) throws org.odmg.QueryInvalidException 
+    public java.util.Iterator<E> select(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
@@ -188,14 +188,14 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
     }
     
 
-    public org.odmg.DCollection query(String str) throws org.odmg.QueryInvalidException 
+    public org.odmg.DCollection<E> query(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
 
-    public Object selectElement(String str) throws org.odmg.QueryInvalidException 
+    public E selectElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
@@ -232,10 +232,10 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
     /**
      * {@inheritDoc}
      */
-    public Object clone() throws CloneNotSupportedException
+    public PersistentBag<E> clone() throws CloneNotSupportedException
     {
-        PersistentBag clone = (PersistentBag)super.clone();
-        Collection bag = new ArrayList( mDelegateBag.size() );
+        PersistentBag<E> clone = (PersistentBag<E>)super.clone();
+        Collection<E> bag = new ArrayList<E>( mDelegateBag.size() );
         bag.addAll(mDelegateBag);
         clone.mDelegateBag = bag;
         return clone;
@@ -254,7 +254,7 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
      * @return a <code>DBag</code> instance that contains the elements of this object
      * minus the elements in <code>anOtherBag</code>.
      */
-    public DBag difference(DBag anOtherBag)
+    public DBag<E> difference(DBag anOtherBag)
     {
         return difference((Collection)anOtherBag);
     }
@@ -272,16 +272,16 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
      * @return a <code>DBag</code> instance that contains the elements of this object
      *  minus the elements in <code>otherBag</code>.
      */
-    public DBag difference(Collection anOtherBag) 
+    public DBag<E> difference(Collection anOtherBag) 
     {
         int bag1Size = size();
         int bag2Size = anOtherBag.size();
         // Worst case: all items from both bags will be in the result.
-        DBag result = new PersistentBag(bag1Size + bag2Size);
+        DBag<E> result = new PersistentBag<E>(bag1Size + bag2Size);
         
-        Iterator iterator1 = this.iterator();
+        Iterator<E> iterator1 = this.iterator();
         while (iterator1.hasNext()) {
-            Object obj = iterator1.next();
+            E obj = iterator1.next();
             if ( !anOtherBag.contains(obj) ) {
                 result.add(obj);
             }
@@ -303,9 +303,9 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
      * @return a <code>DBag</code> instance that contains the intersection of this
      * object and <code>anOtherBag</code>.
      */
-    public DBag intersection(DBag anOtherBag)
+    public DBag<E> intersection(DBag<E> anOtherBag)
     {
-        return intersection((Collection)anOtherBag);
+        return intersection(anOtherBag);
     }
     
 
@@ -321,27 +321,24 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
      * @return a <code>DBag</code> instance that contains the intersection of this
      * object and <code>otherBag</code>.
      */
-    public DBag intersection(Collection anOtherBag)
+    public DBag<E> intersection(Collection<E> anOtherBag)
     {
         int bag1Size = size();
         int bag2Size = anOtherBag.size();
         // Worst case: all items from both bags will be in the result.
-        DBag result = new PersistentBag(bag1Size + bag2Size);
+        DBag<E> result = new PersistentBag<E>(bag1Size + bag2Size);
         
-        Iterator iterator1;
-        Collection bag2;
+        Iterator<E> iterator1;
         // Iterate over the smaller bag
         if (bag1Size > bag2Size) {
             iterator1 = anOtherBag.iterator();
-            bag2 = this;
         }
         else {
             iterator1 = this.iterator();
-            bag2 = anOtherBag;
         }
 
         while (iterator1.hasNext()) {
-            Object obj = iterator1.next();
+            E obj = iterator1.next();
             if ( anOtherBag.contains(obj) ) {
                 result.add(obj);
             }
@@ -362,9 +359,9 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
      * @return a <code>DBag</code> instance that contains the union of this object
      * and <code>otherBag</code>.
      */
-    public DBag union(DBag anOtherBag)
+    public DBag<E> union(DBag<E> anOtherBag)
     {
-        return union((Collection)anOtherBag);
+        return union((Collection<E>)anOtherBag);
     }
     
 
@@ -380,12 +377,12 @@ public class PersistentBag implements org.odmg.DBag, Cloneable
      * @return a <code>DBag</code> instance that contains the union of this object
      * and <code>anOtherBag</code>.
      */
-    public DBag union(Collection anOtherBag) 
+    public DBag<E> union(Collection<E> anOtherBag) 
     {
         int bag1Size = size();
         int bag2Size = anOtherBag.size();
         // All items from both bags will be in the result.
-        DBag result = new PersistentBag(bag1Size + bag2Size);
+        DBag<E> result = new PersistentBag<E>(bag1Size + bag2Size);
         
         result.addAll(this);
         result.addAll(anOtherBag);

@@ -29,8 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.odmg.QueryInvalidException;
 import org.enerj.annotations.Persist;
+import org.odmg.QueryInvalidException;
 
 /**
  * Ener-J implementation of org.odmg.DArray which supports very large dynamic arrays
@@ -63,13 +63,15 @@ import org.enerj.annotations.Persist;
  * @see LargeList
  */
 @Persist
-public class LargePersistentArrayList 
-    implements org.odmg.DArray, org.enerj.core.LargeList, java.util.RandomAccess, Cloneable
+public class LargePersistentArrayList<E> 
+    implements org.odmg.DArray<E>, org.enerj.core.LargeList<E>, java.util.RandomAccess, Cloneable
 {
     /** Number of elements in each node. */
     private int mNodeSize;
     /** mNodeSize squared. */
     private long mNodeSizeSquared;
+    /** The maximum size of the array. */
+    private long mMaxSize;
     /** The number of elements in the array. */
     private long mSize;
     /** The root node of the tree. */
@@ -89,6 +91,7 @@ public class LargePersistentArrayList
     {
         mNodeSize = aNodeSize;
         mNodeSizeSquared = (long)mNodeSize * (long)mNodeSize;
+        mMaxSize = mNodeSizeSquared * mNodeSize;
         mRootNode = new Node(mNodeSize);
         mSize = 0;
     }
@@ -103,6 +106,25 @@ public class LargePersistentArrayList
         this(1024);
     }
     
+    /**
+     * Gets the maximum number of elements that this array may contain.  
+     *
+     * @return the maxmimum size, which is the nodeSize^3.
+     */
+    public long getMaximumSize()
+    {
+        return mMaxSize;
+    }
+    
+    /**
+     * Gets the size of an array node. 
+     *
+     * @return the size of an array node.
+     */
+    public int getNodeSize()
+    {
+        return mNodeSize;
+    }
 
     /**
      * Gets the leaf node for the corresponding index. Allocates new nodes if 
@@ -209,21 +231,21 @@ public class LargePersistentArrayList
     }
     
 
-    public void setAtIndex(long anIndex, Object anElement) 
+    public void setAtIndex(long anIndex, E anElement) 
     {
         Node node = getLeafNodeForIndex(anIndex, true);
         node.set((int)(anIndex % mNodeSize), anElement);
     }
     
 
-    public Object getAtIndex(long anIndex) 
+    public E getAtIndex(long anIndex) 
     {
         Node node = getLeafNodeForIndex(anIndex, false);
         if (node == null) {
             return null;
         }
         
-        return node.get((int)(anIndex % mNodeSize));
+        return (E)node.get((int)(anIndex % mNodeSize));
     }
     
 
@@ -297,24 +319,24 @@ public class LargePersistentArrayList
 
 
 
-    public boolean add(Object anElement) 
+    public boolean add(E anElement) 
     {
         setAtIndex(mSize, anElement);
         return true;
     }
     
 
-    public void add(int anIndex, Object anElement) 
+    public void add(int anIndex, E anElement) 
     {
         insertElements(anIndex, 1L);
         setAtIndex((long)anIndex, anElement);
     }
     
 
-    public boolean addAll(Collection aCollection) 
+    public boolean addAll(Collection<? extends E> aCollection) 
     {
         // This appends
-        Iterator iterator = aCollection.iterator();
+        Iterator<E> iterator = (Iterator<E>)aCollection.iterator();
         boolean result = iterator.hasNext();
         while (iterator.hasNext()) {
             setAtIndex(mSize, iterator.next() );
@@ -324,11 +346,11 @@ public class LargePersistentArrayList
     }
     
 
-    public boolean addAll(int anIndex, Collection aCollection) 
+    public boolean addAll(int anIndex, Collection<? extends E> aCollection) 
     {
         long numElements;
         if (aCollection instanceof LargeCollection) {
-            numElements = ((LargeCollection)aCollection).sizeAsLong();
+            numElements = ((LargeCollection<E>)aCollection).sizeAsLong();
         }
         else {
             numElements = aCollection.size();
@@ -336,7 +358,7 @@ public class LargePersistentArrayList
         
         insertElements(anIndex, numElements);
 
-        Iterator iterator = aCollection.iterator();
+        Iterator<E> iterator = (Iterator<E>)aCollection.iterator();
         boolean result = iterator.hasNext();
         for (; iterator.hasNext(); ++anIndex) {
             setAtIndex(anIndex, iterator.next() );
@@ -374,7 +396,7 @@ public class LargePersistentArrayList
     }
     
 
-    public Object get(int anIndex) 
+    public E get(int anIndex) 
     {
         return getAtIndex((long)anIndex);
     }
@@ -392,7 +414,7 @@ public class LargePersistentArrayList
     }
     
 
-    public Iterator iterator() 
+    public Iterator<E> iterator() 
     {
         return listIterator(0);
     }
@@ -404,15 +426,15 @@ public class LargePersistentArrayList
     }
     
 
-    public ListIterator listIterator() 
+    public ListIterator<E> listIterator() 
     {
         return listIterator(0);
     }
     
 
-    public ListIterator listIterator(int anIndex) 
+    public ListIterator<E> listIterator(int anIndex) 
     {
-        return new RandomAccessLargeListIterator(this, anIndex);
+        return new RandomAccessLargeListIterator<E>(this, anIndex);
     }
     
 
@@ -428,15 +450,15 @@ public class LargePersistentArrayList
     }
     
 
-    public Object remove(int anIndex) 
+    public E remove(int anIndex) 
     {
-        Object prevElement = getAtIndex((long)anIndex);
+        E prevElement = getAtIndex((long)anIndex);
         removeElements((long)anIndex, 1L);
         return prevElement;
     }
     
 
-    public boolean removeAll(Collection aCollection) 
+    public boolean removeAll(Collection<?> aCollection) 
     {
         Iterator iterator = aCollection.iterator();
         boolean result = false;
@@ -452,6 +474,17 @@ public class LargePersistentArrayList
 
     public void resize(int aNewSize) 
     {
+        resize((long)aNewSize);
+    }
+    
+
+    /**
+     * Like {@link #resize(int)} but allows sizes larger than an int. 
+     *
+     * @param aNewSize
+     */
+    public void resize(long aNewSize) 
+    {
         // ODMG v3.0 2.3.6.4 says resize changes the maximum number of elements
         // the array can contain. It also says if aNewSize is smaller than
         // the actual number of elements, an exception is thrown. The
@@ -466,7 +499,7 @@ public class LargePersistentArrayList
     }
     
 
-    public boolean retainAll(Collection aCollection) 
+    public boolean retainAll(Collection<?> aCollection) 
     {
         boolean result = false;
         for (long i = 0; i < mSize; i++) {
@@ -480,10 +513,10 @@ public class LargePersistentArrayList
     }
     
 
-    public Object set(int anIndex, Object anElement) 
+    public E set(int anIndex, E anElement) 
     {
         // This also checks that the index is in bounds.
-        Object prevObj = getAtIndex((long)anIndex);
+        E prevObj = getAtIndex((long)anIndex);
         setAtIndex((long)anIndex, anElement);
         return prevObj;
     }
@@ -495,7 +528,7 @@ public class LargePersistentArrayList
     }
     
 
-    public List subList(int fromIndex, int toIndex) 
+    public List<E> subList(int fromIndex, int toIndex) 
     {
         /**  TODO  */
         throw new UnsupportedOperationException("subList");
@@ -508,15 +541,15 @@ public class LargePersistentArrayList
     }
     
 
-    public Object[] toArray(Object[] anArray) 
+    public <T> T[] toArray(T[] anArray) 
     {
         if (anArray.length < mSize) {
-            anArray = (Object[])java.lang.reflect.Array.newInstance(
+            anArray = (T[])java.lang.reflect.Array.newInstance(
                 anArray.getClass().getComponentType(), (int)mSize);
         }
 
         for (long i = 0; i < mSize; i++) {
-            anArray[(int)i] = getAtIndex(i);
+            anArray[(int)i] = (T)getAtIndex(i);
         }
 
         if (anArray.length > mSize) {
@@ -527,7 +560,7 @@ public class LargePersistentArrayList
     }
 
 
-    public java.util.Iterator select(String str) throws org.odmg.QueryInvalidException 
+    public java.util.Iterator<E> select(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
@@ -541,14 +574,14 @@ public class LargePersistentArrayList
     }
     
 
-    public org.odmg.DCollection query(String str) throws org.odmg.QueryInvalidException 
+    public org.odmg.DCollection<E> query(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
 
-    public Object selectElement(String str) throws org.odmg.QueryInvalidException 
+    public E selectElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
@@ -623,11 +656,16 @@ public class LargePersistentArrayList
     /**
      * {@inheritDoc}
      */
-    public Object clone() throws CloneNotSupportedException
+    public LargePersistentArrayList<E> clone()
     {
-        LargePersistentArrayList clone = (LargePersistentArrayList)super.clone();
-        clone.mRootNode = (Node)mRootNode.clone();
-        return clone;
+        try {
+            LargePersistentArrayList<E> clone = (LargePersistentArrayList<E>)super.clone();
+            clone.mRootNode = (Node)mRootNode.clone();
+            return clone;
+        }
+        catch (CloneNotSupportedException e) {
+            return null; // Can't happen
+        }
     }
     
 
@@ -648,7 +686,7 @@ public class LargePersistentArrayList
 
         Node(int mNodeSize)
         {
-            mObjects = new Object[mNodeSize];
+            mObjects = (Object[])new Object[mNodeSize];
         }
 
 

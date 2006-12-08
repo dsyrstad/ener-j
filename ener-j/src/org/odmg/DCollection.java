@@ -18,7 +18,7 @@ package org.odmg;
 */
 // * @see com.sun.java.util.collections.UnsupportedOperationException
 
-public interface DCollection extends java.util.Collection, QueryableCollection
+public interface DCollection<E> extends java.util.Collection<E>, QueryableCollection<E>
 {
 }
 

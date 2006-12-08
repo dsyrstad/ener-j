@@ -24,10 +24,6 @@
 
 package org.enerj.core;
 
-import java.io.*;
-import java.util.*;
-
-import org.odmg.*;
 
 /**
  * Represents additional Collection methods for a "large" list. A large list
@@ -36,7 +32,7 @@ import org.odmg.*;
  * @version $Id: LargeList.java,v 1.1 2005/08/16 04:24:45 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public interface LargeList extends LargeCollection, java.util.List
+public interface LargeList<E> extends LargeCollection<E>, java.util.List<E>
 {
 
     /**
@@ -77,7 +73,7 @@ public interface LargeList extends LargeCollection, java.util.List
      * @param anIndex the index of the element.
      * @param anElement the element to be set. May be null.
      */
-    public void setAtIndex(long anIndex, Object anElement);
+    public void setAtIndex(long anIndex, E anElement);
     
 
     /**
@@ -90,7 +86,7 @@ public interface LargeList extends LargeCollection, java.util.List
      * @throws IndexOutOfBoundsException if index is out of range (anIndex < 0 || 
      *  anIndex >= sizeAsLong()).
      */
-    public Object getAtIndex(long anIndex);
+    public E getAtIndex(long anIndex);
 
 
     /**

@@ -11,7 +11,7 @@ package org.odmg;
  * @version $Id: QueryableCollection.java,v 1.3 2005/08/12 02:56:46 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public interface QueryableCollection
+public interface QueryableCollection<E>
 {
 
     /**
@@ -22,7 +22,7 @@ public interface QueryableCollection
      * evaluates to true, null is returned.
      * @exception	QueryInvalidException	The query predicate is invalid.
      */
-    public Object selectElement(String predicate) throws QueryInvalidException;
+    public E selectElement(String predicate) throws QueryInvalidException;
     
 
     /**
@@ -32,7 +32,7 @@ public interface QueryableCollection
      * @return	An iterator used to iterate over the elements that evaluated true for the predicate.
      * @exception	QueryInvalidException	The query predicate is invalid.
      */
-    public java.util.Iterator select(String predicate) throws QueryInvalidException;
+    public java.util.Iterator<E> select(String predicate) throws QueryInvalidException;
     
 
     /**
@@ -42,7 +42,7 @@ public interface QueryableCollection
      * @return	A new collection containing the elements that evaluated true for the predicate.
      * @exception	QueryInvalidException	The query predicate is invalid.
      */
-    public DCollection query(String predicate) throws QueryInvalidException;
+    public DCollection<E> query(String predicate) throws QueryInvalidException;
     
 
     /**
