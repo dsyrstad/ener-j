@@ -10,7 +10,7 @@ package org.odmg;
 * @author	David Jordan (as Java Editor of the Object Data Management Group)
 * @version ODMG 3.0
 */
-public interface DMap extends java.util.Map, QueryableCollection 
+public interface DMap<K,V> extends java.util.Map<K,V>, QueryableCollection<V>
 {
 }
 

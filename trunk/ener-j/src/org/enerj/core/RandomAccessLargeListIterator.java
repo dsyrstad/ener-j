@@ -41,10 +41,10 @@ import org.enerj.annotations.Persist;
  * @see LargeList
  */
 @Persist
-public class RandomAccessLargeListIterator implements ListIterator 
+public class RandomAccessLargeListIterator<E> implements ListIterator<E> 
 {
     /** The list we're iterating over. */
-    private LargeList mLargeList;
+    private LargeList<E> mLargeList;
 
     /** Current index position.  */
     private long mPosition;
@@ -66,7 +66,7 @@ public class RandomAccessLargeListIterator implements ListIterator
      *
      * @throws IndexOutOfBoundsException if aStartIndex is outside the bounds of the list.
      */
-    public RandomAccessLargeListIterator(LargeList aLargeList, long aStartIndex)
+    public RandomAccessLargeListIterator(LargeList<E> aLargeList, long aStartIndex)
     {
         if (aStartIndex < 0 || aStartIndex > aLargeList.sizeAsLong()) {
             throw new IndexOutOfBoundsException("Iterator Index: " + aStartIndex);
@@ -88,7 +88,7 @@ public class RandomAccessLargeListIterator implements ListIterator
     }
 
 
-    public Object next() 
+    public E next() 
     {
         if (mPosition >= mLargeList.sizeAsLong()) {
             throw new NoSuchElementException();
@@ -152,7 +152,7 @@ public class RandomAccessLargeListIterator implements ListIterator
     }
 
 
-    public Object previous()
+    public E previous()
     {
         if (mPosition <= 0) {
             throw new NoSuchElementException();

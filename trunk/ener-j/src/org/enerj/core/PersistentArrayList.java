@@ -24,10 +24,14 @@
 
 package org.enerj.core;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
-import org.odmg.*;
 import org.enerj.annotations.Persist;
+import org.odmg.QueryInvalidException;
 
 /**
  * Ener-J implementation of org.odmg.DArray which supports persistable dynamic arrays
@@ -53,10 +57,10 @@ import org.enerj.annotations.Persist;
  * @see LargePersistentArrayList
  */
 @Persist
-public class PersistentArrayList implements org.odmg.DArray, Cloneable
+public class PersistentArrayList<E> implements org.odmg.DArray<E>, Cloneable
 {
     /** The delegate array. This is treated as an SCO when this FCO is persisted. */
-    private ArrayList mArrayList;
+    private ArrayList<E> mArrayList;
     
 
     /**
@@ -67,7 +71,7 @@ public class PersistentArrayList implements org.odmg.DArray, Cloneable
      */
     public PersistentArrayList(int anInitialCapacity)
     {
-        mArrayList = new ArrayList(anInitialCapacity);
+        mArrayList = new ArrayList<E>(anInitialCapacity);
     }
     
 
@@ -84,25 +88,25 @@ public class PersistentArrayList implements org.odmg.DArray, Cloneable
 
 
 
-    public boolean add(Object o)
+    public boolean add(E o)
     {
         return mArrayList.add(o);
     }
     
 
-    public void add(int index, Object element)
+    public void add(int index, E element)
     {
         mArrayList.add(index, element);
     }
     
 
-    public boolean addAll(Collection c)
+    public boolean addAll(Collection<? extends E> c)
     {
         return mArrayList.addAll(c);
     }
     
 
-    public boolean addAll(int index, Collection c)
+    public boolean addAll(int index, Collection<? extends E> c)
     {
         return mArrayList.addAll(index, c);
     }
@@ -126,7 +130,7 @@ public class PersistentArrayList implements org.odmg.DArray, Cloneable
     }
     
 
-    public Object get(int index) 
+    public E get(int index) 
     {
         return mArrayList.get(index);
     }
@@ -144,7 +148,7 @@ public class PersistentArrayList implements org.odmg.DArray, Cloneable
     }
     
 
-    public Iterator iterator() 
+    public Iterator<E> iterator() 
     {
         return mArrayList.iterator();
     }
@@ -156,13 +160,13 @@ public class PersistentArrayList implements org.odmg.DArray, Cloneable
     }
     
 
-    public ListIterator listIterator() 
+    public ListIterator<E> listIterator() 
     {
         return mArrayList.listIterator();
     }
     
 
-    public ListIterator listIterator(int index) 
+    public ListIterator<E> listIterator(int index) 
     {
         return mArrayList.listIterator(index);
     }
@@ -174,7 +178,7 @@ public class PersistentArrayList implements org.odmg.DArray, Cloneable
     }
     
 
-    public Object remove(int index) 
+    public E remove(int index) 
     {
         return mArrayList.remove(index);
     }
@@ -210,7 +214,7 @@ public class PersistentArrayList implements org.odmg.DArray, Cloneable
     }
     
 
-    public Object set(int index, Object element) 
+    public E set(int index, E element) 
     {
         return mArrayList.set(index, element);
     }
@@ -222,7 +226,7 @@ public class PersistentArrayList implements org.odmg.DArray, Cloneable
     }
     
 
-    public List subList(int fromIndex, int toIndex) 
+    public List<E> subList(int fromIndex, int toIndex) 
     {
         return mArrayList.subList(fromIndex, toIndex);
     }
@@ -234,13 +238,13 @@ public class PersistentArrayList implements org.odmg.DArray, Cloneable
     }
     
 
-    public Object[] toArray(Object[] a) 
+    public <T> T[] toArray(T[] a) 
     {
         return mArrayList.toArray(a);
     }
     
 
-    public java.util.Iterator select(String str) throws org.odmg.QueryInvalidException 
+    public java.util.Iterator<E> select(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
@@ -254,14 +258,14 @@ public class PersistentArrayList implements org.odmg.DArray, Cloneable
     }
     
 
-    public org.odmg.DCollection query(String str) throws org.odmg.QueryInvalidException 
+    public org.odmg.DCollection<E> query(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
 
-    public Object selectElement(String str) throws org.odmg.QueryInvalidException 
+    public E selectElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
@@ -298,10 +302,10 @@ public class PersistentArrayList implements org.odmg.DArray, Cloneable
     /**
      * {@inheritDoc}
      */
-    public Object clone() throws CloneNotSupportedException
+    public PersistentArrayList<E> clone() throws CloneNotSupportedException
     {
-        PersistentArrayList clone = (PersistentArrayList)super.clone();
-        clone.mArrayList = (ArrayList)mArrayList.clone();
+        PersistentArrayList<E> clone = (PersistentArrayList<E>)super.clone();
+        clone.mArrayList = (ArrayList<E>)mArrayList.clone();
         return clone;
     }
     

@@ -53,26 +53,26 @@ import org.enerj.annotations.Persist;
  * @see VeryLargeDMap
  */
 @Persist
-public class PersistentHashMap implements org.odmg.DMap, Cloneable
+public class PersistentHashMap<K,V> implements org.odmg.DMap<K,V>, Cloneable
 {
     /** The delegate map. This is treated as an SCO when this FCO is persisted. */
-    private HashMap mHashMap;
+    private HashMap<K,V> mHashMap;
     
 
     /**
-     * Constructs a new PersistentMap with the specified initial capacity. 
+     * Constructs a new PersistentHashMap with the specified initial capacity. 
      * 
      * @param anInitialCapacity the initially allocated capacity of the map.
      *  This does not affect the size of the map.
      */
     public PersistentHashMap(int anInitialCapacity)
     {
-        mHashMap = new HashMap(anInitialCapacity);
+        mHashMap = new HashMap<K,V>(anInitialCapacity);
     }
     
 
     /**
-     * Constructs a new PersistentMap with an initial capacity of 100. 
+     * Constructs a new PersistentHashMap with an initial capacity of 100. 
      */
     public PersistentHashMap()
     {
@@ -96,7 +96,7 @@ public class PersistentHashMap implements org.odmg.DMap, Cloneable
     }
     
 
-    public Object remove(Object anObject) 
+    public V remove(Object anObject) 
     {
         return mHashMap.remove(anObject);
     }
@@ -120,43 +120,43 @@ public class PersistentHashMap implements org.odmg.DMap, Cloneable
     }
     
 
-    public Set entrySet()
+    public Set<Entry<K,V>> entrySet()
     {
         return mHashMap.entrySet();
     }
     
 
-    public Object get(Object aKey)
+    public V get(Object aKey)
     {
         return mHashMap.get(aKey);
     }
     
 
-    public Set keySet()
+    public Set<K> keySet()
     {
         return mHashMap.keySet();
     }
     
 
-    public Object put(Object aKey, Object aValue)
+    public V put(K aKey, V aValue)
     {
         return mHashMap.put(aKey, aValue);
     }
     
 
-    public void putAll(Map aMap)
+    public void putAll(Map<? extends K,? extends V> aMap)
     {
         mHashMap.putAll(aMap);
     }
     
 
-    public Collection values() 
+    public Collection<V> values() 
     {
         return mHashMap.values();
     }
     
 
-    public java.util.Iterator select(String str) throws org.odmg.QueryInvalidException 
+    public java.util.Iterator<V> select(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
@@ -170,14 +170,14 @@ public class PersistentHashMap implements org.odmg.DMap, Cloneable
     }
     
 
-    public org.odmg.DCollection query(String str) throws org.odmg.QueryInvalidException 
+    public org.odmg.DCollection<V> query(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
     }
     
 
-    public Object selectElement(String str) throws org.odmg.QueryInvalidException 
+    public V selectElement(String str) throws org.odmg.QueryInvalidException 
     {
         /**  TODO  finish */
         throw new QueryInvalidException("Not implemented yet");
@@ -214,10 +214,10 @@ public class PersistentHashMap implements org.odmg.DMap, Cloneable
     /**
      * {@inheritDoc}
      */
-    public Object clone() throws CloneNotSupportedException
+    public PersistentHashMap<K,V> clone() throws CloneNotSupportedException
     {
-        PersistentHashMap clone = (PersistentHashMap)super.clone();
-        clone.mHashMap = (HashMap)mHashMap.clone();
+        PersistentHashMap<K,V> clone = (PersistentHashMap<K,V>)super.clone();
+        clone.mHashMap = (HashMap<K,V>)mHashMap.clone();
         return clone;
     }
     

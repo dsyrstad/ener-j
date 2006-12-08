@@ -16,7 +16,7 @@ package org.odmg;
 */
 // * @see java.lang.UnsupportedOperationException
 
-public interface DSet extends DCollection, java.util.Set
+public interface DSet<E> extends DCollection<E>, java.util.Set<E>
 {
 
 /**
@@ -25,7 +25,7 @@ public interface DSet extends DCollection, java.util.Set
 * @param	otherSet	The other set to be used in the union operation.
 * @return	A newly created <code>DSet</code> instance that contains the union of the two sets.
 */
-	public DSet			union(DSet otherSet);
+	public DSet<E>			union(DSet<E> otherSet);
 
 /**
 * Create a new <code>DSet</code> object that is the set intersection of this
@@ -34,7 +34,7 @@ public interface DSet extends DCollection, java.util.Set
 * @return	A newly created <code>DSet</code> instance that contains the
 * intersection of the two sets.
 */
-	public DSet			intersection(DSet otherSet);
+	public DSet<E>			intersection(DSet<E> otherSet);
 
 /**
 * Create a new <code>DSet</code> object that contains the elements of this
@@ -43,7 +43,7 @@ public interface DSet extends DCollection, java.util.Set
 * @return	A newly created <code>DSet</code> instance that contains the elements
 * of this set minus those elements in <code>otherSet</code>.
 */
-	public DSet			difference(DSet otherSet);
+	public DSet<E>			difference(DSet<E> otherSet);
 
 /**
 * Determine whether this set is a subset of the set referenced by <code>otherSet</code>.
@@ -51,7 +51,7 @@ public interface DSet extends DCollection, java.util.Set
 * @return True if this set is a subset of the set referenced by <code>otherSet</code>,
 * otherwise false.
 */
-	public boolean	subsetOf(DSet otherSet);
+	public boolean	subsetOf(DSet<E> otherSet);
 
 /**
 * Determine whether this set is a proper subset of the set referenced by
@@ -60,7 +60,7 @@ public interface DSet extends DCollection, java.util.Set
 * @return True if this set is a proper subset of the set referenced by
 * <code>otherSet</code>, otherwise false.
 */
-	public boolean	properSubsetOf(DSet otherSet);
+	public boolean	properSubsetOf(DSet<E> otherSet);
 
 /**
 * Determine whether this set is a superset of the set referenced by <code>otherSet</code>.
@@ -68,7 +68,7 @@ public interface DSet extends DCollection, java.util.Set
 * @return True if this set is a superset of the set referenced by <code>otherSet</code>,
 * otherwise false.
 */
-	public boolean	supersetOf(DSet otherSet);
+	public boolean	supersetOf(DSet<E> otherSet);
 
 /**
 * Determine whether this set is a proper superset of the set referenced by
@@ -77,6 +77,6 @@ public interface DSet extends DCollection, java.util.Set
 * @return True if this set is a proper superset of the set referenced by
 * <code>otherSet</code>, otherwise false.
 */
-	public boolean	properSupersetOf(DSet otherSet);
+	public boolean	properSupersetOf(DSet<E> otherSet);
 }
 

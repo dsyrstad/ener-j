@@ -1,6 +1,5 @@
 
 package org.odmg;
-import java.util.List;
 
 /**
 * The interface that defines the operations of an ODMG array.
@@ -16,7 +15,7 @@ import java.util.List;
 */
 // @see java.lang.UnsupportedOperationException
 
-public interface DArray extends org.odmg.DCollection, java.util.List,  java.util.RandomAccess
+public interface DArray<E> extends org.odmg.DCollection<E>, java.util.List<E>,  java.util.RandomAccess
 {
     /**
      * Resize the array to have <code>aNewSize</code> elements.

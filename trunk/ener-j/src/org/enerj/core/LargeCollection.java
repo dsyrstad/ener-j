@@ -36,7 +36,7 @@ import org.odmg.*;
  * @version $Id: LargeCollection.java,v 1.1 2005/08/16 04:24:45 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public interface LargeCollection extends java.util.Collection
+public interface LargeCollection<E> extends java.util.Collection<E>
 {
 
     /**
