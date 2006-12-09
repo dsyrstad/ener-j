@@ -1,9 +1,15 @@
-12/5/2006 - Persister/ObjectServer/Schema Refactoring
+12/9/2006 - Persister/ObjectServer/Schema Refactoring
 --------------------------------------------------------
 
 - Test read/write of large objects that exceed page size (more than 2 pages).
 
-- LargePersistentHashMap/set. B+tree
+-  B+tree
+- Maps need a wrapper that provides duplicate/unique key functionality for an index. Unique index
+  should throw if a duplicate put is attempted. A Duplicate index map entry should point directly to the
+  object if the key is unique, otherwise to an array if less than 100 entries, or a LargePersistentArrayList
+  if more than 100. Need to be able to remove by key and value for duplicates.
+  
+- OO7's array for atomic parts needs a non-unique index on id. Currently entries are overwritten.
 - Stream-based PersistentByteArray. Implements InputStream/OutputStream.
 
 - Test PolePosition

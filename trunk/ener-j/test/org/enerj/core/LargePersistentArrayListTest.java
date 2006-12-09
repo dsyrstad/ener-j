@@ -20,7 +20,7 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2001, 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/RegularDSetTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/VeryLargeDArrayTest.java,v 1.3 2006/05/05 13:47:37 dsyrstad Exp $
 
 package org.enerj.core;
 
@@ -33,26 +33,26 @@ import junit.framework.TestSuite;
 import org.odmg.QueryableCollection;
 
 /**
- * Tests org.enerj.core.PersistentHashSet.
+ * Tests org.enerj.core.VeryLargeDArray.
  *
- * @version $Id: RegularDSetTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
+ * @version $Id: VeryLargeDArrayTest.java,v 1.3 2006/05/05 13:47:37 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class PersistentHashSetTest extends TestCase
+public class LargePersistentArrayListTest extends TestCase
 {
 
-    public PersistentHashSetTest(String aTestName) 
+    public LargePersistentArrayListTest(String aTestName) 
     {
         super(aTestName);
     }
 
     public static Test suite() 
     {
-        TestSuite suite = new TestSuite(PersistentHashSetTest.class);
+        TestSuite suite = new TestSuite(LargePersistentArrayListTest.class);
         
-        suite.addTestSuite( PersistentHashSetTest.InternalDSetTest.class );
-        suite.addTestSuite( PersistentHashSetTest.InternalQueryableCollectionTest.class );
-
+        suite.addTestSuite( LargePersistentArrayListTest.InternalDArrayTest.class );
+        suite.addTestSuite( LargePersistentArrayListTest.InternalQueryableCollectionTest.class );
+        suite.addTestSuite( LargePersistentArrayListTest.InternalLargeListTest.class );
         return suite;
     }
     
@@ -63,6 +63,7 @@ public class PersistentHashSetTest extends TestCase
     public void testNothing() throws Exception
     {
         // Placeholder until a specific test is added.
+        //  TODO  test large lists to a real database
     }
 
 
@@ -71,12 +72,12 @@ public class PersistentHashSetTest extends TestCase
     
 
     /**
-     * Tests DSet interface of RegularDSet.
+     * Tests DArray interface of VeryLargeDArray.
      */
-    public static final class InternalDSetTest extends AbstractDSetTest
+    public static final class InternalDArrayTest extends AbstractDArrayTest
     {
 
-        public InternalDSetTest(String aName)
+        public InternalDArrayTest(String aName)
         {
             super(aName);
         }
@@ -84,14 +85,35 @@ public class PersistentHashSetTest extends TestCase
 
         public Collection createCollection() throws Exception
         {
-            return new PersistentHashSet();
+            // Construct with small node size so multiple branches will be tested.
+            return new LargePersistentArrayList(100);  
+        }
+    }
+    
+
+    /**
+     * Tests LargeList interface of VeryLargeDArray.
+     */
+    public static final class InternalLargeListTest extends AbstractLargeListTest
+    {
+
+        public InternalLargeListTest(String aName)
+        {
+            super(aName);
+        }
+
+
+        public LargeCollection createLargeCollection() throws Exception
+        {
+            // Construct with small node size so multiple branches will be tested.
+            return new LargePersistentArrayList(100);  
         }
     }
     
     
 
     /**
-     * Tests QueryableCollection interface of RegularDSet.
+     * Tests QueryableCollection interface of VeryLargeDArray.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
@@ -104,7 +126,8 @@ public class PersistentHashSetTest extends TestCase
 
         public QueryableCollection createQueryableCollection() throws Exception
         {
-            return new PersistentHashSet();
+            // Construct with small node size so multiple branches will be tested.
+            return new LargePersistentArrayList(100);  
         }
     }
 }

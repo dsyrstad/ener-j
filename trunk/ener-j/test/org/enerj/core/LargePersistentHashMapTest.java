@@ -20,11 +20,11 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2001, 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/RegularDSetTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/RegularDMapTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
 
 package org.enerj.core;
 
-import java.util.Collection;
+import java.util.Map;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -33,25 +33,25 @@ import junit.framework.TestSuite;
 import org.odmg.QueryableCollection;
 
 /**
- * Tests org.enerj.core.PersistentHashSet.
+ * Tests org.enerj.core.RegularDMap.
  *
- * @version $Id: RegularDSetTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
+ * @version $Id: RegularDMapTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class PersistentHashSetTest extends TestCase
+public class LargePersistentHashMapTest extends TestCase
 {
 
-    public PersistentHashSetTest(String aTestName) 
+    public LargePersistentHashMapTest(String aTestName) 
     {
         super(aTestName);
     }
 
     public static Test suite() 
     {
-        TestSuite suite = new TestSuite(PersistentHashSetTest.class);
+        TestSuite suite = new TestSuite(LargePersistentHashMapTest.class);
         
-        suite.addTestSuite( PersistentHashSetTest.InternalDSetTest.class );
-        suite.addTestSuite( PersistentHashSetTest.InternalQueryableCollectionTest.class );
+        suite.addTestSuite( LargePersistentHashMapTest.InternalDMapTest.class );
+        suite.addTestSuite( LargePersistentHashMapTest.InternalQueryableCollectionTest.class );
 
         return suite;
     }
@@ -71,27 +71,33 @@ public class PersistentHashSetTest extends TestCase
     
 
     /**
-     * Tests DSet interface of RegularDSet.
+     * Tests DMap interface of RegularDMap.
      */
-    public static final class InternalDSetTest extends AbstractDSetTest
+    public static final class InternalDMapTest extends AbstractDMapTest
     {
 
-        public InternalDSetTest(String aName)
+        public InternalDMapTest(String aName)
         {
             super(aName);
         }
 
 
-        public Collection createCollection() throws Exception
+        public Map createMap() throws Exception
         {
-            return new PersistentHashSet();
+            return new LargePersistentHashMap();
+        }
+
+
+        public boolean allowsNullKeys()
+        {
+            return true;
         }
     }
     
     
 
     /**
-     * Tests QueryableCollection interface of RegularDSet.
+     * Tests QueryableCollection interface of RegularDMap.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
@@ -104,7 +110,7 @@ public class PersistentHashSetTest extends TestCase
 
         public QueryableCollection createQueryableCollection() throws Exception
         {
-            return new PersistentHashSet();
+            return new LargePersistentHashMap();
         }
     }
 }

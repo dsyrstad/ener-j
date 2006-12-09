@@ -2,6 +2,8 @@ $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/Tests.txt,v 1.1 2005/08/16 0
 
 Core Tests:
 
+- Apache Harmony has more collection tests.
+
 ObjectSerializer:
     + Test serialization of all possible types, primitive, SCOs, and FCOs. 
     + Test null and non-null objects.
