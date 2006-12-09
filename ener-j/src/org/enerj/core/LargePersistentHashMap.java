@@ -202,7 +202,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
      *            second key to compare
      * @return true if the keys are considered equal
      */
-    boolean keysEqual(Object k1, Entry<K, V> entry)
+    private boolean keysEqual(Object k1, Entry<K, V> entry)
     {
         if (k1 == null && entry.key == null) {
             return true;
@@ -322,7 +322,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
         return result;
     }
 
-    Entry<K, V> createEntry(K key, long index, V value)
+    private Entry<K, V> createEntry(K key, long index, V value)
     {
         Entry<K, V> entry = new Entry<K, V>(key, value);
         entry.next = elementData.getAtIndex(index);

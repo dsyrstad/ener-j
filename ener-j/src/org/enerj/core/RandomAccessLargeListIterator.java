@@ -124,7 +124,7 @@ public class RandomAccessLargeListIterator<E> implements ListIterator<E>
 
 
 
-    public void add(Object anObject)
+    public void add(E anObject)
     {
         if (mPreviousIdx < 0L) {
             throw new IllegalStateException();
@@ -172,7 +172,7 @@ public class RandomAccessLargeListIterator<E> implements ListIterator<E>
     }
 
 
-    public void set(Object anObject)
+    public void set(E anObject)
     {
         if (mPreviousIdx < 0L) {
             throw new IllegalStateException();
