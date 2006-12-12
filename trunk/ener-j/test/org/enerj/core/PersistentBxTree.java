@@ -359,6 +359,11 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
         if (keyFound && !mAllowDuplicateKeys) {
             throw new IllegalStateException("Attempted to insert duplicate key in index");
         }
+
+        Persister persister = PersisterRegistry.getCurrentPersisterForThread();
+        if (persister == null) {
+            throw new IllegalStateException("No Persister is active on this thread");
+        }
         
         K passKey = aKey;
         long passOID = aValueOID;
@@ -375,8 +380,8 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
             int numKeys = node.getNumKeys(); 
             if (numKeys >= mNodeSize) {
                 // Split and pass new key/oid up. 
-                // If this node is a leaf, this is teh OID pointing next right leaf, 
-                long rightOID = node.getOverflowOID();
+                // If this node is a leaf, this is the OID pointing next right leaf, 
+                long rightOID = node.getLastOIDRef();
                 int splitIdx;
                 if (node.isLeaf() && rightOID == NULL_OID && keyIdx == numKeys) {
                     // If inserting on right-most leaf, split leaving 1 keys on the 
@@ -391,7 +396,7 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
                 // We have to create a new right node rather than a left node, because if 
                 // this is a leaf, the leaf to the left may already be pointing to the existing node.
                 Node<K> newRightNode = new Node<K>(node, splitIdx);
-                long newRightNodeOID = PersisterRegistry.getCurrentPersisterForThread().getOID(newRightNode);
+                long newRightNodeOID = persister.getOID(newRightNode);
                 if (node.isLeaf()) {
                     // Make new right node point to the same leaf as the existing node.
                     newRightNode.setOverflowOID(rightOID);
@@ -482,36 +487,36 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
         private K[] mKeys;
         private short mNumKeys;
         
-        /** OIDs pointing to the child nodes or values. Note that OIDs are used rather than references to the actual
-         * objects so that we don't load up a bunch of hollow objects when the node is referenced.
+        /** 
+         * OIDs pointing to the child nodes or values. Note that OIDs are used rather than references to the actual
+         * objects so that we don't load up a bunch of hollow objects when the node is referenced. This always
+         * contains one more element than mKeys.
+         * 
          * If this a leaf node, the OIDs reference the values. <p><pre>
          * mOIDRefs[0..n] references value for mKeys[0..n].
+         * The last OID ref (mOIDRefs[n+1]) references the next leaf node to the right. 
+         * This will be NULL_OID if there's not another leaf node. 
          * </pre><p>
          * 
          * If this is an interior node, the OIDs reference child nodes.<p><pre> 
-         * mOIDRefs[0] contains keys < mKeys[0].
-         * mOIDRefs[1] contains keys >= mKeys[0] and < mKeys[1].
+         * mOIDRefs[m] (the left child) contains keys < mKeys[m].
+         * mOIDRefs[m+1] (the right child) contains keys >= mKeys[m] and < mKeys[m+1].
          * </pre><p>
          */
         private long[] mOIDRefs;
         
-        /** For leafs, this references the next leaf node to the right. This will be NULL_OID if there's
-        * not another leaf node. For interior nodes, this references the node that 
-        * contains keys >= mKey[mNumKeys - 1].
-        */
-        private long mOverflowOID;
         
         Node(boolean isLeaf, int aNodeSize)
         {
             setIsLeaf(isLeaf);
             mKeys = (K[])new Object[aNodeSize];
             mNumKeys = 0;
-            mOIDRefs = new long[mKeys.length];
+            mOIDRefs = new long[mKeys.length + 1];
         }
         
         /**
          * Construct a Node that is a copy of the entries in aNode starting at aStartIdx to the end of the node.
-         * The overflow OID is also copied from aNode. 
+         * The last right child OID is also copied from aNode. 
          *
          * @param aNode the node to copy from.
          * @param aStartIdx the starting index.
@@ -523,11 +528,9 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
             mKeys = (K[])new Object[ aNode.mKeys.length ];
             int length = mNumKeys - aStartIdx;
             mNumKeys = (short)length;
-            mOIDRefs = new long[ mKeys.length];
+            mOIDRefs = new long[ mKeys.length + 1];
             System.arraycopy(aNode.mKeys, aStartIdx, mKeys, 0, length);
             System.arraycopy(aNode.mOIDRefs, aStartIdx, mOIDRefs, 0, length + 1);
-            
-            mOverflowOID = aNode.mOverflowOID;
         }
         
         boolean isLeaf()
@@ -543,16 +546,6 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
         int getNumKeys()
         {
             return mNumKeys;
-        }
-        
-        long getOverflowOID()
-        {
-            return mOverflowOID;
-        }
-        
-        void setOverflowOID(long aOverflowOID)
-        {
-            mOverflowOID = aOverflowOID;
         }
         
         /**
@@ -669,19 +662,26 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
         }
 
         /**
-         * Gets the value OID at the given index. Assumes that this node is a leaf node.
+         * Gets the OID at the given index.
          *
          * @param anIndex the index of the value.
          * 
          * @return the value's OID.
          */
-        long getValueOIDAt(int anIndex)
+        long getOIDRefAt(int anIndex)
         {
-            if (!mIsLeaf) {
-                throw new IllegalStateException("Node is not a leaf node.");
-            }
-            
             return mOIDRefs[anIndex];
+        }
+
+
+        /**
+         * Gets the last OID at (numKeys + 1).
+         *
+         * @return the value's OID.
+         */
+        long getLastOIDRef()
+        {
+            return mOIDRefs[mNumKeys + 1];
         }
     }
     
