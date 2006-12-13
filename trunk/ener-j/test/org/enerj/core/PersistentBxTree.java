@@ -326,24 +326,23 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
     }
     
     /**
-     * Traverse the tree to produce the Path to the given key. The returned path
+     * Traverse the tree to find the given key. The returned position
      * will reflect the proper insertion point if the key is not found.
      *
      * @param aKey the target key to be found.
      * 
-     * @return the path.
+     * @return the NodePos of the key.
      */
-    private Path<K> getPathToKey(K aKey)
+    private NodePos<K> search(K aKey)
     {
-        Path<K> path = new Path<K>();
         Node<K> node = mRootNode;
-        do {
-            NodePos<K> nodePos = node.findKey(aKey, mComparator);
-            path.push(nodePos);
+        NodePos<K> nodePos = node.findKey(aKey, mComparator);
+        while (!node.mIsLeaf) {
+            node = node.getChildNodeAt(nodePos.mKeyIdx);
+            nodePos = node.findKey(aKey, mComparator);
         }
-        while (!node.isLeaf());
         
-        return path;
+        return nodePos;
     }
 
     /**
@@ -352,77 +351,36 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
      * @param aKey the key.
      * @param aValueOID the OID refering to the value for the key. 
      */
-    private void insert(K aKey, long aValueOID)
+    private void insert(K aKey, long aValueOID, Comparator<K> aComparator)
     {
-        Path<K> path = getPathToKey(aKey);
-        boolean keyFound = path.peek().mIsMatch;
-        if (keyFound && !mAllowDuplicateKeys) {
-            throw new IllegalStateException("Attempted to insert duplicate key in index");
+        PushUpInfo<K> pushUp = mRootNode.pushDown(aKey, aValueOID, aComparator);
+        if (pushUp != null) {
+            // A key was pushed up to the root. Create a new root.
+            Persister persister = PersistableHelper.getPersister(this);  
+            Node<K> newRoot = new Node<K>(false, mNodeSize);
+            newRoot.mKeys[0] = pushUp.mPushUpKey;
+            newRoot.mNumKeys = 1;
+            newRoot.mOIDRefs[0] = persister.getOID(mRootNode);
+            newRoot.mOIDRefs[1] = persister.getOID(pushUp.mRightNodeOfKey);
+            mRootNode = newRoot;
         }
+    }
 
-        Persister persister = PersisterRegistry.getCurrentPersisterForThread();
-        if (persister == null) {
-            throw new IllegalStateException("No Persister is active on this thread");
-        }
+    /**
+     * Info returned by Node.pushDown() during insert.
+     */
+    private static final class PushUpInfo<K>
+    {
+        K mPushUpKey; // x 
+        Node<K> mRightNodeOfKey; // xr
         
-        K passKey = aKey;
-        long passOID = aValueOID;
-
-        NodePos<K> nodePos;
-        while ((nodePos = path.pop()) != null && passKey != null) {
-            K currKey = passKey;
-            long currOID = passOID;
-            
-            Node<K> node = nodePos.mNode;
-            int keyIdx = nodePos.mKeyIdx;
-            
-            // If not a enough room for a new key, split the node first.
-            int numKeys = node.getNumKeys(); 
-            if (numKeys >= mNodeSize) {
-                // Split and pass new key/oid up. 
-                // If this node is a leaf, this is the OID pointing next right leaf, 
-                long rightOID = node.getLastOIDRef();
-                int splitIdx;
-                if (node.isLeaf() && rightOID == NULL_OID && keyIdx == numKeys) {
-                    // If inserting on right-most leaf, split leaving 1 keys on the 
-                    // right (optimized sequential insert).
-                    splitIdx = numKeys - 2;
-                }
-                else {
-                    // Round up, right half gets same or more. >> 1 divides by 2.
-                    splitIdx = (numKeys + 1) >> 1; 
-                }
-
-                // We have to create a new right node rather than a left node, because if 
-                // this is a leaf, the leaf to the left may already be pointing to the existing node.
-                Node<K> newRightNode = new Node<K>(node, splitIdx);
-                long newRightNodeOID = persister.getOID(newRightNode);
-                if (node.isLeaf()) {
-                    // Make new right node point to the same leaf as the existing node.
-                    newRightNode.setOverflowOID(rightOID);
-                    // Make left (existing) node point to the new right node.
-                    node.setOverflowOID(newRightNodeOID);
-                }
-                else {
-                    // TODO HANDLING of overflow oid on interior nodes.
-                }
-
-                // The key to pass up is the first one on the right node.
-                passKey = newRightNode.getKeyAt(0);
-                passOID = newRightNodeOID;
-
-                // TODO choose the node that the key will be inserted in. Set node to it.
-            }
-            else {
-                passKey = null;
-            }
-            
-            // TODO insert currKey/currOID into node
+        PushUpInfo(K aPushUpKey, Node<K> aRightNodeOfKey)
+        {
+            mPushUpKey = aPushUpKey;
+            mRightNodeOfKey = aRightNodeOfKey;
         }
-        
     }
     
-
     /** Tracks a node and the position of within it.
      */
     private static final class NodePos<K>
@@ -438,41 +396,6 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
             mIsMatch = isMatch;
         }
     }
-    
-    /**
-     * Tracks a path through the B+Tree.
-     */
-    private static final class Path<K>
-    {
-        List<NodePos<K>> mNodeList = new ArrayList<NodePos<K>>(20);
-        
-        void push(NodePos<K> aNode)
-        {
-            mNodeList.add(aNode);
-        }
-        
-        /**
-         * Pops a node. Returns null if there are no more nodes. 
-         */
-        NodePos<K> pop()
-        {
-            if (mNodeList.isEmpty()) {
-                return null;
-            }
-            
-            return mNodeList.remove( mNodeList.size() - 1 );
-        }
-        
-        NodePos<K> peek()
-        {
-            if (mNodeList.isEmpty()) {
-                return null;
-            }
-            
-            return mNodeList.get( mNodeList.size() - 1 );
-        }
-    }
-
     
     /** A Root, interior, or leaf node in the B+tree. 
      */
@@ -508,7 +431,7 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
         
         Node(boolean isLeaf, int aNodeSize)
         {
-            setIsLeaf(isLeaf);
+            mIsLeaf = isLeaf;
             mKeys = (K[])new Object[aNodeSize];
             mNumKeys = 0;
             mOIDRefs = new long[mKeys.length + 1];
@@ -520,7 +443,6 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
          *
          * @param aNode the node to copy from.
          * @param aStartIdx the starting index.
-         * @param aLength the length to copy.
          */
         Node(Node<K> aNode, int aStartIdx) 
         {
@@ -531,21 +453,6 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
             mOIDRefs = new long[ mKeys.length + 1];
             System.arraycopy(aNode.mKeys, aStartIdx, mKeys, 0, length);
             System.arraycopy(aNode.mOIDRefs, aStartIdx, mOIDRefs, 0, length + 1);
-        }
-        
-        boolean isLeaf()
-        {
-            return mIsLeaf;
-        }
-        
-        void setIsLeaf(boolean isLeaf)
-        {
-            mIsLeaf = isLeaf;
-        }
-        
-        int getNumKeys()
-        {
-            return mNumKeys;
         }
         
         /**
@@ -607,7 +514,7 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
          * index at which the target key would be inserted is returned in the node position and mIsMatch
          * is set to false.   
          */
-        private NodePos<K> findKey(K aKey)
+        NodePos<K> findKey(K aKey)
         {
             Comparable<Object> key = (Comparable<Object>)aKey;
             int low = 0;
@@ -633,17 +540,76 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
         }
         
         /**
-         * Gets the key at the specified index.
-         *
-         * @param anIndex the index.
+         * Recursively pushes down the tree starting at this node to eventually insert aKey with
+         * aValueOID at a leaf.
          * 
-         * @return the key.
+         * @param aKey the key to be inserted.
+         * @param aValueOID the OID of the value.
+         * @param aComparator if not null, used to compare keys. Otherwise aKey is assumed to be a
+         *  {@link Comparable}.
+         * 
+         * @return a PushUpInfo if a key is to be propagated to a higher level node. Otherwise null is returned.
          */
-        K getKeyAt(int anIndex) 
+        PushUpInfo<K> pushDown(K aKey, long aValueOID, Comparator<K> aComparator)
         {
-            return mKeys[anIndex];
+            if (mIsLeaf) {
+                return insertInLeaf(aKey, aValueOID, aComparator);
+            }
+            
+            // Else this is an interior node. Drill down proper branch.
+            NodePos<K> nodePos = findKey(aKey, aComparator);
+            Node<K> branch = getChildNodeAt(nodePos.mKeyIdx + 1);
+            PushUpInfo<K> pushUp = branch.pushDown(aKey, aValueOID, aComparator);
+            if (pushUp == null) {
+                return null; // Nothing to do at this node.
+            }
+            
+            int keyIdx = nodePos.mKeyIdx;
+            // Insert key that was pushed up into this interior node.
+            if (mNumKeys < mKeys.length) {
+                // Room to insert. Just put it in place.
+                int length = mNumKeys - keyIdx;
+                System.arraycopy(mKeys, keyIdx, mKeys, keyIdx + 1, length);
+                System.arraycopy(mOIDRefs, keyIdx + 1, mOIDRefs, keyIdx + 2, length + 1); 
+                mKeys[keyIdx] = pushUp.mPushUpKey;
+                mOIDRefs[keyIdx + 1] = PersistableHelper.getPersister(this).getOID(pushUp.mRightNodeOfKey);
+                ++mNumKeys;
+                return null;
+            }
+
+            // Split interior node.
+            int medianIdx = (mKeys.length >> 1) - 1; // Divide by 2, less one to get the median.
+            if (keyIdx > medianIdx) {
+                // Key goes on right half. Increment median by one.
+                ++medianIdx;
+            }
+            
+            // Everything from medianIdx to the right goes into the new right node.
+            Node<K> newRightNode = new Node<K>(this, medianIdx);
+            truncate(medianIdx);
+            PushUpInfo<K> pushUpInfo = new PushUpInfo<K>();
         }
         
+        PushUpInfo<K> insertInLeaf(K aKey, long aValueOID, Comparator<K> aComparator)
+        {
+            NodePos<K> nodePos = findKey(aKey, aComparator);
+            if (nodePos.mIsMatch && false /* TODO Allow duplicates... */) {
+                throw new IllegalStateException("Attempted to insert duplicate key " + aKey);
+            }
+            
+            if (mNumKeys < mKeys.length) {
+                int keyIdx = nodePos.mKeyIdx;
+                int length = mNumKeys - keyIdx;
+                System.arraycopy(mKeys, keyIdx, mKeys, keyIdx + 1, length);
+                System.arraycopy(mOIDRefs, keyIdx, mOIDRefs, keyIdx + 1, length + 1);
+                mKeys[keyIdx] = aKey;
+                mOIDRefs[keyIdx] = aValueOID;
+                return null;
+            }
+
+            // Split leaf.
+        }
+
         /**
          * Gets the child node at the given index. Assumes that this node is an interior node.
          *
@@ -658,21 +624,8 @@ public class PersistentBxTree<K, V extends Persistable> implements DMap<K, V>, S
             }
             
             long oid = mOIDRefs[anIndex];
-            return (Node<K>)(Object)PersisterRegistry.getCurrentPersisterForThread().getObjectForOID(oid);
+            return (Node<K>)(Object)PersistableHelper.getPersister(this).getObjectForOID(oid);
         }
-
-        /**
-         * Gets the OID at the given index.
-         *
-         * @param anIndex the index of the value.
-         * 
-         * @return the value's OID.
-         */
-        long getOIDRefAt(int anIndex)
-        {
-            return mOIDRefs[anIndex];
-        }
-
 
         /**
          * Gets the last OID at (numKeys + 1).
