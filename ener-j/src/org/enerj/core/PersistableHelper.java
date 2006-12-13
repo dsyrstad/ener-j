@@ -99,7 +99,7 @@ public class PersistableHelper
      * 
      * @return true if a transaction is active, else false.
      */
-    private static final boolean isTransactionActive(Persistable aPersistable)
+    public static final boolean isTransactionActive(Persistable aPersistable)
     {
         Persister persister = getPersister(aPersistable);
         return persister != null && persister.isTransactionActive();
@@ -113,7 +113,7 @@ public class PersistableHelper
      * 
      * @return the Persister, or null if no Persister exists.
      */
-    private static final Persister getPersister(Persistable aPersistable)
+    public static final Persister getPersister(Persistable aPersistable)
     {
         Persister persister = aPersistable.enerj_GetPersister();
         if (persister == null) {
@@ -123,6 +123,19 @@ public class PersistableHelper
         return persister;
     }
 
+    /**
+     * Gets the Persister for the given persistable or thread if the persistable
+     * is not associated with a Persister.
+     *
+     * @param aPersistable the Persistable, as an Object for convenience.
+     * 
+     * @return the Persister, or null if no Persister exists.
+     */
+    public static final Persister getPersister(Object aPersistable)
+    {
+        return getPersister((Persistable)aPersistable);
+    }
+    
     /**
      * Verify that the specified object is loaded from the Persister. If it 
      * isn't loaded, it will be loaded.
