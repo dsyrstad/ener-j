@@ -253,6 +253,7 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
     {
         Persister persister = PersistableHelper.getPersister(this);
         insert(aKey, persister.getOID(aValue), mComparator);
+        ++mSize;
     }
 
     /** 
@@ -506,7 +507,7 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
         {
             // Make sure key references are cleared so that they can be collected and won't be loaded again.
             // Note that we don't need to clear the OIDs.
-            Arrays.fill(mKeys, aNumKeys, mNumKeys - 1, null);
+            Arrays.fill(mKeys, aNumKeys, mNumKeys, null);
             mNumKeys = (short)aNumKeys;
         }
         
@@ -617,7 +618,7 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
             }
 
             // Split interior node.
-            int medianIdx = (mNumKeys >> 1) - 1; // Divide by 2, less one to get the median.
+            int medianIdx = mNumKeys >> 1; // Divide by 2
             boolean insertOnRight = (keyIdx > medianIdx); 
             if (insertOnRight) {
                 // Key goes on right half. Increment median by one.
@@ -651,12 +652,7 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
             int length = mNumKeys - aKeyIdx;
             if (length > 0) {
                 System.arraycopy(mKeys, aKeyIdx, mKeys, aKeyIdx + 1, length);
-                try {
                 System.arraycopy(mOIDRefs, aKeyIdx + 1, mOIDRefs, aKeyIdx + 2, length);
-                }
-                catch (ArrayIndexOutOfBoundsException e) {
-                    System.out.println();
-                }
             }
             
             mKeys[aKeyIdx] = aPushUp.mPushUpKey;
@@ -689,21 +685,27 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
             }
 
             // Split leaf. Note that medain key stays in the leaf, unlike interior nodes.
-            int medianIdx = (mNumKeys >> 1) - 1; // Divide by 2, less one to get the median.
+            int medianIdx;
+            // If inserting on right-most leaf, split leaving 2 keys (optimized sorted insert).
+            // The right leaf pointer on the right most leaf is always null.
+            if (keyIdx == mNumKeys && mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
+                medianIdx = mNumKeys - 2;
+            }
+            else {
+                medianIdx = mNumKeys >> 1; // Divide by 2
+            }
+            
             boolean insertOnRight = (keyIdx > medianIdx); 
             if (insertOnRight) {
                 // Key goes on right half. Increment median by one.
                 ++medianIdx;
             }
             
-            // Everything from medianIdx + 1 to the right goes into the new right node.
-            Node<K> newRightNode = new Node<K>(this, medianIdx + 1);
+            // Everything from medianIdx to the right goes into the new right node.
+            Node<K> newRightNode = new Node<K>(this, medianIdx);
             // Key at medianIdx gets pushed up and is no longer included in this interior node.
             PushUpInfo<K> pushUpInfo = new PushUpInfo<K>(mKeys[medianIdx], newRightNode);
             
-            // Make new right node point to where this one pointed right.
-            newRightNode.mOIDRefs[newRightNode.mNumKeys] = mOIDRefs[mNumKeys];
-
             // This node (the left node) gets truncated to a length of medianIdx (elements 0..medianIdx - 1).
             truncate(medianIdx);
             
@@ -756,6 +758,7 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
         
         void dumpNode()
         {
+            System.out.print(mNumKeys + ":");
             for (int i = 0; i < mNumKeys; i++) {
                 if (i > 0) {
                     System.out.print(',');
