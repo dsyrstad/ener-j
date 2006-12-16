@@ -59,7 +59,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
     public void testPut() throws Exception
     {
         // Create an array of objects and the shuffle them.
-        TestClass1[] objs = new TestClass1[100];
+        TestClass1[] objs = new TestClass1[100000];
         for (int i = 0; i < objs.length; i++) {
             objs[i] = new TestClass1(i,
                             FIRST_NAMES[ i % FIRST_NAMES.length ],
@@ -79,14 +79,14 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
 
         long start = System.currentTimeMillis();
         try {
-            PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>(5); 
+            PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>();
+            db.bind(tree, "BTree");
             for (TestClass1 obj : objs) {
-                System.out.println("Inserting " + obj.mId);
+                //System.out.println("Inserting " + obj.mId);
                 tree.insert(obj.mId, obj);
-                tree.dumpTree();
+                //tree.dumpTree();
             }
-            
-        }
+       }
         finally {
             txn.commit();
             long end = System.currentTimeMillis();
