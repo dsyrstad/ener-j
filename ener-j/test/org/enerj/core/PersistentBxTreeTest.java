@@ -79,7 +79,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
 
         long start = System.currentTimeMillis();
         try {
-            PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>();
+            PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>(450, null, false, true);
             db.bind(tree, "BTree");
             for (TestClass1 obj : objs) {
                 //System.out.println("Inserting " + obj.mId);
