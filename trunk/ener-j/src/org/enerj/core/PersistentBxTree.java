@@ -63,7 +63,10 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
     /** The number of entries in the map. */
     private int mSize = 0;
     /** If true, duplicate keys are allowed in the map. */
-    private boolean mAllowDuplicateKeys = false; // TODO implement
+    private boolean mAllowDuplicateKeys = false;
+    /** If true, nodes are dynamically resized to match the number of keys. Otherwise they are
+     * fully allocated to mNodeSize. */
+    private boolean mDynamicallyResizeNode = false;
     
     /**
      * Construct a PersistentBxTree using natural ordering of the keys and no duplicate keys. 
@@ -82,7 +85,7 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
      */
     public PersistentBxTree(int aNumKeysPerNode)
     {
-        this(aNumKeysPerNode, null, false);
+        this(aNumKeysPerNode, null, false, false);
     }
 
     /**
@@ -93,8 +96,12 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
      * 
      * @param aComparator the Comparator to use for comparing keys. May be null to use 
      *  natural ordering, in which case the key object must implement {@link Comparable}.
+     * @param allowDuplicateKeys true if duplicate keys are allowed (this breaks the Map contract).
+     * @param shouldDynamicallyResizeNodes true if the number of keys in tree nodes should be dynamically resized
+     *  up to aNodeSize. Otherwise, aNodeSize keys are always allocated regardless of the number of keys in the node.
      */
-    public PersistentBxTree(int aNodeSize, Comparator<K> aComparator, boolean allowDuplicateKeys)
+    public PersistentBxTree(int aNodeSize, Comparator<K> aComparator, boolean allowDuplicateKeys, 
+                    boolean shouldDynamicallyResizeNodes)
     {
         if (aNodeSize <= 2 || aNodeSize > Short.MAX_VALUE) {
             throw new IllegalArgumentException("Node size must be > 2 and less than " + Short.MAX_VALUE);
@@ -103,8 +110,9 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
         mNodeSize = aNodeSize;
         mComparator = aComparator;
         // The root begins its life as a leaf. However, this is not common in real trees. Which came first: the leaf or the seed?
-        mRootNode = new Node<K>(true, mNodeSize);
+        mRootNode = new Node<K>(this, true);
         mAllowDuplicateKeys = allowDuplicateKeys;
+        mDynamicallyResizeNode = shouldDynamicallyResizeNodes;
     }
 
     /** 
@@ -252,7 +260,7 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
     public void insert(K aKey, V aValue)
     {
         Persister persister = PersistableHelper.getPersister(this);
-        insert(aKey, persister.getOID(aValue), mComparator);
+        insert(aKey, persister.getOID(aValue));
         ++mSize;
     }
 
@@ -355,10 +363,10 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
     private NodePos<K> search(K aKey)
     {
         Node<K> node = mRootNode;
-        NodePos<K> nodePos = node.findKey(aKey, mComparator);
+        NodePos<K> nodePos = node.findKey(this, aKey);
         while (!node.mIsLeaf) {
             node = node.getChildNodeAt(nodePos.mKeyIdx);
-            nodePos = node.findKey(aKey, mComparator);
+            nodePos = node.findKey(this, aKey);
         }
         
         return nodePos;
@@ -370,13 +378,14 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
      * @param aKey the key.
      * @param aValueOID the OID refering to the value for the key. 
      */
-    private void insert(K aKey, long aValueOID, Comparator<K> aComparator)
+    private void insert(K aKey, long aValueOID)
     {
-        PushUpInfo<K> pushUp = mRootNode.pushDown(aKey, aValueOID, aComparator);
+        PushUpInfo<K> pushUp = mRootNode.pushDown(this, aKey, aValueOID);
         if (pushUp != null) {
             // A key was pushed up to the root. Create a new root.
             Persister persister = PersistableHelper.getPersister(this);  
-            Node<K> newRoot = new Node<K>(false, mNodeSize);
+            Node<K> newRoot = new Node<K>(this, false);
+            newRoot.ensureLength(this, 1);
             newRoot.mKeys[0] = pushUp.mPushUpKey;
             newRoot.mNumKeys = 1;
             newRoot.mOIDRefs[0] = persister.getOID(mRootNode);
@@ -393,7 +402,7 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
         }
     }
 
-    public List<Node<K>> dumpNodes(List<Node<K>> someNodes)
+    private List<Node<K>> dumpNodes(List<Node<K>> someNodes)
     {
         List<Node<K>> childNodes = new ArrayList<Node<K>>();
         for (Node<K> node : someNodes) {
@@ -416,8 +425,8 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
      */
     private static final class PushUpInfo<K>
     {
-        K mPushUpKey; // x 
-        Node<K> mRightNodeOfKey; // xr
+        K mPushUpKey; 
+        Node<K> mRightNodeOfKey;
         
         PushUpInfo(K aPushUpKey, Node<K> aRightNodeOfKey)
         {
@@ -474,10 +483,15 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
         private long[] mOIDRefs;
         
         
-        Node(boolean isLeaf, int aNodeSize)
+        Node(PersistentBxTree<K, ?> aTree, boolean isLeaf)
         {
             mIsLeaf = isLeaf;
-            mKeys = (K[])new Object[aNodeSize];
+            int allocLen = 0;
+            if (!aTree.mDynamicallyResizeNode) {
+                allocLen = aTree.mNodeSize;
+            }
+            
+            mKeys = (K[])new Object[allocLen];
             mNumKeys = 0;
             mOIDRefs = new long[mKeys.length + 1];
         }
@@ -489,11 +503,15 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
          * @param aNode the node to copy from.
          * @param aStartIdx the starting index.
          */
-        Node(Node<K> aNode, int aStartIdx) 
+        Node(PersistentBxTree<K, ?> aTree, Node<K> aNode, int aStartIdx) 
         {
             mIsLeaf = aNode.mIsLeaf;
-            mKeys = (K[])new Object[ aNode.mKeys.length ];
             int length = aNode.mNumKeys - aStartIdx;
+            int allocLen = length;
+            if (!aTree.mDynamicallyResizeNode) {
+                allocLen = aTree.mNodeSize;
+            }
+            mKeys = (K[])new Object[allocLen];
             mNumKeys = (short)length;
             mOIDRefs = new long[ mKeys.length + 1];
             System.arraycopy(aNode.mKeys, aStartIdx, mKeys, 0, length);
@@ -501,13 +519,35 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
         }
         
         /**
+         * Ensures that at least aLength keys have been allocated.
+         */
+        void ensureLength(PersistentBxTree<K, ?> aTree, int aLength)
+        {
+            if (aTree.mDynamicallyResizeNode && aLength != mKeys.length) {
+                K[] newKeys = (K[])new Object[aLength];
+                long[] newOIDRefs = new long[ newKeys.length + 1];
+                int copyLength = (aLength > mKeys.length ? mKeys.length : aLength);
+                System.arraycopy(mKeys, 0, newKeys, 0, copyLength);
+                System.arraycopy(mOIDRefs, 0, newOIDRefs, 0, copyLength + 1);
+                mKeys = newKeys;
+                mOIDRefs = newOIDRefs;
+            }
+        }
+        
+        /**
          * Truncates this node aNumKeys.
          */
-        void truncate(int aNumKeys)
+        void truncate(PersistentBxTree<K, ?> aTree, int aNumKeys)
         {
-            // Make sure key references are cleared so that they can be collected and won't be loaded again.
-            // Note that we don't need to clear the OIDs.
-            Arrays.fill(mKeys, aNumKeys, mNumKeys, null);
+            if (aTree.mDynamicallyResizeNode) {
+                ensureLength(aTree, aNumKeys);
+            }
+            else {
+                // Make sure key references are cleared so that they can be collected and won't be loaded again.
+                // Note that we don't need to clear the OIDs.
+                Arrays.fill(mKeys, aNumKeys, mNumKeys, null);
+            }
+            
             mNumKeys = (short)aNumKeys;
         }
         
@@ -515,16 +555,15 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
          * Finds the given key within the node.
          *
          * @param aKey the target key to be found.
-         * @param aComparator if not null, used to compare keys. Otherwise aKey is assumed to be a
-         *  {@link Comparable}.
          * 
          * @return a node position. If an exact match is not found, the
          * index at which the target key would be inserted is returned in the node position and mIsMatch
          * is set to false.   
          */
-        NodePos<K> findKey(K aKey, Comparator<K> aComparator)
+        NodePos<K> findKey(PersistentBxTree<K, ?> aTree, K aKey)
         {
-            if (aComparator == null) {
+            Comparator<K> comparator = aTree.mComparator;
+            if (comparator == null) {
                 return findKey(aKey);
             }
 
@@ -534,7 +573,7 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
             boolean found = false;
             while (low <= high) {
                 mid = (low + high) >> 1;
-                int result = aComparator.compare(mKeys[mid], aKey);
+                int result = comparator.compare(mKeys[mid], aKey);
                 if (result > 0) {
                     low = mid + 1;
                 }
@@ -561,7 +600,7 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
          */
         NodePos<K> findKey(K aKey)
         {
-            Comparable<Object> key = (Comparable<Object>)aKey;
+            Comparable<K> key = (Comparable<K>)aKey;
             int low = 0;
             int mid = 0;
             int high = mNumKeys - 1;
@@ -590,30 +629,28 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
          * 
          * @param aKey the key to be inserted.
          * @param aValueOID the OID of the value.
-         * @param aComparator if not null, used to compare keys. Otherwise aKey is assumed to be a
-         *  {@link Comparable}.
          * 
          * @return a PushUpInfo if a key is to be propagated to a higher level node. Otherwise null is returned.
          */
-        PushUpInfo<K> pushDown(K aKey, long aValueOID, Comparator<K> aComparator)
+        PushUpInfo<K> pushDown(PersistentBxTree<K, ?> aTree, K aKey, long aValueOID)
         {
             if (mIsLeaf) {
-                return insertInLeaf(aKey, aValueOID, aComparator);
+                return insertInLeaf(aTree, aKey, aValueOID);
             }
             
             // Else this is an interior node. Drill down proper branch.
-            NodePos<K> nodePos = findKey(aKey, aComparator);
+            NodePos<K> nodePos = findKey(aTree, aKey);
             Node<K> branch = getChildNodeAt(nodePos.mKeyIdx);
-            PushUpInfo<K> pushUp = branch.pushDown(aKey, aValueOID, aComparator);
+            PushUpInfo<K> pushUp = branch.pushDown(aTree, aKey, aValueOID);
             if (pushUp == null) {
                 return null; // Nothing to do at this node.
             }
             
             int keyIdx = nodePos.mKeyIdx;
             // Insert key that was pushed up into this interior node.
-            if (mNumKeys < mKeys.length) {
+            if (mNumKeys < aTree.mNodeSize) {
                 // Room to insert. Just put it in place.
-                pushInInterior(pushUp, keyIdx);
+                pushInInterior(aTree, pushUp, keyIdx);
                 return null;
             }
 
@@ -626,19 +663,19 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
             }
             
             // Everything from medianIdx + 1 to the right goes into the new right node.
-            Node<K> newRightNode = new Node<K>(this, medianIdx + 1);
+            Node<K> newRightNode = new Node<K>(aTree, this, medianIdx + 1);
             // Key at medianIdx gets pushed up and is no longer included in this interior node.
             PushUpInfo<K> pushUpInfo = new PushUpInfo<K>(mKeys[medianIdx], newRightNode);
             
             // This node (the left node) gets truncated to a length of medianIdx (elements 0..medianIdx - 1).
-            truncate(medianIdx);
+            truncate(aTree, medianIdx);
             
             if (insertOnRight) {
                 // Key gets inserted on right node. Adjust the key index.
-                newRightNode.pushInInterior(pushUp, keyIdx - medianIdx);
+                newRightNode.pushInInterior(aTree, pushUp, keyIdx - medianIdx);
             }
             else {
-                pushInInterior(pushUp, keyIdx);
+                pushInInterior(aTree, pushUp, keyIdx);
             }
 
             return pushUpInfo;
@@ -647,8 +684,9 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
         /**
          * Push a key and right node into this interior node at keyIdx. Assumes that the node is not full.
          */
-        void pushInInterior(PushUpInfo<K> aPushUp, int aKeyIdx)
+        void pushInInterior(PersistentBxTree<K, ?> aTree, PushUpInfo<K> aPushUp, int aKeyIdx)
         {
+            ensureLength(aTree, mNumKeys + 1);
             int length = mNumKeys - aKeyIdx;
             if (length > 0) {
                 System.arraycopy(mKeys, aKeyIdx, mKeys, aKeyIdx + 1, length);
@@ -670,17 +708,17 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
          * 
          * @return a PushUpInfo if a key is to be propagated to a higher level node. Otherwise null is returned.
          */
-        PushUpInfo<K> insertInLeaf(K aKey, long aValueOID, Comparator<K> aComparator)
+        PushUpInfo<K> insertInLeaf(PersistentBxTree<K, ?> aTree, K aKey, long aValueOID)
         {
-            NodePos<K> nodePos = findKey(aKey, aComparator);
-            if (nodePos.mIsMatch && false /* TODO Allow duplicates... */) {
+            NodePos<K> nodePos = findKey(aTree, aKey);
+            if (nodePos.mIsMatch && !aTree.mAllowDuplicateKeys) {
                 throw new IllegalStateException("Attempted to insert duplicate key " + aKey);
             }
             
             int keyIdx = nodePos.mKeyIdx;
-            if (mNumKeys < mKeys.length) {
+            if (mNumKeys < aTree.mNodeSize) {
                 // Simply insert into leaf. We're done.
-                pushInLeaf(aKey, aValueOID, keyIdx);
+                pushInLeaf(aTree, aKey, aValueOID, keyIdx);
                 return null;
             }
 
@@ -702,22 +740,22 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
             }
             
             // Everything from medianIdx to the right goes into the new right node.
-            Node<K> newRightNode = new Node<K>(this, medianIdx);
+            Node<K> newRightNode = new Node<K>(aTree, this, medianIdx);
             // Key at medianIdx gets pushed up and is no longer included in this interior node.
             PushUpInfo<K> pushUpInfo = new PushUpInfo<K>(mKeys[medianIdx], newRightNode);
             
             // This node (the left node) gets truncated to a length of medianIdx (elements 0..medianIdx - 1).
-            truncate(medianIdx);
+            truncate(aTree, medianIdx);
             
             // Make left node point to the new right node.
             mOIDRefs[mNumKeys] = PersistableHelper.getPersister(this).getOID(newRightNode);
             
             if (insertOnRight) {
                 // Key gets inserted on right node. Adjust the key index.
-                newRightNode.pushInLeaf(aKey, aValueOID, keyIdx - medianIdx);
+                newRightNode.pushInLeaf(aTree, aKey, aValueOID, keyIdx - medianIdx);
             }
             else {
-                pushInLeaf(aKey, aValueOID, keyIdx);
+                pushInLeaf(aTree, aKey, aValueOID, keyIdx);
             }
 
             return pushUpInfo;
@@ -726,8 +764,9 @@ public class PersistentBxTree<K, V> implements DMap<K, V>, SortedMap<K, V>
         /**
          * Push a key and value OID into this leaf node at keyIdx. Assumes that the node is not full.
          */
-        void pushInLeaf(K aKey, long aValueOID, int aKeyIdx)
+        void pushInLeaf(PersistentBxTree<K, ?> aTree, K aKey, long aValueOID, int aKeyIdx)
         {
+            ensureLength(aTree, mNumKeys + 1);
             int length = mNumKeys - aKeyIdx;
             if (length > 0) {
                 System.arraycopy(mKeys, aKeyIdx, mKeys, aKeyIdx + 1, length);
