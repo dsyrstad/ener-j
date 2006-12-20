@@ -276,7 +276,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
 
                 @Override
                 public Iterator<Map.Entry<K, V>> iterator() {
-                    return new UnboundedEntryIterator<K, V>(TreeMap.this);
+                    return new EntryIterator<K, V>(PersistentBxTree.this);
                 }
             };
         }
@@ -1006,76 +1006,97 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         }
     }
     
+    /**
+     * Base iterator implementation. If mEndKey is specified, an upper bound to the iteration is 
+     * enforced.
+     */
     private static class AbstractMapIterator<K, V>
     {
-        PersistentBxTree<K, V> backingMap;
-        int expectedModCount;
-        NodePos<K> nextNodePos;
-        NodePos<K> currNodePos;
+        PersistentBxTree<K, V> mTree;
+        int mExpectedModCount;
+        NodePos<K> mNextNodePos;
+        NodePos<K> mCurrNodePos;
+        Comparable<K> mEndKeyComparable;
+        K mEndKey;
 
-        AbstractMapIterator(PersistentBxTree<K, V> map, NodePos<K> startNodePos)
+        AbstractMapIterator(PersistentBxTree<K, V> map, NodePos<K> startNodePos, K endKey)
         {
-            backingMap = map;
-            expectedModCount = map.mModCount;
-            nextNodePos = startNodePos;
-            currNodePos = null;
+            mTree = map;
+            mExpectedModCount = map.mModCount;
+            mNextNodePos = startNodePos;
+            mCurrNodePos = null;
+            this.mEndKey = endKey;
+            if (mTree.mComparator == null) {
+                mEndKeyComparable = (Comparable<K>)endKey;
+            }
         }
 
         public boolean hasNext()
         {
-            return nextNodePos != null;
+            return mNextNodePos != null;
         }
 
         final public void remove()
         {
-            if (expectedModCount != backingMap.mModCount) {
+            if (mExpectedModCount != mTree.mModCount) {
                 throw new ConcurrentModificationException();
             }
 
-            if (currNodePos == null) {
+            if (mCurrNodePos == null) {
                 throw new IllegalStateException();
             }
 
-            currNodePos.mNode.delete(backingMap, currNodePos.mKeyIdx);
-            currNodePos = null;
-            expectedModCount++;
+            mCurrNodePos.mNode.delete(mTree, mCurrNodePos.mKeyIdx);
+            mCurrNodePos = null;
+            mExpectedModCount++;
         }
 
         final void makeNext()
         {
-            if (expectedModCount != backingMap.mModCount) {
+            if (mExpectedModCount != mTree.mModCount) {
                 throw new ConcurrentModificationException();
             }
             
-            if (nextNodePos == null) {
+            if (mNextNodePos == null) {
                 throw new NoSuchElementException();
             }
             
-            currNodePos.mNode = nextNodePos.mNode;
-            currNodePos.mKeyIdx = nextNodePos.mKeyIdx;
+            mCurrNodePos.mNode = mNextNodePos.mNode;
+            mCurrNodePos.mKeyIdx = mNextNodePos.mKeyIdx;
 
-            nextNodePos = currNodePos.mNode.successor(nextNodePos);
+            mNextNodePos = mCurrNodePos.mNode.successor(mNextNodePos);
+            if (mEndKey != null) {
+                K key = mNextNodePos.mNode.mKeys[ mNextNodePos.mKeyIdx ];
+                if (mEndKeyComparable != null) {
+                    if (mEndKeyComparable.compareTo(key) > 0) {
+                        mNextNodePos = null;
+                    }
+                }
+                else if (mTree.mComparator.compare(key, mEndKey) > 0) {
+                    mNextNodePos = null;
+                }
+            }
         }
         
         final Map.Entry<K,V> makeNextEntry()
         {
             makeNext();
-            return new Entry<K, V>(currNodePos);
+            return new Entry<K, V>(mCurrNodePos);
         }
     }
 
-    private static class UnboundedEntryIterator<K, V> extends AbstractMapIterator<K, V> implements
+    private static class EntryIterator<K, V> extends AbstractMapIterator<K, V> implements
                     Iterator<Map.Entry<K, V>>
     {
 
-        UnboundedEntryIterator(PersistentBxTree<K, V> map, NodePos<K> startNodePos)
+        EntryIterator(PersistentBxTree<K, V> map, NodePos<K> startNodePos, K endKey)
         {
-            super(map, startNodePos);
+            super(map, startNodePos, endKey);
         }
 
-        UnboundedEntryIterator(PersistentBxTree<K, V> map)
+        EntryIterator(PersistentBxTree<K, V> map)
         {
-            super(map, map.getLeftMostNodePos());
+            super(map, map.getLeftMostNodePos(), null);
         }
 
         public Map.Entry<K, V> next()
@@ -1085,16 +1106,16 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     }
 
 
-    static class UnboundedKeyIterator<K, V> extends AbstractMapIterator<K, V> implements Iterator<K>
+    static class KeyIterator<K, V> extends AbstractMapIterator<K, V> implements Iterator<K>
     {
-        public UnboundedKeyIterator(PersistentBxTree<K, V> map, NodePos<K> startNodePos)
+        KeyIterator(PersistentBxTree<K, V> map, NodePos<K> startNodePos, K endKey)
         {
-            super(map, startNodePos);
+            super(map, startNodePos, endKey);
         }
 
-        public UnboundedKeyIterator(PersistentBxTree<K, V> map)
+        KeyIterator(PersistentBxTree<K, V> map)
         {
-            super(map, map.getLeftMostNodePos());
+            super(map, map.getLeftMostNodePos(), null);
         }
 
         public K next()
@@ -1104,17 +1125,16 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     }
 
 
-    static class UnboundedValueIterator<K, V> extends AbstractMapIterator<K, V> implements Iterator<V>
+    static class ValueIterator<K, V> extends AbstractMapIterator<K, V> implements Iterator<V>
     {
-
-        public UnboundedValueIterator(PersistentBxTree<K, V> map, NodePos<K> startNodePos)
+        ValueIterator(PersistentBxTree<K, V> map, NodePos<K> startNodePos, K endKey)
         {
-            super(map, startNodePos);
+            super(map, startNodePos, endKey);
         }
 
-        public UnboundedValueIterator(PersistentBxTree<K, V> map)
+        ValueIterator(PersistentBxTree<K, V> map)
         {
-            super(map, map.getLeftMostNodePos());
+            super(map, map.getLeftMostNodePos(), null);
         }
 
         public V next()
@@ -1124,284 +1144,89 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     }
 
 
-    private static class ComparatorBoundedIterator<K, V> extends AbstractMapIterator<K, V>
-    {
-        private final K endKey;
-
-        private final Comparator<? super K> cmp;
-
-        ComparatorBoundedIterator(PersistentBxTree<K, V> map, Entry<K, V> startNode, K end)
-        {
-            super(map, startNode);
-            endKey = end;
-            cmp = map.comparator();
-        }
-
-        final void cleanNext()
-        {
-            if (node != null && cmp.compare(endKey, node.key) <= 0) {
-                node = null;
-            }
-        }
-
-        @Override
-        public boolean hasNext()
-        {
-            return (node != null && endKey != null) && (cmp.compare(node.key, endKey) < 0);
-        }
-    }
-
-
-    private static class ComparatorBoundedEntryIterator<K, V> extends ComparatorBoundedIterator<K, V> implements
-                    Iterator<Map.Entry<K, V>>
-    {
-
-        ComparatorBoundedEntryIterator(PersistentBxTree<K, V> map, Entry<K, V> startNode, K end)
-        {
-            super(map, startNode, end);
-        }
-
-        public Map.Entry<K, V> next()
-        {
-            makeNext();
-            cleanNext();
-            return lastNode;
-        }
-    }
-
-
-    private static class ComparatorBoundedKeyIterator<K, V> extends ComparatorBoundedIterator<K, V> implements
-                    Iterator<K>
-    {
-
-        ComparatorBoundedKeyIterator(PersistentBxTree<K, V> map, Entry<K, V> startNode, K end)
-        {
-            super(map, startNode, end);
-        }
-
-        public K next()
-        {
-            makeNext();
-            cleanNext();
-            return lastNode.key;
-        }
-    }
-
-
-    private static class ComparatorBoundedValueIterator<K, V> extends ComparatorBoundedIterator<K, V> implements
-                    Iterator<V>
-    {
-
-        ComparatorBoundedValueIterator(PersistentBxTree<K, V> map, Entry<K, V> startNode, K end)
-        {
-            super(map, startNode, end);
-        }
-
-        public V next()
-        {
-            makeNext();
-            cleanNext();
-            return lastNode.value;
-        }
-    }
-
-
-    private static class ComparableBoundedIterator<K, V> extends AbstractMapIterator<K, V>
-    {
-        private final Comparable<K> endKey;
-
-        public ComparableBoundedIterator(PersistentBxTree<K, V> treeMap, Entry<K, V> entry, Comparable<K> endKey)
-        {
-            super(treeMap, entry);
-            this.endKey = endKey;
-        }
-
-        final void cleanNext()
-        {
-            if ((node != null) && (endKey.compareTo(node.key) <= 0)) {
-                node = null;
-            }
-        }
-
-        @Override
-        public boolean hasNext()
-        {
-            return (node != null) && (endKey.compareTo(node.key) > 0);
-        }
-    }
-
-
-    private static class ComparableBoundedEntryIterator<K, V> extends ComparableBoundedIterator<K, V> implements
-                    Iterator<Map.Entry<K, V>>
-    {
-
-        ComparableBoundedEntryIterator(PersistentBxTree<K, V> map, Entry<K, V> startNode, Comparable<K> end)
-        {
-            super(map, startNode, end);
-        }
-
-        public Map.Entry<K, V> next()
-        {
-            makeNext();
-            cleanNext();
-            return lastNode;
-        }
-
-    }
-
-
-    private static class ComparableBoundedKeyIterator<K, V> extends ComparableBoundedIterator<K, V> implements
-                    Iterator<K>
-    {
-
-        ComparableBoundedKeyIterator(PersistentBxTree<K, V> map, Entry<K, V> startNode, Comparable<K> end)
-        {
-            super(map, startNode, end);
-        }
-
-        public K next()
-        {
-            makeNext();
-            cleanNext();
-            return lastNode.key;
-        }
-    }
-
-
-    private static class ComparableBoundedValueIterator<K, V> extends ComparableBoundedIterator<K, V> implements
-                    Iterator<V>
-    {
-
-        ComparableBoundedValueIterator(PersistentBxTree<K, V> map, Entry<K, V> startNode, Comparable<K> end)
-        {
-            super(map, startNode, end);
-        }
-
-        public V next()
-        {
-            makeNext();
-            cleanNext();
-            return lastNode.value;
-        }
-    }
-
-
     static final class SubMap<K, V> extends AbstractMap<K, V> implements SortedMap<K, V>, Serializable
     {
         private static final long serialVersionUID = -6520786458950516097L;
 
-        private PersistentBxTree<K, V> backingMap;
-
-        boolean hasStart, hasEnd;
-
-        K startKey, endKey;
+        private PersistentBxTree<K, V> mTree;
+        boolean mHasStart;
+        boolean mHasEnd;
+        K mStartKey;
+        K mEndKey;
+        Comparable<K> mStartKeyComparable;
+        Comparable<K> mEndKeyComparable;
 
         transient Set<Map.Entry<K, V>> entrySet = null;
 
-        SubMap(K start, PersistentBxTree<K, V> map)
+        SubMap(K start, PersistentBxTree<K, V> aTree)
         {
-            backingMap = map;
-            hasStart = true;
-            startKey = start;
+            this(start, aTree, null);
         }
 
-        SubMap(K start, PersistentBxTree<K, V> map, K end)
+        SubMap(K start, PersistentBxTree<K, V> aTree, K end)
         {
-            backingMap = map;
-            hasStart = hasEnd = true;
-            startKey = start;
-            endKey = end;
+            mTree = aTree;
+            mHasStart = mHasEnd = true;
+            mStartKey = start;
+            mEndKey = end;
+            if (mTree.mComparator == null) {
+                mStartKeyComparable = (Comparable<K>)mStartKey;
+                mEndKeyComparable = (Comparable<K>)mEndKey;
+            }
         }
 
-        SubMap(PersistentBxTree<K, V> map, K end)
+        SubMap(PersistentBxTree<K, V> aTree, K end)
         {
-            backingMap = map;
-            hasEnd = true;
-            endKey = end;
+            this(null, aTree, end);
         }
 
         private void checkRange(K key)
         {
-            Comparator<? super K> cmp = backingMap.comparator;
-            if (cmp == null) {
-                Comparable<K> object = toComparable(key);
-                if (hasStart && object.compareTo(startKey) < 0) {
-                    throw new IllegalArgumentException();
-                }
-                if (hasEnd && object.compareTo(endKey) >= 0) {
-                    throw new IllegalArgumentException();
-                }
-            }
-            else {
-                if (hasStart && backingMap.comparator().compare(key, startKey) < 0) {
-                    throw new IllegalArgumentException();
-                }
-                if (hasEnd && backingMap.comparator().compare(key, endKey) >= 0) {
-                    throw new IllegalArgumentException();
-                }
+            if (!isInRange(key)) {
+                throw new IllegalArgumentException();
             }
         }
 
         private boolean isInRange(K key)
         {
-            Comparator<? super K> cmp = backingMap.comparator;
-            if (cmp == null) {
-                Comparable<K> object = toComparable(key);
-                if (hasStart && object.compareTo(startKey) < 0) {
-                    return false;
-                }
-                if (hasEnd && object.compareTo(endKey) >= 0) {
-                    return false;
-                }
-            }
-            else {
-                if (hasStart && cmp.compare(key, startKey) < 0) {
-                    return false;
-                }
-                if (hasEnd && cmp.compare(key, endKey) >= 0) {
-                    return false;
-                }
-            }
-            return true;
+            return checkUpperBound(key) && checkLowerBound(key);
         }
 
         private boolean checkUpperBound(K key)
         {
-            if (hasEnd) {
-                Comparator<? super K> cmp = backingMap.comparator;
-                if (cmp == null) {
-                    return (toComparable(key).compareTo(endKey) < 0);
+            if (mHasEnd) {
+                if (mEndKeyComparable != null) {
+                    return (mEndKeyComparable.compareTo(key) >= 0);
                 }
-                return (cmp.compare(key, endKey) < 0);
+                
+                return (mTree.mComparator.compare(key, mEndKey) < 0);
             }
+            
             return true;
         }
 
         private boolean checkLowerBound(K key)
         {
-            if (hasStart) {
-                Comparator<? super K> cmp = backingMap.comparator;
-                if (cmp == null) {
-                    return (toComparable(key).compareTo(startKey) >= 0);
+            if (mHasStart) {
+                if (mStartKeyComparable != null) {
+                    return (mStartKeyComparable.compareTo(key) < 0);
                 }
-                return (cmp.compare(key, startKey) >= 0);
+                
+                return (mTree.mComparator.compare(mStartKey, key) >= 0);
             }
             return true;
         }
 
         public Comparator<? super K> comparator()
         {
-            return backingMap.comparator();
+            return mTree.comparator();
         }
 
         @SuppressWarnings("unchecked")
         @Override
         public boolean containsKey(Object key)
         {
-            if (isInRange((K)key)) {
-                return backingMap.containsKey(key);
-            }
-            return false;
+            return isInRange((K)key) && mTree.containsKey(key);
         }
 
         @Override
@@ -1424,11 +1249,11 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
 
         PersistentBxTree.Entry<K, V> firstEntry()
         {
-            if (!hasStart) {
-                PersistentBxTree.Entry<K, V> root = backingMap.root;
-                return (root == null) ? null : minimum(backingMap.root);
+            if (!mHasStart) {
+                PersistentBxTree.Entry<K, V> root = mTree.root;
+                return (root == null) ? null : minimum(mTree.root);
             }
-            PersistentBxTree.Entry<K, V> node = backingMap.findAfter(startKey);
+            PersistentBxTree.Entry<K, V> node = mTree.findAfter(mStartKey);
             if (node != null && checkUpperBound(node.key)) {
                 return node;
             }
@@ -1440,28 +1265,31 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         public V get(Object key)
         {
             if (isInRange((K)key)) {
-                return backingMap.get(key);
+                return mTree.get(key);
             }
+
             return null;
         }
 
         public SortedMap<K, V> headMap(K endKey)
         {
             checkRange(endKey);
-            if (hasStart) {
-                return new SubMap<K, V>(startKey, backingMap, endKey);
+            if (mHasStart) {
+                return new SubMap<K, V>(mStartKey, mTree, endKey);
             }
-            return new SubMap<K, V>(backingMap, endKey);
+         
+            return new SubMap<K, V>(mTree, endKey);
         }
 
         @Override
         public boolean isEmpty()
         {
-            if (hasStart) {
-                PersistentBxTree.Entry<K, V> node = backingMap.findAfter(startKey);
+            if (mHasStart) {
+                PersistentBxTree.Entry<K, V> node = mTree.findAfter(mStartKey);
                 return node == null || !checkUpperBound(node.key);
             }
-            return backingMap.findBefore(endKey) == null;
+            
+            return mTree.findBefore(mEndKey) == null;
         }
 
         @Override
@@ -1470,28 +1298,29 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             if (keySet == null) {
                 keySet = new SubMapKeySet<K, V>(this);
             }
+            
             return keySet;
         }
 
         public K lastKey()
         {
-            if (!hasEnd) {
-                return backingMap.lastKey();
+            if (!mHasEnd) {
+                return mTree.lastKey();
             }
-            PersistentBxTree.Entry<K, V> node = backingMap.findBefore(endKey);
+            
+            PersistentBxTree.Entry<K, V> node = mTree.findBefore(mEndKey);
             if (node != null && checkLowerBound(node.key)) {
                 return node.key;
             }
+            
             throw new NoSuchElementException();
         }
 
         @Override
         public V put(K key, V value)
         {
-            if (isInRange(key)) {
-                return backingMap.put(key, value);
-            }
-            throw new IllegalArgumentException();
+            checkRange(key);
+            return mTree.put(key, value);
         }
 
         @SuppressWarnings("unchecked")
@@ -1499,7 +1328,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         public V remove(Object key)
         {
             if (isInRange((K)key)) {
-                return backingMap.remove(key);
+                return mTree.remove(key);
             }
             return null;
         }
@@ -1508,27 +1337,25 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         {
             checkRange(startKey);
             checkRange(endKey);
-            Comparator<? super K> c = backingMap.comparator();
+            Comparator<? super K> c = mTree.comparator();
             if (c == null) {
-                if (toComparable(startKey).compareTo(endKey) <= 0) {
-                    return new SubMap<K, V>(startKey, backingMap, endKey);
+                if (toComparable(startKey).compareTo(endKey) > 0) {
+                    throw new IllegalArgumentException();
                 }
             }
             else {
-                if (c.compare(startKey, endKey) <= 0) {
-                    return new SubMap<K, V>(startKey, backingMap, endKey);
+                if (c.compare(startKey, endKey) > 0) {
+                    throw new IllegalArgumentException();
                 }
             }
-            throw new IllegalArgumentException();
+            
+            return new SubMap<K, V>(startKey, mTree, endKey);
         }
 
         public SortedMap<K, V> tailMap(K startKey)
         {
             checkRange(startKey);
-            if (hasEnd) {
-                return new SubMap<K, V>(startKey, backingMap, endKey);
-            }
-            return new SubMap<K, V>(startKey, backingMap);
+            return new SubMap<K, V>(startKey, mTree, mEndKey);
         }
 
         @Override
@@ -1537,6 +1364,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             if (valuesCollection == null) {
                 valuesCollection = new SubMapValuesCollection<K, V>(this);
             }
+
             return valuesCollection;
         }
     }
@@ -1561,15 +1389,15 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         public Iterator<Map.Entry<K, V>> iterator()
         {
             PersistentBxTree.Entry<K, V> startNode = subMap.firstEntry();
-            if (subMap.hasEnd) {
+            if (subMap.mHasEnd) {
                 Comparator<? super K> cmp = subMap.comparator();
                 if (cmp == null) {
-                    return new ComparableBoundedEntryIterator<K, V>(subMap.backingMap, startNode,
-                                    toComparable(subMap.endKey));
+                    return new ComparableBoundedEntryIterator<K, V>(subMap.mTree, startNode,
+                                    toComparable(subMap.mEndKey));
                 }
-                return new ComparatorBoundedEntryIterator<K, V>(subMap.backingMap, startNode, subMap.endKey);
+                return new ComparatorBoundedEntryIterator<K, V>(subMap.mTree, startNode, subMap.mEndKey);
             }
-            return new UnboundedEntryIterator<K, V>(subMap.backingMap, startNode);
+            return new UnboundedEntryIterator<K, V>(subMap.mTree, startNode);
         }
 
         @Override
@@ -1639,15 +1467,15 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         public Iterator<K> iterator()
         {
             PersistentBxTree.Entry<K, V> startNode = subMap.firstEntry();
-            if (subMap.hasEnd) {
+            if (subMap.mHasEnd) {
                 Comparator<? super K> cmp = subMap.comparator();
                 if (cmp == null) {
-                    return new ComparableBoundedKeyIterator<K, V>(subMap.backingMap, startNode,
-                                    toComparable(subMap.endKey));
+                    return new ComparableBoundedKeyIterator<K, V>(subMap.mTree, startNode,
+                                    toComparable(subMap.mEndKey));
                 }
-                return new ComparatorBoundedKeyIterator<K, V>(subMap.backingMap, startNode, subMap.endKey);
+                return new ComparatorBoundedKeyIterator<K, V>(subMap.mTree, startNode, subMap.mEndKey);
             }
-            return new UnboundedKeyIterator<K, V>(subMap.backingMap, startNode);
+            return new UnboundedKeyIterator<K, V>(subMap.mTree, startNode);
         }
     }
 
@@ -1671,15 +1499,15 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         public Iterator<V> iterator()
         {
             PersistentBxTree.Entry<K, V> startNode = subMap.firstEntry();
-            if (subMap.hasEnd) {
+            if (subMap.mHasEnd) {
                 Comparator<? super K> cmp = subMap.comparator();
                 if (cmp == null) {
-                    return new ComparableBoundedValueIterator<K, V>(subMap.backingMap, startNode,
-                                    toComparable(subMap.endKey));
+                    return new ComparableBoundedValueIterator<K, V>(subMap.mTree, startNode,
+                                    toComparable(subMap.mEndKey));
                 }
-                return new ComparatorBoundedValueIterator<K, V>(subMap.backingMap, startNode, subMap.endKey);
+                return new ComparatorBoundedValueIterator<K, V>(subMap.mTree, startNode, subMap.mEndKey);
             }
-            return new UnboundedValueIterator<K, V>(subMap.backingMap, startNode);
+            return new ValueIterator<K, V>(subMap.mTree, startNode);
         }
 
         @Override
