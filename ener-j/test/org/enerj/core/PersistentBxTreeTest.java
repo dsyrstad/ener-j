@@ -40,7 +40,7 @@ import org.odmg.Transaction;
 public class PersistentBxTreeTest extends AbstractDatabaseTestCase
 {
     private static final String[] FIRST_NAMES = { "Dan", "Tina", "Bob", "Sue", "Emily", "Cole", "Mike", "Borusik", "Ole", "Lena", };
-    private static final String[] LAST_NAMES = { "Smith", "Jones", "Funkmister", "Johnson", "Anderson", "Syrstad", "Robinson",  };
+    private static final String[] LAST_NAMES = { "Smith", "Jones", "Funkmeister", "Johnson", "Anderson", "Syrstad", "Robinson",  };
     private static final String[] CITIES = { "Burnsville", "Bloomington", "Minneapolis", "St Paul", "Washington", "Seattle", "Phoenix", "New York", "Clevland", "San Jose", };
 
     /**
@@ -70,7 +70,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         Collections.shuffle( Arrays.asList(objs), new Random(0L) ); // Use a consistent seed
 
         Implementation impl = EnerJImplementation.getInstance();
-        Database db = impl.newDatabase();
+        EnerJDatabase db = new EnerJDatabase();
         
         db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
 
@@ -86,13 +86,36 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
                 tree.insert(obj.mId, obj);
                 //tree.dumpTree();
             }
-       }
+        }
         finally {
             txn.commit();
-            long end = System.currentTimeMillis();
-            System.out.println("Insert time " + (end-start) + "ms");
             db.close();
         }
+
+        long end = System.currentTimeMillis();
+        System.out.println("Insert time " + (end-start) + "ms");
+
+        db = new EnerJDatabase();
+        
+        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
+        db.setAllowNontransactionalReads(true);
+
+        start = System.currentTimeMillis();
+        try {
+            PersistentBxTree<Integer, TestClass1> tree = (PersistentBxTree<Integer, TestClass1>)db.lookup("BTree");
+            for (TestClass1 obj : objs) {
+                assertTrue( tree.containsKey(obj.mId) );
+                TestClass1 getObj = tree.get(obj.mId);
+                assertNotNull(getObj);
+                assertEquals( obj.mLastName, getObj.mLastName );
+            }
+        }
+        finally {
+            db.close();
+        }
+
+        end = System.currentTimeMillis();
+        System.out.println("ContainsKey/Get time " + (end-start) + "ms");
     }
 
     @Persist
