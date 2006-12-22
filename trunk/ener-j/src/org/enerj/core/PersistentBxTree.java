@@ -1151,7 +1151,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             assert mIsLeaf;
 
             long oid = mOIDRefs[aKeyIdx];
-            return (Node<K>)(Object)PersistableHelper.getPersister(this).getObjectForOID(oid);
+            return PersistableHelper.getPersister(this).getObjectForOID(oid);
         }
         
         /**
