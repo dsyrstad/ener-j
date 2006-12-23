@@ -413,7 +413,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     
     /**
      * Traverse the tree to find the given key. The returned position
-     * will reflect the position of a key that is >= key). Note if the tree allows duplicate keys, this
+     * will reflect the position of a key that is >= key. Note if the tree allows duplicate keys, this
      * method will return any matching key within a series of duplicate keys, somewhat randomly.
      * Hence, this method is good for searching for existence of a key. 
      * It is not good for finding the point to start iterating over keys.
@@ -427,6 +427,10 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         Node<K> node = mRootNode;
         NodePos<K> nodePos = node.findKey(this, aKey);
         while (!node.mIsLeaf) {
+            if (nodePos.compareKeyTo(this, aKey) <= 0) {
+                ++nodePos.mKeyIdx; // Go down the >= branch
+            }
+            
             node = node.getChildNodeAt(nodePos.mKeyIdx);
             nodePos = node.findKey(this, aKey);
         }
@@ -806,23 +810,21 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             int low = 0;
             int mid = 0;
             int high = mNumKeys - 1;
-            boolean found = false;
             while (low <= high) {
                 mid = (low + high) >> 1;
                 int result = comparator.compare(mKeys[mid], aKey);
-                if (result > 0) {
+                if (result < 0) { // mid < key
                     low = mid + 1;
                 }
-                else if (result < 0) {
+                else if (result > 0) { // mid > key
                     high = mid - 1;
                 }
                 else {
-                    found = true;
-                    break;
+                    return new NodePos<K>(this, mid, true);
                 }
             }
 
-            return new NodePos<K>(this, low, found);
+            return new NodePos<K>(this, low, false);
         }
 
         /**
@@ -840,23 +842,22 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             int low = 0;
             int mid = 0;
             int high = mNumKeys - 1;
-            boolean found = false;
             while (low <= high) {
                 mid = (low + high) >> 1;
-                int result = key.compareTo(mKeys[mid]);
-                if (result > 0) {
+                // Note: The comparison in in the reverse sense of comparison because keys are switched around
+                int result = key.compareTo(mKeys[mid]); 
+                if (result > 0) { // mid < key
                     low = mid + 1;
                 }
-                else if (result < 0) {
+                else if (result < 0) { // mid > key
                     high = mid - 1;
                 }
                 else {
-                    found = true;
-                    break;
+                    return new NodePos<K>(this, mid, true);
                 }
             }
 
-            return new NodePos<K>(this, low, found);
+            return new NodePos<K>(this, low, false);
         }
         
         /**

@@ -79,7 +79,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
 
         long start = System.currentTimeMillis();
         try {
-            PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>(450, null, false, true);
+            PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>(450, null, false, false);
             db.bind(tree, "BTree");
             for (TestClass1 obj : objs) {
                 //System.out.println("Inserting " + obj.mId);
@@ -103,8 +103,9 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         start = System.currentTimeMillis();
         try {
             PersistentBxTree<Integer, TestClass1> tree = (PersistentBxTree<Integer, TestClass1>)db.lookup("BTree");
+            assertTrue(tree.containsKey(27148) );
             for (TestClass1 obj : objs) {
-                assertTrue( tree.containsKey(obj.mId) );
+                assertTrue("Id exists: " + obj.mId, tree.containsKey(obj.mId) );
                 TestClass1 getObj = tree.get(obj.mId);
                 assertNotNull(getObj);
                 assertEquals( obj.mLastName, getObj.mLastName );
