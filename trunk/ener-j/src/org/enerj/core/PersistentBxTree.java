@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.SortedMap;
 
 import org.enerj.annotations.Persist;
+import org.enerj.annotations.PersistenceAware;
 import org.odmg.DCollection;
 import org.odmg.DMap;
 import org.odmg.QueryInvalidException;
@@ -239,33 +240,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     public Set<java.util.Map.Entry<K, V>> entrySet()
     {
         if (mEntrySet == null) {
-            mEntrySet = new AbstractSet<Map.Entry<K, V>>() {
-                 @Override
-                public int size() {
-                    return mSize;
-                }
-
-                @Override
-                public void clear() {
-                    PersistentBxTree.this.clear();
-                }
-
-                @SuppressWarnings("unchecked")
-                @Override
-                public boolean contains(Object object) {
-                    if (object instanceof Map.Entry) {
-                        Map.Entry<K, V> entry = (Map.Entry<K, V>) object;
-                        Object v1 = get(entry.getKey()), v2 = entry.getValue();
-                        return v1 == null ? v2 == null : v1.equals(v2);
-                    }
-                    return false;
-                }
-
-                @Override
-                public Iterator<Map.Entry<K, V>> iterator() {
-                    return new EntryIterator<K, V>(PersistentBxTree.this);
-                }
-            };
+            mEntrySet = new EntrySet();         
         }
 
         return mEntrySet;
@@ -292,31 +267,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     public Set<K> keySet()
     {
         if (mKeySet == null) {
-            mKeySet = new AbstractSet<K>() {
-                @Override
-                public boolean contains(Object object)
-                {
-                    return containsKey(object);
-                }
-
-                @Override
-                public int size()
-                {
-                    return mSize;
-                }
-
-                @Override
-                public void clear()
-                {
-                    PersistentBxTree.this.clear();
-                }
-
-                @Override
-                public Iterator<K> iterator()
-                {
-                    return new KeyIterator<K, V>(PersistentBxTree.this);
-                }
-            };
+            mKeySet = new KeySet();
         }
 
         return mKeySet;
@@ -427,7 +378,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         Node<K> node = mRootNode;
         NodePos<K> nodePos = node.findKey(this, aKey);
         while (!node.mIsLeaf) {
-            if (nodePos.compareKeyTo(this, aKey) <= 0) {
+            if (nodePos.mKeyIdx < nodePos.mNode.mNumKeys && nodePos.compareKeyTo(this, aKey) <= 0) {
                 ++nodePos.mKeyIdx; // Go down the >= branch
             }
             
@@ -611,6 +562,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     /**
      * Info returned by Node.pushDown() during insert.
      */
+    @PersistenceAware
     private static final class PushUpInfo<K>
     {
         K mPushUpKey; 
@@ -625,6 +577,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     
     /** Tracks a node and the position of within it.
      */
+    @PersistenceAware
     private static final class NodePos<K>
     {
         Node<K> mNode;
@@ -899,11 +852,9 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 ++medianIdx;
             }
             
-            // Everything from medianIdx + 1 to the right goes into the new right node.
-            Node<K> newRightNode = new Node<K>(aTree, this, medianIdx + 1);
-            // Key at medianIdx gets pushed up and is no longer included in this interior node.
-            PushUpInfo<K> pushUpInfo = new PushUpInfo<K>(mKeys[medianIdx], newRightNode);
-            
+            // Everything from medianIdx to the right goes into the new right node.
+            Node<K> newRightNode = new Node<K>(aTree, this, medianIdx);
+
             // This node (the left node) gets truncated to a length of medianIdx (elements 0..medianIdx - 1).
             truncate(aTree, medianIdx);
             
@@ -915,6 +866,11 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 pushInInterior(aTree, pushUp, keyIdx);
             }
 
+            // Key at th end of the left node gets pushed up and is no longer included in this interior node.
+            int lastIdx = mNumKeys - 1;
+            PushUpInfo<K> pushUpInfo = new PushUpInfo<K>(mKeys[lastIdx], newRightNode);
+            truncate(aTree, lastIdx);
+            
             return pushUpInfo;
         }
         
@@ -963,10 +919,10 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             int medianIdx;
             // If inserting on right-most leaf, split leaving 2 keys (optimized sorted insert).
             // The right leaf pointer on the right most leaf is always null.
-            if (keyIdx == mNumKeys && mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
+            /*if (keyIdx == mNumKeys && mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
                 medianIdx = mNumKeys - 2;
             }
-            else {
+            else */{
                 medianIdx = mNumKeys >> 1; // Divide by 2
             }
             
@@ -979,17 +935,8 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             // Everything from medianIdx to the right goes into the new right node.
             Node<K> newRightNode = new Node<K>(aTree, this, medianIdx);
 
-            // Key at medianIdx gets pushed up and is no longer included in this interior node.
-            PushUpInfo<K> pushUpInfo = new PushUpInfo<K>(mKeys[medianIdx], newRightNode);
-            
             // This node (the left node) gets truncated to a length of medianIdx (elements 0..medianIdx - 1).
             truncate(aTree, medianIdx);
-            
-            // Make left node right pointer point to the new right node.
-            Persister persister = PersistableHelper.getPersister(this);
-            mOIDRefs[mNumKeys] = persister.getOID(newRightNode);
-            // Make right node left pointer point to the existing (left) node. 
-            newRightNode.mLeftLeafOID = persister.getOID(this);
             
             if (insertOnRight) {
                 // Key gets inserted on right node. Adjust the key index.
@@ -999,6 +946,22 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 pushInLeaf(aTree, aKey, aValueOID, keyIdx);
             }
 
+            // Key at the start of the right node gets pushed up, but is still included in the leaf.
+            PushUpInfo<K> pushUpInfo = new PushUpInfo<K>(newRightNode.mKeys[0], newRightNode);
+            
+            // Make left node right pointer point to the new right node.
+            Persister persister = PersistableHelper.getPersister(this);
+            long rightNodeOID = persister.getOID(newRightNode);
+            mOIDRefs[mNumKeys] = rightNodeOID;
+            // Make right node left pointer point to the existing (left) node. 
+            newRightNode.mLeftLeafOID = persister.getOID(this);
+            // The node to the right of the right node must now point back to the new right node. It previously
+            // pointed back to what is now the left node.
+            Node<K> rightOfRightNode = newRightNode.getRightNode();
+            if (rightOfRightNode != null) {
+                rightOfRightNode.mLeftLeafOID = rightNodeOID;
+            }
+            
             return pushUpInfo;
         }
 
@@ -1180,6 +1143,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     /**
      * Dynamic Map.Entry implementation.
      */
+    @PersistenceAware
     private static final class Entry<K, V> implements Map.Entry<K, V>, Cloneable
     {
         NodePos<K> mNodePos;
@@ -1242,6 +1206,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
      * Base iterator implementation. If mEndKey is specified, an upper bound to the iteration is 
      * enforced.
      */
+    @PersistenceAware
     private static class AbstractMapIterator<K, V>
     {
         PersistentBxTree<K, V> mTree;
@@ -1317,6 +1282,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         }
     }
 
+    @PersistenceAware
     private static class EntryIterator<K, V> extends AbstractMapIterator<K, V> implements
                     Iterator<Map.Entry<K, V>>
     {
@@ -1338,6 +1304,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     }
 
 
+    @PersistenceAware
     static class KeyIterator<K, V> extends AbstractMapIterator<K, V> implements Iterator<K>
     {
         KeyIterator(PersistentBxTree<K, V> map, NodePos<K> startNodePos, K endKey)
@@ -1357,6 +1324,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     }
 
 
+    @PersistenceAware
     static class ValueIterator<K, V> extends AbstractMapIterator<K, V> implements Iterator<V>
     {
         ValueIterator(PersistentBxTree<K, V> map, NodePos<K> startNodePos, K endKey)
@@ -1376,6 +1344,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     }
 
 
+    @PersistenceAware
     static final class SubMap<K, V> extends AbstractMap<K, V> implements SortedMap<K, V>, Serializable
     {
         private static final long serialVersionUID = -6520786458950516097L;
@@ -1610,6 +1579,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     }
 
 
+    @PersistenceAware
     static class SubMapEntrySet<K, V> extends AbstractSet<Map.Entry<K, V>> implements Set<Map.Entry<K, V>>
     {
         SubMap<K, V> subMap;
@@ -1661,6 +1631,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     }
 
 
+    @PersistenceAware
     static class SubMapKeySet<K, V> extends AbstractSet<K> implements Set<K>
     {
         SubMap<K, V> subMap;
@@ -1701,6 +1672,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     }
 
 
+    @PersistenceAware
     static class SubMapValuesCollection<K, V> extends AbstractCollection<V>
     {
         SubMap<K, V> subMap;
@@ -1731,6 +1703,64 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             }
 
             return size;
+        }
+    }
+
+    @PersistenceAware
+    private final class EntrySet extends AbstractSet<Map.Entry<K, V>>
+    {
+        @Override
+       public int size() {
+           return mSize;
+       }
+
+       @Override
+       public void clear() {
+           PersistentBxTree.this.clear();
+       }
+
+       @SuppressWarnings("unchecked")
+       @Override
+       public boolean contains(Object object) {
+           if (object instanceof Map.Entry) {
+               Map.Entry<K, V> entry = (Map.Entry<K, V>) object;
+               Object v1 = get(entry.getKey()), v2 = entry.getValue();
+               return v1 == null ? v2 == null : v1.equals(v2);
+           }
+           return false;
+       }
+
+       @Override
+       public Iterator<Map.Entry<K, V>> iterator() {
+           return new EntryIterator<K, V>(PersistentBxTree.this);
+       }
+    }
+    
+    @PersistenceAware
+    private final class KeySet extends AbstractSet<K>
+    {
+        @Override
+        public boolean contains(Object object)
+        {
+            return containsKey(object);
+        }
+
+        @Override
+        public int size()
+        {
+            return mSize;
+        }
+
+        @Override
+        public void clear()
+        {
+            PersistentBxTree.this.clear();
+        }
+
+        @Override
+        public Iterator<K> iterator()
+        {
+            return new KeyIterator<K, V>(PersistentBxTree.this);
         }
     }
 }
