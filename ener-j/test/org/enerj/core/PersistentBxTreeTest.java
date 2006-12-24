@@ -59,7 +59,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
     public void testPut() throws Exception
     {
         // Create an array of objects and the shuffle them.
-        TestClass1[] objs = new TestClass1[100000];
+        TestClass1[] objs = new TestClass1[10000];
         for (int i = 0; i < objs.length; i++) {
             objs[i] = new TestClass1(i,
                             FIRST_NAMES[ i % FIRST_NAMES.length ],
@@ -79,12 +79,23 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
 
         long start = System.currentTimeMillis();
         try {
-            PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>(450, null, false, false);
+            PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>(10, null, false, false);
             db.bind(tree, "BTree");
-            for (TestClass1 obj : objs) {
-                //System.out.println("Inserting " + obj.mId);
+            for (int i = 0; i < objs.length; i++) {
+                TestClass1 obj = objs[i];
+                if (obj.mId == 8603) { 
+                    System.out.println("Before: " + obj.mId); tree.dumpTree(); 
+                }
                 tree.insert(obj.mId, obj);
-                //tree.dumpTree();
+                //if (obj.mId == 8416) { System.out.println("After: " + obj.mId); tree.dumpTree(); }
+                // Check integrity after each insert
+                for (int j = 0; j <= i; j++) {
+                    TestClass1 objx = objs[j];
+                    if (!tree.containsKey(objx.mId) ) {
+                        System.out.println("Integrity lost after: " + obj.mId + " trying to find " + objx.mId); tree.dumpTree();
+                        fail();
+                    }
+                }                
             }
         }
         finally {
@@ -103,7 +114,8 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         start = System.currentTimeMillis();
         try {
             PersistentBxTree<Integer, TestClass1> tree = (PersistentBxTree<Integer, TestClass1>)db.lookup("BTree");
-            assertTrue(tree.containsKey(27148) );
+            tree.dumpTree();
+            tree.containsKey(8416);
             for (TestClass1 obj : objs) {
                 assertTrue("Id exists: " + obj.mId, tree.containsKey(obj.mId) );
                 TestClass1 getObj = tree.get(obj.mId);
