@@ -1128,6 +1128,77 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             mOIDRefs[aKeyIdx] = PersistableHelper.getPersister(this).getOID(aValue);
         }
         
+        /**
+         * Validates the integrity of this node and, if it is not a leaf, all of its descendents.
+         * If recursively validating, returns the smallest key of the node, or null if the node is empty. 
+         */
+        K validateNode(PersistentBxTree<K, ?> aTree)
+        {
+            // If not a leaf, make sure we have at least one key.
+            if (!mIsLeaf && mNumKeys == 0) {
+                dumpAndDie("Interior Node has zero keys");
+            }
+            // Make sure the keys are in order.
+            K prevKey = null;
+            for (int i = 0; i < mNumKeys; i++) {
+                K key = mKeys[i];
+                if (key == null) {
+                    dumpAndDie("Key at index " + i + " is null");
+                }
+                
+                // If an interior node, should have valid branch pointer.
+                if (!mIsLeaf) {
+                    if (mOIDRefs[i] == ObjectSerializer.NULL_OID) {
+                        dumpAndDie("Branch at " + i + " is null");
+                    }
+                }
+                
+                if (prevKey != null) {
+                    int result;
+                    if (aTree.mComparator == null) {
+                        Comparable<K> keyCmp = (Comparable<K>)key;
+                        result = keyCmp.compareTo(prevKey);
+                    }
+                    else {
+                        result = aTree.mComparator.compare(key, prevKey);
+                    }
+                    
+                    if (result < 0) {
+                        dumpAndDie("Key " + key + " is not less than previous Key " + prevKey);
+                    }
+                    
+                }
+            }
+
+            // If an interior node, should have valid final branch pointer.
+            if (!mIsLeaf) {
+                if (mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
+                    dumpAndDie("Final Branch at " + mNumKeys + " is null");
+                }
+
+                // Validate children
+                for (int i = 0; i <= mNumKeys; i++) {
+                    K childMinKey = getChildNodeAt(i).validateNode(aTree);
+                    //compare
+                }
+            }
+            else {
+                // Leaves should have valid left/right pointers.
+                if (mLeftLeafOID == ObjectSerializer.NULL_OID && mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
+                    dumpAndDie("Leaf left/right pointers are null");
+                }
+            }
+            
+            return (mNumKeys > 0 ? mKeys[0] : null);
+        }
+        
+        void dumpAndDie(String msg) throws IllegalStateException
+        {
+            System.out.println(msg);
+            dumpNode();
+            throw new IllegalStateException(msg);
+        }
+        
         void dumpNode()
         {
             System.out.print(mNumKeys + ":");
