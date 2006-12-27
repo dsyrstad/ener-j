@@ -83,12 +83,12 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
             db.bind(tree, "BTree");
             for (int i = 0; i < objs.length; i++) {
                 TestClass1 obj = objs[i];
-                //if (obj.mId == 6892) {
-                //    tree.dumpSubTree(1445);
-                //}
+                if (obj.mId == 4186) {
+                    tree.dumpTree();
+                }
                 
                 tree.insert(obj.mId, obj);
-                //if (obj.mId == 8416) { System.out.println("After: " + obj.mId); tree.dumpTree(); }
+
                 // Check integrity after each insert
                 /*for (int j = 0; j <= i; j++) {
                     TestClass1 objx = objs[j];
