@@ -533,9 +533,38 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         }
     }
 
+    public void validateTree() throws IllegalStateException
+    {
+        mRootNode.validateNode(this);
+    }
+    
+    /**
+     * Like Comparator.compare(), only handles condition where Comparator is not set and
+     * keys are Comparable<K>.
+     */
+    int compareKeys(K key1, K key2)
+    {
+        if (mComparator == null) {
+            Comparable<K> key1Cmp = (Comparable<K>)key1;
+            return key1Cmp.compareTo(key2);
+        }
+
+        return mComparator.compare(key1, key2);
+    }
+    
     public void dumpTree()
     {
-        List<Node<K>> nodes = Collections.singletonList(mRootNode);
+        dumpSubTree(mRootNode);
+    }
+
+    void dumpSubTree(long aNodeOID)
+    {
+        dumpSubTree((Node<K>)(Object)PersistableHelper.getPersister(this).getObjectForOID(aNodeOID));
+    }
+
+    void dumpSubTree(Node<K> aNode)
+    {
+        List<Node<K>> nodes = Collections.singletonList(aNode);
         while (!nodes.isEmpty()) {
             nodes = dumpNodes(nodes);
         }
@@ -1136,35 +1165,27 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         {
             // If not a leaf, make sure we have at least one key.
             if (!mIsLeaf && mNumKeys == 0) {
-                dumpAndDie("Interior Node has zero keys");
+                dumpAndDie(aTree, "Interior Node has zero keys");
             }
+            
             // Make sure the keys are in order.
             K prevKey = null;
             for (int i = 0; i < mNumKeys; i++) {
                 K key = mKeys[i];
                 if (key == null) {
-                    dumpAndDie("Key at index " + i + " is null");
+                    dumpAndDie(aTree, "Key at index " + i + " is null");
                 }
                 
                 // If an interior node, should have valid branch pointer.
                 if (!mIsLeaf) {
                     if (mOIDRefs[i] == ObjectSerializer.NULL_OID) {
-                        dumpAndDie("Branch at " + i + " is null");
+                        dumpAndDie(aTree, "Branch at " + i + " is null");
                     }
                 }
                 
                 if (prevKey != null) {
-                    int result;
-                    if (aTree.mComparator == null) {
-                        Comparable<K> keyCmp = (Comparable<K>)key;
-                        result = keyCmp.compareTo(prevKey);
-                    }
-                    else {
-                        result = aTree.mComparator.compare(key, prevKey);
-                    }
-                    
-                    if (result < 0) {
-                        dumpAndDie("Key " + key + " is not less than previous Key " + prevKey);
+                    if (aTree.compareKeys(key, prevKey) < 0) {
+                        dumpAndDie(aTree, "Key " + key + " is not less than previous Key " + prevKey);
                     }
                     
                 }
@@ -1173,41 +1194,82 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             // If an interior node, should have valid final branch pointer.
             if (!mIsLeaf) {
                 if (mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
-                    dumpAndDie("Final Branch at " + mNumKeys + " is null");
+                    dumpAndDie(aTree, "Final Branch at " + mNumKeys + " is null");
                 }
 
-                // Validate children
+                // Validate child branches
+                K lastChildMaxKey = null;
                 for (int i = 0; i <= mNumKeys; i++) {
-                    K childMinKey = getChildNodeAt(i).validateNode(aTree);
-                    //compare
+                    Node<K> childNode = getChildNodeAt(i);
+                    K childMinKey = childNode.validateNode(aTree);
+                    K childMaxKey = childNode.mKeys[childNode.mNumKeys - 1];
+                    // lastChildMaxKey < childMinKey.
+                    if (lastChildMaxKey != null && aTree.compareKeys(lastChildMaxKey, childMinKey) >= 0) {
+                        dumpAndDie(aTree, "Previous branch max key (" + lastChildMaxKey + ") at " + i + " not < " + childMinKey);
+                    }
+                    
+                    lastChildMaxKey = childMaxKey;
+                    
+                    if (i > 0) {
+                        K thisKey = getKeyAt(i - 1);
+                        // childMinKey >= thisKey 
+                        if (aTree.compareKeys(childMinKey, thisKey) < 0) {
+                            dumpAndDie(aTree, "Branch min key (" + childMinKey + ") at " + i + " not >= " + thisKey);
+                        }
+                    }
+                    
+                    // childMinKey < nextKey
+                    if (i < mNumKeys) {
+                        K nextKey = getKeyAt(i);
+                        if (aTree.compareKeys(childMinKey, nextKey) >= 0) {
+                            dumpAndDie(aTree, "Branch min key (" + childMinKey + ") at " + i + " not < " + nextKey);
+                        }
+                    }
                 }
             }
             else {
                 // Leaves should have valid left/right pointers.
-                if (mLeftLeafOID == ObjectSerializer.NULL_OID && mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
-                    dumpAndDie("Leaf left/right pointers are null");
+                if (this != aTree.mRootNode && 
+                    mLeftLeafOID == ObjectSerializer.NULL_OID && mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
+                    dumpAndDie(aTree, "Leaf left/right pointers are null");
                 }
             }
             
             return (mNumKeys > 0 ? mKeys[0] : null);
         }
         
-        void dumpAndDie(String msg) throws IllegalStateException
+        void dumpAndDie(PersistentBxTree<K,?> aTree, String aMsg) throws IllegalStateException
         {
-            System.out.println(msg);
-            dumpNode();
-            throw new IllegalStateException(msg);
+            System.out.println(aMsg);
+            aTree.dumpSubTree(this);
+            System.out.println();
+            throw new IllegalStateException(aMsg);
         }
         
         void dumpNode()
         {
-            System.out.print(mNumKeys + ":");
+            System.out.print("{" + PersistableHelper.getPersister(this).getOID(this) + "}");
             for (int i = 0; i < mNumKeys; i++) {
                 if (i > 0) {
                     System.out.print(',');
                 }
-                System.out.print(mKeys[i]);
+                
+                System.out.print(i + ":" + mKeys[i].toString());
             }
+
+            // Dump branch/value OIDs
+            System.out.print('-');
+            for (int i = 0; i <= mNumKeys; i++) {
+                if (i > 0) {
+                    System.out.print(',');
+                }
+                
+                System.out.print(i + "^" + mOIDRefs[i]);
+            }
+            
+            //if (mIsLeaf) {
+            //    System.out.print(",<" + mLeftLeafOID);
+            //}
         }
     }
     

@@ -67,7 +67,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
                             CITIES[ i % CITIES.length ]);
         }
         
-        Collections.shuffle( Arrays.asList(objs), new Random(0L) ); // Use a consistent seed
+        Collections.shuffle( Arrays.asList(objs), new Random(1L) ); // Use a consistent seed
 
         Implementation impl = EnerJImplementation.getInstance();
         EnerJDatabase db = new EnerJDatabase();
@@ -83,19 +83,28 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
             db.bind(tree, "BTree");
             for (int i = 0; i < objs.length; i++) {
                 TestClass1 obj = objs[i];
-                if (obj.mId == 8603) { 
-                    System.out.println("Before: " + obj.mId); tree.dumpTree(); 
-                }
+                //if (obj.mId == 6892) {
+                //    tree.dumpSubTree(1445);
+                //}
+                
                 tree.insert(obj.mId, obj);
                 //if (obj.mId == 8416) { System.out.println("After: " + obj.mId); tree.dumpTree(); }
                 // Check integrity after each insert
-                for (int j = 0; j <= i; j++) {
+                /*for (int j = 0; j <= i; j++) {
                     TestClass1 objx = objs[j];
                     if (!tree.containsKey(objx.mId) ) {
                         System.out.println("Integrity lost after: " + obj.mId + " trying to find " + objx.mId); tree.dumpTree();
                         fail();
                     }
-                }                
+                }*/
+                try {
+                    tree.validateTree();
+                }
+                catch (IllegalStateException e) {
+                    System.out.println("While inserting " + obj.mId + " on iteration " + i);
+                    tree.dumpTree();
+                    throw e;
+                }
             }
         }
         finally {
