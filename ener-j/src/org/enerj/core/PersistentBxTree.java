@@ -572,13 +572,17 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
 
     private List<Node<K>> dumpNodes(List<Node<K>> someNodes)
     {
+        System.out.println("---");
         List<Node<K>> childNodes = new ArrayList<Node<K>>();
         for (Node<K> node : someNodes) {
             node.dumpNode();
             System.out.print(" | ");
             if (!node.mIsLeaf) {
                 for (int i = 0; i < (node.mNumKeys + 1); i++) {
-                    childNodes.add( node.getChildNodeAt(i) );
+                    Node<K> childNode = node.getChildNodeAt(i);
+                    if (childNode != null) {
+                        childNodes.add(childNode);
+                    }
                 }
             }
             
@@ -733,6 +737,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             if (!aTree.mDynamicallyResizeNode) {
                 allocLen = aTree.mNodeSize;
             }
+            
             mKeys = (K[])new Object[allocLen];
             mNumKeys = (short)length;
             mOIDRefs = new long[ mKeys.length + 1];
@@ -856,7 +861,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             if (mIsLeaf) {
                 return insertInLeaf(aTree, aKey, aValueOID);
             }
-            
+
             // Else this is an interior node. Drill down proper branch.
             NodePos<K> nodePos = findKey(aTree, aKey);
             Node<K> branch = getChildNodeAt(nodePos.mKeyIdx);
@@ -865,7 +870,13 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 return null; // Nothing to do at this node.
             }
             
-            int keyIdx = nodePos.mKeyIdx;
+            //int keyIdx = nodePos.mKeyIdx;
+            NodePos<K> pushUpNodePos = findKey(aTree, pushUp.mPushUpKey);
+            int keyIdx = pushUpNodePos.mKeyIdx;
+            if (nodePos.mKeyIdx != keyIdx) {
+                System.out.println("Pushup keyIdx was not the same as nodePos"); // TODO REMOVE
+            }
+            
             // Insert key that was pushed up into this interior node.
             if (mNumKeys < aTree.mNodeSize) {
                 // Room to insert. Just put it in place.
@@ -874,12 +885,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             }
 
             // Split interior node.
-            int medianIdx = mNumKeys >> 1; // Divide by 2
-            boolean insertOnRight = (keyIdx > medianIdx); 
-            if (insertOnRight) {
-                // Key goes on right half. Increment median by one.
-                ++medianIdx;
-            }
+            int medianIdx = (mNumKeys >> 1) + 1; // Divide by 2, +1 because key at end of left node goes up to parent
             
             // Everything from medianIdx to the right goes into the new right node.
             Node<K> newRightNode = new Node<K>(aTree, this, medianIdx);
@@ -887,7 +893,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             // This node (the left node) gets truncated to a length of medianIdx (elements 0..medianIdx - 1).
             truncate(aTree, medianIdx);
             
-            if (insertOnRight) {
+            if (keyIdx >= medianIdx) {
                 // Key gets inserted on right node. Adjust the key index.
                 newRightNode.pushInInterior(aTree, pushUp, keyIdx - medianIdx);
             }
@@ -895,7 +901,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 pushInInterior(aTree, pushUp, keyIdx);
             }
 
-            // Key at th end of the left node gets pushed up and is no longer included in this interior node.
+            // Key at the end of the left node gets pushed up and is no longer included in this interior node.
             int lastIdx = mNumKeys - 1;
             PushUpInfo<K> pushUpInfo = new PushUpInfo<K>(mKeys[lastIdx], newRightNode);
             truncate(aTree, lastIdx);
@@ -955,19 +961,13 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 medianIdx = mNumKeys >> 1; // Divide by 2
             }
             
-            boolean insertOnRight = (keyIdx > medianIdx); 
-            if (insertOnRight) {
-                // Key goes on right half. Increment median by one.
-                ++medianIdx;
-            }
-            
             // Everything from medianIdx to the right goes into the new right node.
             Node<K> newRightNode = new Node<K>(aTree, this, medianIdx);
 
             // This node (the left node) gets truncated to a length of medianIdx (elements 0..medianIdx - 1).
             truncate(aTree, medianIdx);
             
-            if (insertOnRight) {
+            if (keyIdx >= medianIdx) {
                 // Key gets inserted on right node. Adjust the key index.
                 newRightNode.pushInLeaf(aTree, aKey, aValueOID, keyIdx - medianIdx);
             }
@@ -1191,21 +1191,18 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 }
             }
 
-            // If an interior node, should have valid final branch pointer.
+            // If an interior node...
             if (!mIsLeaf) {
-                if (mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
-                    dumpAndDie(aTree, "Final Branch at " + mNumKeys + " is null");
-                }
-
-                // Validate child branches
+                // Validate child nodes
                 K lastChildMaxKey = null;
                 for (int i = 0; i <= mNumKeys; i++) {
                     Node<K> childNode = getChildNodeAt(i);
                     K childMinKey = childNode.validateNode(aTree);
                     K childMaxKey = childNode.mKeys[childNode.mNumKeys - 1];
+
                     // lastChildMaxKey < childMinKey.
-                    if (lastChildMaxKey != null && aTree.compareKeys(lastChildMaxKey, childMinKey) >= 0) {
-                        dumpAndDie(aTree, "Previous branch max key (" + lastChildMaxKey + ") at " + i + " not < " + childMinKey);
+                    if (i > 0 && aTree.compareKeys(lastChildMaxKey, childMinKey) >= 0) {
+                        dumpAndDie(aTree, "Previous child max key (" + lastChildMaxKey + ") at " + i + " not < child min key " + childMinKey);
                     }
                     
                     lastChildMaxKey = childMaxKey;
@@ -1214,23 +1211,23 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                         K thisKey = getKeyAt(i - 1);
                         // childMinKey >= thisKey 
                         if (aTree.compareKeys(childMinKey, thisKey) < 0) {
-                            dumpAndDie(aTree, "Branch min key (" + childMinKey + ") at " + i + " not >= " + thisKey);
+                            dumpAndDie(aTree, "Child min key (" + childMinKey + ") at " + (i-1) + " not >= parent key " + thisKey);
                         }
                     }
                     
                     // childMinKey < nextKey
                     if (i < mNumKeys) {
                         K nextKey = getKeyAt(i);
-                        if (aTree.compareKeys(childMinKey, nextKey) >= 0) {
-                            dumpAndDie(aTree, "Branch min key (" + childMinKey + ") at " + i + " not < " + nextKey);
+                        if (aTree.compareKeys(childMaxKey, nextKey) >= 0) {
+                            dumpAndDie(aTree, "Child max key (" + childMaxKey + ") at " + i + " not < parent key " + nextKey);
                         }
                     }
                 }
             }
             else {
-                // Leaves should have valid left/right pointers.
-                if (this != aTree.mRootNode && 
-                    mLeftLeafOID == ObjectSerializer.NULL_OID && mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
+                // Leaves should have valid left/right pointers, except for root node which may be the sole node.
+                // The getLeft/RightNode() methods will also ensure that the OIDs point to Nodes, not values.
+                if (this != aTree.mRootNode &&  getLeftNode() == null && getRightNode() == null) {
                     dumpAndDie(aTree, "Leaf left/right pointers are null");
                 }
             }
@@ -1254,18 +1251,10 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                     System.out.print(',');
                 }
                 
-                System.out.print(i + ":" + mKeys[i].toString());
+                System.out.print(i + ":" + mKeys[i] + '/' + mOIDRefs[i]);
             }
 
-            // Dump branch/value OIDs
-            System.out.print('-');
-            for (int i = 0; i <= mNumKeys; i++) {
-                if (i > 0) {
-                    System.out.print(',');
-                }
-                
-                System.out.print(i + "^" + mOIDRefs[i]);
-            }
+            System.out.print(",R/" + mOIDRefs[mNumKeys]);
             
             //if (mIsLeaf) {
             //    System.out.print(",<" + mLeftLeafOID);
