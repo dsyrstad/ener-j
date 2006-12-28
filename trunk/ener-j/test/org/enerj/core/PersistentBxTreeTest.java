@@ -59,7 +59,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
     /**
      * Test method for {@link org.enerj.core.PersistentBxTree#put(java.lang.Object, org.enerj.core.Persistable)}.
      */
-    public void testPut() throws Exception
+    public void testLargeRandomPut() throws Exception
     {
         // Create an array of objects and the shuffle them.
         TestClass1[] objs = new TestClass1[100000];
@@ -83,7 +83,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
 
         long start = System.currentTimeMillis();
         try {
-            PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>(10, null, false, false);
+            PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>(10, null, false, false, true);
             db.bind(tree, "BTree");
             for (int i = 0; i < objs.length; i++) {
                 TestClass1 obj = objs[i];

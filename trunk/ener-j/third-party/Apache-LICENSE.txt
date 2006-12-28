@@ -1,4 +1,4 @@
-Portions of Ener-J are derived from Apache works:
+Portions of Ener-J are derived from Apache works, including Commons Collections and Harmony:
 
                                  Apache License
                            Version 2.0, January 2004

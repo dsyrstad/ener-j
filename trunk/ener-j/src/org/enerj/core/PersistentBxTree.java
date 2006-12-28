@@ -42,6 +42,7 @@ import org.enerj.annotations.Persist;
 import org.enerj.annotations.PersistenceAware;
 import org.enerj.apache.commons.collections.comparators.ComparableComparator;
 import org.enerj.apache.commons.collections.comparators.NullComparator;
+import org.enerj.apache.commons.collections.comparators.ReverseComparator;
 import org.odmg.DCollection;
 import org.odmg.DMap;
 import org.odmg.QueryInvalidException;
@@ -76,8 +77,6 @@ import org.odmg.QueryInvalidException;
  * conforms to the Map contract. This can be overridden by specifying the duplicate key option
  * when constructing a tree. <p> 
  * 
- * TODO handle null keys (evidently this is optional in sorted maps.)
- * 
  * @version $Id: $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
@@ -88,7 +87,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     public static final int DEFAULT_KEYS_PER_NODE = 450;
     
     /** The Comparator for keys. Note that we always have a Comparator, even if one was not specified
-     * by our creator (i.e., natural ordering was specified.
+     * by our creator (i.e., natural ordering was specified).
      */ 
     private Comparator<K> mComparator = null;
     /** The root node of the tree. */
@@ -124,7 +123,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
      */
     public PersistentBxTree(int aNumKeysPerNode)
     {
-        this(aNumKeysPerNode, null, false, false);
+        this(aNumKeysPerNode, null, false, false, true);
     }
 
     /**
@@ -138,12 +137,13 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
      * @param allowDuplicateKeys true if duplicate keys are allowed (this breaks the Map contract).
      * @param shouldDynamicallyResizeNodes true if the number of keys in tree nodes should be dynamically resized
      *  up to aNodeSize. Otherwise, aNodeSize keys are always allocated regardless of the number of keys in the node.
+     * @param wantAscendingOrder if true, keys are in ascending order, otherwise descending.
      */
     public PersistentBxTree(int aNodeSize, Comparator<K> aComparator, boolean allowDuplicateKeys, 
-                    boolean shouldDynamicallyResizeNodes)
+                    boolean shouldDynamicallyResizeNodes, boolean wantAscendingOrder)
     {
-        if (aNodeSize <= 2 || aNodeSize > Short.MAX_VALUE) {
-            throw new IllegalArgumentException("Node size must be > 2 and less than " + Short.MAX_VALUE);
+        if (aNodeSize <= 4 || aNodeSize > Short.MAX_VALUE) {
+            throw new IllegalArgumentException("Node size must be > 4 and less than " + Short.MAX_VALUE);
         }
         
         mNodeSize = aNodeSize;
@@ -153,7 +153,11 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         }
         
         // Wrap the given comparator in one that handles comparison of nulls. Nulls always compare higher.
-        mComparator = new NullComparator(mComparator, true);
+        mComparator = (Comparator<K>)new NullComparator(mComparator, true);
+        
+        if (!wantAscendingOrder) {
+            mComparator = (Comparator<K>)new ReverseComparator(mComparator);
+        }
         
         // The root begins its life as a leaf. However, this is not common in real trees. Which came first: the leaf or the seed?
         mRootNode = new Node<K>(this, true);
