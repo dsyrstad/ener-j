@@ -40,7 +40,8 @@ import java.util.SortedMap;
 
 import org.enerj.annotations.Persist;
 import org.enerj.annotations.PersistenceAware;
-import org.enerj.util.StringUtil;
+import org.enerj.apache.commons.collections.comparators.ComparableComparator;
+import org.enerj.apache.commons.collections.comparators.NullComparator;
 import org.odmg.DCollection;
 import org.odmg.DMap;
 import org.odmg.QueryInvalidException;
@@ -86,6 +87,9 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     /** This is roughly the right size to fill-out an 8K page when keys are SCOs and are 8 bytes in length. */
     public static final int DEFAULT_KEYS_PER_NODE = 450;
     
+    /** The Comparator for keys. Note that we always have a Comparator, even if one was not specified
+     * by our creator (i.e., natural ordering was specified.
+     */ 
     private Comparator<K> mComparator = null;
     /** The root node of the tree. */
     private Node<K> mRootNode;
@@ -144,6 +148,13 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         
         mNodeSize = aNodeSize;
         mComparator = aComparator;
+        if (mComparator == null) {
+            mComparator = (Comparator<K>)ComparableComparator.getInstance();
+        }
+        
+        // Wrap the given comparator in one that handles comparison of nulls. Nulls always compare higher.
+        mComparator = new NullComparator(mComparator, true);
+        
         // The root begins its life as a leaf. However, this is not common in real trees. Which came first: the leaf or the seed?
         mRootNode = new Node<K>(this, true);
         mAllowDuplicateKeys = allowDuplicateKeys;
@@ -539,20 +550,6 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         mRootNode.validateNode(this);
     }
     
-    /**
-     * Like Comparator.compare(), only handles condition where Comparator is not set and
-     * keys are Comparable<K>.
-     */
-    int compareKeys(K key1, K key2)
-    {
-        if (mComparator == null) {
-            Comparable<K> key1Cmp = (Comparable<K>)key1;
-            return key1Cmp.compareTo(key2);
-        }
-
-        return mComparator.compare(key1, key2);
-    }
-    
     public void dumpTree()
     {
         dumpSubTree(mRootNode);
@@ -652,17 +649,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
          */
         int compareKeyTo(PersistentBxTree<K, ?> aTree, K aKey)
         {
-            K thisKey = getKey();
-            if (thisKey == null) {
-                return 1;
-            }
-
-            if (aTree.mComparator == null) {
-                Comparable<K> thisKeyComparable = (Comparable<K>)thisKey;
-                return thisKeyComparable.compareTo(aKey);
-            }
-            
-            return aTree.mComparator.compare(thisKey, aKey);
+            return aTree.mComparator.compare(getKey(), aKey);
         }
         
         void copyTo(NodePos<K> aNodePos)
@@ -792,9 +779,6 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         NodePos<K> findKey(PersistentBxTree<K, ?> aTree, K aKey)
         {
             Comparator<K> comparator = aTree.mComparator;
-            if (comparator == null) {
-                return findKey(aKey);
-            }
 
             int low = 0;
             int mid = 0;
@@ -816,39 +800,6 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             return new NodePos<K>(this, low, false);
         }
 
-        /**
-         * Finds the given key within the node.
-         *
-         * @param aKey the target key to be found.
-         * 
-         * @return a node position. If an exact match is not found, the
-         * index at which the target key would be inserted is returned in the node position and mIsMatch
-         * is set to false.   
-         */
-        NodePos<K> findKey(K aKey)
-        {
-            Comparable<K> key = (Comparable<K>)aKey;
-            int low = 0;
-            int mid = 0;
-            int high = mNumKeys - 1;
-            while (low <= high) {
-                mid = (low + high) >> 1;
-                // Note: The comparison in in the reverse sense of comparison because keys are switched around
-                int result = key.compareTo(mKeys[mid]); 
-                if (result > 0) { // mid < key
-                    low = mid + 1;
-                }
-                else if (result < 0) { // mid > key
-                    high = mid - 1;
-                }
-                else {
-                    return new NodePos<K>(this, mid, true);
-                }
-            }
-
-            return new NodePos<K>(this, low, false);
-        }
-        
         /**
          * Recursively pushes down the tree starting at this node to eventually inserts aKey with
          * aValueOID at a leaf.
@@ -1203,7 +1154,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 }
                 
                 if (prevKey != null) {
-                    if (aTree.compareKeys(key, prevKey) < 0) {
+                    if (aTree.comparator().compare(key, prevKey) < 0) {
                         dumpAndDie(aTree, "Key " + key + " is not less than previous Key " + prevKey);
                     }
                     
@@ -1220,7 +1171,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                     K childMaxKey = childNode.mKeys[childNode.mNumKeys - 1];
 
                     // lastChildMaxKey < childMinKey.
-                    if (i > 0 && aTree.compareKeys(lastChildMaxKey, childMinKey) >= 0) {
+                    if (i > 0 && aTree.comparator().compare(lastChildMaxKey, childMinKey) >= 0) {
                         dumpAndDie(aTree, "Previous child max key (" + lastChildMaxKey + ") at " + i + " not < child min key " + childMinKey);
                     }
                     
@@ -1229,7 +1180,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                     if (i > 0) {
                         K thisKey = getKeyAt(i - 1);
                         // childMinKey >= thisKey 
-                        if (aTree.compareKeys(childMinKey, thisKey) < 0) {
+                        if (aTree.comparator().compare(childMinKey, thisKey) < 0) {
                             dumpAndDie(aTree, "Child min key (" + childMinKey + ") at " + (i-1) + " not >= parent key " + thisKey);
                         }
                     }
@@ -1237,7 +1188,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                     // childMinKey < nextKey
                     if (i < mNumKeys) {
                         K nextKey = getKeyAt(i);
-                        if (aTree.compareKeys(childMaxKey, nextKey) >= 0) {
+                        if (aTree.comparator().compare(childMaxKey, nextKey) >= 0) {
                             dumpAndDie(aTree, "Child max key (" + childMaxKey + ") at " + i + " not < parent key " + nextKey);
                         }
                     }
@@ -1405,12 +1356,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             mNextNodePos = mCurrNodePos.mNode.nextKey(mNextNodePos);
             if (mEndKey != null) {
                 K key = mNextNodePos.mNode.mKeys[ mNextNodePos.mKeyIdx ];
-                if (mEndKeyComparable != null) {
-                    if (mEndKeyComparable.compareTo(key) > 0) {
-                        mNextNodePos = null;
-                    }
-                }
-                else if (mTree.mComparator.compare(key, mEndKey) > 0) {
+                if (mTree.mComparator.compare(key, mEndKey) > 0) {
                     mNextNodePos = null;
                 }
             }
@@ -1493,8 +1439,6 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         PersistentBxTree<K, V> mTree;
         K mStartKey;
         K mEndKey;
-        Comparable<K> mStartKeyComparable;
-        Comparable<K> mEndKeyComparable;
         Set<K> mKeySet = null;
         Collection<V> mValuesCollection = null;
 
@@ -1505,10 +1449,6 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             mTree = aTree;
             mStartKey = start;
             mEndKey = end;
-            if (mTree.mComparator == null) {
-                mStartKeyComparable = (Comparable<K>)mStartKey;
-                mEndKeyComparable = (Comparable<K>)mEndKey;
-            }
         }
 
         private void checkRange(K key)
@@ -1526,10 +1466,6 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         private boolean checkUpperBound(K key)
         {
             if (mEndKey != null) {
-                if (mEndKeyComparable != null) {
-                    return (mEndKeyComparable.compareTo(key) >= 0);
-                }
-                
                 return (mTree.mComparator.compare(key, mEndKey) < 0);
             }
             
@@ -1539,12 +1475,9 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         private boolean checkLowerBound(K key)
         {
             if (mStartKey != null) {
-                if (mStartKeyComparable != null) {
-                    return (mStartKeyComparable.compareTo(key) < 0);
-                }
-                
                 return (mTree.mComparator.compare(mStartKey, key) >= 0);
             }
+
             return true;
         }
 
@@ -1688,14 +1621,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         {
             checkRange(startKey);
             checkRange(endKey);
-            Comparator<? super K> comparator = mTree.comparator();
-            if (comparator == null) {
-                Comparable<K> startKeyComparable = (Comparable<K>)startKey;
-                if (startKeyComparable.compareTo(endKey) > 0) {
-                    throw new IllegalArgumentException();
-                }
-            }
-            else if (comparator.compare(startKey, endKey) > 0) {
+            if (mTree.comparator().compare(startKey, endKey) > 0) {
                 throw new IllegalArgumentException();
             }
             
