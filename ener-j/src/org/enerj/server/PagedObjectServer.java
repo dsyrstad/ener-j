@@ -42,6 +42,7 @@ import org.enerj.core.EnerJTransaction;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
+import org.enerj.server.PagedStore.StoreObjectRequest;
 import org.enerj.server.logentry.BeginTransactionLogEntry;
 import org.enerj.server.logentry.CheckpointTransactionLogEntry;
 import org.enerj.server.logentry.CommitTransactionLogEntry;
@@ -780,7 +781,7 @@ public class PagedObjectServer extends BaseObjectServer
                 StoreObjectLogEntry logEntry = new StoreObjectLogEntry( txn.getLogTransactionId(), oid, cid, object.getImage());
                 mRedoLogServer.append(logEntry);
     
-                PagedStore.StoreObjectRequest request = mPagedStore.new StoreObjectRequest(cid, oid, object.getImage());
+                StoreObjectRequest request = mPagedStore.new StoreObjectRequest(cid, oid, object.getImage());
                 request.mLogEntryPosition = logEntry.getLogPosition();
     
                 // Throw update into the cache. It doesn't hit the database (PagedStore) until checkpoint or commit.

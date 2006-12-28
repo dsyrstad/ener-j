@@ -52,7 +52,7 @@ public class EnerJTransaction implements Transaction
     private EnerJDatabase mTransactionDatabase = null;
     
     /** True if values of objects should be retained on commit (instead of hollowing the object). */
-    private boolean mRetainValues = false;
+    private boolean mRetainValues = true;
     
     /** True if values of objects should be restored to their state at the start of the transaction
      * on an abort.
@@ -125,7 +125,7 @@ public class EnerJTransaction implements Transaction
     /**
      * Sets whether object values are retained on transaction commit.
      * This may only be called if a transaction is not active.
-     * The default setting for a transaction is false.
+     * The default setting for a transaction is true.
      *
      * @param shouldRetainValues if true, on transaction commit object values
      *  are preserved, the object transitions to a non-transactional state, and
@@ -146,7 +146,7 @@ public class EnerJTransaction implements Transaction
 
     /**
      * Determines whether object values are retained on transaction commit.
-     * The default setting for a transaction is false.
+     * The default setting for a transaction is true.
      *
      * @return true if, on transaction commit, object values
      *  are preserved, the object transitions to a non-transactional state, and

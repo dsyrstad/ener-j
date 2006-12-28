@@ -872,12 +872,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 return null; // Nothing to do at this node.
             }
             
-            //int keyIdx = nodePos.mKeyIdx;
-            NodePos<K> pushUpNodePos = findKey(aTree, pushUp.mPushUpKey);
-            int keyIdx = pushUpNodePos.mKeyIdx;
-            if (nodePos.mKeyIdx != keyIdx) {
-                System.out.println("Pushup keyIdx was not the same as nodePos"); // TODO REMOVE
-            }
+            int keyIdx = nodePos.mKeyIdx;
             
             // Insert key that was pushed up into this interior node.
             if (mNumKeys < aTree.mNodeSize) {
@@ -1108,14 +1103,19 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         
         void setKeyAt(int aKeyIdx, K aKey)
         {
-            mKeys[aKeyIdx] = aKey;
-            EnerJImplementation.setModified(this);
+            // Note that this is an intentional identity comparison
+            if (aKey != mKeys[aKeyIdx]) {
+                mKeys[aKeyIdx] = aKey;
+                EnerJImplementation.setModified(this);
+            }
         }
         
         void setOIDRefAt(int anIdx, long anOID)
         {
-            mOIDRefs[anIdx] = anOID;
-            EnerJImplementation.setModified(this);
+            if (anOID != mOIDRefs[anIdx]) {
+                mOIDRefs[anIdx] = anOID;
+                EnerJImplementation.setModified(this);
+            }
         }
         
         /**
@@ -1142,15 +1142,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
 
             long oid = mOIDRefs[mNumKeys];
             Object obj = PersistableHelper.getPersister(this).getObjectForOID(oid);
-            try {
-                return (Node<K>)obj;
-            }
-            catch (ClassCastException e) {
-                // TODO REMOVE THIS
-                System.out.println("Bad leaf: " + StringUtil.toString(obj, false, false)); 
-                dumpNode();
-                throw e;
-            }
+            return (Node<K>)obj;
         }
         
         /**

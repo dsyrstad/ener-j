@@ -34,68 +34,56 @@ import org.odmg.Implementation;
 import org.odmg.Transaction;
 
 /**
- * Tests PersistentBxTree. <p>
+ * Tests mutliple updates to an object in a single transaction. <p>
  * 
  * @version $Id: $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
 @PersistenceAware
-public class PersistentBxTreeTest extends AbstractDatabaseTestCase
+public class MultipleUpdateTest extends AbstractDatabaseTestCase
 {
-    private static final String[] FIRST_NAMES = { "Dan", "Tina", "Bob", "Sue", "Emily", "Cole", "Mike", "Borusik", "Ole", "Lena", };
-    private static final String[] LAST_NAMES = { "Smith", "Jones", "Funkmeister", "Johnson", "Anderson", "Syrstad", "Robinson",  };
-    private static final String[] CITIES = { "Burnsville", "Bloomington", "Minneapolis", "St Paul", "Washington", "Seattle", "Phoenix", "New York", "Clevland", "San Jose", };
 
     /**
-     * Construct a PersistentBxTreeTest. 
+     * Construct a MultipleUpdateTest. 
      *
      * @param arg0
      */
-    public PersistentBxTreeTest(String arg0)
+    public MultipleUpdateTest(String arg0)
     {
         super(arg0);
     }
 
-    /**
-     * Test method for {@link org.enerj.core.PersistentBxTree#put(java.lang.Object, org.enerj.core.Persistable)}.
-     */
-    public void testPut() throws Exception
+    public void testMultipleUpdates() throws Exception
     {
-        // Create an array of objects and the shuffle them.
-        TestClass1[] objs = new TestClass1[100000];
-        for (int i = 0; i < objs.length; i++) {
-            objs[i] = new TestClass1(i,
-                            FIRST_NAMES[ i % FIRST_NAMES.length ],
-                            LAST_NAMES[ i % LAST_NAMES.length ],
-                            CITIES[ i % CITIES.length ]);
-        }
-        
-        // Shuffle array using a consistent seed
-        Collections.shuffle(Arrays.asList(objs), new Random(1L));
-
         Implementation impl = EnerJImplementation.getInstance();
         EnerJDatabase db = new EnerJDatabase();
         
         db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
 
-        Transaction txn = impl.newTransaction();
+        EnerJTransaction txn = new EnerJTransaction();
         txn.begin();
 
         long start = System.currentTimeMillis();
+        final int lastIdValue = 1000;
+        long oid = 0;
         try {
-            PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>(10, null, false, false);
-            db.bind(tree, "BTree");
-            for (int i = 0; i < objs.length; i++) {
-                TestClass1 obj = objs[i];
-                tree.insert(obj.getId(), obj);
+            TestClass1 obj = new TestClass1(0, "Start", "StartLast", "StartCity");
+            db.makePersistent(obj);
+            oid = EnerJImplementation.getEnerJObjectId(obj);
 
-                try {
-                }
-                catch (IllegalStateException e) {
-                    System.out.println("While inserting " + obj.getId() + " on iteration " + i);
-                    tree.dumpTree();
-                    throw e;
-                }
+            txn.flush();
+            obj = null;
+            db.evict(oid);
+            
+            for (int i = 0; i < lastIdValue; i++) {
+                obj = (TestClass1)(Object)db.getObjectForOID(oid);
+                int currId = obj.getId();
+                assertEquals(i, currId);
+                obj.setId(currId + 1);
+
+                txn.flush();
+                obj = null;
+                db.evict(oid);
             }
         }
         finally {
@@ -104,38 +92,20 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         }
 
         long end = System.currentTimeMillis();
-        System.out.println("Insert time " + (end-start) + "ms");
+        System.out.println("Update time " + (end-start) + "ms");
 
         db = new EnerJDatabase();
         
         db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
         db.setAllowNontransactionalReads(true);
 
-        start = System.currentTimeMillis();
         try {
-            PersistentBxTree<Integer, TestClass1> tree = (PersistentBxTree<Integer, TestClass1>)db.lookup("BTree");
-
-            // Make sure that the tree is valid.
-            tree.validateTree();
-
-            for (TestClass1 obj : objs) {
-                assertTrue("Id does not exist " + obj.getId(), tree.containsKey(obj.getId()) );
-                TestClass1 getObj = tree.get(obj.getId());
-                assertNotNull(getObj);
-                assertEquals(obj.getId(), getObj.getId());
-                if (obj.getLastName() == null) {
-                    System.out.println(StringUtil.toString(obj, false, true));
-                }
-                
-                assertEquals(obj.getLastName(), getObj.getLastName() );
-            }
+            TestClass1 obj = (TestClass1)(Object)db.getObjectForOID(oid);
+            assertEquals(lastIdValue, obj.getId() );
         }
         finally {
             db.close();
         }
-
-        end = System.currentTimeMillis();
-        System.out.println("ContainsKey/Get time " + (end-start) + "ms");
     }
 
     @Persist
@@ -154,6 +124,11 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
             mCity = aCity;
         }
 
+        void setId(int anId) 
+        {
+            mId = anId;
+        }
+        
         String getCity()
         {
             return mCity;
