@@ -81,7 +81,7 @@ public abstract class AbstractDatabaseTestCase extends TestCase
 
     public void tearDown() throws Exception
     {
-        //clearDBFiles();
+        clearDBFiles();
     }
 
 

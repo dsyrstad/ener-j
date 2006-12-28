@@ -235,7 +235,6 @@ public class EnerJDatabase implements Database, Persister
      */
     public Persistable[] getObjectsForOIDs(long[] someOIDs)
     {
-        // TODO This method is an opportunity to have a queue of hollow objects to be loaded. They can be loaded by loadObject en masse.
         checkBoundTransaction(true);
 
         Persistable[] objects = new Persistable[someOIDs.length];
@@ -408,28 +407,26 @@ public class EnerJDatabase implements Database, Persister
 
         boolean restoreValues = txn.getRestoreValues();
         
-        // Note that if we were to just call storePersistable() here, we could get
-        // into a very deep recursion. See EnerJTransaction.flushAndKeepModifiedList() for more details.
-        // If we're flushing, we need to add it to the iterator rather than the list.
-        boolean shouldFlush = false;
-        if (mFlushIterator != null) {
-            mFlushIterator.add(aPersistable);
-        }
-        else {
-            mModifiedObjects.addToModifiedList(aPersistable);
-            // Only flush if not restore values. Otherwise we have to keep them locally.
-            // TODO We could still flush if we loaded values back from the database.
-            if (!restoreValues && mModifiedObjects.getSize() >= mFlushLevel) {
-                shouldFlush = true;
-            }
-        }
-        
         if (!aPersistable.enerj_IsNew() && restoreValues) {
             savePersistableImage(aPersistable);
         }
         
-        if (shouldFlush) {
-            flush();
+        // Note that if we were to just call storePersistable() here, we could get
+        // into a very deep recursion. See EnerJTransaction.flushAndKeepModifiedList() for more details.
+        // If we're flushing, we need to add it to the iterator rather than the list.
+        if (mFlushIterator != null) {
+            mFlushIterator.add(aPersistable);
+        }
+        else {
+            // Only flush if not restore values. Otherwise we have to keep them locally.
+            // TODO We could still flush if we loaded values back from the database.
+            if (!restoreValues && mModifiedObjects.getSize() >= mFlushLevel) {
+                flush();
+            }
+
+            // This must be added AFTER any flush occurs otherwise PersistableHelper will mark this
+            // as modified after we return, but it won't be in the modified list. 
+            mModifiedObjects.addToModifiedList(aPersistable);
         }
     }
 
@@ -1425,7 +1422,7 @@ public class EnerJDatabase implements Database, Persister
             clearModifiedList();
             
             // See defined behavior on EnerJTransaction.setRestoreValues.
-            if (restoreValues) {
+            if (restoreValues || getTransaction().getRetainValues()) {
                 getClientCache().makeObjectsNonTransactional();
             }
             else {

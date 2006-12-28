@@ -1494,7 +1494,7 @@ class ClassEnhancer extends ClassAdapter implements Opcodes
                 // Insert PersistableHelper.initPersistableClone(this) right before the return.
                 mv.visitMethodInsn(INVOKESTATIC, sPersistableHelperClassSlashed, "initPersistableClone", sPersistableVoidSignature);
             }
-            else if (mIsClinit && anOpcode == RETURN) {
+            else if (mIsPersistable && mIsClinit && anOpcode == RETURN) {
                 // Existing <clinit>, insert instructions to initialize class ID. Then flag that we did it.
                 mEnhancedClinit = true;
                 mv.visitLdcInsn( (Long)mClassId );
