@@ -67,7 +67,15 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
                             CITIES[ i % CITIES.length ]);
         }
         
-        Collections.shuffle( Arrays.asList(objs), new Random(1L) ); // Use a consistent seed
+        // Shuffle array - do NOT use Collections.shuffle. 
+        Random rnd = new Random(1L);
+        for (int i = 0; i < objs.length; i++) {
+            // swap i-1 with some random index.
+            TestClass1 obj = objs[i];
+            int rndIdx = rnd.nextInt(objs.length);
+            objs[i] = objs[rndIdx];
+            objs[rndIdx] = obj;
+        }
 
         Implementation impl = EnerJImplementation.getInstance();
         EnerJDatabase db = new EnerJDatabase();
@@ -83,10 +91,6 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
             db.bind(tree, "BTree");
             for (int i = 0; i < objs.length; i++) {
                 TestClass1 obj = objs[i];
-                if (obj.mId == 4186) {
-                    tree.dumpTree();
-                }
-                
                 tree.insert(obj.mId, obj);
 
                 // Check integrity after each insert

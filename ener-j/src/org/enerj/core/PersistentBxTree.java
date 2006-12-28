@@ -40,6 +40,7 @@ import java.util.SortedMap;
 
 import org.enerj.annotations.Persist;
 import org.enerj.annotations.PersistenceAware;
+import org.enerj.util.StringUtil;
 import org.odmg.DCollection;
 import org.odmg.DMap;
 import org.odmg.QueryInvalidException;
@@ -525,10 +526,10 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             Persister persister = PersistableHelper.getPersister(this);  
             Node<K> newRoot = new Node<K>(this, false);
             newRoot.ensureLength(this, 1);
-            newRoot.mKeys[0] = pushUp.mPushUpKey;
+            newRoot.setKeyAt(0, pushUp.mPushUpKey);
             newRoot.mNumKeys = 1;
-            newRoot.mOIDRefs[0] = persister.getOID(mRootNode);
-            newRoot.mOIDRefs[1] = persister.getOID(pushUp.mRightNodeOfKey);
+            newRoot.setOIDRefAt(0, persister.getOID(mRootNode));
+            newRoot.setOIDRefAt(1, persister.getOID(pushUp.mRightNodeOfKey));
             mRootNode = newRoot;
         }
     }
@@ -743,6 +744,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             mOIDRefs = new long[ mKeys.length + 1];
             System.arraycopy(aNode.mKeys, aStartIdx, mKeys, 0, length);
             System.arraycopy(aNode.mOIDRefs, aStartIdx, mOIDRefs, 0, length + 1);
+            EnerJImplementation.setModified(this);
         }
         
         /**
@@ -919,10 +921,11 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             if (length > 0) {
                 System.arraycopy(mKeys, aKeyIdx, mKeys, aKeyIdx + 1, length);
                 System.arraycopy(mOIDRefs, aKeyIdx + 1, mOIDRefs, aKeyIdx + 2, length);
+                EnerJImplementation.setModified(this);
             }
             
-            mKeys[aKeyIdx] = aPushUp.mPushUpKey;
-            mOIDRefs[aKeyIdx + 1] = PersistableHelper.getPersister(this).getOID(aPushUp.mRightNodeOfKey);
+            setKeyAt(aKeyIdx, aPushUp.mPushUpKey);
+            setOIDRefAt(aKeyIdx + 1, PersistableHelper.getPersister(this).getOID(aPushUp.mRightNodeOfKey));
             ++mNumKeys;
         }
         
@@ -967,6 +970,19 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             // This node (the left node) gets truncated to a length of medianIdx (elements 0..medianIdx - 1).
             truncate(aTree, medianIdx);
             
+            // Make left node right pointer point to the new right node.
+            Persister persister = PersistableHelper.getPersister(this);
+            long rightNodeOID = persister.getOID(newRightNode);
+            setOIDRefAt(mNumKeys, rightNodeOID);
+            // Make right node left pointer point to the existing (left) node. 
+            newRightNode.mLeftLeafOID = persister.getOID(this);
+            // The node to the right of the right node must now point back to the new right node. It previously
+            // pointed back to what is now the left node.
+            Node<K> rightOfRightNode = newRightNode.getRightNode();
+            if (rightOfRightNode != null) {
+                rightOfRightNode.mLeftLeafOID = rightNodeOID;
+            }
+
             if (keyIdx >= medianIdx) {
                 // Key gets inserted on right node. Adjust the key index.
                 newRightNode.pushInLeaf(aTree, aKey, aValueOID, keyIdx - medianIdx);
@@ -977,20 +993,6 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
 
             // Key at the start of the right node gets pushed up, but is still included in the leaf.
             PushUpInfo<K> pushUpInfo = new PushUpInfo<K>(newRightNode.mKeys[0], newRightNode);
-            
-            // Make left node right pointer point to the new right node.
-            Persister persister = PersistableHelper.getPersister(this);
-            long rightNodeOID = persister.getOID(newRightNode);
-            mOIDRefs[mNumKeys] = rightNodeOID;
-            // Make right node left pointer point to the existing (left) node. 
-            newRightNode.mLeftLeafOID = persister.getOID(this);
-            // The node to the right of the right node must now point back to the new right node. It previously
-            // pointed back to what is now the left node.
-            Node<K> rightOfRightNode = newRightNode.getRightNode();
-            if (rightOfRightNode != null) {
-                rightOfRightNode.mLeftLeafOID = rightNodeOID;
-            }
-            
             return pushUpInfo;
         }
 
@@ -1003,14 +1005,16 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             int length = mNumKeys - aKeyIdx;
             if (length > 0) {
                 System.arraycopy(mKeys, aKeyIdx, mKeys, aKeyIdx + 1, length);
+                EnerJImplementation.setModified(this);
             }
 
             if (length >= 0) {
                 System.arraycopy(mOIDRefs, aKeyIdx, mOIDRefs, aKeyIdx + 1, length + 1);
+                EnerJImplementation.setModified(this);
             }
 
-            mKeys[aKeyIdx] = aKey;
-            mOIDRefs[aKeyIdx] = aValueOID;
+            setKeyAt(aKeyIdx, aKey);
+            setOIDRefAt(aKeyIdx, aValueOID);
             ++mNumKeys;
         }
         
@@ -1025,10 +1029,12 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             int length = mNumKeys - (aKeyIdx + 1);
             if (length > 0) {
                 System.arraycopy(mKeys, aKeyIdx + 1, mKeys, aKeyIdx, length);
+                EnerJImplementation.setModified(this);
             }
             
             if (length >= 0) {
                 System.arraycopy(mOIDRefs, aKeyIdx + 1, mOIDRefs, aKeyIdx, length + 1);
+                EnerJImplementation.setModified(this);
             }
             
             truncate(aTree, mNumKeys - 1);
@@ -1100,6 +1106,18 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             return mKeys[aKeyIdx];
         }
         
+        void setKeyAt(int aKeyIdx, K aKey)
+        {
+            mKeys[aKeyIdx] = aKey;
+            EnerJImplementation.setModified(this);
+        }
+        
+        void setOIDRefAt(int anIdx, long anOID)
+        {
+            mOIDRefs[anIdx] = anOID;
+            EnerJImplementation.setModified(this);
+        }
+        
         /**
          * Gets the child node at the given index. Assumes that this node is an interior node.
          *
@@ -1123,7 +1141,16 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             assert mIsLeaf;
 
             long oid = mOIDRefs[mNumKeys];
-            return (Node<K>)(Object)PersistableHelper.getPersister(this).getObjectForOID(oid);
+            Object obj = PersistableHelper.getPersister(this).getObjectForOID(oid);
+            try {
+                return (Node<K>)obj;
+            }
+            catch (ClassCastException e) {
+                // TODO REMOVE THIS
+                System.out.println("Bad leaf: " + StringUtil.toString(obj, false, false)); 
+                dumpNode();
+                throw e;
+            }
         }
         
         /**
@@ -1154,7 +1181,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         {
             assert mIsLeaf;
 
-            mOIDRefs[aKeyIdx] = PersistableHelper.getPersister(this).getOID(aValue);
+            setOIDRefAt(aKeyIdx, PersistableHelper.getPersister(this).getOID(aValue));
         }
         
         /**
