@@ -33,7 +33,7 @@ import junit.framework.TestSuite;
 import org.odmg.QueryableCollection;
 
 /**
- * Tests org.enerj.core.RegularDMap.
+ * Tests org.enerj.core.PersistentHashMap.
  *
  * @version $Id: RegularDMapTest.java,v 1.2 2006/01/12 04:39:44 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
