@@ -92,7 +92,7 @@ java.util.Locale
 - Collections/Maps can contain references to FCOs or SCOs.
 
 - Java arrays are SCOs, but the owning FCO must be manually marked as modified if
-  the contents of the array changes.
+  the contents of the array changes. >>This should be mediatated.
 
 - You _can_ have an SCO as a super-class type of a Persistable, however the contents
 won't be persisted. You can always use aggregation/containment you want to persist 
@@ -104,7 +104,7 @@ field to be persisted.
   across the FCOs, only within each FCO. This is because SCOs only have an identity local to their owner
   FCO.
 
-Here are some notes from Versant's JVI doc:
+Here are some notes from Versan t's JVI doc:
 -------
 What are Second Class Objects (SCOs)?
 
