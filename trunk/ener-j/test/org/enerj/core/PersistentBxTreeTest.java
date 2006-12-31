@@ -32,7 +32,6 @@ import junit.framework.TestSuite;
 
 import org.enerj.annotations.Persist;
 import org.enerj.annotations.PersistenceAware;
-import org.enerj.apache.commons.collections.map.AbstractTestMap;
 import org.enerj.apache.commons.collections.map.AbstractTestSortedMap;
 import org.enerj.util.StringUtil;
 import org.odmg.Database;
@@ -68,9 +67,9 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
     {
         TestSuite suite = new TestSuite(PersistentBxTreeTest.class);
         
-        suite.addTestSuite( PersistentHashMapTest.InternalDMapTest.class );
-        suite.addTestSuite( PersistentHashMapTest.InternalQueryableCollectionTest.class );
-        suite.addTestSuite( PersistentHashMapTest.ApacheCollectionsMapTest.class );
+        suite.addTestSuite( PersistentBxTreeTest.InternalSortedMapTest.class );
+        suite.addTestSuite( PersistentBxTreeTest.InternalQueryableCollectionTest.class );
+        suite.addTestSuite( PersistentBxTreeTest.ApacheCollectionsSortedMapTest.class );
 
         return suite;
     }
@@ -198,14 +197,14 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
     // Inner classes used to test interfaces and abstract classes.
 
     /**
-     * Tests DMap interface of RegularDMap.
+     * Tests SortedMap interface of SortedMap.
      */
-    public static final class InternalDMapTest extends AbstractDMapTest
+    public static final class InternalSortedMapTest extends AbstractSortedMapTest
     {
         private EnerJDatabase mDB;
         private EnerJTransaction mTxn;
         
-        public InternalDMapTest(String aName)
+        public InternalSortedMapTest(String aName)
         {
             super(aName);
         }

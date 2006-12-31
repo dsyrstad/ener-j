@@ -110,6 +110,10 @@ public class PersistentHashMapTest extends TestCase
         {
             return new PersistentHashMap();
         }
+
+        public boolean isAllowNullKey() {
+            return true;
+        }
     }
     
     /**
