@@ -24,13 +24,20 @@ package org.enerj.core;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Random;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 import org.enerj.annotations.Persist;
 import org.enerj.annotations.PersistenceAware;
+import org.enerj.apache.commons.collections.map.AbstractTestMap;
+import org.enerj.apache.commons.collections.map.AbstractTestSortedMap;
 import org.enerj.util.StringUtil;
 import org.odmg.Database;
 import org.odmg.Implementation;
+import org.odmg.QueryableCollection;
 import org.odmg.Transaction;
 
 /**
@@ -56,6 +63,18 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         super(arg0);
     }
 
+
+    public static Test suite() 
+    {
+        TestSuite suite = new TestSuite(PersistentBxTreeTest.class);
+        
+        suite.addTestSuite( PersistentHashMapTest.InternalDMapTest.class );
+        suite.addTestSuite( PersistentHashMapTest.InternalQueryableCollectionTest.class );
+        suite.addTestSuite( PersistentHashMapTest.ApacheCollectionsMapTest.class );
+
+        return suite;
+    }
+    
     /**
      * Test method for {@link org.enerj.core.PersistentBxTree#put(java.lang.Object, org.enerj.core.Persistable)}.
      */
@@ -138,6 +157,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         System.out.println("ContainsKey/Get time " + (end-start) + "ms");
     }
 
+    // TODO Test subtests with large tree, null keys, dupl keys, dynamic/static resize, reverswed order
     @Persist
     private static final class TestClass1
     {
@@ -174,4 +194,131 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
             return mLastName;
         }
     }
+
+    // Inner classes used to test interfaces and abstract classes.
+
+    /**
+     * Tests DMap interface of RegularDMap.
+     */
+    public static final class InternalDMapTest extends AbstractDMapTest
+    {
+        private EnerJDatabase mDB;
+        private EnerJTransaction mTxn;
+        
+        public InternalDMapTest(String aName)
+        {
+            super(aName);
+        }
+
+        public void setUp() throws Exception
+        {
+            super.setUp();
+            AbstractDatabaseTestCase.createDatabase1();
+            mDB = new EnerJDatabase();
+            mDB.open(AbstractDatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
+            mTxn = new EnerJTransaction();
+            mTxn.begin(mDB);
+        }
+
+
+        public void tearDown() throws Exception
+        {
+            super.tearDown();
+            mTxn.commit();
+            mDB.close();
+            AbstractDatabaseTestCase.clearDBFiles();
+        }
+
+        public Map createMap() throws Exception
+        {
+            return new PersistentBxTree<Integer, TestClass1>(10, null, false, false, true);
+        }
+
+
+        public boolean allowsNullKeys()
+        {
+            return true;
+        }
+    }
+    
+    
+    /**
+     * Uses Apache Collections Tests.
+     */
+    public static final class ApacheCollectionsSortedMapTest extends AbstractTestSortedMap
+    {
+        private EnerJDatabase mDB;
+        private EnerJTransaction mTxn;
+        
+        public ApacheCollectionsSortedMapTest(String aName)
+        {
+            super(aName);
+        }
+
+        public void setUp() throws Exception
+        {
+            super.setUp();
+            AbstractDatabaseTestCase.createDatabase1();
+            mDB = new EnerJDatabase();
+            mDB.open(AbstractDatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
+            mTxn = new EnerJTransaction();
+            mTxn.begin(mDB);
+        }
+
+
+        public void tearDown() throws Exception
+        {
+            super.tearDown();
+            mTxn.commit();
+            mDB.close();
+            AbstractDatabaseTestCase.clearDBFiles();
+        }
+
+        @Override
+        public Map makeEmptyMap()
+        {
+            return new PersistentBxTree<Integer, TestClass1>(10, null, false, false, true);
+        }
+    }
+    
+    /**
+     * Tests QueryableCollection interface of RegularDMap.
+     */
+    public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
+    {
+        private EnerJDatabase mDB;
+        private EnerJTransaction mTxn;
+        
+
+        public InternalQueryableCollectionTest(String aName)
+        {
+            super(aName);
+        }
+
+
+        public void setUp() throws Exception
+        {
+            super.setUp();
+            AbstractDatabaseTestCase.createDatabase1();
+            mDB = new EnerJDatabase();
+            mDB.open(AbstractDatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
+            mTxn = new EnerJTransaction();
+            mTxn.begin(mDB);
+        }
+
+
+        public void tearDown() throws Exception
+        {
+            super.tearDown();
+            mTxn.commit();
+            mDB.close();
+            AbstractDatabaseTestCase.clearDBFiles();
+        }
+
+        public QueryableCollection createQueryableCollection() throws Exception
+        {
+            return new PersistentBxTree<Integer, TestClass1>(10, null, false, false, true);
+        }
+    }
+
 }
