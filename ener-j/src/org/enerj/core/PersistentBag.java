@@ -305,7 +305,7 @@ public class PersistentBag<E> implements org.odmg.DBag<E>, Cloneable
      */
     public DBag<E> intersection(DBag<E> anOtherBag)
     {
-        return intersection(anOtherBag);
+        return intersection((Collection<E>)anOtherBag);
     }
     
 

@@ -30,6 +30,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.enerj.apache.commons.collections.map.AbstractTestMap;
 import org.odmg.QueryableCollection;
 
 /**
@@ -52,6 +53,7 @@ public class PersistentHashMapTest extends TestCase
         
         suite.addTestSuite( PersistentHashMapTest.InternalDMapTest.class );
         suite.addTestSuite( PersistentHashMapTest.InternalQueryableCollectionTest.class );
+        suite.addTestSuite( PersistentHashMapTest.ApacheCollectionsMapTest.class );
 
         return suite;
     }
@@ -67,8 +69,6 @@ public class PersistentHashMapTest extends TestCase
 
 
     // Inner classes used to test interfaces and abstract classes.
-
-    
 
     /**
      * Tests DMap interface of RegularDMap.
@@ -95,7 +95,23 @@ public class PersistentHashMapTest extends TestCase
     }
     
     
+    /**
+     * Uses Apache Collections Tests.
+     */
+    public static final class ApacheCollectionsMapTest extends AbstractTestMap
+    {
+        public ApacheCollectionsMapTest(String aName)
+        {
+            super(aName);
+        }
 
+        @Override
+        public Map makeEmptyMap()
+        {
+            return new PersistentHashMap();
+        }
+    }
+    
     /**
      * Tests QueryableCollection interface of RegularDMap.
      */

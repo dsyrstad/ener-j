@@ -46,12 +46,11 @@ public abstract class AbstractDatabaseTestCase extends TestCase
     protected static final String DATABASE_URI = DBNAME;
     protected static final String DATABASE2_URI = DBNAME2;
 
-    private File mDBPageFile = new File(PARENT_DIR + DBNAME + '/' + DBNAME + ".enerj");
-    private File mDBLogFile = new File(PARENT_DIR + DBNAME + '/' + DBNAME + ".log");
+    private static File sDBPageFile = new File(PARENT_DIR + DBNAME + '/' + DBNAME + ".enerj");
+    private static File sDBLogFile = new File(PARENT_DIR + DBNAME + '/' + DBNAME + ".log");
 
-    private File mDBPageFile2 = new File(PARENT_DIR + DBNAME2 + '/' + DBNAME2 + ".enerj");
-    private File mDBLogFile2 = new File(PARENT_DIR + DBNAME2 + '/' + DBNAME2 + ".log");
-    private boolean mCreatedDB2 = false;
+    private static File sDBPageFile2 = new File(PARENT_DIR + DBNAME2 + '/' + DBNAME2 + ".enerj");
+    private static File sDBLogFile2 = new File(PARENT_DIR + DBNAME2 + '/' + DBNAME2 + ".log");
 
     /**
      * Construct a AbstractDatabaseTestCase. 
@@ -73,9 +72,7 @@ public abstract class AbstractDatabaseTestCase extends TestCase
 
     public void setUp() throws Exception
     {
-        clearDBFiles();
-        System.setProperty("enerj.dbpath", PARENT_DIR);
-        PagedObjectServer.createDatabase("Test", DBNAME, 0L, 0L);
+        createDatabase1();
     }
 
 
@@ -84,27 +81,31 @@ public abstract class AbstractDatabaseTestCase extends TestCase
         clearDBFiles();
     }
 
-
-    /**
-     *  Delete database files.
-     */
-    private void clearDBFiles()
+    public static void createDatabase1() throws Exception
     {
-        mDBPageFile.delete();
-        mDBLogFile.delete();
-        
-        if (mCreatedDB2) {
-            clearDB2Files();
-        }
+        clearDBFiles();
+        System.setProperty("enerj.dbpath", PARENT_DIR);
+        PagedObjectServer.createDatabase("Test", DBNAME, 0L, 0L);
     }
 
     /**
      *  Delete database files.
      */
-    private void clearDB2Files()
+    public static void clearDBFiles()
     {
-        mDBPageFile2.delete();
-        mDBLogFile2.delete();
+        sDBPageFile.delete();
+        sDBLogFile.delete();
+        
+        clearDB2Files();
+    }
+
+    /**
+     *  Delete database files.
+     */
+    public static void clearDB2Files()
+    {
+        sDBPageFile2.delete();
+        sDBLogFile2.delete();
     }
     
     /**
@@ -112,7 +113,7 @@ public abstract class AbstractDatabaseTestCase extends TestCase
      *
      * @throws Exception if an error occurs.
      */
-    protected void createDatabase2() throws Exception
+    public static void createDatabase2() throws Exception
     {
         clearDB2Files();
         System.setProperty("enerj.dbpath", PARENT_DIR);

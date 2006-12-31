@@ -83,6 +83,8 @@ import org.odmg.QueryInvalidException;
 @Persist
 public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K, V>, SortedMap<K, V>
 {
+    
+    // TODO Bulk load, dupl keys
     /** This is roughly the right size to fill-out an 8K page when keys are SCOs and are 8 bytes in length. */
     public static final int DEFAULT_KEYS_PER_NODE = 450;
     
