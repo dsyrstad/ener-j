@@ -101,11 +101,11 @@ public abstract class AbstractSortedMapTest extends AbstractMapTest
         }
         
         SortedMap headMap = testSortedMap.headMap( new CollectionTestObject("Obj-" + stopIdx) );
-        assertTrue("Size should be correct", headMap.size() == stopIdx);
+        assertEquals("Size should be correct", stopIdx, headMap.size());
         Iterator iterator = headMap.keySet().iterator();
         for (int i = 0; i < stopIdx; i++) {
             CollectionTestObject object = (CollectionTestObject)iterator.next();
-            assertTrue("Value should match", object.equals( new CollectionTestObject("Obj-" + i) ) );
+            assertEquals("Value should match", new CollectionTestObject("Obj-" + i), object);
         }
         
     }

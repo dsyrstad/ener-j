@@ -108,8 +108,8 @@ public class Enhancer
                     enhancer.mDebug = true;
                 }
                 else if (args[i].equals("--help")) {
-                    System.out.println("Ener-J Enhancer - Copyright 2001-2006 Visual Systems Corporation");
-                    System.out.println( "Usage: " + Enhancer.class.getName() + " --outdir directory [options] metadata-file...");
+                    System.out.println("Ener-J Enhancer - Copyright 2001-2007 Visual Systems Corporation");
+                    System.out.println( "Usage: " + Enhancer.class.getName() + " --outdir directory [options] [metadata-file...]");
                     System.out.println("  --outdir directory = the directory where .class files are written.");
                     System.out.println("      This may be the same as one of directories in the Java classpath.");
                     System.out.println("      The Java classpath must consist of directory names or JAR files for");
@@ -136,10 +136,10 @@ public class Enhancer
             return 1;
         }
 
-        if (propFiles.size() == 0) {
+        /*if (propFiles.isEmpty()) {
           System.err.println("No metadata files specified");
           return 1;
-        }
+        }*/
         
         // TODO refactor the nasties below
         int returnCode = 0;

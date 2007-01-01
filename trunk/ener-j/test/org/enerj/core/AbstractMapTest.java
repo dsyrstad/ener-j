@@ -78,13 +78,13 @@ public abstract class AbstractMapTest extends TestCase
         }
 
         assertTrue("Should not be empty", !testMap.isEmpty() );
-        assertTrue("Should have the correct number of elements", testMap.size() == mapSize);
+        assertEquals("Should have the correct number of elements", mapSize, testMap.size());
         for (int i = 0; i < mapSize; i++) {
             CollectionTestObject key =  new CollectionTestObject("Key-" + i);
             assertTrue("Should contain Key-" + i + " key", testMap.containsKey(key) );
             String value = (String)testMap.get(key);
             String targetValue = "Value-" + i;
-            assertTrue("Value should be " + targetValue, value.equals(targetValue) );
+            assertEquals(targetValue, value);
             assertTrue("Should contain " + targetValue, testMap.containsValue(targetValue) );
         }
 
@@ -94,8 +94,8 @@ public abstract class AbstractMapTest extends TestCase
         String prevValue = (String)testMap.put(key, newValue);
 
         assertTrue("Previous value should match", prevValue.equals("Value-" + 4));
-        assertTrue("Get should return new value", testMap.get(key).equals(newValue) );
-        assertTrue("Size should not have changed", testMap.size() == mapSize);
+        assertEquals("Get should return new value", newValue, testMap.get(key) );
+        assertEquals("Size should not have changed", mapSize, testMap.size());
         
         // get of non-existent key
         Object value = testMap.get( new CollectionTestObject("UNKNOWN KEY") );

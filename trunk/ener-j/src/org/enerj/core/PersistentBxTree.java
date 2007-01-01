@@ -298,20 +298,35 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     public V put(K key, V value)
     {
         V prevValue = get(key);
+        if (prevValue != null && !mAllowDuplicateKeys) {
+            // Remove existing key if tree does not allow duplicates. This conforms to Map contract.
+            remove(key);
+        }
+        
         insert(key, value);
         return prevValue;
     }
     
     /**
-     * Like put(), but doesn't return the current value.
+     * Like put(), but doesn't return the current value and does not replace existing keys.
      *
      * @param aKey
      * @param aValue
+     * 
+     * @throws IllegalStateException if an attempt is made to insert a duplicate key and
+     *  duplicate keys are not allowed.
      */
     public void insert(K aKey, V aValue)
     {
         Persister persister = PersistableHelper.getPersister(this);
-        insert(aKey, persister.getOID(aValue));
+        long oid = persister.getOID(aValue);
+        if (oid == ObjectSerializer.NULL_OID) {
+            // Might be an SCO, wrap it.
+            SCOWrapper wrapper = new SCOWrapper(aValue);
+            oid = PersistableHelper.getPersister(this).getOID(wrapper);
+        }
+
+        insert(aKey, oid);
         ++mSize;
     }
 
@@ -328,6 +343,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         
         V oldValue = (V)nodePos.mNode.getValueAt(nodePos.mKeyIdx);
         nodePos.mNode.delete(this, nodePos.mKeyIdx);
+        --mSize;
         return oldValue;
     }
 
@@ -1120,7 +1136,13 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             assert mIsLeaf;
 
             long oid = mOIDRefs[aKeyIdx];
-            return PersistableHelper.getPersister(this).getObjectForOID(oid);
+            Object obj = PersistableHelper.getPersister(this).getObjectForOID(oid);
+            if (obj instanceof SCOWrapper) {
+                SCOWrapper wrapper = (SCOWrapper)obj;
+                return wrapper.getObject();
+            }
+            
+            return obj;
         }
         
         /**
@@ -1130,7 +1152,14 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         {
             assert mIsLeaf;
 
-            setOIDRefAt(aKeyIdx, PersistableHelper.getPersister(this).getOID(aValue));
+            long oid = PersistableHelper.getPersister(this).getOID(aValue);
+            if (oid == ObjectSerializer.NULL_OID) {
+                // Might be an SCO, wrap it.
+                SCOWrapper wrapper = new SCOWrapper(aValue);
+                oid = PersistableHelper.getPersister(this).getOID(wrapper);
+            }
+            
+            setOIDRefAt(aKeyIdx, oid);
         }
         
         /**
@@ -1320,7 +1349,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             mExpectedModCount = map.mModCount;
             mNextNodePos = startNodePos;
             mCurrNodePos = null;
-            this.mEndKey = endKey;
+            mEndKey = endKey;
             if (mTree.mComparator == null) {
                 mEndKeyComparable = (Comparable<K>)endKey;
             }
@@ -1356,13 +1385,17 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 throw new NoSuchElementException();
             }
             
+            if (mCurrNodePos == null) {
+                mCurrNodePos = new NodePos<K>();
+            }
+            
             mCurrNodePos.mNode = mNextNodePos.mNode;
             mCurrNodePos.mKeyIdx = mNextNodePos.mKeyIdx;
 
             mNextNodePos = mCurrNodePos.mNode.nextKey(mNextNodePos);
             if (mEndKey != null) {
                 K key = mNextNodePos.mNode.mKeys[ mNextNodePos.mKeyIdx ];
-                if (mTree.mComparator.compare(key, mEndKey) > 0) {
+                if (mTree.mComparator.compare(key, mEndKey) >= 0) {
                     mNextNodePos = null;
                 }
             }
