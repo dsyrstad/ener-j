@@ -30,6 +30,7 @@ import junit.framework.*;
 
 import org.odmg.*;
 import org.enerj.enhancer.*;
+import org.enerj.annotations.Persist;
 import org.enerj.core.*;
 
 /**
@@ -38,6 +39,7 @@ import org.enerj.core.*;
  * @version $Id: CollectionTestObject.java,v 1.1 2005/08/16 04:29:00 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
+@Persist
 public class CollectionTestObject implements Cloneable, Comparable
 {
     private String mValue;

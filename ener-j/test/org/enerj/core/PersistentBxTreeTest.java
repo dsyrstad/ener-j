@@ -77,7 +77,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
     /**
      * Test method for {@link org.enerj.core.PersistentBxTree#put(java.lang.Object, org.enerj.core.Persistable)}.
      */
-    public void testLargeRandomPut() throws Exception
+    public void xtestLargeRandomPut() throws Exception
     {
         // Create an array of objects and the shuffle them.
         TestClass1[] objs = new TestClass1[100000];

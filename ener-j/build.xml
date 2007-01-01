@@ -95,9 +95,8 @@ Available targets:
             </classpath>
             <sysproperty key="ANT" value=""/>
             <arg value="--debug" />
-            <arg value="--sourcepath" />
-                <arg path="${build.dest}" />
-            <arg value="--inplace" />
+            <arg value="--outdir" />
+	            <arg path="${build.dest}" />
             <arg line="${src-metafiles}" />
         </java>
 
@@ -114,7 +113,7 @@ Available targets:
             <sysproperty key="ANT" value=""/>
             <sysproperty key="enerj.dbpath" value="databases"/>
             <arg value="--debug" />
-            <arg value="--destdir" />
+            <arg value="--outdir" />
                 <arg value="${testEnhancedClasses}" />
             <arg line="${test-metafiles}" />
         </java>

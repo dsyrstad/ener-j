@@ -86,6 +86,10 @@ class EnhancerTemplate_Orig extends java.util.Date implements Cloneable
         mInt = aParam;
     }
 
+    public void arrayAccess()
+    {
+        mIntArray[0] = 5;
+    }
 
     // User-defined clone.
     public Object clone() 
@@ -117,7 +121,7 @@ class EnhancerTemplate_Orig extends java.util.Date implements Cloneable
     {
     }
     
-
+    
     // ...End of User-defined methods.
 
 
