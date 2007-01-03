@@ -26,12 +26,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.enerj.annotations.Persist;
 import org.enerj.annotations.PersistenceAware;
+import org.enerj.apache.commons.collections.comparators.NullComparator;
 import org.enerj.apache.commons.collections.map.AbstractTestSortedMap;
 import org.enerj.util.StringUtil;
 import org.odmg.Database;
@@ -273,10 +275,35 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
             AbstractDatabaseTestCase.clearDBFiles();
         }
 
+        // TODO Larger collections via getSample...
         @Override
         public Map makeEmptyMap()
         {
             return new PersistentBxTree<Integer, TestClass1>(10, null, false, false, true);
+        }
+
+        @Override
+        public Map makeConfirmedMap() 
+        {
+            return new TreeMap( new NullComparator() );
+        }
+
+        @Override
+        public boolean isAllowNullKey()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean isAllowNullValue()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean isTestSerialization()
+        {
+            return false; // We don't need to support this
         }
     }
     

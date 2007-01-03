@@ -185,7 +185,7 @@ public abstract class AbstractMapTest extends TestCase
             hashCode += entry.hashCode();
         }
         
-        assertTrue("Hashcodes should match", testMap.hashCode() == hashCode);
+        assertEquals("Hashcodes should match", hashCode, testMap.hashCode());
     }
 
 
