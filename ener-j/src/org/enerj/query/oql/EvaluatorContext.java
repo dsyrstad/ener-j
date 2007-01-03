@@ -31,11 +31,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.odmg.QueryException;
-import org.enerj.core.Extent;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJTransaction;
+import org.enerj.core.Extent;
 import org.enerj.jga.fn.UnaryFunctor;
+import org.odmg.QueryException;
 
 /**
  * Context used by the OQL query evaluator. <p>
@@ -45,7 +45,7 @@ import org.enerj.jga.fn.UnaryFunctor;
  */
 public class EvaluatorContext
 {
-    private static ThreadLocal<EvaluatorContext> sContexts = new ThreadLocal();
+    private static ThreadLocal<EvaluatorContext> sContext = new ThreadLocal<EvaluatorContext>();
     
     // A map whose key is an alias name, and value is a fully-qualified class name.
     private Map<String, String> mImportAlias = new HashMap<String, String>();
@@ -55,7 +55,7 @@ public class EvaluatorContext
     /** The transaction for the query. */
     private EnerJTransaction mTransaction;
     /** A collection of Extents that were opened during the query. */
-    private Collection<Extent> mExtents = new LinkedList();
+    private Collection<Extent> mExtents = new LinkedList<Extent>();
     
     /** Scoped Variables. Each element is a Map keyed by the name of the variable and has a VariableDef as a value.
      * the functor will evaluate to the variable's value during execution. The first element is the most
@@ -78,11 +78,16 @@ public class EvaluatorContext
     /**
      * Sets the evaluator context for this thread. 
      *
-     * @param aContext the context.
+     * @param aContext the context, may be null to clear the context.
      */
     public static void setContext(EvaluatorContext aContext)
     {
-        sContexts.set(aContext);
+        if (aContext == null) {
+            sContext.remove();
+        }
+        else {
+            sContext.set(aContext);
+        }
     }
 
 
@@ -93,7 +98,7 @@ public class EvaluatorContext
      */
     public static EvaluatorContext getContext()
     {
-        return sContexts.get();
+        return sContext.get();
     }
     
 

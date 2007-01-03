@@ -155,6 +155,7 @@ public class EnerJOQLQuery implements OQLQuery
         }
         finally {
             EvaluatorContext.getContext().dispose();
+            EvaluatorContext.setContext(null);
         }
     }
 

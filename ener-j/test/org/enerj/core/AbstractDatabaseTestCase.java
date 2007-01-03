@@ -39,18 +39,19 @@ public abstract class AbstractDatabaseTestCase extends TestCase
 {
     private static final Logger sLogger = Logger.getLogger(AbstractDatabaseTestCase.class.getName());
     
+    private static final String DB_PATH = System.getProperty("enerj.dbpath");
     private static final String DBNAME = "GeneralDB";
     private static final String DBNAME2 = "GeneralDB2";
-    private static final String PARENT_DIR = "databases/JUnit/";
+    private static final String PARENT_DIR = DB_PATH + "/JUnit/";
     
     protected static final String DATABASE_URI = DBNAME;
     protected static final String DATABASE2_URI = DBNAME2;
-
-    private static File sDBPageFile = new File(PARENT_DIR + DBNAME + '/' + DBNAME + ".enerj");
-    private static File sDBLogFile = new File(PARENT_DIR + DBNAME + '/' + DBNAME + ".log");
-
-    private static File sDBPageFile2 = new File(PARENT_DIR + DBNAME2 + '/' + DBNAME2 + ".enerj");
-    private static File sDBLogFile2 = new File(PARENT_DIR + DBNAME2 + '/' + DBNAME2 + ".log");
+    
+    private static final String PAGE_FILE_NAME = PARENT_DIR + DBNAME + '/' + DBNAME + ".enerj";
+    private static final String LOG_FILE_NAME = PARENT_DIR + DBNAME + '/' + DBNAME + ".log";
+    
+    private static final String PAGE_FILE2_NAME = PARENT_DIR + DBNAME2 + '/' + DBNAME2 + ".enerj";
+    private static final String LOG_FILE2_NAME = PARENT_DIR + DBNAME2 + '/' + DBNAME2 + ".log";
 
     /**
      * Construct a AbstractDatabaseTestCase. 
@@ -93,8 +94,8 @@ public abstract class AbstractDatabaseTestCase extends TestCase
      */
     public static void clearDBFiles()
     {
-        sDBPageFile.delete();
-        sDBLogFile.delete();
+        new File(PAGE_FILE_NAME).delete();
+        new File(LOG_FILE_NAME).delete();
         
         clearDB2Files();
     }
@@ -104,8 +105,8 @@ public abstract class AbstractDatabaseTestCase extends TestCase
      */
     public static void clearDB2Files()
     {
-        sDBPageFile2.delete();
-        sDBLogFile2.delete();
+        new File(PAGE_FILE2_NAME).delete();
+        new File(LOG_FILE2_NAME).delete();
     }
     
     /**

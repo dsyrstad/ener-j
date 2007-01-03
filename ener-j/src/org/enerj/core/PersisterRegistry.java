@@ -82,6 +82,10 @@ public class PersisterRegistry
         if (aPersister != null && persister != aPersister) {
             throw new IllegalArgumentException("Internal Error: Unexpected Persister was popped.");
         }
+        
+        if (getStackForThread().isEmpty()) {
+            sPersisterStackForThread.remove();
+        }
     }
     
     /**

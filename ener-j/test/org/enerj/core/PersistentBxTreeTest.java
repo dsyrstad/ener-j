@@ -79,7 +79,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
     /**
      * Test method for {@link org.enerj.core.PersistentBxTree#put(java.lang.Object, org.enerj.core.Persistable)}.
      */
-    public void xtestLargeRandomPut() throws Exception
+    public void xtestLargeRandomPut() throws Exception // TODO Uncomment
     {
         // Create an array of objects and the shuffle them.
         TestClass1[] objs = new TestClass1[100000];
@@ -213,21 +213,25 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
 
         public void setUp() throws Exception
         {
+            System.gc(); System.out.println("Mem1 before open=" + Runtime.getRuntime().freeMemory());
             super.setUp();
             AbstractDatabaseTestCase.createDatabase1();
             mDB = new EnerJDatabase();
             mDB.open(AbstractDatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
             mTxn = new EnerJTransaction();
             mTxn.begin(mDB);
+            System.gc(); System.out.println("Mem1 after opent=" + Runtime.getRuntime().freeMemory());
         }
 
 
         public void tearDown() throws Exception
         {
-            super.tearDown();
+            System.gc(); System.out.println("Mem1 before commit=" + Runtime.getRuntime().freeMemory());
             mTxn.commit();
             mDB.close();
             AbstractDatabaseTestCase.clearDBFiles();
+            super.tearDown();
+            System.gc(); System.out.println("Mem1 after commit=" + Runtime.getRuntime().freeMemory());
         }
 
         public Map createMap() throws Exception
@@ -269,10 +273,28 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
 
         public void tearDown() throws Exception
         {
-            super.tearDown();
             mTxn.commit();
             mDB.close();
             AbstractDatabaseTestCase.clearDBFiles();
+            super.tearDown();
+        }
+
+        @Override
+        public void testSimpleSerialization() throws Exception
+        {
+            if (isTestSerialization()) {
+                super.testSimpleSerialization();
+            }
+            // Else don't test this. We don't need to support it.
+        }
+
+        @Override
+        public void testSerializeDeserializeThenCompare() throws Exception
+        {
+            if (isTestSerialization()) {
+                super.testSerializeDeserializeThenCompare();
+            }
+            // Else don't test this. We don't need to support it.
         }
 
         // TODO Larger collections via getSample...
@@ -308,7 +330,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
     }
     
     /**
-     * Tests QueryableCollection interface of RegularDMap.
+     * Tests QueryableCollection interface.
      */
     public static final class InternalQueryableCollectionTest extends AbstractQueryableCollectionTest
     {
@@ -335,10 +357,10 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
 
         public void tearDown() throws Exception
         {
-            super.tearDown();
             mTxn.commit();
             mDB.close();
             AbstractDatabaseTestCase.clearDBFiles();
+            super.tearDown();
         }
 
         public QueryableCollection createQueryableCollection() throws Exception

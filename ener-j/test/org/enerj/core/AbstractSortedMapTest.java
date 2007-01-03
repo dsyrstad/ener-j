@@ -49,7 +49,6 @@ public abstract class AbstractSortedMapTest extends AbstractMapTest
         super(aName);
     }
 
-
     /**
      * Tests comparator().
      */
