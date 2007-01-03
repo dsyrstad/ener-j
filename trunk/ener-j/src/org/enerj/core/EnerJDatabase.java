@@ -1121,6 +1121,7 @@ public class EnerJDatabase implements Database, Persister
             mObjectServerSession = null;
             mClientCache = null;
             mModifiedObjects = null;
+            mSerializedObjectQueue = null;
             mBoundToTransaction = null;
             mKnownSchemaCIDs = null;
             mIsOpen = false;
