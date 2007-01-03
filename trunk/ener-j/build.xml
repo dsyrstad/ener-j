@@ -164,7 +164,7 @@ Available targets:
             	  <include name="**/*Test.java"/>
               	  <include name="**/jga/**/Test*.java"/> <!-- JGA tests are named this way -->
               	  <exclude name="**/Abstract*Test.java"/>
-            	  <exclude name="**/org/enerj/apache/commons/collections/BulkTest.java"/>
+            	  <exclude name="**/BulkTest.java"/>
             	</fileset>
     		</batchtest>
     	</junit>
