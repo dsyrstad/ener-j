@@ -372,23 +372,13 @@ public class EnerJDatabase implements Database, Persister
         }
 
         idx = 0;
-        // General assertion that we got the one we were really looking for.
-        boolean found = false; 
         for (Persistable prefetch : prefetches) {
-            if (prefetch == aPersistable) {
-                found = true;
-            }
-            
             PersistableHelper.loadSerializedImage(this, prefetch, objects[idx++]);
 
             if ( !isNontransactionalReadMode() && !EnerJDatabase.isAtLockLevel(prefetch, EnerJTransaction.READ)) {
                 // loadObject() obtains a READ lock.
                 prefetch.enerj_SetLockLevel(EnerJTransaction.READ);
             }
-        }
-        
-        if (!found) {
-            throw new ODMGRuntimeException("INTERNAL ERROR: Didn't load " + aPersistable.getClass() + " as part of prefetches! oid=" + aPersistable.enerj_GetPrivateOID() + ", new=" + aPersistable.enerj_IsNew() + ", loaded=" + aPersistable.enerj_IsLoaded());
         }
     }
     
