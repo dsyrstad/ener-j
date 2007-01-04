@@ -20,7 +20,7 @@
  *******************************************************************************/
 //Ener-J
 //Copyright 2001-2005 Visual Systems Corporation
-//$Header: /cvsroot/ener-j/ener-j/src/org/enerj/util/EnerJQLCmdLine.java,v 1.7 2006/02/21 02:37:47 dsyrstad Exp $
+//$Header: /cvsroot/ener-j/ener-j/src/org/enerj/util/EnerJOQLCmdLine.java,v 1.7 2006/02/21 02:37:47 dsyrstad Exp $
 
 package org.enerj.util;
 
@@ -43,12 +43,12 @@ import org.enerj.query.oql.EvaluatorContext;
 
 
 /**
-* Ener-J OQL command-line utility. "enerjoql" is pronounced like "vocal".   
+* Ener-J OQL command-line utility.    
 * 
-* @version $Id: EnerJQLCmdLine.java,v 1.7 2006/02/21 02:37:47 dsyrstad Exp $
+* @version $Id: EnerJOQLCmdLine.java,v 1.7 2006/02/21 02:37:47 dsyrstad Exp $
 * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
 */
-public class EnerJQLCmdLine
+public class EnerJOQLCmdLine
 {
     private static int sIndentLevel = 0;
     
@@ -83,12 +83,12 @@ public class EnerJQLCmdLine
         }
         catch (QueryException e) {
             System.err.println("Query Error: " + e.getMessage() );
+            e.printStackTrace();
         }
         catch (Exception e) {
             e.printStackTrace();
         }
         finally {
-            EvaluatorContext.getContext().dispose();
             db.close();
         }
     }
@@ -146,6 +146,6 @@ public class EnerJQLCmdLine
 
     private static void usage() 
     {
-        System.err.println("Usage: EnerJQLCmdLine database-uri [ OQL-expression ]");
+        System.err.println("Usage: EnerJOQLCmdLine database-uri [ OQL-expression ]");
     }
 }

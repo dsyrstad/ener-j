@@ -177,6 +177,8 @@ public class EnerJOQLQuery implements OQLQuery
      */
     public Object execute() throws QueryException
     {
+        EvaluatorContext context = new EvaluatorContext();
+        EvaluatorContext.setContext(context);
         try {
             if (mFunctors.length == 1) {
                 return executeFunctor(mFunctors[0]);
@@ -197,6 +199,10 @@ public class EnerJOQLQuery implements OQLQuery
         }
         catch (Exception e) {
             throw new QueryException("Execution error: " + e, e);
+        }
+        finally {
+            EvaluatorContext.getContext().dispose();
+            EvaluatorContext.setContext(null);
         }
     }
     

@@ -255,6 +255,46 @@ LockScheduler.deadlockAlgorithm=Waits-For
 	</target>
 	
 	<target name="createdb" depends="createDbProps,baseCreateDb" description="Creates a standard database by creating a properties file." />
+
+	<target name="enhance" depends="init" description="Runs the Enhancer">
+		<fail unless="metadir" message="You must specifiy -Dmetadir=metafile-directory"/>
+		<fail unless="srcclasspath" message="You must specifiy -Dsrcclasspath=source-classpath"/>
+		<fail unless="outdir" message="You must specifiy -Doutdir=output-directory"/>
+
+		<fileset id="src-metafiles-fileset" dir="${metadir}" includes="**/*.meta" />
+        <pathconvert pathsep=" " property="src-metafiles" refid="src-metafiles-fileset" />
+    	<echo>${src-metafiles}</echo>
+        <java classname="org.enerj.enhancer.Enhancer" failonerror="true" fork="true">
+            <classpath>
+                <pathelement location="${build.dest}"/>
+                <pathelement location="${asm.jar}"/>
+            	<pathelement path="${srcclasspath}" />
+            </classpath>
+            <sysproperty key="ANT" value=""/>
+            <arg value="--debug" />
+            <arg value="--outdir" />
+	            <arg path="${outdir}" />
+            <arg line="${src-metafiles}" />
+        </java>
+    </target>
+	
+	
+	<target name="oql" depends="requiredb" description="Runs arbitrary oql.">
+		<fail unless="oql" message="You must specify -Doql=OQL-statement"/>
+        <java classname="org.enerj.util.EnerJOQLCmdLine" failonerror="true" fork="true" >
+    		<jvmarg value="-javaagent:${agent.jar}"/>
+        	<jvmarg line="${jvmopts}" />
+  			<classpath>
+  				<pathelement location="${build.testdest}"/>
+    		    <pathelement location="${build.dest}"/>
+                <pathelement location="${asm.jar}"/>
+			</classpath>
+            <sysproperty key="enerj.dbpath" value="${databases.dir}"/>
+            <arg value="${db}" />
+            <arg value="${oql}" />
+        </java>
+	</target>
+	
 	
 	<target name="setOO7db" description="Sets the OO7 database name">
 		<property name="db" value="oo7" />
@@ -291,4 +331,5 @@ LockScheduler.deadlockAlgorithm=Waits-For
             <arg value="${db}" />
         </java>
 	</target>
+
 </project>
