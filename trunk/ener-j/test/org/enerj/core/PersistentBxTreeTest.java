@@ -213,25 +213,23 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
 
         public void setUp() throws Exception
         {
-            System.gc(); System.out.println("Mem1 before open=" + Runtime.getRuntime().freeMemory());
+            //System.gc(); System.out.println("Mem1 before open=" + Runtime.getRuntime().freeMemory());
             super.setUp();
             AbstractDatabaseTestCase.createDatabase1();
             mDB = new EnerJDatabase();
             mDB.open(AbstractDatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
             mTxn = new EnerJTransaction();
             mTxn.begin(mDB);
-            System.gc(); System.out.println("Mem1 after opent=" + Runtime.getRuntime().freeMemory());
         }
 
 
         public void tearDown() throws Exception
         {
-            System.gc(); System.out.println("Mem1 before commit=" + Runtime.getRuntime().freeMemory());
             mTxn.commit();
             mDB.close();
             AbstractDatabaseTestCase.clearDBFiles();
             super.tearDown();
-            System.gc(); System.out.println("Mem1 after commit=" + Runtime.getRuntime().freeMemory());
+            //System.gc(); System.out.println("Mem1 after commit=" + Runtime.getRuntime().freeMemory());
         }
 
         public Map createMap() throws Exception

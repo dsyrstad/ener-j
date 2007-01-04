@@ -78,6 +78,9 @@ public class PagedObjectServer extends BaseObjectServer
     /** HashMap of database names to PagedObjectServers. */
     private static HashMap<String, PagedObjectServer> sCurrentServers = new HashMap<String, PagedObjectServer>(20);
 
+    /** Our shutdown hook. */
+    private static Thread sShutdownHook = null;
+
     /** The database name. */
     private String mDBName;
     
@@ -105,9 +108,6 @@ public class PagedObjectServer extends BaseObjectServer
      * start. 
      */
     private boolean mQuiescent = false;
-
-    /** Our shutdown hook. */
-    private static Thread mShutdownHook = null;
 
     /** Time of last database checkpoint (System.currentTimeInMillis()). */
     private long mLastCheckpointTime = 0L;
@@ -182,8 +182,8 @@ public class PagedObjectServer extends BaseObjectServer
         }
 
         // Register a shutdown hook...
-        mShutdownHook = new ShutdownHook(this);
-        Runtime.getRuntime().addShutdownHook(mShutdownHook);
+        sShutdownHook = new ShutdownHook(this);
+        Runtime.getRuntime().addShutdownHook(sShutdownHook);
 
         sLogger.fine("Server " + this + " is started" + localModeMsg + '.');
     }
@@ -483,6 +483,7 @@ public class PagedObjectServer extends BaseObjectServer
 
         try {
             mPagedStore.disconnect();
+            mPagedStore = null;
         }
         catch (PageServerException e) {
             throw new ODMGException("Could not close PageServer properly - database may be corrupt", e);
@@ -498,14 +499,18 @@ public class PagedObjectServer extends BaseObjectServer
             mRedoLogServer = null;
         }
 
+        mServerUpdateCache = null;
+        super.shutdown();
+        
         try {
-            Runtime.getRuntime().removeShutdownHook(mShutdownHook);
+            Runtime.getRuntime().removeShutdownHook(sShutdownHook);
         }
         catch (Exception e) {
             // Ignore - shutdown is in progress.
         }
 
         sLogger.fine("Server " + this + " is shutdown.");
+        //sLogger.info("Server dump: " + StringUtil.toString(this, false, true));
     }
 
 
