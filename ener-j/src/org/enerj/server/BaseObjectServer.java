@@ -237,6 +237,12 @@ abstract public class BaseObjectServer implements ObjectServer
     {
         return mSchemaSession;
     }
+    
+    public void shutdown() throws ODMGException
+    {
+        mSchemaSession = null;
+        mCachedSchema = null;
+    }
 
     /**
      * Gets a read-only copy of the schema.
