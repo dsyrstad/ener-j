@@ -30,14 +30,16 @@ import junit.framework.TestCase;
 import org.enerj.server.PagedObjectServer;
 
 /**
- * Handles creation and deletion of a temporary database for testing. <p>
+ * Handles creation and deletion of a temporary database for testing. NOTE: This is a TestCase
+ * to support older TestCases. New TestCases should not extend this class. Static methods
+ * are available instead. <p>
  * 
  * @version $Id: $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
-public abstract class AbstractDatabaseTestCase extends TestCase
+public abstract class DatabaseTestCase extends TestCase
 {
-    private static final Logger sLogger = Logger.getLogger(AbstractDatabaseTestCase.class.getName());
+    private static final Logger sLogger = Logger.getLogger(DatabaseTestCase.class.getName());
     
     private static final String DB_PATH = System.getProperty("enerj.dbpath");
     private static final String DBNAME = "GeneralDB";
@@ -54,19 +56,19 @@ public abstract class AbstractDatabaseTestCase extends TestCase
     private static final String LOG_FILE2_NAME = PARENT_DIR + DBNAME2 + '/' + DBNAME2 + ".log";
 
     /**
-     * Construct a AbstractDatabaseTestCase. 
+     * Construct a DatabaseTestCase. 
      *
      */
-    public AbstractDatabaseTestCase()
+    public DatabaseTestCase()
     {
     }
 
     /**
-     * Construct a AbstractDatabaseTestCase. 
+     * Construct a DatabaseTestCase. 
      *
      * @param aName
      */
-    public AbstractDatabaseTestCase(String aName)
+    public DatabaseTestCase(String aName)
     {
         super(aName);
     }

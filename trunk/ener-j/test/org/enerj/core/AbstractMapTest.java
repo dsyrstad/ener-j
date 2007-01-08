@@ -24,14 +24,13 @@
 
 package org.enerj.core;
 
-import java.util.*;
-import java.lang.reflect.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
-import junit.framework.*;
-
-import org.odmg.*;
-import org.enerj.enhancer.*;
-import org.enerj.core.*;
+import org.enerj.apache.commons.collections.BulkTest;
 
 /**
  * Generically Tests classes that implement java.util.Map.
@@ -41,7 +40,7 @@ import org.enerj.core.*;
  * @version $Id: AbstractMapTest.java,v 1.1 2006/01/12 04:39:44 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public abstract class AbstractMapTest extends TestCase
+public abstract class AbstractMapTest extends BulkTest
 {
 
     public AbstractMapTest(String aName) 

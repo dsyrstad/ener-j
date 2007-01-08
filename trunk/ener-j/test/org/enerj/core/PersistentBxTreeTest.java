@@ -29,10 +29,12 @@ import java.util.Random;
 import java.util.TreeMap;
 
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.enerj.annotations.Persist;
 import org.enerj.annotations.PersistenceAware;
+import org.enerj.apache.commons.collections.BulkTest;
 import org.enerj.apache.commons.collections.comparators.NullComparator;
 import org.enerj.apache.commons.collections.map.AbstractTestSortedMap;
 import org.enerj.util.StringUtil;
@@ -48,7 +50,7 @@ import org.odmg.Transaction;
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
 @PersistenceAware
-public class PersistentBxTreeTest extends AbstractDatabaseTestCase
+public class PersistentBxTreeTest extends BulkTest
 {
     private static final String[] FIRST_NAMES = { "Dan", "Tina", "Bob", "Sue", "Emily", "Cole", "Mike", "Borusik", "Ole", "Lena", };
     private static final String[] LAST_NAMES = { "Smith", "Jones", "Funkmeister", "Johnson", "Anderson", "Syrstad", "Robinson",  };
@@ -67,19 +69,39 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
 
     public static Test suite() 
     {
-        TestSuite suite = new TestSuite(PersistentBxTreeTest.class);
-        
-        suite.addTestSuite( PersistentBxTreeTest.InternalSortedMapTest.class );
-        suite.addTestSuite( PersistentBxTreeTest.InternalQueryableCollectionTest.class );
-        suite.addTestSuite( PersistentBxTreeTest.ApacheCollectionsSortedMapTest.class );
-
-        return suite;
+        return makeSuite(PersistentBxTreeTest.class);
     }
+    
+    public void setUp() throws Exception
+    {
+        DatabaseTestCase.createDatabase1();
+    }
+    
+    public void tearDown() throws Exception
+    {
+        DatabaseTestCase.clearDBFiles();
+    }
+    
+    
+    public BulkTest bulkTestInternalSortedMapTest()
+    {
+        return new InternalSortedMapTest(InternalSortedMapTest.class.getName());
+    }
+    
+    public BulkTest bulkTestApacheCollectionsSortedMapTest()
+    {
+        return new ApacheCollectionsSortedMapTest(ApacheCollectionsSortedMapTest.class.getName());
+    }
+    
+    public BulkTest bulkTestInternalQueryableCollectionTest()
+    {
+        return new InternalQueryableCollectionTest(InternalQueryableCollectionTest.class.getName());
+    } 
     
     /**
      * Test method for {@link org.enerj.core.PersistentBxTree#put(java.lang.Object, org.enerj.core.Persistable)}.
      */
-    public void xtestLargeRandomPut() throws Exception // TODO Uncomment
+    public void testLargeRandomPut() throws Exception // TODO Uncomment
     {
         // Create an array of objects and the shuffle them.
         TestClass1[] objs = new TestClass1[100000];
@@ -96,7 +118,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         Implementation impl = EnerJImplementation.getInstance();
         EnerJDatabase db = new EnerJDatabase();
         
-        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
+        db.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
 
         Transaction txn = impl.newTransaction();
         txn.begin();
@@ -128,7 +150,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
 
         db = new EnerJDatabase();
         
-        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
+        db.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
         db.setAllowNontransactionalReads(true);
 
         start = System.currentTimeMillis();
@@ -215,9 +237,9 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         {
             //System.gc(); System.out.println("Mem1 before open=" + Runtime.getRuntime().freeMemory());
             super.setUp();
-            AbstractDatabaseTestCase.createDatabase1();
+            DatabaseTestCase.createDatabase1();
             mDB = new EnerJDatabase();
-            mDB.open(AbstractDatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
+            mDB.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
             mTxn = new EnerJTransaction();
             mTxn.begin(mDB);
         }
@@ -227,7 +249,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         {
             mTxn.commit();
             mDB.close();
-            AbstractDatabaseTestCase.clearDBFiles();
+            DatabaseTestCase.clearDBFiles();
             super.tearDown();
             //System.gc(); System.out.println("Mem1 after commit=" + Runtime.getRuntime().freeMemory());
         }
@@ -261,9 +283,9 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         public void setUp() throws Exception
         {
             super.setUp();
-            AbstractDatabaseTestCase.createDatabase1();
+            DatabaseTestCase.createDatabase1();
             mDB = new EnerJDatabase();
-            mDB.open(AbstractDatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
+            mDB.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
             mTxn = new EnerJTransaction();
             mTxn.begin(mDB);
         }
@@ -273,7 +295,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         {
             mTxn.commit();
             mDB.close();
-            AbstractDatabaseTestCase.clearDBFiles();
+            DatabaseTestCase.clearDBFiles();
             super.tearDown();
         }
 
@@ -345,9 +367,9 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         public void setUp() throws Exception
         {
             super.setUp();
-            AbstractDatabaseTestCase.createDatabase1();
+            DatabaseTestCase.createDatabase1();
             mDB = new EnerJDatabase();
-            mDB.open(AbstractDatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
+            mDB.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
             mTxn = new EnerJTransaction();
             mTxn.begin(mDB);
         }
@@ -357,7 +379,7 @@ public class PersistentBxTreeTest extends AbstractDatabaseTestCase
         {
             mTxn.commit();
             mDB.close();
-            AbstractDatabaseTestCase.clearDBFiles();
+            DatabaseTestCase.clearDBFiles();
             super.tearDown();
         }
 
