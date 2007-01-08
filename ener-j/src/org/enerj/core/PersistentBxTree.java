@@ -349,6 +349,10 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     public void insert(K aKey, V aValue)
     {
         Persister persister = PersistableHelper.getPersister(this);
+        if (persister == null) {
+            throw new IllegalStateException("Database must be open to insert");
+        }
+        
         long oid = persister.getOID(aValue);
         if (oid == ObjectSerializer.NULL_OID) {
             // Might be an SCO, wrap it.

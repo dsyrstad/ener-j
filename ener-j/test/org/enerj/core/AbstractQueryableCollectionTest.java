@@ -31,6 +31,7 @@ import junit.framework.*;
 
 import org.odmg.*;
 import org.enerj.enhancer.*;
+import org.enerj.apache.commons.collections.BulkTest;
 import org.enerj.core.*;
 
 /**
@@ -41,7 +42,7 @@ import org.enerj.core.*;
  * @version $Id: AbstractQueryableCollectionTest.java,v 1.2 2006/05/05 13:47:37 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public abstract class AbstractQueryableCollectionTest extends TestCase
+public abstract class AbstractQueryableCollectionTest extends BulkTest
 {
 
     public AbstractQueryableCollectionTest(String aName) 

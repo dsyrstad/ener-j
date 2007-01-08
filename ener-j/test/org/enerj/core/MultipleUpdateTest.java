@@ -40,7 +40,7 @@ import org.odmg.Transaction;
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
 @PersistenceAware
-public class MultipleUpdateTest extends AbstractDatabaseTestCase
+public class MultipleUpdateTest extends DatabaseTestCase
 {
 
     /**

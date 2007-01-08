@@ -51,7 +51,7 @@ import junit.framework.TestSuite;
  * @version $Id: ObjectSerializerTest.java,v 1.2 2006/06/09 02:39:23 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class ObjectSerializerTest extends AbstractDatabaseTestCase
+public class ObjectSerializerTest extends DatabaseTestCase
 {
     public ObjectSerializerTest(String aTestName) 
     {

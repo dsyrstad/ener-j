@@ -42,7 +42,7 @@ import org.odmg.Transaction;
  * @version $Id: EnerJDatabaseTest.java,v 1.6 2006/06/09 02:39:23 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class EnerJDatabaseTest extends AbstractDatabaseTestCase
+public class EnerJDatabaseTest extends DatabaseTestCase
 {
     private Exception mThreadException;
     

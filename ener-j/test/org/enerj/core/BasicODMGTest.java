@@ -39,7 +39,7 @@ import org.odmg.Transaction;
  * @version $Id: BasicODMGTest.java,v 1.2 2006/06/05 01:17:03 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class BasicODMGTest extends AbstractDatabaseTestCase
+public class BasicODMGTest extends DatabaseTestCase
 {
     public BasicODMGTest(String aTestName) 
     {

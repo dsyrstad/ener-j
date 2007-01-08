@@ -45,7 +45,7 @@ import org.odmg.Transaction;
  * @version $Id: ExtentTest.java,v 1.2 2006/06/09 02:39:24 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class ExtentTest extends AbstractDatabaseTestCase
+public class ExtentTest extends DatabaseTestCase
 {
     public ExtentTest(String aTestName) 
     {

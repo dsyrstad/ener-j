@@ -42,7 +42,7 @@ import org.odmg.Implementation;
  * @version $Id: SchemaTest.java,v 1.3 2006/06/08 02:29:27 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class SchemaTest extends AbstractDatabaseTestCase
+public class SchemaTest extends DatabaseTestCase
 {
     public SchemaTest(String aTestName) 
     {

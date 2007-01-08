@@ -38,7 +38,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.enerj.annotations.Persist;
-import org.enerj.core.AbstractDatabaseTestCase;
+import org.enerj.core.DatabaseTestCase;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJImplementation;
 import org.enerj.core.Persistable;
@@ -50,7 +50,7 @@ import org.enerj.core.PersistableHelper;
  * @version $Id: SCOTest.java,v 1.4 2006/06/09 02:38:31 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class SCOTest extends AbstractDatabaseTestCase
+public class SCOTest extends DatabaseTestCase
 {
     public SCOTest(String aTestName) 
     {
