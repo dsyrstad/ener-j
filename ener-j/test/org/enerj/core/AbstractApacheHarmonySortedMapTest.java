@@ -35,9 +35,9 @@ import java.util.TreeSet;
 
 import junit.framework.TestCase;
 
-abstract public class AbstractApacheSortMapTest extends TestCase
+abstract public class AbstractApacheHarmonySortedMapTest extends TestCase
 {
-    public AbstractApacheSortMapTest(String name)
+    public AbstractApacheHarmonySortedMapTest(String name)
     {
         super(name);
     }
