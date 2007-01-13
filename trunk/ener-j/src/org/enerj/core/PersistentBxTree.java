@@ -1587,6 +1587,10 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
          */
         SubMap(PersistentBxTree<K, V> aTree, K start, K end)
         {
+            if (aTree.mComparator.compare(start, end) > 0) {
+                throw new IllegalArgumentException("Start key " + start + " > end key " + end);
+            }
+            
             mTree = aTree;
             mStartKey = start;
             mEndKey = end;
@@ -1646,7 +1650,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         private boolean checkLowerBound(K key)
         {
             if (mStartKeySpecified) {
-                return (mTree.mComparator.compare(mStartKey, key) >= 0);
+                return (mTree.mComparator.compare(mStartKey, key) <= 0);
             }
 
             return true;
