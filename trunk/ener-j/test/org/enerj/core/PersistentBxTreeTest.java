@@ -55,8 +55,11 @@ public class PersistentBxTreeTest extends BulkTest
 {
     private static final String[] FIRST_NAMES = { "Dan", "Tina", "Bob", "Sue", "Emily", "Cole", "Mike", "Borusik", "Ole", "Lena", };
     private static final String[] LAST_NAMES = { "Smith", "Jones", "Funkmeister", "Johnson", "Anderson", "Syrstad", "Robinson",  };
-    private static final String[] CITIES = { "Burnsville", "Bloomington", "Minneapolis", "St Paul", "Washington", "Seattle", "Phoenix", "New York", "Clevland", "San Jose", };
+    private static final String[] CITIES = { "Burnsville", "Bloomington", "Minneapolis", "St Paul", "Washington", "Seattle", "Phoenix", "New York", "Cleveland", "San Jose", };
 
+    private EnerJDatabase mDB;
+    private EnerJTransaction mTxn;
+    
     /**
      * Construct a PersistentBxTreeTest. 
      *
@@ -84,20 +87,28 @@ public class PersistentBxTreeTest extends BulkTest
     public void setUp() throws Exception
     {
         DatabaseTestCase.createDatabase1();
+        mDB = new EnerJDatabase();
+        mDB.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
+        mTxn = new EnerJTransaction();
+        mTxn.begin(mDB);
+        super.setUp();
     }
     
     public void tearDown() throws Exception
     {
+        mTxn.commit();
+        mDB.close();
         DatabaseTestCase.clearDBFiles();
+        super.tearDown();
     }
     
     
-    public BulkTest bulkTestInternalSortedMapTest() throws Exception
+    public BulkTest xbulkTestInternalSortedMapTest() throws Exception
     {
         return new InternalSortedMapTest(InternalSortedMapTest.class.getName());
     }
     
-    public BulkTest bulkTestApacheCollectionsSortedMapTest() throws Exception 
+    public BulkTest xbulkTestApacheCollectionsSortedMapTest() throws Exception 
     {
         return new ApacheCollectionsSortedMapTest(ApacheCollectionsSortedMapTest.class.getName());
     }
@@ -124,72 +135,101 @@ public class PersistentBxTreeTest extends BulkTest
         // Shuffle array using a consistent seed
         Collections.shuffle(Arrays.asList(objs), new Random(1L));
 
-        Implementation impl = EnerJImplementation.getInstance();
-        EnerJDatabase db = new EnerJDatabase();
-        
-        db.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
-
-        Transaction txn = impl.newTransaction();
-        txn.begin();
-
         long start = System.currentTimeMillis();
-        try {
-            PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>(10, null, false, false, true);
-            db.bind(tree, "BTree");
-            for (int i = 0; i < objs.length; i++) {
-                TestClass1 obj = objs[i];
-                tree.insert(obj.getId(), obj);
+        PersistentBxTree<Integer, TestClass1> tree = new PersistentBxTree<Integer, TestClass1>(10, null, false, false, true);
+        mDB.bind(tree, "BTree");
+        for (int i = 0; i < objs.length; i++) {
+            TestClass1 obj = objs[i];
+            tree.insert(obj.getId(), obj);
+        }
 
-                try {
-                }
-                catch (IllegalStateException e) {
-                    System.out.println("While inserting " + obj.getId() + " on iteration " + i);
-                    tree.dumpTree();
-                    throw e;
-                }
-            }
-        }
-        finally {
-            txn.commit();
-            db.close();
-        }
+        mTxn.commit();
+        mDB.close();
+        mDB = null;
+        mTxn = null;
 
         long end = System.currentTimeMillis();
         System.out.println("Insert time " + (end-start) + "ms");
 
-        db = new EnerJDatabase();
+        mDB = new EnerJDatabase();
         
-        db.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
-        db.setAllowNontransactionalReads(true);
+        mDB.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
+        mDB.setAllowNontransactionalReads(true);
 
         start = System.currentTimeMillis();
-        try {
-            PersistentBxTree<Integer, TestClass1> tree = (PersistentBxTree<Integer, TestClass1>)db.lookup("BTree");
+        tree = (PersistentBxTree<Integer, TestClass1>)mDB.lookup("BTree");
 
-            // Make sure that the tree is valid.
-            tree.validateTree();
+        // Make sure that the tree is valid.
+        tree.validateTree();
 
-            for (TestClass1 obj : objs) {
-                assertTrue("Id does not exist " + obj.getId(), tree.containsKey(obj.getId()) );
-                TestClass1 getObj = tree.get(obj.getId());
-                assertNotNull(getObj);
-                assertEquals(obj.getId(), getObj.getId());
-                if (obj.getLastName() == null) {
-                    System.out.println(StringUtil.toString(obj, false, true));
-                }
-                
-                assertEquals(obj.getLastName(), getObj.getLastName() );
+        for (TestClass1 obj : objs) {
+            assertTrue("Id does not exist " + obj.getId(), tree.containsKey(obj.getId()) );
+            TestClass1 getObj = tree.get(obj.getId());
+            assertNotNull(getObj);
+            assertEquals(obj.getId(), getObj.getId());
+            if (obj.getLastName() == null) {
+                System.out.println(StringUtil.toString(obj, false, true));
             }
-        }
-        finally {
-            db.close();
+            
+            assertEquals(obj.getLastName(), getObj.getLastName() );
         }
 
         end = System.currentTimeMillis();
         System.out.println("ContainsKey/Get time " + (end-start) + "ms");
     }
 
-    // TODO Test subtests with large tree, null keys, dupl keys, dynamic/static resize, reverswed order
+    /**
+     * Tests duplicate keys across more than 2 leaf nodes.
+     */
+    public void testDuplicateKeys() throws Exception 
+    {
+        // We need at least 20 keys to fill 2 leaf nodes, so do 31.
+        final int numDups = 31;
+        final int dupKey = 3;
+        final String dupKeyStr = String.valueOf(dupKey);
+        
+        PersistentBxTree<Integer, String> tree = new PersistentBxTree<Integer, String>(10, null, true, false, true);
+        // Insert a couple of non-dups before the dups.
+        tree.insert(1, "1");
+        tree.insert(2, "2");
+        for (int i = 0; i < numDups; i++) {
+            tree.insert(dupKey, dupKeyStr + "-" + i);
+        }
+        
+        // Insert a couple non-dups after...
+        tree.insert(4, "4");
+        tree.insert(5, "5");
+        
+        assertEquals(numDups + 4, tree.size());
+        
+        // Now count the dups using a regular iterator.
+        int dupCnt = 0;
+        boolean[] slotFound = new boolean[numDups];
+        for (Map.Entry<Integer, String> entry : tree.entrySet()) {
+            if (entry.getKey() == dupKey) {
+                ++dupCnt;
+                String value = entry.getValue();
+                String[] c = value.split("-");
+                assertEquals(dupKeyStr, c[0]);
+                int idx = Integer.valueOf(c[1]); // The original index on "3-#"
+                slotFound[idx] = true;
+            }
+        }
+        
+        assertEquals(numDups, dupCnt);
+        for (int i = 0; i < numDups; i++) {
+            if (!slotFound[i]) {
+                fail("Didn't find slot " + slotFound[i]);
+            }
+        }
+        
+        // Now use a submap restricted by the duplicate key.
+        SortedMap<Integer, String> subMap = tree.subMap(dupKey, 4);
+        assertEquals(numDups, subMap.size());
+        // TODO check iterator as above
+    }
+
+    // TODO Test subtests with large tree, dupl keys, dynamic/static resize, reverswed order
     @Persist
     private static final class TestClass1
     {
@@ -279,8 +319,7 @@ public class PersistentBxTreeTest extends BulkTest
     /**
      * Uses Apache Harmony Tests.
      */
-    // Note: this misses some tests because of BulkTest problems    
-    public static final class ApacheHarmonySortedMapTest extends AbstractApacheSortMapTest
+    public static final class ApacheHarmonySortedMapTest extends AbstractApacheHarmonySortedMapTest
     {
         private EnerJDatabase mDB;
         private EnerJTransaction mTxn;
@@ -319,7 +358,7 @@ public class PersistentBxTreeTest extends BulkTest
     /**
      * Uses Apache Collections Tests.
      */
-    // Note: this misses some tests because of BulkTest problems    
+    // Note: this misses some tests because of BulkTest problems interacting with the database.    
     public static final class ApacheCollectionsSortedMapTest extends AbstractTestSortedMap
     {
         private EnerJDatabase mDB;
@@ -396,6 +435,33 @@ public class PersistentBxTreeTest extends BulkTest
         public boolean isTestSerialization()
         {
             return false; // We don't need to support this
+        }
+
+        @Override
+        public Object[] getSampleValues()
+        {
+            Object[] result = new Object[] {
+                            "blahv", "foov", "barv", "bazv", "tmpv", "goshv", "gollyv", "geev",
+                            "hellov", "goodbyev", "we'llv", "seev", "youv", "allv", "againv",
+                            (isAllowNullValue() ? null : "nonnullvalue"),
+                            "value",
+                            (isAllowDuplicateValues()) ? "value" : "value2",
+                        };
+            return result;
+        }
+
+        @Override
+        public Object[] getNewSampleValues() 
+        {
+            Object[] result = new Object[] {
+                            (isAllowNullValue() && isAllowDuplicateValues()) ? null : "newnonnullvalue",
+                            "newvalue",
+                            (isAllowDuplicateValues()) ? "newvalue" : "newvalue2",
+                            "newblahv", "newfoov", "newbarv", "newbazv", "newtmpv", "newgoshv", 
+                            "newgollyv", "newgeev", "newhellov", "newgoodbyev", "newwe'llv", 
+                            "newseev", "newyouv", "newallv", "newagainv",
+                        };
+            return result;
         }
     }
     
