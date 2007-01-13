@@ -90,6 +90,9 @@ abstract public class AbstractApacheSortMapTest extends TestCase
             if (null == o1) {
                 return -1;
             }
+            if (null == o2) {
+                return 1;
+            }
             return o1.compareTo(o2);
         }
     }
