@@ -218,8 +218,13 @@ public class CachedPageServer implements PageServer
     }
 
 
-    public void disconnect() throws PageServerException
+    public synchronized void disconnect() throws PageServerException
     {
+        if (mDelegate == null) {
+            sLogger.fine("CahcedPageServer is already disconnected/shutdown");
+            return;
+        }
+
         try {
             syncAllPages();
             mDelegate.disconnect();

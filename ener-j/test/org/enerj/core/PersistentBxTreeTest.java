@@ -24,12 +24,13 @@ package org.enerj.core;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Random;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import junit.framework.Test;
-import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.enerj.annotations.Persist;
@@ -67,9 +68,17 @@ public class PersistentBxTreeTest extends BulkTest
     }
 
 
-    public static Test suite() 
+    public static Test suite() throws Exception 
     {
-        return makeSuite(PersistentBxTreeTest.class);
+        //return makeSuite(PersistentBxTreeTest.class);
+        TestSuite suite = new TestSuite(PersistentBxTreeTest.class);
+        
+        suite.addTestSuite( InternalSortedMapTest.class );
+        suite.addTestSuite( InternalQueryableCollectionTest.class );
+        suite.addTestSuite( ApacheHarmonySortedMapTest.class ); 
+        suite.addTestSuite( ApacheCollectionsSortedMapTest.class ); // Note: this misses some tests because of BulkTest problems 
+
+        return suite;
     }
     
     public void setUp() throws Exception
@@ -83,17 +92,17 @@ public class PersistentBxTreeTest extends BulkTest
     }
     
     
-    public BulkTest bulkTestInternalSortedMapTest()
+    public BulkTest bulkTestInternalSortedMapTest() throws Exception
     {
         return new InternalSortedMapTest(InternalSortedMapTest.class.getName());
     }
     
-    public BulkTest bulkTestApacheCollectionsSortedMapTest()
+    public BulkTest bulkTestApacheCollectionsSortedMapTest() throws Exception 
     {
         return new ApacheCollectionsSortedMapTest(ApacheCollectionsSortedMapTest.class.getName());
     }
     
-    public BulkTest bulkTestInternalQueryableCollectionTest()
+    public BulkTest xbulkTestInternalQueryableCollectionTest()
     {
         return new InternalQueryableCollectionTest(InternalQueryableCollectionTest.class.getName());
     } 
@@ -101,7 +110,7 @@ public class PersistentBxTreeTest extends BulkTest
     /**
      * Test method for {@link org.enerj.core.PersistentBxTree#put(java.lang.Object, org.enerj.core.Persistable)}.
      */
-    public void testLargeRandomPut() throws Exception // TODO Uncomment
+    public void xtestLargeRandomPut() throws Exception // TODO Uncomment
     {
         // Create an array of objects and the shuffle them.
         TestClass1[] objs = new TestClass1[100000];
@@ -236,12 +245,12 @@ public class PersistentBxTreeTest extends BulkTest
         public void setUp() throws Exception
         {
             //System.gc(); System.out.println("Mem1 before open=" + Runtime.getRuntime().freeMemory());
-            super.setUp();
             DatabaseTestCase.createDatabase1();
             mDB = new EnerJDatabase();
             mDB.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
             mTxn = new EnerJTransaction();
             mTxn.begin(mDB);
+            super.setUp();
         }
 
 
@@ -268,8 +277,49 @@ public class PersistentBxTreeTest extends BulkTest
     
     
     /**
+     * Uses Apache Harmony Tests.
+     */
+    // Note: this misses some tests because of BulkTest problems    
+    public static final class ApacheHarmonySortedMapTest extends AbstractApacheSortMapTest
+    {
+        private EnerJDatabase mDB;
+        private EnerJTransaction mTxn;
+        
+        public ApacheHarmonySortedMapTest(String aName)
+        {
+            super(aName);
+        }
+
+        public void setUp() throws Exception
+        {
+            DatabaseTestCase.createDatabase1();
+            mDB = new EnerJDatabase();
+            mDB.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
+            mTxn = new EnerJTransaction();
+            mTxn.begin(mDB);
+            super.setUp();
+        }
+
+
+        public void tearDown() throws Exception
+        {
+            mTxn.commit();
+            mDB.close();
+            DatabaseTestCase.clearDBFiles();
+            super.tearDown();
+        }
+
+        @Override
+        public SortedMap createSortedMap(Comparator comparator)
+        {
+            return new PersistentBxTree(10, comparator, false, false, true);
+        }
+    }
+    
+    /**
      * Uses Apache Collections Tests.
      */
+    // Note: this misses some tests because of BulkTest problems    
     public static final class ApacheCollectionsSortedMapTest extends AbstractTestSortedMap
     {
         private EnerJDatabase mDB;
@@ -279,15 +329,15 @@ public class PersistentBxTreeTest extends BulkTest
         {
             super(aName);
         }
-
+        
         public void setUp() throws Exception
         {
-            super.setUp();
             DatabaseTestCase.createDatabase1();
             mDB = new EnerJDatabase();
             mDB.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
             mTxn = new EnerJTransaction();
             mTxn.begin(mDB);
+            super.setUp();
         }
 
 
@@ -366,12 +416,12 @@ public class PersistentBxTreeTest extends BulkTest
 
         public void setUp() throws Exception
         {
-            super.setUp();
             DatabaseTestCase.createDatabase1();
             mDB = new EnerJDatabase();
             mDB.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
             mTxn = new EnerJTransaction();
             mTxn.begin(mDB);
+            super.setUp();
         }
 
 
