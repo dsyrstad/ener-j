@@ -40,7 +40,6 @@ import java.util.SortedMap;
 
 import org.enerj.annotations.Persist;
 import org.enerj.annotations.PersistenceAware;
-import org.enerj.apache.commons.collections.comparators.ComparableComparator;
 import org.enerj.apache.commons.collections.comparators.NullComparator;
 import org.enerj.apache.commons.collections.comparators.ReverseComparator;
 import org.odmg.DCollection;
@@ -153,24 +152,17 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         mOrigComparator = aComparator;
         mComparator = aComparator;
         if (mComparator == null) {
-            mComparator = (Comparator<K>)ComparableComparator.getInstance();
+            // ComparableComparator in one that handles comparison of nulls. Nulls always compare higher.
+            mComparator = (Comparator<K>)NullComparator.COMPARABLE_INSTANCE_NULLS_HIGH;
         }
-
-        boolean needNullComparator = true;
-        if (mComparator != null && !(mComparator instanceof NullComparator)) {
-            // Check to see if comparator takes nulls.
+        else if (!(mComparator instanceof NullComparator)) {
             try {
                 mComparator.compare(null, null);
-                needNullComparator = false;
             }
             catch (NullPointerException e) {
-                // Need a null comparator (default)
+                // Comparator didn't handle nulls, wrap it.
+                mComparator = (Comparator<K>)new NullComparator(mComparator, true);
             }
-        }
-
-        if (needNullComparator) {
-            // Wrap the given comparator in one that handles comparison of nulls. Nulls always compare higher.
-            mComparator = (Comparator<K>)new NullComparator(mComparator, true);
         }
 
         if (!wantAscendingOrder) {
@@ -1696,12 +1688,14 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
          */
         NodePos<K> firstNodePos()
         {
+            NodePos<K> firstKeyNodePos;
             if (!mStartKeySpecified) {
-                NodePos<K> firstKeyNodePos = mTree.getLeftMostNodePos();
-                return firstKeyNodePos;
+                firstKeyNodePos = mTree.getLeftMostNodePos();
+            }
+            else {
+                firstKeyNodePos = mTree.findFirstKeySameOrLarger(mStartKey);
             }
 
-            NodePos<K> firstKeyNodePos = mTree.findFirstKeySameOrLarger(mStartKey);
             if (firstKeyNodePos == null) {
                 return null;
             }
