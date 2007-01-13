@@ -29,6 +29,9 @@ import java.util.Comparator;
  */
 public class NullComparator implements Comparator, Serializable {
 
+    public static final NullComparator COMPARABLE_INSTANCE_NULLS_HIGH = new NullComparator(true);
+    public static final NullComparator COMPARABLE_INSTANCE_NULLS_LOW = new NullComparator(false);
+    
     /** Serialization version. */
     private static final long serialVersionUID = -5820772575483504339L;
 

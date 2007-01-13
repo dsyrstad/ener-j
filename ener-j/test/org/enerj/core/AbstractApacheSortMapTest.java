@@ -307,8 +307,16 @@ abstract public class AbstractApacheSortMapTest extends TestCase
             @Override
             public int compare(String o1, String o2)
             {
-                if (o1 == null) {
+                if (o1 == o2) {
                     return 0;
+                }
+                
+                if (o1 == null) {
+                    return -1;
+                }
+                
+                if (o2 == null) {
+                    return 1;
                 }
                 return o1.compareTo(o2);
             }
@@ -360,15 +368,15 @@ abstract public class AbstractApacheSortMapTest extends TestCase
     {
         // Test for method java.lang.Object
         // java.util.SortedMap.put(java.lang.Object, java.lang.Object)
-        Object o = new Object();
+        Object o = new String();
         tm.put("Hello", o);
         assertTrue("Failed to put mapping", tm.get("Hello") == o);
 
         // regression for Harmony-780
         tm = createSortedMap();
-        assertNull(tm.put(new Object(), new Object()));
+        assertNull(tm.put(new String(), new String()));
         try {
-            tm.put(new Integer(1), new Object());
+            tm.put(new Integer(1), new String());
             fail("should throw ClassCastException");
         }
         catch (ClassCastException e) {
@@ -376,7 +384,7 @@ abstract public class AbstractApacheSortMapTest extends TestCase
         }
 
         tm = createSortedMap();
-        assertNull(tm.put(new Integer(1), new Object()));
+        assertNull(tm.put(new Integer(1), new String()));
     }
 
     /**
@@ -507,7 +515,6 @@ abstract public class AbstractApacheSortMapTest extends TestCase
         map.put(7, 21.3);
         SortedMap<Integer, Double> headMap = map.headMap(3);
         assertTrue(headMap instanceof Serializable);
-        assertFalse(headMap instanceof SortedMap);
         assertTrue(headMap instanceof SortedMap);
 
         assertFalse(headMap.entrySet() instanceof Serializable);
