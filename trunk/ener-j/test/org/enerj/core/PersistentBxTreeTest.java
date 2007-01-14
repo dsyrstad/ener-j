@@ -183,8 +183,8 @@ public class PersistentBxTreeTest extends BulkTest
      */
     public void testDuplicateKeys() throws Exception 
     {
-        // We need at least 20 keys to fill 2 leaf nodes, so do 31.
-        final int numDups = 301;
+        // We need at least 20 keys to fill 2 leaf nodes, so do more.
+        final int numDups = 31;
         final int dupKey = 392;
         final String dupKeyStr = String.valueOf(dupKey);
         
@@ -209,7 +209,6 @@ public class PersistentBxTreeTest extends BulkTest
         }
         
         tree.dumpTree();
-        //tree.validateTree();
         
         assertEquals(numDups + numNonDups, tree.size());
         
