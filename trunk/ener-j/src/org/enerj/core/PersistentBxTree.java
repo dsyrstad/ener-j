@@ -441,9 +441,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     /**
      * Traverse the tree to find the given key. The returned position
      * will reflect the position of a key that is >= key. Note if the tree allows duplicate keys, this
-     * method will return any matching key within a series of duplicate keys, somewhat randomly.
-     * Hence, this method is good for searching for existence of a key. 
-     * It is not good for finding the point to start iterating over keys.
+     * method will return the first duplicate keys.
      *
      * @param aKey the target key to be found.
      * 
@@ -847,7 +845,8 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
          * 
          * @return a node position. If an exact match is not found, the
          * index at which the target key would be inserted is returned in the node position and mIsMatch
-         * is set to false.   
+         * is set to false. The key returned, whether or not an exact match, is guaranteed to be the first
+         * in a series of duplicate keys if duplicate keys are allowed.
          */
         NodePos<K> findKey(PersistentBxTree<K, ?> aTree, K aKey)
         {
@@ -866,11 +865,36 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                     high = mid - 1;
                 }
                 else {
-                    return new NodePos<K>(this, mid, true);
+                    low = mid;
+                    break;
                 }
             }
 
-            return new NodePos<K>(this, low, false);
+            int foundIdx = low;
+            if (aTree.mAllowDuplicateKeys) {
+                // We want the first in a series of duplicate keys. We could have landed in the
+                // middle of a set of duplicate keys. So back up
+                // until we find the first key before the found key. Return the key just after the one we find.
+                K foundKey = getKeyAt(foundIdx);
+                int lastPos;
+                K sampleKey;
+                do {
+                    lastPos = foundIdx;
+                    --foundIdx;
+                    if (foundIdx < 0) {
+                        break;
+                    }
+                    
+                    sampleKey = getKeyAt(foundIdx);
+                }
+                while (comparator.compare(sampleKey, foundKey) == 0);
+
+                // Move back to last duplicate found.
+                foundIdx = lastPos;
+            }
+            // Else if no duplicate keys, algorithm guarantees that it finds the first key >= aKey.
+            
+            return new NodePos<K>(this, foundIdx, false);
         }
 
         /**
@@ -1245,7 +1269,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 }
 
                 if (prevKey != null) {
-                    if (aTree.comparator().compare(key, prevKey) < 0) {
+                    if (aTree.mComparator.compare(key, prevKey) < 0) {
                         dumpAndDie(aTree, "Key " + key + " is not less than previous Key " + prevKey);
                     }
 
@@ -1262,7 +1286,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                     K childMaxKey = childNode.mKeys[childNode.mNumKeys - 1];
 
                     // lastChildMaxKey < childMinKey.
-                    if (i > 0 && aTree.comparator().compare(lastChildMaxKey, childMinKey) >= 0) {
+                    if (i > 0 && aTree.mComparator.compare(lastChildMaxKey, childMinKey) >= 0) {
                         dumpAndDie(aTree, "Previous child max key (" + lastChildMaxKey + ") at " + i
                                         + " not < child min key " + childMinKey);
                     }
@@ -1272,7 +1296,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                     if (i > 0) {
                         K thisKey = getKeyAt(i - 1);
                         // childMinKey >= thisKey 
-                        if (aTree.comparator().compare(childMinKey, thisKey) < 0) {
+                        if (aTree.mComparator.compare(childMinKey, thisKey) < 0) {
                             dumpAndDie(aTree, "Child min key (" + childMinKey + ") at " + (i - 1)
                                             + " not >= parent key " + thisKey);
                         }
@@ -1281,7 +1305,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                     // childMinKey < nextKey
                     if (i < mNumKeys) {
                         K nextKey = getKeyAt(i);
-                        if (aTree.comparator().compare(childMaxKey, nextKey) >= 0) {
+                        if (aTree.mComparator.compare(childMaxKey, nextKey) >= 0) {
                             dumpAndDie(aTree, "Child max key (" + childMaxKey + ") at " + i + " not < parent key "
                                             + nextKey);
                         }
@@ -1471,7 +1495,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             mCurrNodePos.mKeyIdx = mNextNodePos.mKeyIdx;
 
             mNextNodePos = mCurrNodePos.mNode.nextKey(mNextNodePos);
-            if (mEndKeySpecified) {
+            if (mNextNodePos != null && mEndKeySpecified) {
                 K key = mNextNodePos.mNode.mKeys[mNextNodePos.mKeyIdx];
                 if (mTree.mComparator.compare(key, mEndKey) >= 0) {
                     mNextNodePos = null;
@@ -1803,7 +1827,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         {
             checkRange(startKey);
             checkRange(endKey);
-            if (mTree.comparator().compare(startKey, endKey) > 0) {
+            if (mTree.mComparator.compare(startKey, endKey) > 0) {
                 throw new IllegalArgumentException();
             }
 
