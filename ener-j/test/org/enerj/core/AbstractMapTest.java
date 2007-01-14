@@ -230,7 +230,7 @@ public abstract class AbstractMapTest extends BulkTest
             CollectionTestObject key =  new CollectionTestObject("Key-" + i);
             String value = (String)testMap.get(key);
             String targetValue = "Value-" + i;
-            assertTrue("Value should be " + targetValue, value.equals(targetValue) );
+            assertEquals("Value should be " + targetValue, targetValue, value);
             assertTrue("Should contain " + targetValue, testMap.containsValue(targetValue) );
         }
     }

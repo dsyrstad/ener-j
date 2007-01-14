@@ -184,28 +184,58 @@ public class PersistentBxTreeTest extends BulkTest
     public void testDuplicateKeys() throws Exception 
     {
         // We need at least 20 keys to fill 2 leaf nodes, so do 31.
-        final int numDups = 31;
-        final int dupKey = 3;
+        final int numDups = 301;
+        final int dupKey = 392;
         final String dupKeyStr = String.valueOf(dupKey);
         
         PersistentBxTree<Integer, String> tree = new PersistentBxTree<Integer, String>(10, null, true, false, true);
-        // Insert a couple of non-dups before the dups.
-        tree.insert(1, "1");
-        tree.insert(2, "2");
+        int numNonDups = 0;
+        // Insert at least a full node of non-dups before the dups.
+        for (int i = 0; i < 11; i++) {
+            tree.insert(i, String.valueOf(i));
+            ++numNonDups;
+        }
+
         for (int i = 0; i < numDups; i++) {
             tree.insert(dupKey, dupKeyStr + "-" + i);
         }
         
-        // Insert a couple non-dups after...
-        tree.insert(4, "4");
-        tree.insert(5, "5");
+        // Insert at least a full node of non-dups after the dups.
+        int start = dupKey + numDups;
+        int end = start + 11;
+        for (int i = start; i < end; i++) {
+            tree.insert(i, String.valueOf(i));
+            ++numNonDups;
+        }
         
-        assertEquals(numDups + 4, tree.size());
+        tree.dumpTree();
+        //tree.validateTree();
         
+        assertEquals(numDups + numNonDups, tree.size());
+        
+        assertDupsExist(tree, numDups, dupKey, dupKeyStr);
+        
+        // Now use a submap restricted by the duplicate key.
+        SortedMap<Integer, String> subMap = tree.subMap(dupKey, dupKey + 1);
+        assertEquals(numDups, subMap.size());
+        assertDupsExist(subMap, numDups, dupKey, dupKeyStr);
+    }
+
+
+    /**
+     * Asserts that the duplicate keys exist.
+     *
+     * @param sortedMap
+     * @param numDups
+     * @param dupKey
+     * @param dupKeyStr
+     */
+    private void assertDupsExist(SortedMap<Integer, String> sortedMap, final int numDups, final int dupKey, final String dupKeyStr)
+    {
         // Now count the dups using a regular iterator.
         int dupCnt = 0;
         boolean[] slotFound = new boolean[numDups];
-        for (Map.Entry<Integer, String> entry : tree.entrySet()) {
+        for (Map.Entry<Integer, String> entry : sortedMap.entrySet()) {
             if (entry.getKey() == dupKey) {
                 ++dupCnt;
                 String value = entry.getValue();
@@ -222,11 +252,6 @@ public class PersistentBxTreeTest extends BulkTest
                 fail("Didn't find slot " + slotFound[i]);
             }
         }
-        
-        // Now use a submap restricted by the duplicate key.
-        SortedMap<Integer, String> subMap = tree.subMap(dupKey, 4);
-        assertEquals(numDups, subMap.size());
-        // TODO check iterator as above
     }
 
     // TODO Test subtests with large tree, dupl keys, dynamic/static resize, reverswed order
