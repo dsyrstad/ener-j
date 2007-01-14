@@ -479,6 +479,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             return null;
         }
 
+        // TODO Do we need this anymore because findKey handles duplicates?
         if (mAllowDuplicateKeys) {
             // We want the first in a series of duplicate keys. We could have landed in the
             // middle of a set of duplicate keys. So back up until we find the first key before 
@@ -855,6 +856,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             int low = 0;
             int mid = 0;
             int high = mNumKeys - 1;
+            boolean matched = false;
             while (low <= high) {
                 mid = (low + high) >> 1;
                 int result = comparator.compare(mKeys[mid], aKey);
@@ -866,6 +868,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 }
                 else {
                     low = mid;
+                    matched = true;
                     break;
                 }
             }
@@ -894,7 +897,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             }
             // Else if no duplicate keys, algorithm guarantees that it finds the first key >= aKey.
             
-            return new NodePos<K>(this, foundIdx, false);
+            return new NodePos<K>(this, foundIdx, matched);
         }
 
         /**
