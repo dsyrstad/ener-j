@@ -481,8 +481,8 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
 
         if (mAllowDuplicateKeys) {
             // We want the first in a series of duplicate keys. We could have landed in the
-            // middle of a set of duplicate keys. So back up
-            // until we find the first key before the found key. Return the key just after the one we find.
+            // middle of a set of duplicate keys. So back up until we find the first key before 
+            // the found key. Return the key just after the one we find.
             K foundKey = nodePos.getKey();
             NodePos<K> lastPos = new NodePos<K>();
             do {
