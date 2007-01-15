@@ -22,9 +22,13 @@
 
 package org.enerj.core;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.SortedMap;
@@ -40,9 +44,7 @@ import org.enerj.apache.commons.collections.comparators.NullComparator;
 import org.enerj.apache.commons.collections.map.AbstractTestSortedMap;
 import org.enerj.util.StringUtil;
 import org.odmg.Database;
-import org.odmg.Implementation;
 import org.odmg.QueryableCollection;
-import org.odmg.Transaction;
 
 /**
  * Tests PersistentBxTree. <p>
@@ -183,84 +185,114 @@ public class PersistentBxTreeTest extends BulkTest
      */
     public void testDuplicateKeys() throws Exception 
     {
-        // We need at least 20 keys to fill 2 leaf nodes, so do more.
-        final int numDups = 31;
-        final int dupKey = 392;
-        final String dupKeyStr = String.valueOf(dupKey);
+        // We need at least 20 keys to fill 2 leaf nodes, plus at least 5 on each side of the
+        // range to do splits (40), so do more.
+        final int numDups = 41;
+        final int numBeforeAfter = 11; // More than one node before and after the dups
+        final int dupKey = numBeforeAfter + (numDups/2);
+        final int numKeys = numDups + numBeforeAfter + numBeforeAfter;
+
+        List<Integer> keys = new ArrayList<Integer>(numKeys);
+        int dupEndIdx = numBeforeAfter + numDups;
+        for (int i = 0; i < numKeys; i++) {
+            if (i < numBeforeAfter || i >= dupEndIdx) {
+                keys.add(i);
+            }
+            else {
+                keys.add(dupKey); 
+            }
+        }
+        
+        // Shuffle array using a consistent seed
+        List<Integer> shuffledKeys = new ArrayList<Integer>(keys);
+        Collections.shuffle(shuffledKeys, new Random(1L));
         
         PersistentBxTree<Integer, String> tree = new PersistentBxTree<Integer, String>(10, null, true, false, true);
-        int numNonDups = 0;
-        // Insert at least a full node of non-dups before the dups.
-        for (int i = 0; i < 11; i++) {
-            tree.insert(i, String.valueOf(i));
-            ++numNonDups;
+        for (int i = 0; i < shuffledKeys.size(); i++) {
+            int key = shuffledKeys.get(i);
+            tree.insert(key, key + "-" + i);
         }
+        
+        //tree.dumpTree();
+        
+        // Now count the dups using a regular iterator.
+        assertTreeMatches(tree, keys);
+        
+        // Now use a subMap restricted by the duplicate key.
+        assertTreeMatches(tree.subMap(dupKey, dupKey + 1), keys.subList(numBeforeAfter, numBeforeAfter + numDups));
 
-        for (int i = 0; i < numDups; i++) {
-            System.out.println("Before Inserting " + dupKeyStr + "-" + i);
-            tree.dumpTree();
-            tree.insert(dupKey, dupKeyStr + "-" + i);
-        }
-        
-        // Insert at least a full node of non-dups after the dups.
-        int start = dupKey + numDups;
-        int end = start + 11;
-        for (int i = start; i < end; i++) {
-            tree.insert(i, String.valueOf(i));
-            ++numNonDups;
-        }
-        
-        tree.dumpTree();
-        
-        assertEquals(numDups + numNonDups, tree.size());
-        
-        assertDupsExist(tree, numDups, dupKey, dupKeyStr);
-        
-        // Now use a submap restricted by the duplicate key.
-        SortedMap<Integer, String> subMap = tree.subMap(dupKey, dupKey + 1);
-        assertEquals(numDups, subMap.size());
-        assertDupsExist(subMap, numDups, dupKey, dupKeyStr);
+        // Now use a headMap restricted by the duplicate key.
+        assertTreeMatches(tree.headMap(dupKey + 1), keys.subList(0, numDups + numBeforeAfter));
+
+        // Now use a tailMap restricted by the duplicate key.
+        assertTreeMatches(tree.tailMap(dupKey), keys.subList(numBeforeAfter, numKeys));
     }
 
-
     /**
-     * Asserts that the duplicate keys exist.
-     *
-     * @param sortedMap
-     * @param numDups
-     * @param dupKey
-     * @param dupKeyStr
+     * Tests deletes across more than 2 leaf nodes, which leaves them empty. Also reinserts in the 
+     * empty leafs and checks the results. Duplicate keys are tested at the same time. 
      */
-    private void assertDupsExist(SortedMap<Integer, String> sortedMap, final int numDups, final int dupKey, final String dupKeyStr)
+    public void testDeleteKeys() throws Exception 
     {
-        // Now count the dups using a regular iterator.
-        int dupCnt = 0;
-        boolean[] slotFound = new boolean[numDups];
-        Integer prevKey = null;
-        for (Map.Entry<Integer, String> entry : sortedMap.entrySet()) {
-            Integer key = entry.getKey();
-            if (prevKey != null) {
-                assertTrue("key " + key + " should be >= prevKey " + prevKey, key >= prevKey);
-            }
+        // We need at least 20 keys to empty 2 leaf nodes, plus at least 5 on each side of the
+        // range (40) to account for splits, so do more.
+        final int numToDelete = 42;
+        // There will actually be twice as many entries as this due to duplicates.
+        final int numKeys = 1000;  
+        final int startDeleteIdx = 92;
+        
+        List<Integer> unshuffledKeys = new ArrayList<Integer>(numKeys * 2);
+        for (int i = 0; i < numKeys; i++) {
+            unshuffledKeys.add(i);
+            unshuffledKeys.add(i); // Add a duplicate
+        }
 
-            prevKey = key;
-            
-            if (key == dupKey) {
-                ++dupCnt;
-                String value = entry.getValue();
-                String[] c = value.split("-");
-                assertEquals(dupKeyStr, c[0]);
-                int idx = Integer.valueOf(c[1]); // The original index on "3-#"
-                slotFound[idx] = true;
-            }
+        List<Integer> shuffledKeys = new ArrayList<Integer>(unshuffledKeys);
+
+        // Shuffle array using a consistent seed
+        Collections.shuffle(unshuffledKeys, new Random(1L));
+        
+        PersistentBxTree<Integer, String> tree = new PersistentBxTree<Integer, String>(10, null, true, false, true);
+        for (int i = 0; i < unshuffledKeys.size(); i++) {
+            int key = unshuffledKeys.get(i);
+            tree.insert(key, key + "-" + i);
         }
         
-        assertEquals(numDups, dupCnt);
-        for (int i = 0; i < numDups; i++) {
-            if (!slotFound[i]) {
-                fail("Didn't find slot " + slotFound[i]);
-            }
+        //tree.dumpTree();
+
+        // Before deleting, make sure the tree is correct.
+        assertTreeMatches(tree, unshuffledKeys);
+    }
+    
+    /**
+     * Asserts that the keys exist in the tree.
+     *
+     * @param sortedMap
+     * @param keys
+     */
+    private void assertTreeMatches(SortedMap<Integer, String> sortedMap, List<Integer> keys)
+    {
+        assertEquals(keys.size(), sortedMap.size());
+        
+        // Duplicate keys may be in random order, so we have to mark each value as we encounter it.
+        HashSet<String> valuesFound = new HashSet<String>(keys.size());
+        Iterator<Map.Entry<Integer,String>> iter = sortedMap.entrySet().iterator();
+        for (int i = 0; iter.hasNext(); ++i) {
+            Map.Entry<Integer, String> entry = iter.next(); 
+            Integer key = entry.getKey();
+            
+            Integer matchKey = keys.get(i); 
+            assertEquals(matchKey, key);
+
+            String value = entry.getValue();
+            valuesFound.add(value);
+
+            assertTrue("Value is not correct: " + value + "does not match key " + key, 
+                            value.startsWith( String.valueOf(matchKey) + "-" ) );
         }
+
+        // Should have found keys.length unique values.
+        assertEquals(valuesFound.size(), keys.size());
     }
 
     // TODO Test subtests with large tree, dupl keys, dynamic/static resize, reverswed order
