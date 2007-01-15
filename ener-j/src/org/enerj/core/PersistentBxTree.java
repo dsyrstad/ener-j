@@ -441,7 +441,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     /**
      * Traverse the tree to find the given key. The returned position
      * will reflect the position of a key that is >= key. Note if the tree allows duplicate keys, this
-     * method will return the first duplicate keys.
+     * method will return the first of the duplicate keys.
      *
      * @param aKey the target key to be found.
      * 
@@ -452,51 +452,12 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         Node<K> node = mRootNode;
         NodePos<K> nodePos = node.findKey(this, aKey);
         while (!node.mIsLeaf) {
-            if (nodePos.mKeyIdx < nodePos.mNode.mNumKeys && nodePos.compareKeyTo(this, aKey) <= 0) {
-                ++nodePos.mKeyIdx; // Go down the >= branch
-            }
-
-            node = node.getChildNodeAt(nodePos.mKeyIdx);
+            int branchIdx = nodePos.mNode.chooseBranch(this, aKey, nodePos.mKeyIdx);
+            node = node.getChildNodeAt(branchIdx);
             nodePos = node.findKey(this, aKey);
         }
 
         return (nodePos.isKeyAvailable() ? nodePos : null);
-    }
-
-    /**
-     * Finds the first key greater than or equal to the given key. 
-     * In the case of duplicate keys and there exists more than one aKey in the tree,
-     * this method will return the first instance of the duplicate within the tree. 
-     *
-     * @param aKey the key to search for.
-     * 
-     * @return the first key greater than or equal to the given key, or null if one cannot be found.
-     */
-    private NodePos<K> findFirstKeySameOrLarger(K aKey)
-    {
-        NodePos<K> nodePos = searchGreaterOrEqual(aKey);
-        if (nodePos == null) {
-            return null;
-        }
-
-        // TODO Do we need this anymore because findKey handles duplicates?
-        if (mAllowDuplicateKeys) {
-            // We want the first in a series of duplicate keys. We could have landed in the
-            // middle of a set of duplicate keys. So back up until we find the first key before 
-            // the found key. Return the key just after the one we find.
-            K foundKey = nodePos.getKey();
-            NodePos<K> lastPos = new NodePos<K>();
-            do {
-                nodePos.copyTo(lastPos);
-                nodePos = nodePos.mNode.previousKey(nodePos);
-            }
-            while (nodePos != null && nodePos.compareKeyTo(this, foundKey) == 0);
-
-            return lastPos;
-        }
-        // Else if no duplicate keys, searchGreaterOrEqual() guarantees that it finds the first key >= aKey.
-
-        return nodePos;
     }
 
     /**
@@ -742,7 +703,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         private boolean mIsLeaf;
 
         /** Keys. Usually these are SCOs, but they can be FCOs if a Comparator is specified or the
-         * key object itself is a comparable. */
+         * key object itself is a Comparable. */
         private K[] mKeys;
         private short mNumKeys;
 
@@ -758,8 +719,8 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
          * </pre><p>
          * 
          * If this is an interior node, the OIDs reference child nodes.<p><pre> 
-         * mOIDRefs[m] (the left child) contains keys < mKeys[m].
-         * mOIDRefs[m+1] (the right child) contains keys >= mKeys[m] and < mKeys[m+1].
+         * mOIDRefs[0] (the left child) contains keys < mKeys[0].
+         * mOIDRefs[m+1] (the right child) contains keys >= mKeys[m].
          * </pre><p>
          */
         private long[] mOIDRefs;
@@ -917,11 +878,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
 
             // Else this is an interior node. Drill down proper branch.
             NodePos<K> nodePos = findKey(aTree, aKey);
-            int branchIdx = nodePos.mKeyIdx;
-            if (nodePos.mIsMatch) {
-                ++branchIdx; // Keys are equal, go down right side.
-            }
-            
+            int branchIdx = chooseBranch(aTree, aKey, nodePos.mKeyIdx);
             Node<K> branch = getChildNodeAt(branchIdx);
             PushUpInfo<K> pushUp = branch.pushDown(aTree, aKey, aValueOID);
             if (pushUp == null) {
@@ -1089,6 +1046,43 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             }
 
             truncate(aTree, mNumKeys - 1);
+        }
+
+        /**
+         * Chooses the proper branch index to go down on an interior node. 
+         *
+         * @param aKey the search key. 
+         * @param aKeyIdx the index returned by findKey().
+         * 
+         * @return the proper branch to descend down.
+         */
+        int chooseBranch(PersistentBxTree<K, ?> aTree, K aKey, int aKeyIdx)
+        {
+            assert !mIsLeaf;
+            
+            if (aKeyIdx < mNumKeys) {
+                K nodeKey = getKeyAt(aKeyIdx);
+                int cmpResult = aTree.mComparator.compare(nodeKey, aKey);
+                if (cmpResult == 0 && aTree.mAllowDuplicateKeys) {
+                    // If we have an exact match on an interior node and duplicates are allowed,
+                    // we may need to go down the left branch rather than right, which is the 
+                    // usual rule for >=. This is because some duplicates may be at the end of the
+                    // left child. Hence we test the max key of the left child. If this is == to
+                    // aKey, we go down the left branch, otherwise the right.
+                    Node<K> leftChild = getChildNodeAt(aKeyIdx);
+                    if (leftChild.mNumKeys > 0) {
+                        K maxLeftKey = leftChild.getKeyAt( leftChild.mNumKeys - 1 );
+                        if (aTree.mComparator.compare(maxLeftKey, aKey) != 0) {
+                            return aKeyIdx + 1; // Go down the right >= branch
+                        }
+                    }
+                }
+                else if (cmpResult <= 0) {
+                    return aKeyIdx + 1; // Go down the right >= branch
+                }
+            }
+            
+            return aKeyIdx;
         }
 
         /**
@@ -1336,20 +1330,38 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
 
         void dumpNode()
         {
-            System.out.print("{" + PersistableHelper.getPersister(this).getOID(this) + "}");
-            for (int i = 0; i < mNumKeys; i++) {
-                if (i > 0) {
-                    System.out.print(',');
+            System.out.print(toString());
+        }
+        
+        public String toString()
+        {
+            StringBuffer buf = new StringBuffer(100);
+            buf.append("{" + PersistableHelper.getPersister(this).getOID(this) + "}");
+            if (mIsLeaf) {
+                for (int i = 0; i < mNumKeys; i++) {
+                    if (i > 0) {
+                        buf.append(',');
+                    }
+    
+                    buf.append(i + ":" + mKeys[i] + "/" + mOIDRefs[i]);
                 }
 
-                System.out.print(i + ":" + mKeys[i] + '/' + mOIDRefs[i]);
+                buf.append(",<" + mLeftLeafOID);
+                buf.append(",>" + mOIDRefs[mNumKeys]);
+            }
+            else {
+                for (int i = 0; i < mNumKeys; i++) {
+                    if (i > 0) {
+                        buf.append(',');
+                    }
+    
+                    buf.append("v" + mOIDRefs[i] + "," + i + ":" + mKeys[i]);
+                }
+
+                buf.append(",v" + mOIDRefs[mNumKeys]);
             }
 
-            System.out.print(",R/" + mOIDRefs[mNumKeys]);
-
-            //if (mIsLeaf) {
-            //    System.out.print(",<" + mLeftLeafOID);
-            //}
+            return buf.toString();
         }
     }
 
@@ -1724,7 +1736,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 firstKeyNodePos = mTree.getLeftMostNodePos();
             }
             else {
-                firstKeyNodePos = mTree.findFirstKeySameOrLarger(mStartKey);
+                firstKeyNodePos = mTree.searchGreaterOrEqual(mStartKey);
             }
 
             if (firstKeyNodePos == null) {

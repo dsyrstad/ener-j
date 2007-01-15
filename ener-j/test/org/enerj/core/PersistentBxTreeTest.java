@@ -197,6 +197,8 @@ public class PersistentBxTreeTest extends BulkTest
         }
 
         for (int i = 0; i < numDups; i++) {
+            System.out.println("Before Inserting " + dupKeyStr + "-" + i);
+            tree.dumpTree();
             tree.insert(dupKey, dupKeyStr + "-" + i);
         }
         
@@ -234,8 +236,16 @@ public class PersistentBxTreeTest extends BulkTest
         // Now count the dups using a regular iterator.
         int dupCnt = 0;
         boolean[] slotFound = new boolean[numDups];
+        Integer prevKey = null;
         for (Map.Entry<Integer, String> entry : sortedMap.entrySet()) {
-            if (entry.getKey() == dupKey) {
+            Integer key = entry.getKey();
+            if (prevKey != null) {
+                assertTrue("key " + key + " should be >= prevKey " + prevKey, key >= prevKey);
+            }
+
+            prevKey = key;
+            
+            if (key == dupKey) {
                 ++dupCnt;
                 String value = entry.getValue();
                 String[] c = value.split("-");
