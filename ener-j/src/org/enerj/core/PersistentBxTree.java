@@ -885,17 +885,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 return null; // Nothing to do at this node.
             }
 
-            int keyIdx = branchIdx;// TODO nodePos.mKeyIdx;
-            
-            // If the pushUp key and the nodePos (found) key match (which can only happen if 
-            // duplicate keys are allowed), insert the pushed-up key one to the right. This
-            // maintains the existing minimum left node for the duplicate keys. Note that they
-            // can only match if duplicate keys are allowed. Also, if they match, it is 
-            // not possible for nodePos.mKeyIdx to point to the right branch pointer, it must
-            // point to a key position.
-            //if (nodePos.compareKeyTo(aTree, pushUp.mPushUpKey) == 0) {
-            //    --keyIdx; // TODO 
-            //}
+            int keyIdx = branchIdx;
 
             // Insert key that was pushed up into this interior node.
             if (mNumKeys < aTree.mNodeSize) {
