@@ -885,7 +885,17 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 return null; // Nothing to do at this node.
             }
 
-            int keyIdx = nodePos.mKeyIdx;
+            int keyIdx = branchIdx;// TODO nodePos.mKeyIdx;
+            
+            // If the pushUp key and the nodePos (found) key match (which can only happen if 
+            // duplicate keys are allowed), insert the pushed-up key one to the right. This
+            // maintains the existing minimum left node for the duplicate keys. Note that they
+            // can only match if duplicate keys are allowed. Also, if they match, it is 
+            // not possible for nodePos.mKeyIdx to point to the right branch pointer, it must
+            // point to a key position.
+            //if (nodePos.compareKeyTo(aTree, pushUp.mPushUpKey) == 0) {
+            //    --keyIdx; // TODO 
+            //}
 
             // Insert key that was pushed up into this interior node.
             if (mNumKeys < aTree.mNodeSize) {
@@ -965,10 +975,11 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             int medianIdx;
             // If inserting on right-most leaf, split leaving 2 keys (optimized sorted insert).
             // The right leaf pointer on the right most leaf is always null.
-            /*if (keyIdx == mNumKeys && mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
-             medianIdx = mNumKeys - 2;
-             }
-             else */{
+            /* TODO Test later
+            if (keyIdx == mNumKeys && mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
+                medianIdx = mNumKeys - 2;
+            }
+            else */{
                 medianIdx = mNumKeys >> 1; // Divide by 2
             }
 
@@ -1282,8 +1293,9 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                     K childMinKey = childNode.validateNode(aTree);
                     K childMaxKey = childNode.mKeys[childNode.mNumKeys - 1];
 
-                    // lastChildMaxKey < childMinKey.
-                    if (i > 0 && aTree.mComparator.compare(lastChildMaxKey, childMinKey) >= 0) {
+                    // lastChildMaxKey < childMinKey, except when duplicates, then <=.
+                    int cmp = aTree.mComparator.compare(lastChildMaxKey, childMinKey);
+                    if (i > 0 && ((!aTree.mAllowDuplicateKeys && cmp == 0) || cmp > 0)) {
                         dumpAndDie(aTree, "Previous child max key (" + lastChildMaxKey + ") at " + i
                                         + " not < child min key " + childMinKey);
                     }
@@ -1299,13 +1311,28 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                         }
                     }
 
-                    // childMinKey < nextKey
+                    // childMinKey < nextKey, except when duplicates, the <=
                     if (i < mNumKeys) {
                         K nextKey = getKeyAt(i);
-                        if (aTree.mComparator.compare(childMaxKey, nextKey) >= 0) {
+                        int cmp2 = aTree.mComparator.compare(childMaxKey, nextKey);
+                        if ((!aTree.mAllowDuplicateKeys && cmp2 == 0) || cmp2 > 0) {
                             dumpAndDie(aTree, "Child max key (" + childMaxKey + ") at " + i + " not < parent key "
                                             + nextKey);
                         }
+                    }
+                }
+                
+                // If children are leaves, ensure that branch order is the same as leaf order.
+                Node<K> child = getChildNodeAt(0);
+                if (child.mIsLeaf) {
+                    for (int i = 0; i <= mNumKeys; i++) {
+                        long branchOID = mOIDRefs[i];
+                        long childOID = PersistableHelper.getPersister(this).getOID(child);
+                        if (branchOID != childOID) {
+                            dumpAndDie(aTree, "branchOID " + branchOID + " != childOID " + childOID + " at " + i);
+                        }
+                        
+                        child = child.getRightNode(); 
                     }
                 }
             }

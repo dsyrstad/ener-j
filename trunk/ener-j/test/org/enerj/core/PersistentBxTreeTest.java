@@ -185,10 +185,10 @@ public class PersistentBxTreeTest extends BulkTest
      */
     public void testDuplicateKeys() throws Exception 
     {
-        // We need at least 20 keys to fill 2 leaf nodes, plus at least 5 on each side of the
-        // range to do splits (40), so do more.
-        final int numDups = 41;
-        final int numBeforeAfter = 11; // More than one node before and after the dups
+        // We need to fill at least 2 leaf nodes, but we also want at least two levels of 
+        // interior nodes with more than one duplicate keys.
+        final int numDups = 4001;
+        final int numBeforeAfter = numDups / 4;
         final int dupKey = numBeforeAfter + (numDups/2);
         final int numKeys = numDups + numBeforeAfter + numBeforeAfter;
 
@@ -211,9 +211,13 @@ public class PersistentBxTreeTest extends BulkTest
         for (int i = 0; i < shuffledKeys.size(); i++) {
             int key = shuffledKeys.get(i);
             tree.insert(key, key + "-" + i);
+            //System.out.println("Inserted " + key); tree.dumpTree(); 
         }
         
+        tree.validateTree();
         //tree.dumpTree();
+        
+        // TODO test get() with duplicates
         
         // Now count the dups using a regular iterator.
         assertTreeMatches(tree, keys);
