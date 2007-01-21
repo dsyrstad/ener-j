@@ -292,6 +292,7 @@ public class PersistentBxTreeTest extends BulkTest
             unshuffledKeys.add(key);
         }
 
+        Collections.sort(unshuffledKeys);
         // After re-inserting, make sure the tree is correct.
         tree.validateTree();
         assertTreeMatches(tree, unshuffledKeys);
