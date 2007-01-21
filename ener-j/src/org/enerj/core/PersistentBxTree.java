@@ -377,16 +377,59 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
      */
     public V remove(Object key)
     {
-        NodePos<K> nodePos = searchGreaterOrEqual((K)key);
-        if (nodePos == null || !nodePos.mIsMatch) {
+        long oid = deleteAndGetOID(key);
+        if (oid == ObjectSerializer.NULL_OID) {
             return null;
         }
 
-        V oldValue = (V)nodePos.mNode.getValueAt(nodePos.mKeyIdx);
+        return (V)getValueForOID(this, oid);
+    }
+
+    /**
+     * Deletes a key, like remove(), but does not return the old value.
+     *
+     * @param key
+     * 
+     * @return true if a matching key was deleted, otherwise false.
+     */
+    public boolean delete(Object key)
+    {
+        return deleteAndGetOID(key) != ObjectSerializer.NULL_OID;
+    }
+
+    /**
+     * Deletes a key and returns the OID of the value of the key.
+     *
+     * @param key
+     * 
+     * @return the value's OID. NULL_OID is returned if no key was deleted.
+     */
+    private long deleteAndGetOID(Object key)
+    {
+        NodePos<K> nodePos = searchGreaterOrEqual((K)key);
+        if (nodePos == null || !nodePos.mIsMatch) {
+            return ObjectSerializer.NULL_OID;
+        }
+
+        long oid = nodePos.mNode.mOIDRefs[nodePos.mKeyIdx];
         nodePos.mNode.delete(this, nodePos.mKeyIdx);
         --mSize;
         ++mModCount;
-        return oldValue;
+        return oid;
+    }
+
+    /**
+     * @return the value for the given OID, unwrapping SCOWrappers if necessary.
+     */
+    private static Object getValueForOID(Object persistentObj, long anOID)
+    {
+        Object obj = PersistableHelper.getPersister(persistentObj).getObjectForOID(anOID);
+        if (obj instanceof SCOWrapper) {
+            SCOWrapper wrapper = (SCOWrapper)obj;
+            return wrapper.getObject();
+        }
+
+        return obj;
     }
 
     /** 
@@ -1214,13 +1257,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             assert mIsLeaf;
 
             long oid = mOIDRefs[aKeyIdx];
-            Object obj = PersistableHelper.getPersister(this).getObjectForOID(oid);
-            if (obj instanceof SCOWrapper) {
-                SCOWrapper wrapper = (SCOWrapper)obj;
-                return wrapper.getObject();
-            }
-
-            return obj;
+            return getValueForOID(this, oid);
         }
 
         /**
@@ -1281,13 +1318,19 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
                 for (int i = 0; i <= mNumKeys; i++) {
                     Node<K> childNode = getChildNodeAt(i);
                     K childMinKey = childNode.validateNode(aTree);
+                    if (childNode.mNumKeys == 0 && childNode.mIsLeaf) {
+                        continue; // Leaf is empty, ignore.
+                    }
+                    
                     K childMaxKey = childNode.mKeys[childNode.mNumKeys - 1];
 
                     // lastChildMaxKey < childMinKey, except when duplicates, then <=.
-                    int cmp = aTree.mComparator.compare(lastChildMaxKey, childMinKey);
-                    if (i > 0 && ((!aTree.mAllowDuplicateKeys && cmp == 0) || cmp > 0)) {
-                        dumpAndDie(aTree, "Previous child max key (" + lastChildMaxKey + ") at " + i
-                                        + " not < child min key " + childMinKey);
+                    if (lastChildMaxKey != null) {
+                        int cmp = aTree.mComparator.compare(lastChildMaxKey, childMinKey);
+                        if (i > 0 && ((!aTree.mAllowDuplicateKeys && cmp == 0) || cmp > 0)) {
+                            dumpAndDie(aTree, "Previous child max key (" + lastChildMaxKey + ") at " + i
+                                            + " not < child min key " + childMinKey);
+                        }
                     }
 
                     lastChildMaxKey = childMaxKey;
