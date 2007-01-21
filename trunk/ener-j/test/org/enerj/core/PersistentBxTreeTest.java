@@ -240,10 +240,11 @@ public class PersistentBxTreeTest extends BulkTest
     {
         // We need at least 20 keys to empty 2 leaf nodes, plus at least 5 on each side of the
         // range (40) to account for splits, so do more.
-        final int numToDelete = 42;
-        // There will actually be twice as many entries as this due to duplicates.
-        final int numKeys = 1000;  
+        final int numToDelete = 420;
         final int startDeleteIdx = 92;
+        final int endDeleteIdx = startDeleteIdx + numToDelete;
+        // There will actually be twice as many entries as this due to duplicates.
+        final int numKeys = startDeleteIdx + endDeleteIdx + 1000;  
         
         List<Integer> unshuffledKeys = new ArrayList<Integer>(numKeys * 2);
         for (int i = 0; i < numKeys; i++) {
@@ -254,17 +255,45 @@ public class PersistentBxTreeTest extends BulkTest
         List<Integer> shuffledKeys = new ArrayList<Integer>(unshuffledKeys);
 
         // Shuffle array using a consistent seed
-        Collections.shuffle(unshuffledKeys, new Random(1L));
+        Collections.shuffle(shuffledKeys, new Random(1L));
         
         PersistentBxTree<Integer, String> tree = new PersistentBxTree<Integer, String>(10, null, true, false, true);
-        for (int i = 0; i < unshuffledKeys.size(); i++) {
-            int key = unshuffledKeys.get(i);
+        for (int i = 0; i < shuffledKeys.size(); i++) {
+            int key = shuffledKeys.get(i);
             tree.insert(key, key + "-" + i);
         }
         
+        tree.validateTree();
         //tree.dumpTree();
 
         // Before deleting, make sure the tree is correct.
+        assertTreeMatches(tree, unshuffledKeys);
+        
+        // Delete keys
+        List<Integer> deletedKeys = new ArrayList<Integer>(numToDelete);
+        for (int i = startDeleteIdx; i < endDeleteIdx; i++) {
+            Integer key = unshuffledKeys.get(i);
+            tree.delete(key);
+
+            // Remove from the master list for later comparison
+            unshuffledKeys.remove(key);
+            deletedKeys.add(key);
+        }
+
+        assertTrue(unshuffledKeys.size() > 0);
+
+        // After deleting, make sure the tree is correct.
+        tree.validateTree();
+        assertTreeMatches(tree, unshuffledKeys);
+        
+        // Re-insert the deleted keys
+        for (Integer key : deletedKeys) {
+            tree.insert(key, key + "-value");
+            unshuffledKeys.add(key);
+        }
+
+        // After re-inserting, make sure the tree is correct.
+        tree.validateTree();
         assertTreeMatches(tree, unshuffledKeys);
     }
     
