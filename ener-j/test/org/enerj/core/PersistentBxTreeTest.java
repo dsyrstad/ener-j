@@ -56,7 +56,6 @@ import org.odmg.QueryableCollection;
 public class PersistentBxTreeTest extends BulkTest
 {
     // TODO Test removal from leftmost and rightmost leaves, leaving leaves empty, then iterate over all keys
-    // TODO Test reorganize after each method test.
     
     private static final String[] FIRST_NAMES = { "Dan", "Tina", "Bob", "Sue", "Emily", "Cole", "Mike", "Borusik", "Ole", "Lena", };
     private static final String[] LAST_NAMES = { "Smith", "Jones", "Funkmeister", "Johnson", "Anderson", "Syrstad", "Robinson",  };

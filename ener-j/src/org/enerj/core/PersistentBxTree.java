@@ -449,7 +449,8 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     }
     
     /**
-     * Builds (or rebuilds) the tree from the given Map.Entry iterator.  
+     * Builds (or rebuilds) the tree from the given Map.Entry iterator. The
+     * entries must be in key order (i.e., sorted). 
      *
      * @param anEntryIterator
      */
