@@ -82,7 +82,9 @@ import org.odmg.QueryInvalidException;
 public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K, V>, SortedMap<K, V>
 {
 
-    // TODO Bulk load, dupl keys
+    // TODO Bulk load
+    // TODO Need size returning long. mSize needs to be a long.
+    
     /** This is roughly the right size to fill-out an 8K page when keys are SCOs and are 8 bytes in length. */
     public static final int DEFAULT_KEYS_PER_NODE = 450;
 
@@ -432,6 +434,111 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         return obj;
     }
 
+    /**
+     * Reorganizes the entire tree. Optimizes the size of nodes and cleans up deleted leaves.
+     */
+    public void reorganize()
+    {
+        if (mSize == 0) {
+            // We have zero elements, but might still have a tree with deleted leaves. Clear it.
+            mRootNode = new Node<K>(this, true);
+            return;
+        }
+        
+        buildFromEntryIterator( entrySet().iterator() );
+    }
+    
+    /**
+     * Builds (or rebuilds) the tree from the given Map.Entry iterator.  
+     *
+     * @param anEntryIterator
+     */
+    public void buildFromEntryIterator(Iterator<Map.Entry<K,V>> anEntryIterator)
+    {
+        // Note that this will write lock the tree object.
+        mSize = 0;
+        
+        // Build the tree from the leaves up.
+        final int maxKeysPerNode = (mNodeSize * 3) / 4; // Fill 3/4 full. 
+
+        // Build the new leaf level
+        Persister persister = PersistableHelper.getPersister(this);
+        
+        Node<K> newNode = new Node<K>(this, true, maxKeysPerNode);
+        // This is the head of the previous level that was built.
+        Node<K> prevLevelHead = newNode;
+        boolean isOurEntry = false;
+        while (anEntryIterator.hasNext()) {
+            Map.Entry<K,V> entry = anEntryIterator.next();
+            if (newNode.mNumKeys >= maxKeysPerNode) {
+                // This node is full. Create a new one and link in.
+                Node<K> nextNode = new Node<K>(this, true, maxKeysPerNode);
+                nextNode.mLeftLeafOID = persister.getOID(newNode); 
+                newNode.setOIDRefAt(newNode.mNumKeys, persister.getOID(nextNode)); // Right pointer 
+                newNode = nextNode;
+            }
+
+            newNode.setKeyAt(newNode.mNumKeys, entry.getKey());
+            long oid;
+            if (isOurEntry || entry instanceof Entry) {
+                // If it's our Entry, just get the OID so we don't have to load the value object.
+                oid = ((Entry)entry).getValueOID();
+                isOurEntry = true;
+            }
+            else {
+                oid = persister.getOID(entry.getValue());
+            }
+            
+            newNode.setOIDRefAt(newNode.mNumKeys, oid);
+            ++newNode.mNumKeys;
+            ++mSize;
+        }
+        
+        // Now build interior nodes. We temporarily use mLeftLeafOID (unused on interior nodes) to maintain
+        // a list of nodes at this level. Build until we have only one node at a level.
+        while (newNode != prevLevelHead) {
+            newNode = new Node<K>(this, false, maxKeysPerNode);
+            Node<K> currLevelHead = newNode;
+            Node<K> nextChildNode = null;
+            for (Node<K> childNode = prevLevelHead; childNode != null; childNode = nextChildNode) {
+                if (newNode.mNumKeys >= maxKeysPerNode) {
+                    // This node is full. Create a new one and link in.
+                    Node<K> nextNode = new Node<K>(this, false, maxKeysPerNode);
+                    newNode.mLeftLeafOID = persister.getOID(nextNode);
+                    newNode = nextNode;
+                }
+
+                K leftMostLeafKey;
+                if (childNode.mIsLeaf) {
+                    nextChildNode = childNode.getRightNode();
+                    leftMostLeafKey = childNode.mKeys[0];
+                }
+                else {
+                    nextChildNode = (Node<K>)(Object)persister.getObjectForOID(childNode.mLeftLeafOID);
+                    leftMostLeafKey = childNode.mLeftMostLeafKey;
+                }
+                
+                long childOID = persister.getOID(childNode);
+                if (newNode.mNumKeys == 0 && newNode.mOIDRefs[0] == ObjectSerializer.NULL_OID) {
+                    // The first OID ref (leftmost branch) always points to the leftmost child, but there is
+                    // no corresponding key entry.
+                    newNode.setOIDRefAt(0, childOID);
+                    newNode.mLeftMostLeafKey = leftMostLeafKey;
+                }
+                else {
+                    // Get the first key of the child
+                    newNode.setKeyAt(newNode.mNumKeys, leftMostLeafKey);
+                    ++newNode.mNumKeys;
+                    newNode.setOIDRefAt(newNode.mNumKeys, childOID);
+                }
+            }
+            
+            prevLevelHead = currLevelHead;
+        }
+
+        mRootNode = prevLevelHead;
+    }
+
     /** 
      * {@inheritDoc}
      * @see java.util.Map#size()
@@ -618,7 +725,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         ++mSize;
         ++mModCount;
     }
-
+    
     public void validateTree() throws IllegalStateException
     {
         mRootNode.validateNode(this);
@@ -749,6 +856,11 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
          * key object itself is a Comparable. */
         private K[] mKeys;
         private short mNumKeys;
+        /** This is ONLY used while rebuilding the tree. Do NOT depend on the value otherwise.
+         * For leaf nodes, use mKeys[0]. For interior nodes,
+         * this represents the leftmost key you would find if you descended all of the way to a leaf node.
+         */
+        private K mLeftMostLeafKey;
 
         /** 
          * OIDs pointing to the child nodes or values. Note that OIDs are used rather than references to the actual
@@ -786,6 +898,20 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             mOIDRefs = new long[mKeys.length + 1];
         }
 
+        Node(PersistentBxTree<K, ?> aTree, boolean isLeaf, int aSizeToEnsure)
+        {
+            mIsLeaf = isLeaf;
+            int allocLen = 0;
+            if (!aTree.mDynamicallyResizeNode) {
+                allocLen = aTree.mNodeSize;
+            }
+
+            mKeys = (K[])new Object[allocLen];
+            mNumKeys = 0;
+            mOIDRefs = new long[mKeys.length + 1];
+            ensureLength(aTree, aSizeToEnsure);
+        }
+
         /**
          * Construct a Node that is a copy of the entries in aNode starting at aStartIdx to the end of the node.
          * The last right child OID is also copied from aNode. 
@@ -803,11 +929,28 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             }
 
             mKeys = (K[])new Object[allocLen];
-            mNumKeys = (short)length;
             mOIDRefs = new long[mKeys.length + 1];
-            System.arraycopy(aNode.mKeys, aStartIdx, mKeys, 0, length);
-            System.arraycopy(aNode.mOIDRefs, aStartIdx, mOIDRefs, 0, length + 1);
+            
+            copy(aTree, aNode, aStartIdx, 0, length);
+        }
+        
+        /**
+         * Copies keys and OID refs from aSrcNode to this node. The last right child OID is also copied. 
+         *
+         * @param aSrcNode
+         * @param aStartIdx
+         * @param aDestIdx
+         * @param length the number of keys to be copied.
+         */
+        void copy(PersistentBxTree<K, ?> aTree, Node<K> aSrcNode, int aStartIdx, int aDestIdx, int length)
+        {
+            int newNumKeys = aDestIdx + length;
+            ensureLength(aTree, newNumKeys);
+
+            System.arraycopy(aSrcNode.mKeys, aStartIdx, mKeys, aDestIdx, length);
+            System.arraycopy(aSrcNode.mOIDRefs, aStartIdx, mOIDRefs, aDestIdx, length + 1);
             EnerJImplementation.setModified(this);
+            mNumKeys = (short)newNumKeys;
         }
 
         /**
@@ -1008,11 +1151,10 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
             int medianIdx;
             // If inserting on right-most leaf, split leaving 2 keys (optimized sorted insert).
             // The right leaf pointer on the right most leaf is always null.
-            /* TODO Test later
             if (keyIdx == mNumKeys && mOIDRefs[mNumKeys] == ObjectSerializer.NULL_OID) {
                 medianIdx = mNumKeys - 2;
             }
-            else */{
+            else {
                 medianIdx = mNumKeys >> 1; // Divide by 2
             }
 
@@ -1442,6 +1584,11 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         public K getKey()
         {
             return mNodePos.mNode.mKeys[mNodePos.mKeyIdx];
+        }
+
+        long getValueOID()
+        {
+            return mNodePos.mNode.mOIDRefs[mNodePos.mKeyIdx];
         }
 
         public V getValue()

@@ -55,6 +55,9 @@ import org.odmg.QueryableCollection;
 @PersistenceAware
 public class PersistentBxTreeTest extends BulkTest
 {
+    // TODO Test removal from leftmost and rightmost leaves, leaving leaves empty, then iterate over all keys
+    // TODO Test reorganize after each method test.
+    
     private static final String[] FIRST_NAMES = { "Dan", "Tina", "Bob", "Sue", "Emily", "Cole", "Mike", "Borusik", "Ole", "Lena", };
     private static final String[] LAST_NAMES = { "Smith", "Jones", "Funkmeister", "Johnson", "Anderson", "Syrstad", "Robinson",  };
     private static final String[] CITIES = { "Burnsville", "Bloomington", "Minneapolis", "St Paul", "Washington", "Seattle", "Phoenix", "New York", "Cleveland", "San Jose", };
@@ -98,32 +101,43 @@ public class PersistentBxTreeTest extends BulkTest
     
     public void tearDown() throws Exception
     {
-        mTxn.commit();
-        mDB.close();
+        if (mTxn != null && mTxn.isOpen()) {
+            mTxn.commit();
+        }
+        
+        if (mDB != null && mDB.isOpen()) {
+            mDB.close();
+        }
+        
         DatabaseTestCase.clearDBFiles();
         super.tearDown();
     }
     
     
+    // Bulk tests don't work with database setup/cleanup 
+    /*
     public BulkTest xbulkTestInternalSortedMapTest() throws Exception
     {
         return new InternalSortedMapTest(InternalSortedMapTest.class.getName());
     }
     
+    // Bulk tests don't work with database setup/cleanup 
     public BulkTest xbulkTestApacheCollectionsSortedMapTest() throws Exception 
     {
         return new ApacheCollectionsSortedMapTest(ApacheCollectionsSortedMapTest.class.getName());
     }
     
+    // Bulk tests don't work with database setup/cleanup 
     public BulkTest xbulkTestInternalQueryableCollectionTest()
     {
         return new InternalQueryableCollectionTest(InternalQueryableCollectionTest.class.getName());
-    } 
+    }
+    */ 
     
     /**
      * Test method for {@link org.enerj.core.PersistentBxTree#put(java.lang.Object, org.enerj.core.Persistable)}.
      */
-    public void xtestLargeRandomPut() throws Exception // TODO Uncomment
+    public void testLargeRandomPut() throws Exception
     {
         // Create an array of objects and the shuffle them.
         TestClass1[] objs = new TestClass1[100000];
@@ -156,7 +170,8 @@ public class PersistentBxTreeTest extends BulkTest
         mDB = new EnerJDatabase();
         
         mDB.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
-        mDB.setAllowNontransactionalReads(true);
+        mTxn = new EnerJTransaction();
+        mTxn.begin(mDB);
 
         start = System.currentTimeMillis();
         tree = (PersistentBxTree<Integer, TestClass1>)mDB.lookup("BTree");
@@ -178,6 +193,31 @@ public class PersistentBxTreeTest extends BulkTest
 
         end = System.currentTimeMillis();
         System.out.println("ContainsKey/Get time " + (end-start) + "ms");
+        
+        // Test reorganize
+        int sizeBefore = tree.size(); 
+        start = System.currentTimeMillis();
+
+        tree.reorganize();
+
+        end = System.currentTimeMillis();
+        System.out.println("reorganize time " + (end-start) + "ms");
+        
+        //tree.dumpTree();
+        tree.validateTree();
+
+        assertEquals(sizeBefore, tree.size());
+        for (TestClass1 obj : objs) {
+            assertTrue("Id does not exist " + obj.getId(), tree.containsKey(obj.getId()) );
+            TestClass1 getObj = tree.get(obj.getId());
+            assertNotNull(getObj);
+            assertEquals(obj.getId(), getObj.getId());
+            if (obj.getLastName() == null) {
+                System.out.println(StringUtil.toString(obj, false, true));
+            }
+            
+            assertEquals(obj.getLastName(), getObj.getLastName() );
+        }
     }
 
     /**
@@ -209,15 +249,13 @@ public class PersistentBxTreeTest extends BulkTest
         
         PersistentBxTree<Integer, String> tree = new PersistentBxTree<Integer, String>(10, null, true, false, true);
         for (int i = 0; i < shuffledKeys.size(); i++) {
-            int key = shuffledKeys.get(i);
+            Integer key = shuffledKeys.get(i);
             tree.insert(key, key + "-" + i);
             //System.out.println("Inserted " + key); tree.dumpTree(); 
         }
         
         tree.validateTree();
         //tree.dumpTree();
-        
-        // TODO test get() with duplicates
         
         // Now count the dups using a regular iterator.
         assertTreeMatches(tree, keys);
@@ -230,6 +268,21 @@ public class PersistentBxTreeTest extends BulkTest
 
         // Now use a tailMap restricted by the duplicate key.
         assertTreeMatches(tree.tailMap(dupKey), keys.subList(numBeforeAfter, numKeys));
+
+        // Test get() with duplicates
+        for (int i = 0; i < shuffledKeys.size(); i++) {
+            Integer key = shuffledKeys.get(i);
+            String lookupValue = tree.get(key);
+            assertTrue(lookupValue.startsWith(key + "-"));
+        }
+        
+        // Test reorganize() against dups.
+        tree.reorganize();
+
+        tree.validateTree();
+        
+        // Count the dups using a regular iterator.
+        assertTreeMatches(tree, keys);
     }
 
     /**
@@ -296,6 +349,16 @@ public class PersistentBxTreeTest extends BulkTest
         // After re-inserting, make sure the tree is correct.
         tree.validateTree();
         assertTreeMatches(tree, unshuffledKeys);
+        
+        // Test reorganize after deletes.
+        for (Integer key : deletedKeys) {
+            tree.delete(key);
+            unshuffledKeys.remove(key);
+        }
+        
+        tree.reorganize();
+        tree.validateTree();
+        assertTreeMatches(tree, unshuffledKeys);
     }
     
     /**
@@ -329,7 +392,7 @@ public class PersistentBxTreeTest extends BulkTest
         assertEquals(valuesFound.size(), keys.size());
     }
 
-    // TODO Test subtests with large tree, dupl keys, dynamic/static resize, reverswed order
+    // TODO Test subtests with dynamic/static resize, reversed order
     @Persist
     private static final class TestClass1
     {
@@ -506,7 +569,6 @@ public class PersistentBxTreeTest extends BulkTest
             // Else don't test this. We don't need to support it.
         }
 
-        // TODO Larger collections via getSample...
         @Override
         public Map makeEmptyMap()
         {
@@ -540,6 +602,7 @@ public class PersistentBxTreeTest extends BulkTest
         @Override
         public Object[] getSampleValues()
         {
+            // TODO Implement Larger collections via getSample...
             Object[] result = new Object[] {
                             "blahv", "foov", "barv", "bazv", "tmpv", "goshv", "gollyv", "geev",
                             "hellov", "goodbyev", "we'llv", "seev", "youv", "allv", "againv",
