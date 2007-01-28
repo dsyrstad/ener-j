@@ -24,8 +24,11 @@
 
 package org.enerj.core;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -43,6 +46,9 @@ import org.odmg.QueryableCollection;
  */
 public class LargePersistentHashMapTest extends TestCase
 {
+    private EnerJDatabase mDB;
+    private EnerJTransaction mTxn;
+
 
     public LargePersistentHashMapTest(String aTestName) 
     {
@@ -54,17 +60,75 @@ public class LargePersistentHashMapTest extends TestCase
         TestSuite suite = new TestSuite(LargePersistentHashMapTest.class);
         
         suite.addTestSuite( LargePersistentHashMapTest.InternalDMapTest.class );
+        suite.addTestSuite( LargePersistentHashMapTest.ApacheCollectionsMapTest.class );
         suite.addTestSuite( LargePersistentHashMapTest.InternalQueryableCollectionTest.class );
 
         return suite;
     }
     
-    /*
-     * You can have additional methods here..... 
-     */
-    public void testNothing() throws Exception
+    public void setUp() throws Exception
     {
-        // Placeholder until a specific test is added.
+        DatabaseTestCase.createDatabase1();
+        mDB = new EnerJDatabase();
+        mDB.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
+        mTxn = new EnerJTransaction();
+        mTxn.begin(mDB);
+        super.setUp();
+    }
+
+
+    public void tearDown() throws Exception
+    {
+        mTxn.commit();
+        mDB.close();
+        DatabaseTestCase.clearDBFiles();
+        super.tearDown();
+    }
+
+    /**
+     * Tests Duplicate keys and duplicate null keys. 
+     */
+    public void testDuplicateKeysAndNulls() throws Exception
+    {
+        final int maxKey = 100000;
+        final Integer dupKey = maxKey / 2;
+        final int dupKeyCnt = 1000;
+        final int nullKeyCnt = 100;
+        
+        DuplicateKeyMap<Integer, String> map = new LargePersistentHashMap<Integer, String>(LargePersistentHashMap.DEFAULT_NODE_SIZE, true); 
+        for (int i = 0; i < maxKey; i++) {
+            map.put(i, "Value " + i);
+        }
+        
+        // Add the duplicate keys (-1 because one of the keys was already inserted)
+        for (int i = 0; i < (dupKeyCnt - 1); i++) {
+            String prev = map.put(dupKey, "Value " + dupKey + " #" + i);
+            assertNull(prev);
+        }
+        
+        // Add the null duplicate key
+        for (int i = 0; i < nullKeyCnt; i++) {
+            String prev = map.put(null, "Value null #" + i);
+            assertNull(prev);
+        }
+        
+        assertEquals("Size should match", maxKey + (dupKeyCnt - 1) + nullKeyCnt, map.size());
+        
+        // Check the duplicate values.
+        Collection<String> dupValues = map.getValues(dupKey);
+        assertEquals(dupKeyCnt, dupValues.size());
+        
+        Set<String> checkValues = new HashSet<String>(dupValues);
+        // Make sure all values were unique
+        assertEquals(dupKeyCnt, checkValues.size());
+        
+        // Check the null duplicate values.
+        dupValues = map.getValues(null);
+        assertEquals(nullKeyCnt, dupValues.size());
+        
+        checkValues = new HashSet<String>(dupValues);
+        // Make sure all values were unique
+        assertEquals(nullKeyCnt, checkValues.size());
     }
 
 
@@ -75,12 +139,32 @@ public class LargePersistentHashMapTest extends TestCase
      */
     public static final class InternalDMapTest extends AbstractDMapTest
     {
+        private EnerJDatabase mDB;
+        private EnerJTransaction mTxn;
 
         public InternalDMapTest(String aName)
         {
             super(aName);
         }
+        
+        public void setUp() throws Exception
+        {
+            DatabaseTestCase.createDatabase1();
+            mDB = new EnerJDatabase();
+            mDB.open(DatabaseTestCase.DATABASE_URI, Database.OPEN_READ_WRITE);
+            mTxn = new EnerJTransaction();
+            mTxn.begin(mDB);
+            super.setUp();
+        }
 
+
+        public void tearDown() throws Exception
+        {
+            mTxn.commit();
+            mDB.close();
+            DatabaseTestCase.clearDBFiles();
+            super.tearDown();
+        }
 
         public Map createMap() throws Exception
         {
