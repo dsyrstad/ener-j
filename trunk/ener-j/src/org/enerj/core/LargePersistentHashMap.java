@@ -755,7 +755,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
 
             Entry<?, V> result = entry;
             // Set entry to next matching key.
-            for (entry = entry.next; entry != null && keysEqual(mKey, entry); entry = entry.next) 
+            for (entry = entry.next; entry != null && !keysEqual(mKey, entry); entry = entry.next) 
                     ;
             
             return result.getValue();
