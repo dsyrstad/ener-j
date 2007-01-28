@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.enerj.apache.commons.collections.BulkTest;
+import junit.framework.TestCase;
 
 /**
  * Generically Tests classes that implement java.util.Map.
@@ -40,7 +40,7 @@ import org.enerj.apache.commons.collections.BulkTest;
  * @version $Id: AbstractMapTest.java,v 1.1 2006/01/12 04:39:44 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public abstract class AbstractMapTest extends BulkTest
+public abstract class AbstractMapTest extends TestCase
 {
 
     public AbstractMapTest(String aName) 

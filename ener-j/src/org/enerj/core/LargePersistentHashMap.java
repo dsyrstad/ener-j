@@ -23,8 +23,10 @@
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/PersistentMap.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
 package org.enerj.core;
 
+import java.util.AbstractCollection;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,6 +34,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.enerj.annotations.Persist;
+import org.enerj.annotations.PersistenceAware;
 import org.odmg.QueryInvalidException;
 
 /*
@@ -70,6 +73,8 @@ import org.odmg.QueryInvalidException;
  * collection would be treated as an SCO (second-class object) and be loaded when
  * your object is loaded. Also, any changes to the collection would cause your object
  * to also be written to the database. 
+ * <p>
+ * This map optionally supports duplicate keys, which may be retrieved using the DuplicateKeyMap interface.
  *
  * @version $Id: PersistentMap.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
@@ -77,28 +82,30 @@ import org.odmg.QueryInvalidException;
  * @see PersistentHashMap
  */
 @Persist
-public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements org.odmg.DMap<K, V>, Cloneable
+public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> 
+    implements org.odmg.DMap<K, V>, Cloneable, DuplicateKeyMap<K, V>
 {
-    private static final int DEFAULT_NODE_SIZE = 1024;
+    public static final int DEFAULT_NODE_SIZE = 1024;
 
     private int elementCount;
     private LargePersistentArrayList<Entry<K, V>> elementData;
+    private boolean mAllowDuplicateKeys;
 
     transient int modCount = 0;
 
     /**
      * Constructs a new empty instance of LargePersistentHashMap with a node size of 1024.
-     * This will comfortably support about 1 billion objects. 
+     * This will comfortably support about 1 billion objects. The map does not supoprt duplicate keys.
      */
     public LargePersistentHashMap()
     {
-        this(DEFAULT_NODE_SIZE);
+        this(DEFAULT_NODE_SIZE, false);
     }
 
     /**
      * Constructs a new instance of LargePersistentHashMap with the specified node size. The node size is the 
      * node size of the backing {@link LargePersistentArrayList}. See {@link LargePersistentArrayList} 
-     * for an explanation of node sizes.  
+     * for an explanation of node sizes. The map does not support duplicate keys.  
      * 
      * @param nodeSize the 
      *            the initial capacity of this LargePersistentHashMap.
@@ -108,6 +115,22 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
      */
     public LargePersistentHashMap(int nodeSize)
     {
+        this(nodeSize, false);
+    }
+
+    /**
+     * Constructs a new instance of LargePersistentHashMap with the specified node size. The node size is the 
+     * node size of the backing {@link LargePersistentArrayList}. See {@link LargePersistentArrayList} 
+     * for an explanation of node sizes. The map optionally supports duplicate keys.  
+     * 
+     * @param nodeSize the 
+     *            the initial capacity of this LargePersistentHashMap.
+     * 
+     * @exception IllegalArgumentException
+     *                when the nodeSize is less than zero.
+     */
+    public LargePersistentHashMap(int nodeSize, boolean allowDuplicateKeys)
+    {
         if (nodeSize < 0) {
             throw new IllegalArgumentException();
         }
@@ -116,11 +139,13 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
         elementData = new LargePersistentArrayList<Entry<K,V>>(nodeSize);
         // Max-out the table size.
         elementData.resize( elementData.getMaximumSize() );
+        mAllowDuplicateKeys = allowDuplicateKeys;
     }
 
     /**
      * Constructs a new instance of LargePersistentHashMap containing the mappings from the
-     * specified Map.
+     * specified Map. The map does not support duplicate keys. This is equivalent to creating the
+     * map and calling newMap.putAll(map).
      * 
      * @param map
      *            the mappings to add
@@ -128,7 +153,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
     public LargePersistentHashMap(Map<? extends K, ? extends V> map)
     {
         this();
-        super.putAll(map);
+        putAll(map);
     }
 
     /**
@@ -202,7 +227,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
      *            second key to compare
      * @return true if the keys are considered equal
      */
-    private boolean keysEqual(Object k1, Entry<K, V> entry)
+    private static boolean keysEqual(Object k1, Entry<?, ?> entry)
     {
         if (k1 == null && entry.key == null) {
             return true;
@@ -229,7 +254,8 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
     }
 
     /**
-     * Answers the value of the mapping with the specified key.
+     * Answers the value of the mapping with the specified key. If the map supports duplicate keys,
+     * one of the corresponding is returned. If you want all duplicate key values, use getValues().
      * 
      * @param key
      *            the key
@@ -243,6 +269,11 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
             return m.value;
         }
         return null;
+    }
+    
+    public Collection<V> getValues(Object key)
+    {
+        return new LargePersistentHashMap.ValuesForKeyCollection<V>(getEntry(key), this);
     }
 
     private Entry<K, V> getEntry(Object key)
@@ -296,27 +327,34 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
     }
 
     /**
-     * Maps the specified key to the specified value.
+     * Maps the specified key to the specified value. If duplicate keys are support and a duplicate key 
+     * already exists, a new entry will be added and null will be returned. If duplicate keys are
+     * not supported and the key already exists, the entries value is replaced.
      * 
      * @param key
      *            the key
      * @param value
      *            the value
      * @return the value of any previous mapping with the specified key or null
-     *         if there was no mapping
+     *         if there was no mapping.
      */
     @Override
     public V put(K key, V value)
     {
         long index = getModuloHash(key);
-        Entry<K, V> entry = findEntry(key, index);
+        Entry<K, V> entry = null;
+        
+        if (!mAllowDuplicateKeys) {
+            entry = findEntry(key, index);
+        }
 
         if (entry == null) {
-            modCount++;
             entry = createEntry(key, index, value);
+            ++elementCount;
             return null;
         }
 
+        // Replace existing value
         V result = entry.value;
         entry.value = value;
         return result;
@@ -327,6 +365,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
         Entry<K, V> entry = new Entry<K, V>(key, value);
         entry.next = elementData.getAtIndex(index);
         elementData.setAtIndex(index, entry);
+        ++modCount;
         return entry;
     }
 
@@ -489,6 +528,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
         }
     }
 
+    @PersistenceAware
     private static class HashMapIterator<E, KT, VT> implements Iterator<E>
     {
         private long position = 0;
@@ -518,18 +558,8 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
                 return true;
             }
             
-            long size = associatedMap.elementData.sizeAsLong();
-            // TODO LargePersistentArrayList could use a findNextNonNull(long startingAfterIdx)
-            while (position < size) {
-                if (associatedMap.elementData.getAtIndex(position) == null) {
-                    position++;
-                }
-                else {
-                    return true;
-                }
-            }
-
-            return false;
+            position = associatedMap.elementData.getNextNonNullIndex(position);
+            return position >= 0;
         }
 
         void checkConcurrentMod() throws ConcurrentModificationException
@@ -548,6 +578,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
 
             Entry<KT, VT> result;
             if (entry == null) {
+                position = associatedMap.elementData.getNextNonNullIndex(position);
                 result = lastEntry = associatedMap.elementData.getAtIndex(position++);
                 entry = lastEntry.next;
             }
@@ -592,6 +623,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
     }
 
 
+    @PersistenceAware
     static class HashMapEntrySet<KT, VT> extends AbstractSet<Map.Entry<KT, VT>>
     {
         private final LargePersistentHashMap<KT, VT> associatedMap;
@@ -647,6 +679,91 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> implements o
                     return entry;
                 }
             }, associatedMap);
+        }
+    }
+
+    @PersistenceAware
+    private static final class ValuesForKeyCollection<V> extends AbstractCollection<V>
+    {
+        private Entry<?,V> mStartingEntry;
+        private LargePersistentHashMap<?, V> mMap;
+        private int mSize = -1;
+
+        ValuesForKeyCollection(Entry<?,V> aStartingEntry, LargePersistentHashMap<?, V> aMap)
+        {
+            mStartingEntry = aStartingEntry;
+            mMap = aMap;
+        }
+
+        @Override
+        public Iterator<V> iterator()
+        {
+            return new ValuesForKeyIterator<V>(mStartingEntry, mMap);
+        }
+
+        @Override
+        public int size()
+        {
+            if (mSize == -1) {
+                mSize = 0;
+                for (V v : this) {
+                    ++mSize;
+                }
+            }
+            
+            return mSize;
+        }
+        
+        
+    }
+
+    @PersistenceAware
+    private static final class ValuesForKeyIterator<V> implements Iterator<V>
+    {
+        LargePersistentHashMap<?, V> mMap;
+        int expectedModCount;
+
+        Entry<?, V> entry;
+        Object mKey;
+
+        ValuesForKeyIterator(Entry<?, V> aStartingEntry, LargePersistentHashMap<?, V> aMap)
+        {
+            entry = aStartingEntry;
+            mKey = aStartingEntry.getKey();
+            mMap = aMap;
+            expectedModCount = mMap.modCount;
+        }
+
+        public boolean hasNext()
+        {
+            return entry != null;
+        }
+
+        void checkConcurrentMod() throws ConcurrentModificationException
+        {
+            if (expectedModCount != mMap.modCount) {
+                throw new ConcurrentModificationException();
+            }
+        }
+
+        public V next()
+        {
+            checkConcurrentMod();
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+
+            Entry<?, V> result = entry;
+            // Set entry to next matching key.
+            for (entry = entry.next; entry != null && keysEqual(mKey, entry); entry = entry.next) 
+                    ;
+            
+            return result.getValue();
+        }
+
+        public void remove()
+        {
+            throw new UnsupportedOperationException();
         }
     }
 
