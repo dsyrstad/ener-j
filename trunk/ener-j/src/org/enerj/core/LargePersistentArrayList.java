@@ -181,6 +181,58 @@ public class LargePersistentArrayList<E>
         return leafNode;
     }
 
+    /**
+     * Gets the next non-null index starting at aStartingIndex. If the element at aStartingIndex
+     * is not null, aStartingIndex is returned.
+     *
+     * @param aStartingIndex the starting index.
+     * 
+     * @return the index of the non-null entry. -1 is returned if there are no more non-null entries.
+     */
+    public long getNextNonNullIndex(long aStartingIndex)
+    {
+        if (aStartingIndex < 0 || aStartingIndex >= mSize) {
+            throw new IndexOutOfBoundsException("Index out of bounds: " + aStartingIndex);
+        }
+        
+        long currIndex = aStartingIndex;
+        
+        
+        // Root Level loop
+        for (long rootIndex = currIndex / mNodeSizeSquared;
+             currIndex < mSize && rootIndex < mNodeSize;
+             ++rootIndex, currIndex = rootIndex * mNodeSizeSquared) { 
+            Node secondLevelNode = (Node)mRootNode.get((int)rootIndex);
+            if (secondLevelNode == null) {
+                // Go forward one root level entry.
+                continue;
+            }
+        
+            
+            // Second level loop
+            for (int secondLevelIndex = (int)((currIndex - (rootIndex * mNodeSizeSquared)) / mNodeSize);
+                 currIndex < mSize && secondLevelIndex < mNodeSize; 
+                ++secondLevelIndex, currIndex = secondLevelIndex * mNodeSize + rootIndex * mNodeSizeSquared) {
+                Node leafNode = (Node)secondLevelNode.get(secondLevelIndex);
+                if (leafNode == null) {
+                    // Go forward one second level entry
+                    continue;
+                }
+                
+                // Leaf loop
+                for (int leafIndex = (int)(currIndex % mNodeSize); 
+                     currIndex < mSize && leafIndex < mNodeSize;
+                     ++leafIndex, ++currIndex) {
+                    
+                    if (leafNode.get(leafIndex) != null) {
+                        return currIndex;
+                    }
+                }
+            }
+        }
+        
+        return -1L;
+    }
 
     // Start of LargeList interface...
 

@@ -34,7 +34,7 @@ import org.enerj.annotations.Persist;
  * as first-class objects (FCOs). This type of map is useful when the map itself can
  * fit entirely in memory at one time.  If you have an map that cannot fit
  * reasonably in memory, you will have more than 2 billion objects in your collection,
- * or you want to conserve disk storage space, should use  
+ * or you want to conserve disk storage space, should use {@link LargePersistentHashMap}. 
  * <p>
  * The map is implemented as a container of java.util.HashMap. However,
  * if you reference this type of collection in your object, it is treated as a FCO,
