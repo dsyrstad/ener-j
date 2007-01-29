@@ -146,7 +146,7 @@ Available targets:
     	<mkdir dir="test-results"/>
         <delete>
             <fileset dir="test-results">
-                <include name="**/*.txt"/>
+                <include name="**/*.xml"/>
             </fileset>
         </delete>
     	<junit fork="true" reloading="false" haltonerror="false" haltonfailure="false" printsummary="false" >
@@ -162,10 +162,10 @@ Available targets:
     		<!-- test name="org.enerj.core.EnerJTransactionTest" / -->
     		<batchtest todir="test-results">
             	<fileset dir="${testsrc.dir}" casesensitive="yes">
-            	  <include name="**/*Test.class"/>
-              	  <include name="**/jga/**/Test*.class"/> <!-- JGA tests are named this way -->
-              	  <exclude name="**/Abstract*Test.class"/>
-            	  <exclude name="**/BulkTest.class"/>
+            	  <include name="**/jga/**/Test*.java"/> <!-- JGA tests are named this way -->
+            	  <include name="**/*Test.java"/>
+              	  <exclude name="**/Abstract*Test.java"/>
+            	  <exclude name="**/BulkTest.java"/>
             	</fileset>
     		</batchtest>
     	</junit>
