@@ -24,18 +24,16 @@
 
 package org.enerj.enhancer;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 import org.enerj.core.EnerJTransaction;
 import org.enerj.util.ClassUtil;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 
 
 
@@ -54,7 +52,6 @@ public class Enhancer
     private boolean mDebug = false;
     private MetaData mMetaData;
     private String mOutputDir = null;
-    private ByteArrayOutputStream mByteStream = null;
     private int mNumClasses = 0;
     private long mElapsedTotal = 0;
 

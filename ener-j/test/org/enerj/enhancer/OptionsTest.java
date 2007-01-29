@@ -71,7 +71,7 @@ public class OptionsTest extends TestCase
         int returnCode = Enhancer.runEnhancer(new String[] { 
                 "--outdir", "/yyy", 
             } );
-        assertTrue("No metadata files should generate error", returnCode != 0);
+        assertTrue("No metadata files should not generate error", returnCode == 0);
     }
     
 

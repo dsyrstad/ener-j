@@ -151,6 +151,7 @@ Available targets:
         </delete>
     	<junit fork="true" reloading="false" haltonerror="false" haltonfailure="false" printsummary="false" >
     		<jvmarg value="-javaagent:${agent.jar}"/>
+    		<jvmarg value="-Denerj.dbpath=databases"/>
   			<classpath>
   				<pathelement location="${build.testdest}"/>
     		    <pathelement location="${build.dest}"/>
@@ -161,10 +162,10 @@ Available targets:
     		<!-- test name="org.enerj.core.EnerJTransactionTest" / -->
     		<batchtest todir="test-results">
             	<fileset dir="${testsrc.dir}" casesensitive="yes">
-            	  <include name="**/*Test.java"/>
-              	  <include name="**/jga/**/Test*.java"/> <!-- JGA tests are named this way -->
-              	  <exclude name="**/Abstract*Test.java"/>
-            	  <exclude name="**/BulkTest.java"/>
+            	  <include name="**/*Test.class"/>
+              	  <include name="**/jga/**/Test*.class"/> <!-- JGA tests are named this way -->
+              	  <exclude name="**/Abstract*Test.class"/>
+            	  <exclude name="**/BulkTest.class"/>
             	</fileset>
     		</batchtest>
     	</junit>

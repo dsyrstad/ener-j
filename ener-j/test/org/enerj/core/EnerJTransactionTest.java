@@ -159,6 +159,7 @@ public class EnerJTransactionTest extends DatabaseTestCase
         db.bind(new TestClass2(null), "AbortNull");
         txn.commit();
         
+        txn.setRestoreValues(true);
         txn.begin(db);
         try {
             // This change should not be saved.
