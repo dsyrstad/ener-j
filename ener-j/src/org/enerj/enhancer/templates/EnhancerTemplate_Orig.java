@@ -26,6 +26,8 @@ package org.enerj.enhancer.templates;
 
 import java.util.Date;
 
+import org.enerj.annotations.Index;
+
 /**
  * Class file enhancer template for Ener-J. This is a "top-level" persistable.
  * This class provides a bytecode prototype for developement of the enhancer.
@@ -34,6 +36,7 @@ import java.util.Date;
  * @version $Id: EnhancerTemplate_Orig.java,v 1.3 2005/08/12 02:56:53 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
+@Index(type=Index.Type.BTree, properties={ "mLong", "mString" })
 class EnhancerTemplate_Orig extends java.util.Date implements Cloneable
 {
     static int mPackageStaticInt;
@@ -46,6 +49,7 @@ class EnhancerTemplate_Orig extends java.util.Date implements Cloneable
     private char mChar;
     private Character mCharObj;
     private short mShort;
+    @Index
     private Short mShortObj;
     private int mInt;
     private Integer mIntObj;
