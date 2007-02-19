@@ -1,9 +1,6 @@
 RoadMap to March 2007
 ---------------------
 
-- Finish BTree
-- duplicate keys in map
-- Txn log update optimizations?
 - Index meta data - simple
 - Query indexed filter and join optimizations
 - Fix ODMGExceptions from server - all explicit.
@@ -14,4 +11,6 @@ RoadMap to March 2007
 
 - JDBC API - base off of something existing, like Derby or HSQL. Translate to OQL, or OQL ASTs
 
-
+Later
+-----
+- Txn log update optimizations?
