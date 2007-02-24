@@ -58,6 +58,8 @@ public class SystemCIDMap
         sNameToCIDMap.put("org.enerj.core.SparseBitSet$SecondLevelNode", 9L);
         sNameToCIDMap.put("org.enerj.core.SparseBitSet$LeafNode", 10L);
         sNameToCIDMap.put("org.enerj.server.Bindery",            11L);
+        sNameToCIDMap.put("org.enerj.core.IndexSchema",          12L);
+        sNameToCIDMap.put("org.enerj.server.IndexMap",           13L);
         
         for (Map.Entry<String, Long> entry : (Set<Map.Entry<String, Long>>)sNameToCIDMap.entrySet()) {
             sCIDToNameMap.put(entry.getValue(), entry.getKey());

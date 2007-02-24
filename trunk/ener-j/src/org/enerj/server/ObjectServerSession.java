@@ -24,7 +24,8 @@
 
 package org.enerj.server;
 
-import org.enerj.core.ClassVersionSchema;
+import org.enerj.core.IndexAlreadyExistsException;
+import org.enerj.core.IndexSchema;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Schema;
 import org.odmg.LockNotGrantedException;
@@ -322,5 +323,17 @@ public interface ObjectServerSession
     public void addClassVersionToSchema(String aClassName, long aCID, String[] someSuperTypeNames, 
                     byte[] anOriginalByteCodeDef, String[] somePersistentFieldNames, 
                     String[] someTransientFieldNames) throws ODMGException;
+    
+    /**
+     * Adds an index to the schema.
+     *
+     * @param aClassName the name of the class to add the index to.
+     * @param anIndexSchema the schema for the index. The name of the index must be unique within the
+     *  indexes defined for the class.
+     * 
+     * @throws ODMGException
+     * @throws IndexAlreadyExistsException if the index already exists.
+     */
+    public void addIndex(String aClassName, IndexSchema anIndexSchema) throws ODMGException, IndexAlreadyExistsException;
 }
 

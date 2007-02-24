@@ -47,7 +47,14 @@ public class StringUtil
     {
     }
     
-
+    /**
+     * @return true if aStr is null or zero-length. 
+     */
+    public static boolean isEmpty(String aStr)
+    {
+        return (aStr == null || aStr.length() == 0);
+    }
+    
     /**
      * Appends aValue's string representation to aBuffer. Recursively calls #toString(Object, boolean, boolean).
      * 

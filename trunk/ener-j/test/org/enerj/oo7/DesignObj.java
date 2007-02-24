@@ -20,9 +20,12 @@
  *******************************************************************************/
 package org.enerj.oo7;
 
+import org.enerj.annotations.Index;
+
 
 public class DesignObj
 {
+    @Index(name="id")
     private int id;
     private int buildDate;
     private String type;

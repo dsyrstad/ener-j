@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.enerj.annotations.Index;
 import org.enerj.annotations.Persist;
 
 /**
@@ -55,6 +56,8 @@ public class LogicalClassSchema
 
     /** The versions of the class. In order of earliest to latest. This is an array of ClassVersionSchema. */
     private List<ClassVersionSchema> mClassVersions;
+    
+    private List<IndexSchema> mIndexes;
 
 
     /**
@@ -74,6 +77,7 @@ public class LogicalClassSchema
         mCreateDate = new Date();
         setDescription(aDescription);
         mClassVersions = new ArrayList<ClassVersionSchema>();
+        mIndexes = new ArrayList<IndexSchema>();
     }
     
 
@@ -255,6 +259,17 @@ public class LogicalClassSchema
     public int hashCode()
     {
         return mClassName.hashCode();
+    }
+
+
+    /**
+     * Gets the Indexes.
+     *
+     * @return a List<IndexSchema>.
+     */
+    public List<IndexSchema> getIndexes()
+    {
+        return mIndexes;
     }
 
 }

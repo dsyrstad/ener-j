@@ -34,6 +34,9 @@ import java.util.logging.Logger;
 
 import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.DefaultPersistableObjectCache;
+import org.enerj.core.IndexAlreadyExistsException;
+import org.enerj.core.IndexSchema;
+import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.ModifiedPersistableList;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
@@ -481,6 +484,15 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         
         mObjectServer.addClassVersionToSchema(aClassName, aCID, someSuperTypeNames, anOriginalByteCodeDef,
                         somePersistentFieldNames, someTransientFieldNames);
+    }
+
+    /** 
+     * {@inheritDoc}
+     * @see org.enerj.server.ObjectServerSession#addIndex(java.lang.String, org.enerj.core.IndexSchema)
+     */
+    public void addIndex(String aClassName, IndexSchema anIndexSchema) throws ODMGException, IndexAlreadyExistsException
+    {
+        mObjectServer.addIndex(aClassName, anIndexSchema);
     }
 
     /** 
