@@ -36,6 +36,8 @@ import static org.odmg.Transaction.UPGRADE;
 import static org.odmg.Transaction.WRITE;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -46,6 +48,7 @@ import java.util.ListIterator;
 import java.util.Properties;
 import java.util.Set;
 
+import org.enerj.annotations.Index;
 import org.enerj.annotations.SchemaAnnotation;
 import org.enerj.server.ClassInfo;
 import org.enerj.server.ExtentIterator;
@@ -600,19 +603,38 @@ public class EnerJDatabase implements Database, Persister
         }
 
         // Try to add this to schema, even if it might already exist.
-        SchemaAnnotation schemaAnn = aPersistable.getClass().getAnnotation(SchemaAnnotation.class);
+        Class<? extends Persistable> persistableClass = aPersistable.getClass();
+        SchemaAnnotation schemaAnn = persistableClass.getAnnotation(SchemaAnnotation.class);
         if (schemaAnn == null) {
             throw new ODMGRuntimeException("Cannot find SchemaAnnotation on " + aPersistable.getClass() + ". Class was not previously enhanced.");
         }
 
         String[] persistentFieldNames = schemaAnn.persistentFieldNames();
         String[] transientFieldNames = schemaAnn.transientFieldNames();
-        String[] superTypeNames = ClassUtil.getAllSuperTypeNames(aPersistable.getClass());
+        String[] superTypeNames = ClassUtil.getAllSuperTypeNames(persistableClass);
         byte[] originalClassBytes = schemaAnn.originalByteCodes();
+        String className = persistableClass.getName();
 
         try {
-            mObjectServerSession.addClassVersionToSchema(aPersistable.getClass().getName(), cid, 
+            mObjectServerSession.addClassVersionToSchema(className, cid, 
                             superTypeNames, originalClassBytes, persistentFieldNames, transientFieldNames);
+
+            // Add indexes.
+            //  Class level
+            Index indexAnn = persistableClass.getAnnotation(Index.class);
+            addIndexSchema(className, indexAnn, null);
+            
+            // Field Level
+            for (Field field : persistableClass.getFields()) {
+                indexAnn = field.getAnnotation(Index.class);
+                addIndexSchema(className, indexAnn, field.getName());
+            }
+            
+            //  Accessor level
+            for (Method method : persistableClass.getMethods()) {
+                indexAnn = method.getAnnotation(Index.class);
+                addIndexSchema(className, indexAnn, method.getName());
+            }
         }
         catch (ODMGException e) {
             throw new ODMGRuntimeException("Error adding new ClassVersionSchema", e);
@@ -622,6 +644,21 @@ public class EnerJDatabase implements Database, Persister
         mKnownSchemaCIDs.add(cid);
     }
     
+    /**
+     * If anIndexAnn is not null, add the index to the database.
+     *
+     * @param anIndexAnn
+     * @param propertyName if not null, defines the single property for this index.
+     */
+    private void addIndexSchema(String aClassName, Index anIndexAnn, String propertyName) throws ODMGException
+    {
+        if (anIndexAnn == null) {
+            return;
+        }
+        
+        IndexSchema indexSchema = new IndexSchema(anIndexAnn, propertyName);
+        mObjectServerSession.addIndex(aClassName, indexSchema);
+    }
 
     /**
      * Saves a serialized image of the Persistable in the cache.

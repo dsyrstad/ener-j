@@ -23,15 +23,20 @@
 package org.enerj.server;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import org.enerj.annotations.Index;
 import org.enerj.core.ClassVersionSchema;
+import org.enerj.core.IndexAlreadyExistsException;
+import org.enerj.core.IndexSchema;
 import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
+import org.enerj.util.StringUtil;
 import org.odmg.ODMGException;
 
 /**
@@ -52,6 +57,8 @@ abstract public class BaseObjectServer implements ObjectServer
     public static final long BINDERY_OID = 2L;
     /** System OID: the Class Extents. */
     public static final long EXTENTS_OID = 3L;
+    /** System OID: the Class Indexes. */
+    public static final long INDEXES_OID = 4L;
 
     static final String ENERJ_SCHEMA_SESSION_PROPERTY = "enerj.schemaSession";
     
@@ -191,6 +198,11 @@ abstract public class BaseObjectServer implements ObjectServer
             PersistableHelper.setOID(aSession, BaseObjectServer.EXTENTS_OID, extentMapPersistable);
             aSession.addToModifiedList(extentMapPersistable);
 
+            // Special OID for IndexMap.
+            Persistable indexMapPersistable = (Persistable)new IndexMap();
+            PersistableHelper.setOID(aSession, BaseObjectServer.INDEXES_OID, indexMapPersistable);
+            aSession.addToModifiedList(indexMapPersistable);
+
             // Create the bindery.
             // Special OID for bindery.
             Bindery bindery = new Bindery();
@@ -295,45 +307,102 @@ abstract public class BaseObjectServer implements ObjectServer
                     String[] someTransientFieldNames) throws ODMGException
     {
         synchronized (mSchemaLock) {
-            if (mCachedSchema != null) {
-                BaseObjectServerSession schemaSession = getSchemaSession();
-                schemaSession.pushAsPersister();
-                boolean success = false;
-                try {
-                    schemaSession.beginTransaction();
-                    Schema schema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
+            BaseObjectServerSession schemaSession = getSchemaSession();
+            schemaSession.pushAsPersister();
+            boolean success = false;
+            try {
+                schemaSession.beginTransaction();
+                Schema schema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
 
-                    LogicalClassSchema logicalClass = schema.findLogicalClass(aClassName);
-                    if (logicalClass == null) {
-                        logicalClass = new LogicalClassSchema(schema, aClassName, "");
-                        schema.addLogicalClass(logicalClass);
-                    }
-                    
-                    ClassVersionSchema classVersion = 
-                        new ClassVersionSchema(logicalClass, aCID, someSuperTypeNames, anOriginalByteCodeDef,
-                                    null, somePersistentFieldNames, someTransientFieldNames);
-                    logicalClass.addVersion(classVersion);
-                    
-                    // Create an extent for the class.
-                    // TODOLOW maybe this should be optional?
-                    ExtentMap extentMap = (ExtentMap)schemaSession.getObjectForOID(EXTENTS_OID);
-                    extentMap.createExtentForClassName(aClassName);
-
-                    schemaSession.flushModifiedObjects();
-                    schemaSession.commitTransaction();
-                    // Force cached schema to be re-read.
-                    mCachedSchema = null;
-                    success = true;
+                LogicalClassSchema logicalClass = schema.findLogicalClass(aClassName);
+                if (logicalClass == null) {
+                    logicalClass = new LogicalClassSchema(schema, aClassName, "");
+                    schema.addLogicalClass(logicalClass);
                 }
-                finally {
-                    if (!success) {
-                        schemaSession.rollbackTransaction();
-                    }
+                
+                ClassVersionSchema classVersion = 
+                    new ClassVersionSchema(logicalClass, aCID, someSuperTypeNames, anOriginalByteCodeDef,
+                                null, somePersistentFieldNames, someTransientFieldNames);
+                logicalClass.addVersion(classVersion);
+                
+                // Create an extent for the class.
+                // TODOLOW maybe this should be optional?
+                ExtentMap extentMap = (ExtentMap)schemaSession.getObjectForOID(EXTENTS_OID);
+                extentMap.createExtentForClassName(aClassName);
 
-                    schemaSession.popAsPersister();
-                }
+                schemaSession.flushModifiedObjects();
+                schemaSession.commitTransaction();
+                // Force cached schema to be re-read.
+                mCachedSchema = null;
+                success = true;
             }
+            finally {
+                if (!success) {
+                    schemaSession.rollbackTransaction();
+                }
 
+                schemaSession.popAsPersister();
+            }
+        }
+    }
+    
+    /**
+     * Adds an index to the schema.
+     *
+     * @param aClassName the name of the class to add the index to.
+     * @param anIndexSchema the schema for the index. The name of the index must be unique within the
+     *  indexes defined for the class.
+     * 
+     * @throws ODMGException
+     * @throws IndexAlreadyExistsException if the index already exists.
+     */
+    public void addIndex(String aClassName, IndexSchema anIndexSchema) throws ODMGException, IndexAlreadyExistsException
+    {
+        // Validate that the index name exists
+        if (StringUtil.isEmpty(anIndexSchema.getName())) {
+            throw new ODMGException("No index name specified for index on class " + aClassName);
+        }
+
+        synchronized (mSchemaLock) {
+            BaseObjectServerSession schemaSession = getSchemaSession();
+            schemaSession.pushAsPersister();
+            boolean success = false;
+            try {
+                schemaSession.beginTransaction();
+                Schema schema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
+                
+                // Class name exists?
+                LogicalClassSchema classSchema = schema.findLogicalClass(aClassName);
+                if (classSchema == null) {
+                    throw new ODMGException("Class " + aClassName + " does not exist");
+                }
+
+                // Validate that the index name is unique
+                List<IndexSchema> indexes = classSchema.getIndexes();
+                for (IndexSchema indexSchema : indexes) {
+                    if (indexSchema.getName().equals(anIndexSchema.getName())) {
+                        throw new IndexAlreadyExistsException("Index " + anIndexSchema.getName() + " already exists on class " + aClassName);
+                    }
+                }
+                
+                // Create an index for the class.
+                // TODOLOW maybe this should be optional?
+                IndexMap indexMap = (IndexMap)schemaSession.getObjectForOID(INDEXES_OID);
+                indexMap.createIndexForClass(classSchema, anIndexSchema);
+
+                schemaSession.flushModifiedObjects();
+                schemaSession.commitTransaction();
+                // Force cached schema to be re-read.
+                mCachedSchema = null;
+                success = true;
+            }
+            finally {
+                if (!success) {
+                    schemaSession.rollbackTransaction();
+                }
+
+                schemaSession.popAsPersister();
+            }
         }
         
     }

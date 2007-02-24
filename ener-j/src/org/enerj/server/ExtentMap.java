@@ -26,7 +26,7 @@ package org.enerj.server;
 import java.util.Map;
 
 import org.enerj.annotations.Persist;
-import org.enerj.core.PersistentHashMap;
+import org.enerj.core.LargePersistentHashMap;
 import org.enerj.core.SparseBitSet;
 
 
@@ -39,9 +39,8 @@ import org.enerj.core.SparseBitSet;
 @Persist
 class ExtentMap
 {
-    // TODO Use a VeryLargeDMap? 
     /** Extent mapping. Key is Class name. */
-    private Map<String,SparseBitSet> mExtentMap = new PersistentHashMap();
+    private Map<String,SparseBitSet> mExtentMap = new LargePersistentHashMap<String, SparseBitSet>();
     
     /**
      * Construct a new ExtentMap.
@@ -61,7 +60,7 @@ class ExtentMap
     }
     
     /**
-     * Gets the extent for the specified CID.
+     * Gets the extent for the specified class name.
      * 
      * @param aClassName the class name.
      * 
