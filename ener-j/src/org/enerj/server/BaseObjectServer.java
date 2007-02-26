@@ -167,12 +167,12 @@ abstract public class BaseObjectServer implements ObjectServer
     protected static void initDBObjects(BaseObjectServerSession aSession, String aDescription) throws ODMGException
     {
         aSession.pushAsPersister();
+        aSession.setInSchemaInit(true);
         try {
             aSession.beginTransaction();
 
             Schema schema = new Schema(aDescription);
 
-            // Create Extent map.
             ExtentMap extentMap = new ExtentMap();
 
             // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
@@ -215,6 +215,7 @@ abstract public class BaseObjectServer implements ObjectServer
             aSession.commitTransaction();
         }
         finally {
+            aSession.setInSchemaInit(false);
             aSession.popAsPersister();
         }
     }
@@ -307,41 +308,45 @@ abstract public class BaseObjectServer implements ObjectServer
                     String[] someTransientFieldNames) throws ODMGException
     {
         synchronized (mSchemaLock) {
-            BaseObjectServerSession schemaSession = getSchemaSession();
-            schemaSession.pushAsPersister();
-            boolean success = false;
-            try {
-                schemaSession.beginTransaction();
-                Schema schema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
-
-                LogicalClassSchema logicalClass = schema.findLogicalClass(aClassName);
-                if (logicalClass == null) {
-                    logicalClass = new LogicalClassSchema(schema, aClassName, "");
-                    schema.addLogicalClass(logicalClass);
+            // Only do this if we cached the schema at this point. This is used as an
+            // indicator that we're not creating the database. TODO we could probably use a more direct indicator
+            if (mCachedSchema != null) {
+                BaseObjectServerSession schemaSession = getSchemaSession();
+                schemaSession.pushAsPersister();
+                boolean success = false;
+                try {
+                    schemaSession.beginTransaction();
+                    Schema schema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
+    
+                    LogicalClassSchema logicalClass = schema.findLogicalClass(aClassName);
+                    if (logicalClass == null) {
+                        logicalClass = new LogicalClassSchema(schema, aClassName, "");
+                        schema.addLogicalClass(logicalClass);
+                    }
+                    
+                    ClassVersionSchema classVersion = 
+                        new ClassVersionSchema(logicalClass, aCID, someSuperTypeNames, anOriginalByteCodeDef,
+                                    null, somePersistentFieldNames, someTransientFieldNames);
+                    logicalClass.addVersion(classVersion);
+                    
+                    // Create an extent for the class.
+                    // TODOLOW maybe this should be optional?
+                    ExtentMap extentMap = (ExtentMap)schemaSession.getObjectForOID(EXTENTS_OID);
+                    extentMap.createExtentForClassName(aClassName);
+    
+                    schemaSession.flushModifiedObjects();
+                    schemaSession.commitTransaction();
+                    // Force cached schema to be re-read.
+                    mCachedSchema = null;
+                    success = true;
                 }
-                
-                ClassVersionSchema classVersion = 
-                    new ClassVersionSchema(logicalClass, aCID, someSuperTypeNames, anOriginalByteCodeDef,
-                                null, somePersistentFieldNames, someTransientFieldNames);
-                logicalClass.addVersion(classVersion);
-                
-                // Create an extent for the class.
-                // TODOLOW maybe this should be optional?
-                ExtentMap extentMap = (ExtentMap)schemaSession.getObjectForOID(EXTENTS_OID);
-                extentMap.createExtentForClassName(aClassName);
-
-                schemaSession.flushModifiedObjects();
-                schemaSession.commitTransaction();
-                // Force cached schema to be re-read.
-                mCachedSchema = null;
-                success = true;
-            }
-            finally {
-                if (!success) {
-                    schemaSession.rollbackTransaction();
+                finally {
+                    if (!success) {
+                        schemaSession.rollbackTransaction();
+                    }
+    
+                    schemaSession.popAsPersister();
                 }
-
-                schemaSession.popAsPersister();
             }
         }
     }

@@ -47,19 +47,23 @@ public class SystemCIDMap
     private static HashMap<Long, String> sCIDToNameMap = new HashMap<Long, String>(64);
     static {
         // NOTE! These CIDs must NEVER change!
-        sNameToCIDMap.put("org.enerj.core.Schema",               1L);
-        sNameToCIDMap.put("org.enerj.core.ClassVersionSchema",   2L);
-        sNameToCIDMap.put("org.enerj.core.LogicalClassSchema",   3L);
-        sNameToCIDMap.put("org.enerj.core.PersistentHashMap",    4L);
-        sNameToCIDMap.put("org.enerj.core.PersistentHashSet",    5L);
-        sNameToCIDMap.put("org.enerj.server.ExtentMap",          6L);
-        sNameToCIDMap.put("org.enerj.core.SparseBitSet",         7L);
-        sNameToCIDMap.put("org.enerj.core.SparseBitSet$RootNode", 8L);
-        sNameToCIDMap.put("org.enerj.core.SparseBitSet$SecondLevelNode", 9L);
-        sNameToCIDMap.put("org.enerj.core.SparseBitSet$LeafNode", 10L);
-        sNameToCIDMap.put("org.enerj.server.Bindery",            11L);
-        sNameToCIDMap.put("org.enerj.core.IndexSchema",          12L);
-        sNameToCIDMap.put("org.enerj.server.IndexMap",           13L);
+        sNameToCIDMap.put("org.enerj.core.Schema",                           1L);
+        sNameToCIDMap.put("org.enerj.core.ClassVersionSchema",               2L);
+        sNameToCIDMap.put("org.enerj.core.LogicalClassSchema",               3L);
+        sNameToCIDMap.put("org.enerj.core.PersistentHashMap",                4L);
+        sNameToCIDMap.put("org.enerj.core.PersistentHashSet",                5L);
+        sNameToCIDMap.put("org.enerj.server.ExtentMap",                      6L);
+        sNameToCIDMap.put("org.enerj.core.SparseBitSet",                     7L);
+        sNameToCIDMap.put("org.enerj.core.SparseBitSet$RootNode",            8L);
+        sNameToCIDMap.put("org.enerj.core.SparseBitSet$SecondLevelNode",     9L);
+        sNameToCIDMap.put("org.enerj.core.SparseBitSet$LeafNode",           10L);
+        sNameToCIDMap.put("org.enerj.server.Bindery",                       11L);
+        sNameToCIDMap.put("org.enerj.core.IndexSchema",                     12L);
+        sNameToCIDMap.put("org.enerj.server.IndexMap",                      13L);
+        sNameToCIDMap.put("org.enerj.core.LargePersistentHashMap",          14L);
+        sNameToCIDMap.put("org.enerj.core.LargePersistentHashMap$Entry",    15L);
+        sNameToCIDMap.put("org.enerj.core.LargePersistentArrayList",        16L);
+        sNameToCIDMap.put("org.enerj.core.LargePersistentArrayList$Node",   17L);
         
         for (Map.Entry<String, Long> entry : (Set<Map.Entry<String, Long>>)sNameToCIDMap.entrySet()) {
             sCIDToNameMap.put(entry.getValue(), entry.getKey());
