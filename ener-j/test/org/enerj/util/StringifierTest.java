@@ -26,6 +26,7 @@ package org.enerj.util;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -73,16 +74,16 @@ public class StringifierTest extends TestCase
         result = StringUtil.toString(s, true, false);
         assertTrue("has hashcodes", result.indexOf('@') >= 0);
         result = result.replaceAll("[@;][a-f0-9]+", "");
-        assertEquals("true, false", result, "org.enerj.util.StringifierTest$TestClass{intField=5, boolField=true, strField=\"A String\", integerField=5, list=java.util.Arrays$ArrayList[2, \"A String in list\", 3], map=java.util.HashMap{[key=\"Key1\", value=\"Value1\"], [key=\"Key2\", value=\"Value2\"]}, strArray=[\"ArrayStr1\", \"ArrayStr2\", \"ArrayStr3\"], nullObj=null}");
+        assertEquals("true, false", result, "org.enerj.util.StringifierTest$TestClass{intField=5, boolField=true, strField=\"A String\", integerField=5, list=java.util.Arrays$ArrayList[2, \"A String in list\", 3], map=java.util.LinkedHashMap{[key=\"Key1\", value=\"Value1\"], [key=\"Key2\", value=\"Value2\"]}, strArray=[\"ArrayStr1\", \"ArrayStr2\", \"ArrayStr3\"], nullObj=null}");
 
         result = StringUtil.toString(s, false, false);
         assertTrue("has no hashcodes", result.indexOf('@') < 0);
-        assertEquals("false, false", result, "org.enerj.util.StringifierTest$TestClass{intField=5, boolField=true, strField=\"A String\", integerField=5, list=java.util.Arrays$ArrayList[2, \"A String in list\", 3], map=java.util.HashMap{[key=\"Key1\", value=\"Value1\"], [key=\"Key2\", value=\"Value2\"]}, strArray=[\"ArrayStr1\", \"ArrayStr2\", \"ArrayStr3\"], nullObj=null}");
+        assertEquals("false, false", result, "org.enerj.util.StringifierTest$TestClass{intField=5, boolField=true, strField=\"A String\", integerField=5, list=java.util.Arrays$ArrayList[2, \"A String in list\", 3], map=java.util.LinkedHashMap{[key=\"Key1\", value=\"Value1\"], [key=\"Key2\", value=\"Value2\"]}, strArray=[\"ArrayStr1\", \"ArrayStr2\", \"ArrayStr3\"], nullObj=null}");
         
         s = new TestSubClass();
 
         System.out.println(StringUtil.toString(s, false, false) );
-        assertEquals("sub-class false, false", StringUtil.toString(s, false, false), "org.enerj.util.StringifierTest$TestSubClass{subClassField=\"Subclass field\", .intField=5, .boolField=true, .strField=\"A String\", .integerField=5, .list=java.util.Arrays$ArrayList[2, \"A String in list\", 3], .map=java.util.HashMap{[key=\"Key1\", value=\"Value1\"], [key=\"Key2\", value=\"Value2\"]}, .strArray=[\"ArrayStr1\", \"ArrayStr2\", \"ArrayStr3\"], .nullObj=null}");
+        assertEquals("sub-class false, false", StringUtil.toString(s, false, false), "org.enerj.util.StringifierTest$TestSubClass{subClassField=\"Subclass field\", .intField=5, .boolField=true, .strField=\"A String\", .integerField=5, .list=java.util.Arrays$ArrayList[2, \"A String in list\", 3], .map=java.util.LinkedHashMap{[key=\"Key1\", value=\"Value1\"], [key=\"Key2\", value=\"Value2\"]}, .strArray=[\"ArrayStr1\", \"ArrayStr2\", \"ArrayStr3\"], .nullObj=null}");
     }
 
 
@@ -100,7 +101,7 @@ public class StringifierTest extends TestCase
         
         private TestClass() {
             list = Arrays.asList(new Object[] { new Integer(2), "A String in list", new Long(3) } );
-            map = new HashMap();
+            map = new LinkedHashMap();
             map.put("Key1", "Value1");
             map.put("Key2", "Value2");
         }

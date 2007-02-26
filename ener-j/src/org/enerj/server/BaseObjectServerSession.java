@@ -120,18 +120,18 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     private void updateExtents()
     {
+        // Is Schema being built?
+        if (isInSchemaInit()) {
+            mPendingNewOIDs.clear();
+            return;
+        }
+
         Schema schema;
         try {
             schema = getSchemaOrNull();
         }
         catch (ODMGException e) {
             throw new ODMGRuntimeException(e);
-        }
-
-        // Is Schema being built?
-        if (isInSchemaInit()) {
-            mPendingNewOIDs.clear();
-            return;
         }
 
         pushAsPersister();

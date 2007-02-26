@@ -64,6 +64,8 @@ public class SystemCIDMap
         sNameToCIDMap.put("org.enerj.core.LargePersistentHashMap$Entry",    15L);
         sNameToCIDMap.put("org.enerj.core.LargePersistentArrayList",        16L);
         sNameToCIDMap.put("org.enerj.core.LargePersistentArrayList$Node",   17L);
+        sNameToCIDMap.put("org.enerj.core.PersistentBxTree",                18L);
+        sNameToCIDMap.put("org.enerj.core.PersistentBxTree$Node",           19L);
         
         for (Map.Entry<String, Long> entry : (Set<Map.Entry<String, Long>>)sNameToCIDMap.entrySet()) {
             sCIDToNameMap.put(entry.getValue(), entry.getKey());
