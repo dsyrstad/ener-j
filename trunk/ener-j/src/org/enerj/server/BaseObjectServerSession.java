@@ -80,6 +80,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     private ModifiedPersistableList mModifiedObjects = new ModifiedPersistableList();
     /** Iterator that is active while we're in {@link #flushModifiedObjects()} objects. */
     private ListIterator<Persistable> mFlushIterator = null;
+    private boolean mInSchemaInit = false;
 
     /**
      * Construct a new BaseObjectServerSession.
@@ -128,7 +129,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
 
         // Is Schema being built?
-        if (schema == null) {
+        if (isInSchemaInit()) {
             mPendingNewOIDs.clear();
             return;
         }
@@ -162,7 +163,24 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
     }
     
-    
+    /**
+     * @return true if schema initialization is in progress.
+     */
+    boolean isInSchemaInit()
+    {
+        return mInSchemaInit;
+    }
+
+    /**
+     * Sets whether schema initialization is in progress. 
+     *
+     * @param inSchemaInit true if schema initialization is in progress.
+     */
+    void setInSchemaInit(boolean someInSchemaInit)
+    {
+        mInSchemaInit = someInSchemaInit;
+    }
+
     /**
      * Flushes modified objects using {@link #storeObjects(SerializedObject[])}. 
      *
@@ -793,10 +811,6 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
 
 
     // ...End of ObjectServerSession interface methods.
-
-
-
-
     /**
      * Our JVM ShutdownHook thread.
      */

@@ -99,7 +99,7 @@ public interface ObjectServerSession
     /**
      * Gets ClassInfos for the given OIDs.
      * A transaction must be active on session, or non-transactional reads must be allowed.
-     * A READ lock is automatically obtained if it doesn't exist already.
+     * A READ lock is automatically obtained on each OID if it doesn't exist already.
      *
      * @param someOIDs an array of OIDs to get ClassInfos for. Note that if any element
      *  of this array is {@link ObjectSerializer#NULL_OID}, the corresponding ClassInfo will

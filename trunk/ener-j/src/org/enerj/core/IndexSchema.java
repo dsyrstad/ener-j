@@ -36,7 +36,7 @@ import org.enerj.annotations.Persist;
 @Persist
 public class IndexSchema
 {
-    private Index.Type mType;
+    private int mType;
     private String mName;
     private String[] mProperties;
     private boolean mIsAscending;
@@ -55,7 +55,7 @@ public class IndexSchema
      */
     public IndexSchema(Index anIndexAnnotation, String aPropertyName)
     {
-        mType = anIndexAnnotation.type();
+        mType = anIndexAnnotation.type().ordinal(); // Because it's persistent TODO handle enums
         mName = anIndexAnnotation.name();
         mProperties = anIndexAnnotation.properties();
         mIsAscending = anIndexAnnotation.ascending();
@@ -160,7 +160,7 @@ public class IndexSchema
      */
     public Index.Type getType()
     {
-        return mType;
+        return Index.Type.values()[mType];
     }
 
 }
