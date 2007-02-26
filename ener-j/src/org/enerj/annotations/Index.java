@@ -35,13 +35,13 @@ import java.util.Comparator;
  * Annotation for a persistent index. May be specified at the type level for multiple fields, or
  * on the field/getter property level for specific properties. If specified on a field or property (accessor),
  * the property names are not required. The default is to allow nulls and duplicate keys.
- * The fields and/or properties specified must be public. 
  * <p>
  * 
  * @version $Id:  $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
 @Target({TYPE, FIELD, METHOD}) @Retention(RUNTIME)
+@Index
 public @interface Index {
     enum Type { BTree, Hash };
     Type type() default Type.BTree;

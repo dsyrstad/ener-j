@@ -371,6 +371,7 @@ abstract public class BaseObjectServer implements ObjectServer
         synchronized (mSchemaLock) {
             BaseObjectServerSession schemaSession = getSchemaSession();
             schemaSession.pushAsPersister();
+            schemaSession.setInSchemaInit(true);
             boolean success = false;
             try {
                 schemaSession.beginTransaction();
@@ -402,6 +403,7 @@ abstract public class BaseObjectServer implements ObjectServer
                 success = true;
             }
             finally {
+                schemaSession.setInSchemaInit(false);
                 if (!success) {
                     schemaSession.rollbackTransaction();
                 }

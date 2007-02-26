@@ -601,6 +601,8 @@ public class EnerJDatabase implements Database, Persister
         if (mKnownSchemaCIDs.contains(cid)) {
             return;
         }
+        
+        // TODO what if schema already there, but index added? Need to handle this, so don't just return above.
 
         // Try to add this to schema, even if it might already exist.
         Class<? extends Persistable> persistableClass = aPersistable.getClass();
@@ -625,13 +627,13 @@ public class EnerJDatabase implements Database, Persister
             addIndexSchema(className, indexAnn, null);
             
             // Field Level
-            for (Field field : persistableClass.getFields()) {
+            for (Field field : persistableClass.getDeclaredFields()) {
                 indexAnn = field.getAnnotation(Index.class);
                 addIndexSchema(className, indexAnn, field.getName());
             }
             
             //  Accessor level
-            for (Method method : persistableClass.getMethods()) {
+            for (Method method : persistableClass.getDeclaredMethods()) {
                 indexAnn = method.getAnnotation(Index.class);
                 addIndexSchema(className, indexAnn, method.getName());
             }
@@ -654,6 +656,11 @@ public class EnerJDatabase implements Database, Persister
     {
         if (anIndexAnn == null) {
             return;
+        }
+        
+        if (anIndexAnn.properties().length == 0 && propertyName == null) {
+            throw new ODMGException("Class scoped annotation for Index " + anIndexAnn.name() + " for class " + 
+                            aClassName + " does not define any properties.");
         }
         
         IndexSchema indexSchema = new IndexSchema(anIndexAnn, propertyName);
