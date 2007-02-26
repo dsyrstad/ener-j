@@ -22,6 +22,9 @@ package org.enerj.oo7;
 
 import java.util.ArrayList;
 
+import org.enerj.annotations.Index;
+
+@Index(properties="id", name="id")
 public class AtomicPart extends DesignObj
 {
     private CompositePart partOf;
