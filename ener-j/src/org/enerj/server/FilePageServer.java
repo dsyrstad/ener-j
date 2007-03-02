@@ -201,9 +201,10 @@ public class FilePageServer implements PageServer
 
         RandomAccessFile volume = null;
         boolean success = false;
+        FileLock lock = null;
         try {
             volume = new RandomAccessFile(volumeFile, "rw");
-            FileLock lock = volume.getChannel().tryLock();
+            lock = volume.getChannel().tryLock();
             if (lock == null) {
                 throw new PageServerException("Cannot lock volume: " + volumeFile);
             }
@@ -234,7 +235,12 @@ public class FilePageServer implements PageServer
         finally {
             if (volume != null) {
                 try {
+                    if (lock != null) {
+                        lock.release();
+                    }
+                    
                     volume.close();
+                    volume = null;
                 }
                 catch (IOException e) {
                     if (success) {

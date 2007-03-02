@@ -103,8 +103,7 @@ public abstract class AbstractObjectServerTest extends TestCase
         ClassInfo[] classInfos = mSession.getClassInfoForOIDs(someOIDs);
         for (int i = 0; i < someOIDs.length; i++) {
             assertTrue( someOIDs[i] > ObjectSerializer.NULL_OID );
-            
-            assertTrue( classInfos[i].getCID() == ObjectSerializer.NULL_CID );
+            assertNull("classInfo[" + i  + "] should be null for OID " + someOIDs[i], classInfos[i]);
         }
         
         // Verify no duplicates within the block

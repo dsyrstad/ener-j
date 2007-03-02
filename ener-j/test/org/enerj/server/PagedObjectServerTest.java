@@ -72,7 +72,7 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
 
     private File getLogFile()
     {
-    	return mTmpPageFile;
+    	return mTmpLogFile;
     }
     
 
@@ -83,7 +83,7 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
     {
         getPageFile().delete();
         if (getPageFile().exists()) {
-            throw new Exception("Huh? " + getPageFile().getAbsolutePath() + " still exists. Possibly last instance of PageServer didn't shutdown.");
+            throw new Exception(getPageFile().getAbsolutePath() + " still exists. Possibly last instance of PageServer didn't shutdown.");
         }
         
         // Delete the log file
