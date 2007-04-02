@@ -1,7 +1,6 @@
-RoadMap to March 2007
+RoadMap to June 2007
 ---------------------
 
-- Index meta data - simple
 - Query indexed filter and join optimizations
 - Fix ODMGExceptions from server - all explicit.
 - Basic server
