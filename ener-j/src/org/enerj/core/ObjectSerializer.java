@@ -121,6 +121,7 @@ public class ObjectSerializer
     private static final byte sJava_util_TreeMap_TypeId           =  39;
     private static final byte sJava_util_IdentityHashMap_TypeId   =  40;
     private static final byte sJava_lang_Class_TypeId             =  41;  
+    private static final byte sEnerj_GenericKey_TypeId            =  42;  
 
     private static final Serializer sObjectArraySerializer = new ObjectArraySerializer();
     
@@ -164,6 +165,7 @@ public class ObjectSerializer
         new Java_util_Properties_Serializer(),
         new Java_util_TreeMap_Serializer(),
         new Java_util_IdentityHashMap_Serializer(),
+        new Org_enerj_core_GenericKey_Serializer(),
     };
     
     private static final Class sByteArrayClass;
@@ -716,7 +718,7 @@ public class ObjectSerializer
          * Writes a SCO to aContext.mStream.
          *
          * @param aContext a WriteContext object.
-         * @param anObject the value to be written.
+         * @param anObject the value to be written, which is guaranteed not to be null.
          * @param anOwner an Owner FCO for the SCO.
          *
          * @throws IOException if an error occurs
@@ -730,7 +732,7 @@ public class ObjectSerializer
          * @param aContext a ReadContext object.
          * @param anOwner an Owner FCO for the SCO.
          *
-         * @return the value.
+         * @return the value, which is guaranteed not to be null.
          *
          * @throws IOException if an error occurs
          */
@@ -742,7 +744,7 @@ public class ObjectSerializer
          * {@link Persistable#enerj_GetPersister()} will return null.
          *
          * @param anObjectSerializer the ObjectSerializer invoking this method. 
-         * @param anObject the object to be resolved (either a SCO or FCO).
+         * @param anObject the object to be resolved (either a SCO or FCO), which is guaranteed not to be null.
          * @param shouldDisassociate if true, the object tree will be disassociated from 
          *  its Persister.
          *
@@ -2815,6 +2817,48 @@ public class ObjectSerializer
         public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
         {
             anObjectSerializer.resolveMap((Map)anObject, shouldDisassociate);
+        }
+    }
+
+    /** Internal serializer for a org.enerj.core.GenericKey SCO.
+     */
+    private static final class Org_enerj_core_GenericKey_Serializer implements Serializer 
+    {
+        Org_enerj_core_GenericKey_Serializer()
+        {
+        }
+
+        public byte getTypeId()
+        {
+            return sEnerj_GenericKey_TypeId;
+        }
+
+        public Class getRepresentingClass()
+        {
+            return GenericKey.class;
+        }
+        
+        public Class getProxyClass()
+        {
+            return null;
+        }
+
+        public void write(WriteContext aContext, Object anObject, Persistable anOwner) throws IOException
+        {
+            GenericKey key = (GenericKey)anObject;
+            sObjectArraySerializer.write(aContext, key.getComponents(), anOwner);
+        }
+
+        public Object read(ReadContext aContext, Persistable anOwner) throws IOException
+        {
+            Object[] components = (Object[])sObjectArraySerializer.read(aContext, anOwner);
+            return new GenericKey(components);
+        }
+
+        public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
+        {
+            GenericKey key = (GenericKey)anObject;
+            sObjectArraySerializer.resolve(anObjectSerializer, key.getComponents(), shouldDisassociate);
         }
     }
 
