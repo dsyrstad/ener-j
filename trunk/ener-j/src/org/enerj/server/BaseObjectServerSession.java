@@ -26,6 +26,7 @@ package org.enerj.server;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -34,6 +35,7 @@ import java.util.logging.Logger;
 
 import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.DefaultPersistableObjectCache;
+import org.enerj.core.GenericKey;
 import org.enerj.core.IndexAlreadyExistsException;
 import org.enerj.core.IndexSchema;
 import org.enerj.core.LogicalClassSchema;
@@ -42,6 +44,7 @@ import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
 import org.enerj.core.PersistableObjectCache;
+import org.enerj.core.PersistentBxTree;
 import org.enerj.core.Persister;
 import org.enerj.core.PersisterRegistry;
 import org.enerj.core.Schema;
@@ -67,7 +70,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     private BaseObjectServer mObjectServer;
     private boolean mAllowNontransactionalReads = false;
     /** New OIDs that need to be added to their extents on commit. Key is CID, value is a list of OIDs. */
-    private Map<Long, List<Long>> mPendingNewOIDs = null;
+    private Map<Long, Set<StoredOID>> mStoredOIDs = null;
     /** Our shutdown hook. */
     private Thread mShutdownHook = null;
     /** True if session is connected. */
@@ -116,13 +119,13 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     }
 
     /**
-     * Flush pending extent updates out to the extents.
+     * Flush pending updates out to the extents and indexes.
      */
-    private void updateExtents()
+    private void updateExtentsAndIndexes()
     {
         // Is Schema being built?
         if (isInSchemaInit()) {
-            mPendingNewOIDs.clear();
+            mStoredOIDs.clear();
             return;
         }
 
@@ -137,26 +140,53 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         pushAsPersister();
         try {
             ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
-            for (long cid : mPendingNewOIDs.keySet()) {
-                List<Long> oids = mPendingNewOIDs.get(cid);
+            for (long cid : mStoredOIDs.keySet()) {
+                Set<StoredOID> oids = mStoredOIDs.get(cid);
                 if (oids != null) {
                     ClassVersionSchema version = schema.findClassVersion(cid);
                     if (version == null) {
                         throw new ODMGRuntimeException("Cannot find class version in schema for CID " + Long.toHexString(cid));
                     }
                     
-                    SparseBitSet extent = extentMap.getExtent( version.getLogicalClassSchema().getClassName() );
-                    if (extent != null) {
-                        int size = oids.size();
-                        for (int i = 0; i < size; i++) {
-                            extent.set(oids.get(i), true);
+                    LogicalClassSchema classSchema = version.getLogicalClassSchema();
+                    List<IndexSchema> indexes = classSchema.getIndexes();
+                    SparseBitSet extent = extentMap.getExtent( classSchema.getClassName() );
+                    boolean hasIndexes = !indexes.isEmpty();
+                    boolean hasExtent = extent != null;
+                    IndexMap indexMap = (IndexMap)getObjectForOID(BaseObjectServer.INDEXES_OID);
+
+                    for (StoredOID storedOID : oids) {
+                        long oid = storedOID.getOID();
+                        if (hasExtent && storedOID.isNew()) {
+                            extent.set(oid, true);
+                        }
+                        
+                        if (hasIndexes) {
+                            // TODO We need to handle replace somehow, which means we need the key
+                            // TODO that existed prior to update.
+                            // Resurrect the object so we can generate a key.
+                            ClassInfo classInfo = getClassInfoForOIDs(new long[] { oid } )[0];
+                            Persistable obj = PersistableHelper.createHollowPersistable(classInfo, oid, this);
+                            for (IndexSchema indexSchema : indexes) {
+                                Map index = indexMap.getIndex(classSchema, indexSchema);
+                                GenericKey key = new GenericKey(indexSchema, obj);
+                                if (index instanceof PersistentBxTree) {
+                                    ((PersistentBxTree)index).insert(key, obj);
+                                }
+                                else {
+                                    index.put(key, obj);
+                                }
+                            }
                         }
                     }
                 }
             }
             
             flushModifiedObjects();
-            mPendingNewOIDs.clear();
+            mStoredOIDs.clear();
+        }
+        catch (ODMGException e) {
+            throw new ODMGRuntimeException(e);
         }
         finally {
             popAsPersister();
@@ -366,6 +396,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         try {
             ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
             ClassVersionSchema version = schema.findClassVersion( classInfo.getCID() );
+            // TODO handle indexes too!
             if (version != null) {
                 SparseBitSet extent = extentMap.getExtent( version.getLogicalClassSchema().getClassName() );
                 if (extent != null) {
@@ -571,7 +602,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     }
 
     /** 
-     * {@inheritDoc}.  Subclass should call super.storeObjects() after to doing its work.
+     * {@inheritDoc}.  Subclass should call super.storeObjects() after successfully storing the objects.
      * @see org.enerj.server.ObjectServerSession#storeObjects(org.enerj.server.SerializedObject[])
      */
     public void storeObjects(SerializedObject[] someObjects) throws ODMGException
@@ -582,16 +613,19 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             long oid = object.getOID();
             long cid = object.getCID();
 
-            if (object.isNew()) {
-                // Queue this object to be added to its extent on commit - only after delegate stores successfully.
-                List<Long> oids = mPendingNewOIDs.get(cid);
-                if (oids == null) {
-                    // First instance of the CID to be stored in this txn, create new list.
-                    oids = new ArrayList<Long>(1000);
-                    mPendingNewOIDs.put(cid, oids);
-                }
-                
-                oids.add(oid);
+            // Queue this object to be added to its extent and any indexes on commit - 
+            // only after delegate stores successfully.
+            Set<StoredOID> oids = mStoredOIDs.get(cid);
+            if (oids == null) {
+                // First instance of the CID to be stored in this txn, create new list.
+                oids = new HashSet<StoredOID>(1000);
+                mStoredOIDs.put(cid, oids);
+            }
+            
+            // Only add to set if it doesn't exist.
+            StoredOID storedOID = new StoredOID(oid, object.isNew());
+            if (!oids.contains(storedOID)) {
+                oids.add(storedOID);
             }
         }
     }
@@ -629,11 +663,11 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
 
         mObjectCache.reset();
-        if (mPendingNewOIDs == null) {
-            mPendingNewOIDs = new HashMap<Long, List<Long>>(128);
+        if (mStoredOIDs == null) {
+            mStoredOIDs = new HashMap<Long, Set<StoredOID>>(128);
         }
         else {
-            mPendingNewOIDs.clear();
+            mStoredOIDs.clear();
         }
     }
 
@@ -644,7 +678,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     public void checkpointTransaction() throws ODMGRuntimeException 
     {
         checkTransactionActive();
-        updateExtents();
+        updateExtentsAndIndexes();
     }
 
     /** 
@@ -654,7 +688,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     public void commitTransaction() throws ODMGRuntimeException 
     {
         checkTransactionActive();
-        updateExtents();
+        updateExtentsAndIndexes();
         mObjectCache.reset();
         clearModifiedList();
     }
@@ -666,7 +700,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
     public void rollbackTransaction() throws ODMGRuntimeException 
     {
         checkTransactionActive();
-        mPendingNewOIDs.clear();
+        mStoredOIDs.clear();
         mObjectCache.reset();
         clearModifiedList();
     }
@@ -835,6 +869,42 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                 System.err.println("Shutdown problem:");
                 e.printStackTrace();
             }
+        }
+    }
+    
+    private static final class StoredOID
+    {
+        private long mOID;
+        private boolean mIsNew;
+        
+        public StoredOID(long anOID, boolean isNew)
+        {
+            mOID = anOID;
+            mIsNew = isNew;
+        }
+
+        public boolean isNew()
+        {
+            return mIsNew;
+        }
+
+        public long getOID()
+        {
+            return mOID;
+        }
+        
+        public int hashCode()
+        {
+            return (int)mOID;
+        }
+        
+        public boolean equals(Object anObject)
+        {
+            if (anObject == null || !(anObject instanceof StoredOID)) {
+                return false;
+            }
+            
+            return mOID == ((StoredOID)anObject).mOID;
         }
     }
 }

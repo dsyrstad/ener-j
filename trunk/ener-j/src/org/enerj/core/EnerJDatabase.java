@@ -36,6 +36,7 @@ import static org.odmg.Transaction.UPGRADE;
 import static org.odmg.Transaction.WRITE;
 
 import java.io.IOException;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -49,6 +50,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.enerj.annotations.Index;
+import org.enerj.annotations.Indexes;
 import org.enerj.annotations.SchemaAnnotation;
 import org.enerj.server.ClassInfo;
 import org.enerj.server.ExtentIterator;
@@ -623,20 +625,16 @@ public class EnerJDatabase implements Database, Persister
 
             // Add indexes.
             //  Class level
-            // TODO Handles @Indexes for multiples.
-            Index indexAnn = persistableClass.getAnnotation(Index.class);
-            addIndexSchema(className, indexAnn, null);
+            checkForIndexAnnotations(className, persistableClass, null);
             
             // Field Level
             for (Field field : persistableClass.getDeclaredFields()) {
-                indexAnn = field.getAnnotation(Index.class);
-                addIndexSchema(className, indexAnn, field.getName());
+                checkForIndexAnnotations(className, field, field.getName());
             }
             
             //  Accessor level
             for (Method method : persistableClass.getDeclaredMethods()) {
-                indexAnn = method.getAnnotation(Index.class);
-                addIndexSchema(className, indexAnn, method.getName());
+                checkForIndexAnnotations(className, method, method.getName());
             }
         }
         catch (ODMGException e) {
@@ -648,23 +646,42 @@ public class EnerJDatabase implements Database, Persister
     }
     
     /**
+     * Checks for the @Index and @Indexes annotations on the given element. If specified, indexes are
+     * added to the database schema.
+     *
+     * @param aClassName the class name that contains the element.
+     * @param anAnnotatedElement the element to be examined.
+     * @param propertyName if not null, defines the single property for this index.
+     */
+    private void checkForIndexAnnotations(String aClassName, AnnotatedElement anAnnotatedElement, String aPropertyName) throws ODMGException
+    {
+        Index indexAnn = anAnnotatedElement.getAnnotation(Index.class);
+        addIndexSchema(aClassName, indexAnn, aPropertyName);
+        
+        Indexes indexesAnn = anAnnotatedElement.getAnnotation(Indexes.class);
+        for (Index anno : indexesAnn.value()) {
+            addIndexSchema(aClassName, anno, aPropertyName);
+        }
+    }
+    
+    /**
      * If anIndexAnn is not null, add the index to the database.
      *
      * @param anIndexAnn
-     * @param propertyName if not null, defines the single property for this index.
+     * @param aPropertyName if not null, defines the single property for this index.
      */
-    private void addIndexSchema(String aClassName, Index anIndexAnn, String propertyName) throws ODMGException
+    private void addIndexSchema(String aClassName, Index anIndexAnn, String aPropertyName) throws ODMGException
     {
         if (anIndexAnn == null) {
             return;
         }
         
-        if (anIndexAnn.properties().length == 0 && propertyName == null) {
+        if (anIndexAnn.properties().length == 0 && aPropertyName == null) {
             throw new ODMGException("Class scoped annotation for Index " + anIndexAnn.name() + " for class " + 
                             aClassName + " does not define any properties.");
         }
         
-        IndexSchema indexSchema = new IndexSchema(anIndexAnn, propertyName);
+        IndexSchema indexSchema = new IndexSchema(anIndexAnn, aPropertyName);
         mObjectServerSession.addIndex(aClassName, indexSchema);
     }
 

@@ -134,7 +134,7 @@ class IndexMap
      * 
      * @return the Map representing the index, or null if no index is defined for the class.
      */
-    Map getBtreeIndex(LogicalClassSchema aClassSchema, IndexSchema anIndexSchema)
+    Map getIndex(LogicalClassSchema aClassSchema, IndexSchema anIndexSchema)
     {
         String key = createKey(aClassSchema, anIndexSchema);
         return (Map)mIndexMap.get(key);

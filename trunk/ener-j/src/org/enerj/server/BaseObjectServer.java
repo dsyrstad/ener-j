@@ -24,11 +24,13 @@ package org.enerj.server;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.enerj.annotations.Index;
 import org.enerj.core.ClassVersionSchema;
+import org.enerj.core.GenericKey;
 import org.enerj.core.IndexAlreadyExistsException;
 import org.enerj.core.IndexSchema;
 import org.enerj.core.LogicalClassSchema;
@@ -288,7 +290,7 @@ abstract public class BaseObjectServer implements ObjectServer
             return mCachedSchema;
         }
     }
-
+    
     
     /**
      * Adds a new ClassVersion to the schema if it doesn't already exist.

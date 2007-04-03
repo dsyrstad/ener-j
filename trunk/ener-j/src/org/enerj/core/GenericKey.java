@@ -25,14 +25,12 @@ package org.enerj.core;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
 
-import org.enerj.annotations.Persist;
 import org.enerj.apache.commons.beanutils.PropertyUtils;
-import org.enerj.apache.commons.collections.comparators.ComparableComparator;
 import org.enerj.apache.commons.collections.comparators.NullComparator;
 import org.odmg.ODMGRuntimeException;
 
 /**
- * Represents a generic index key. <p>
+ * Represents a generic immutable index key. <p>
  * 
  * @version $Id: $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
@@ -72,10 +70,35 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
             }
         }
         
-        // TODO Handle this. anIndexSchema.getComparatorClassName();
-        
+        // TODO Handle this. anIndexSchema.getComparatorClassName(); Use it to compare elements.
     }
-
+    
+    /**
+     * Construct a GenericKey from components 
+     *
+     * @param someComponents the key components, which must be {@link Comparable}s and must
+     *  contain at least one element.
+     */
+    public GenericKey(Object[] someComponents)
+    {
+        assert someComponents != null && someComponents.length >= 1;
+        for (int i = 0; i < someComponents.length; i++) {
+            assert someComponents[i] instanceof Comparable;
+        }
+        
+        mComponents = someComponents;
+    }
+    
+    /**
+     * Gets the components of the key.
+     *
+     * @return the components of the key, which will contain at least one element.
+     */
+    public Object[] getComponents()
+    {
+        return mComponents;
+    }
+    
     /** 
      * {@inheritDoc}
      * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
