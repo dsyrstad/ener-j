@@ -623,6 +623,7 @@ public class EnerJDatabase implements Database, Persister
 
             // Add indexes.
             //  Class level
+            // TODO Handles @Indexes for multiples.
             Index indexAnn = persistableClass.getAnnotation(Index.class);
             addIndexSchema(className, indexAnn, null);
             

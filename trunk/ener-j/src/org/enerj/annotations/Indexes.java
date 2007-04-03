@@ -24,37 +24,20 @@
 
 package org.enerj.annotations;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for a persistent index. May be specified at the type level for multiple fields, or
- * on the field/getter property level for specific properties. If specified on a field or property (accessor),
- * the property names are not required. The default is to allow nulls and duplicate keys.
+ * Annotation for multiple persistent indexes. See {@link Index} for more information.
  * <p>
  * 
  * @version $Id:  $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
 @Target({TYPE, FIELD, METHOD}) @Retention(RUNTIME)
-public @interface Index {
-    enum Type { BTree, Hash };
-    Type type() default Type.BTree;
-    /** Index name. If not specified, it is generated from the properties. */
-    String name() default ""; // Empty string means generate name.
-    /** The property names that are indexed. Empty for FIELD and METHOD level annotations. */
-    String[] properties() default { };
-    /** True if ascending order (default), false if descending. Only applies to ordered indexes. */
-    boolean ascending() default true;
-    /** True if null keys are allowed. */ 
-    boolean allowNullKeys() default true;
-    /** True if duplicate keys are allowed. */
-    boolean allowDuplicateKeys() default true;
-    /** The Key Comparator class name, if any. */
-    String comparator() default ""; // This default indicates no comparator.
+public @interface Indexes {
+    Index[] value();
 }

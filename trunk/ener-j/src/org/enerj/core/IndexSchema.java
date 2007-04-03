@@ -55,7 +55,7 @@ public class IndexSchema
      */
     public IndexSchema(Index anIndexAnnotation, String aPropertyName)
     {
-        mType = anIndexAnnotation.type().ordinal(); // Because it's persistent TODO handle enums
+        mType = anIndexAnnotation.type().ordinal(); // Store ordinal Because it's persistent TODO handle enums
         mName = anIndexAnnotation.name();
         mProperties = anIndexAnnotation.properties();
         mIsAscending = anIndexAnnotation.ascending();

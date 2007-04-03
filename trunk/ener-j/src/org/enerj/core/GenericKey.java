@@ -22,9 +22,14 @@
 
 package org.enerj.core;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
 
 import org.enerj.annotations.Persist;
+import org.enerj.apache.commons.beanutils.PropertyUtils;
+import org.enerj.apache.commons.collections.comparators.ComparableComparator;
+import org.enerj.apache.commons.collections.comparators.NullComparator;
+import org.odmg.ODMGRuntimeException;
 
 /**
  * Represents a generic index key. <p>
@@ -32,7 +37,6 @@ import org.enerj.annotations.Persist;
  * @version $Id: $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
-@Persist
 public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey>
 {
     /** Key components. Stored as an SCO. */
@@ -41,10 +45,35 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
     /**
      * Construct a GenericKey. 
      *
+     * @param anIndexSchema the index schema corresponding to anIndexObject. 
+     * @param anIndexedObject the object being indexed.
      */
-    public GenericKey()
+    public GenericKey(IndexSchema anIndexSchema, Object anIndexedObject)
     {
-        // TODO Auto-generated constructor stub
+        // Build the key. All the capabilities of Apach Beanutils are available for a property.
+        String[] properties = anIndexSchema.getProperties();
+        mComponents = new Object[ properties.length ];
+        for (int i = 0; i < properties.length; i++) {
+            try {
+                mComponents[i] = PropertyUtils.getProperty(anIndexedObject, properties[i]);
+            }
+            catch (IllegalAccessException e) {
+                throw new ODMGRuntimeException(e);
+            }
+            catch (InvocationTargetException e) {
+                throw new ODMGRuntimeException(e.getCause());
+            }
+            catch (NoSuchMethodException e) {
+                throw new ODMGRuntimeException(e);
+            }
+            
+            if (mComponents[i] != null && !(mComponents[i] instanceof Comparable)) {
+                throw new ODMGRuntimeException("Property \"" + properties[i] + "\" must be a Comparable.");
+            }
+        }
+        
+        // TODO Handle this. anIndexSchema.getComparatorClassName();
+        
     }
 
     /** 
@@ -53,7 +82,17 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
      */
     public int compare(GenericKey anObject1, GenericKey anObject2)
     {
-        // TODO Auto-generated method stub
+        assert anObject1 != null && anObject2 != null && anObject1.mComponents.length == anObject2.mComponents.length;
+        
+        // This is a ComparableComparator that handles nulls.
+        Comparator comparator = NullComparator.COMPARABLE_INSTANCE_NULLS_HIGH;
+        for (int i = 0; i < anObject1.mComponents.length; i++) {
+            int result = comparator.compare(anObject1.mComponents[i], anObject2.mComponents[i]);
+            if (result != 0) {
+                return result;
+            }
+        }
+
         return 0;
     }
 
@@ -63,7 +102,7 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
      */
     public int compareTo(GenericKey anObject)
     {
-        return this.compare(this, anObject);
+        return compare(this, anObject);
     }
 
     /** 
@@ -73,8 +112,7 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
     @Override
     public boolean equals(Object anObject)
     {
-        // TODO Auto-generated method stub
-        return super.equals(anObject);
+        return compareTo((GenericKey)anObject) == 0;
     }
 
     /** 
@@ -84,8 +122,12 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
     @Override
     public int hashCode()
     {
-        // TODO Auto-generated method stub
-        return super.hashCode();
+        int hash = 0;
+        for (Object component : mComponents) {
+            hash = (hash * 31) + (component == null ? 0 : component.hashCode());
+        }
+        
+        return hash;
     }
 
 }
