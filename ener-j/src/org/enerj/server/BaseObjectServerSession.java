@@ -163,7 +163,9 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                         
                         if (hasIndexes) {
                             // TODO We need to handle replace somehow, which means we need the key
-                            // TODO that existed prior to update.
+                            // TODO that existed prior to update. For dupl keys, must match OID too.
+                            // TODO session method to retrieve stored object, (not updated) but
+                            // TODO what about second update.
                             // Resurrect the object so we can generate a key.
                             ClassInfo classInfo = getClassInfoForOIDs(new long[] { oid } )[0];
                             Persistable obj = PersistableHelper.createHollowPersistable(classInfo, oid, this);
