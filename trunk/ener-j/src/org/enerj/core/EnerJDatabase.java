@@ -84,7 +84,7 @@ public class EnerJDatabase implements Database, Persister
     /** Maximum size of mSerializedObjectQueue. TODO make this configurable */
     private static final int sMaxSerializedObjectQueueSize = 100000;
 
-    /** Current Open Database for JVM. Used when no curent open thread database exists. (i.e.,
+    /** Current Open Database for JVM. Used when no current open thread database exists. (i.e.,
      * Database was opened in a thread, but now the thread is gone). Entry exists until
      * the database is closed, even if the app has no reference to it.
      */
@@ -806,7 +806,7 @@ public class EnerJDatabase implements Database, Persister
      * 
      * @return the Extent.
      */
-    ExtentIterator getExtentIterator(Class aPersistentCapableClass, boolean wantSubClassInstances)
+    ExtentIterator getExtentIterator(Class<?> aPersistentCapableClass, boolean wantSubClassInstances)
     {
         ExtentIterator iterator = mObjectServerSession.createExtentIterator(aPersistentCapableClass.getName(), wantSubClassInstances);
         //if (mIsLocal) {

@@ -2,18 +2,12 @@ $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/ToDo.txt,v 1.3 2005/08/12 0
 
 To-Do List:
 
-- If DefaultMetaObjectServer opens local thread for server, upon last close to thread, an implicit 
-  shutdown should occur.
-
 - Need recovery log rolling/archiving on full database "EndCheckpoint".
 
 - Need recovery program. In FilePageServer, we can distinguish between a volume that 
   is in-use (locked) and one that was not closed properly (not locked, but open flag set).
 
 - Need log roll-forward recovery on empty database (recreate from logs)
-
-- Server helpers and connect methods should all accept a Properties parameter which
-  contains overrides.
 
 - PagedObjectServer: handleStorageException needs work.
     - This will require a forced shutdown. Rollback all transactions and close down.
@@ -34,7 +28,7 @@ To-Do List:
 
 - Looks like most of the ODMG API expects to throw ODMGRuntimeException and not 
   ODMGException. However, half of the ObjectServer methods throw ODMGException. 
-  These should be revisied to throw ODMGRuntimeException and then everything else 
+  These should be revised to throw ODMGRuntimeException and then everything else 
   on down (LockServer, RedoLogServer, etc.) should be fixed too. Not fixing it means
   confusing exceptions will be thrown. Then EnerJDatabase and EnerJTransaction need to be revised
   to not catch ODMGException and not remap.
