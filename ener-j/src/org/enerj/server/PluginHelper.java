@@ -61,7 +61,7 @@ public class PluginHelper
             return method.invoke(null, new Object[] { someProperties } );
         }
         catch (Exception e) {
-            // Remap InvocationTargetException's cause
+            // Re-map InvocationTargetException's cause
             if (e instanceof InvocationTargetException) {
                 Throwable t = e.getCause();
                 if (t instanceof Exception) {

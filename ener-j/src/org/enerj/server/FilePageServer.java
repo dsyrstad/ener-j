@@ -548,7 +548,7 @@ public class FilePageServer implements PageServer
             mDatabaseID = aDatabaseID;
             mLogicalFirstPageOffset = aLogicalFirstPageOffset;
             // We allow at least 1024 bytes for header. This will allow for
-            // furture expansion.
+            // future expansion.
             mPhysicalFirstPageOffset = ((1024 + aPageSize - 1) / aPageSize) * aPageSize;
             mMaximumSize = aMaximumSize;
             mPageSize = aPageSize;
