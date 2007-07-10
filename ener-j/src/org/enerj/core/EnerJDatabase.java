@@ -659,15 +659,17 @@ public class EnerJDatabase implements Database, Persister
         addIndexSchema(aClassName, indexAnn, aPropertyName);
         
         Indexes indexesAnn = anAnnotatedElement.getAnnotation(Indexes.class);
-        for (Index anno : indexesAnn.value()) {
-            addIndexSchema(aClassName, anno, aPropertyName);
+        if (indexesAnn != null) {
+            for (Index anno : indexesAnn.value()) {
+                addIndexSchema(aClassName, anno, aPropertyName);
+            }
         }
     }
     
     /**
      * If anIndexAnn is not null, add the index to the database.
      *
-     * @param anIndexAnn
+     * @param anIndexAnn the index annotation - may be null.
      * @param aPropertyName if not null, defines the single property for this index.
      */
     private void addIndexSchema(String aClassName, Index anIndexAnn, String aPropertyName) throws ODMGException
