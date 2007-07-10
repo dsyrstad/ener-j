@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry output="testClasses" kind="src" path="test"/>
+	<classpathentry kind="src" output="testClasses" path="test"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/junit-3.8.1.jar"/>
-	<classpathentry kind="lib" path="third-party/jga-0.7-dist.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/ASM"/>
 	<classpathentry kind="output" path="classes"/>

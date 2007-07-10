@@ -18,20 +18,11 @@
 package org.enerj.apache.commons.beanutils;
 
 
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
-import org.enerj.apache.commons.beanutils.DynaBean;
-import org.enerj.apache.commons.beanutils.DynaProperty;
-import org.enerj.apache.commons.beanutils.ResultSetDynaClass;
-
-import junit.framework.TestCase;
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 
