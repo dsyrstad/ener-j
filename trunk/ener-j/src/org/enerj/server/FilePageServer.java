@@ -264,8 +264,8 @@ public class FilePageServer implements PageServer
      * of volumes. The file may exist on 
      * the OS's filesystem, or it may be a raw device (e.g., a raw disk partition).
      *
-     * @param aPreceedingVolumeFileName the full pathname of the volume which will
-     *  preceed this one. This file must exist and it's header must match aDatabaseID.
+     * @param aPrecedingVolumeFileName the full pathname of the volume which will
+     *  precede this one. This file must exist and it's header must match aDatabaseID.
      * @param aVolumeFileName the full pathname of the volume's file. This file must
      *  not exist unless it is a raw device.
      * @param aDatabaseID the unique database ID associated with this volume.
@@ -278,7 +278,7 @@ public class FilePageServer implements PageServer
      *
      * @throws PageServerException if an error occurs.
      */
-    public static void createChainedVolume(String aPreceedingVolumeFileName, 
+    public static void createChainedVolume(String aPrecedingVolumeFileName, 
                 String aVolumeFileName, long aDatabaseID, long aLogicalFirstPageOffset, 
                 long aMaximumSize, long aPreAllocatedSize) 
            throws PageServerException
