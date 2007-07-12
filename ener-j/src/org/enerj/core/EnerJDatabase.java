@@ -597,22 +597,30 @@ public class EnerJDatabase implements Database, Persister
      */
     private void updateSchema(Persistable aPersistable)
     {
-        long cid = aPersistable.enerj_GetClassId();
+        // Try to add this to schema, even if it might already exist.
+        Class<? extends Persistable> persistableClass = aPersistable.getClass();
+
+        updateSchema(persistableClass);
+    }
+
+    /**
+     * Updates the database with the schema for a Persistable class, if necessary.
+     *
+     * @param persistableClass the Persistable class.
+     */
+    private void updateSchema(Class<? extends Persistable> persistableClass)
+    {
+        SchemaAnnotation schemaAnn = persistableClass.getAnnotation(SchemaAnnotation.class);
+        if (schemaAnn == null) {
+            throw new ODMGRuntimeException("Cannot find SchemaAnnotation on " + persistableClass + ". Class was not previously enhanced.");
+        }
 
         // Check if we already know that the database has this CID in the schema.
+        long cid = schemaAnn.classID();
         if (mKnownSchemaCIDs.contains(cid)) {
             return;
         }
         
-        // TODO what if schema already there, but index added? Need to handle this, so don't just return above.
-
-        // Try to add this to schema, even if it might already exist.
-        Class<? extends Persistable> persistableClass = aPersistable.getClass();
-        SchemaAnnotation schemaAnn = persistableClass.getAnnotation(SchemaAnnotation.class);
-        if (schemaAnn == null) {
-            throw new ODMGRuntimeException("Cannot find SchemaAnnotation on " + aPersistable.getClass() + ". Class was not previously enhanced.");
-        }
-
         String[] persistentFieldNames = schemaAnn.persistentFieldNames();
         String[] transientFieldNames = schemaAnn.transientFieldNames();
         String[] superTypeNames = ClassUtil.getAllSuperTypeNames(persistableClass);
@@ -643,6 +651,20 @@ public class EnerJDatabase implements Database, Persister
         
         // Cache the fact that it is known in the schema.
         mKnownSchemaCIDs.add(cid);
+
+        // Loop thru super types of this class and add schema/index for them too.
+        for (String superTypeName : superTypeNames) {
+            try {
+                Class superTypeClass = Class.forName(superTypeName);
+                if (Persistable.class.isAssignableFrom(superTypeClass) && !Persistable.class.equals(superTypeClass)) {
+                    updateSchema((Class<? extends Persistable>)superTypeClass);
+                }
+            }
+            catch (ClassNotFoundException e) {
+                // Ignore this and continue;
+                continue;
+            }
+        }
     }
     
     /**
