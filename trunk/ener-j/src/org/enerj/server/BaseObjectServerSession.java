@@ -166,7 +166,10 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                             // TODO that existed prior to update. For dupl keys, must match OID too.
                             // TODO session method to retrieve stored object, (not updated) but
                             // TODO what about second update.
-                            // Resurrect the object so we can generate a key.
+                            // TODO Add method to tree to get current key for oid.
+                            // TODO Need builder in case index set on super class that is newly 
+                            // TODO added to schema.
+                            // TODO BaseObjectServerSession needs to add to super class indexes if they exist.
                             ClassInfo classInfo = getClassInfoForOIDs(new long[] { oid } )[0];
                             Persistable obj = PersistableHelper.createHollowPersistable(classInfo, oid, this);
                             for (IndexSchema indexSchema : indexes) {

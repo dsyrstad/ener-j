@@ -26,11 +26,14 @@ import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Date;
+import java.sql.NClob;
 import java.sql.Ref;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.RowId;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
+import java.sql.SQLXML;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -1229,6 +1232,118 @@ public class TestResultSet implements ResultSet {
     {
         // TODO Auto-generated method stub
         return null;
+    }
+
+
+    public NClob getNClob(int someColumnIndex) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public NClob getNClob(String someColumnLabel) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public RowId getRowId(int someColumnIndex) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public RowId getRowId(String someColumnLabel) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public SQLXML getSQLXML(int someColumnIndex) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public SQLXML getSQLXML(String someColumnLabel) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+
+    public void updateNClob(int someColumnIndex, NClob someClob) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void updateNClob(int someColumnIndex, Reader someReader, long someLength) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void updateNClob(int someColumnIndex, Reader someReader) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void updateNClob(String someColumnLabel, NClob someClob) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void updateNClob(String someColumnLabel, Reader someReader, long someLength) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void updateNClob(String someColumnLabel, Reader someReader) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void updateRowId(int someColumnIndex, RowId someX) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void updateRowId(String someColumnLabel, RowId someX) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void updateSQLXML(int someColumnIndex, SQLXML someXmlObject) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    public void updateSQLXML(String someColumnLabel, SQLXML someXmlObject) throws SQLException
+    {
+        // TODO Auto-generated method stub
+        
     }
 
 
