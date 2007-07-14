@@ -92,42 +92,42 @@ public class SchemaTest extends DatabaseTestCase
         final String classPrefix = "org.enerj.somepkg.Class";
         final int numLogical = 10;
         for (int i = 0; i < numLogical; i++) {
-            schema.addLogicalClass( new LogicalClassSchema(schema, classPrefix + i, "Description " + i) );
+            schema.addClassSchema( new ClassSchema(schema, classPrefix + i, "Description " + i) );
         }
         
-        // Test findLogicalClass().
+        // Test findClassSchema().
         for (int i = 0; i < numLogical; i++) {
-            LogicalClassSchema logicalClass = schema.findLogicalClass(classPrefix + i);
-            assertNotNull("Logical class should not be null", logicalClass);
-            assertTrue("Logical class should be equal", logicalClass.getClassName().equals(classPrefix + i) );
+            ClassSchema classSchema = schema.findClassSchema(classPrefix + i);
+            assertNotNull("class schema should not be null", classSchema);
+            assertTrue("class scehma should be equal", classSchema.getClassName().equals(classPrefix + i) );
         }
         
         // Try adding a non-unique name.
         try {
-            schema.addLogicalClass( new LogicalClassSchema(schema, classPrefix + 5, "Description " + 5) );
+            schema.addClassSchema( new ClassSchema(schema, classPrefix + 5, "Description " + 5) );
             fail("Should have thrown an Exception");
         }
         catch (org.odmg.ObjectNameNotUniqueException e) {
             // Expected
         }
 
-        // Test getLogicalClasses().
-        Iterator iterator = schema.getLogicalClasses().iterator();
+        // Test getClassSchemas().
+        Iterator iterator = schema.getClassSchemas().iterator();
         boolean[] checkList = new boolean[numLogical];
         int numFound = 0;
         boolean testClassFound = false;
         while ( iterator.hasNext() ) {
-            LogicalClassSchema logicalClass = (LogicalClassSchema)iterator.next();
-            if (logicalClass.getClassName().equals(TestClass1.class.getName())) {
+            ClassSchema classSchema = (ClassSchema)iterator.next();
+            if (classSchema.getClassName().equals(TestClass1.class.getName())) {
                 testClassFound = true;
                 continue;
             }
 
             // Skip non-test classes
-            String logicalClassName = logicalClass.getClassName();
-            if (logicalClassName.startsWith(classPrefix)) {
+            String schemaClassName = classSchema.getClassName();
+            if (schemaClassName.startsWith(classPrefix)) {
                 // Trim off the classPrefix to get the index from the class name 
-                String idxString = logicalClassName.substring( classPrefix.length() );
+                String idxString = schemaClassName.substring( classPrefix.length() );
                 int idx = Integer.parseInt(idxString);
                 assertTrue("Idx should be in range", idx >=0 && idx < numLogical);
                 assertTrue("Should not be checked yet", !checkList[idx]);
@@ -141,14 +141,14 @@ public class SchemaTest extends DatabaseTestCase
         assertTrue("TestClass should have been found", testClassFound);
         
 
-        // Test removeLogicalClass().
+        // Test removeClassSchema().
         for (int i = 0; i < numLogical; i++) {
-            schema.removeLogicalClass(classPrefix + i);
-            assertNull("Logical class should no longer exist", schema.findLogicalClass(classPrefix + i) );
+            schema.removeClassSchema(classPrefix + i);
+            assertNull("Logical class should no longer exist", schema.findClassSchema(classPrefix + i) );
 
             // Try to remove it again
             try {
-                schema.removeLogicalClass(classPrefix + i);
+                schema.removeClassSchema(classPrefix + i);
                 fail("Should have thrown an Exception");
             }
             catch (org.odmg.ObjectNameNotFoundException e) {
@@ -157,14 +157,14 @@ public class SchemaTest extends DatabaseTestCase
         }
         
         // Test findClassVersion() and allocateClassId().
-        LogicalClassSchema logicalClass = new LogicalClassSchema(schema, this.getClass().getName(), "");
+        ClassSchema classSchema = new ClassSchema(schema, this.getClass().getName(), "");
         long cid = ObjectSerializer.LAST_SYSTEM_CID + 99938;
 
         assertNull("CID shouldn't already exist", schema.findClassVersion(cid) );
         ClassVersionSchema classVersion = 
-            new ClassVersionSchema(logicalClass, cid, new String[0],
+            new ClassVersionSchema(classSchema, cid, new String[0],
                 new byte[0], new byte[0], new String[0], new String[0]);
-        logicalClass.addVersion(classVersion);
+        classSchema.addVersion(classVersion);
         
         classVersion = schema.findClassVersion(cid);
         assertNotNull("Version should exist", classVersion);
@@ -178,17 +178,17 @@ public class SchemaTest extends DatabaseTestCase
     
     private void checkTestClassExistsAndHasOneVersion(Schema aSchema, Class aClass) throws Exception
     {
-        LogicalClassSchema logicalClass = aSchema.findLogicalClass(aClass.getName());
+        ClassSchema classSchema = aSchema.findClassSchema(aClass.getName());
 
-        assertSame(aSchema, logicalClass.getSchema());
-        assertEquals(aClass.getName(), logicalClass.getClassName());
+        assertSame(aSchema, classSchema.getSchema());
+        assertEquals(aClass.getName(), classSchema.getClassName());
         
-        ClassVersionSchema[] versions = logicalClass.getVersions(); 
+        ClassVersionSchema[] versions = classSchema.getVersions(); 
         assertEquals(1, versions.length);
-        assertEquals(versions[0], logicalClass.getLatestVersion());
-        assertEquals(versions[0], logicalClass.findVersion(versions[0].getClassId()));
+        assertEquals(versions[0], classSchema.getLatestVersion());
+        assertEquals(versions[0], classSchema.findVersion(versions[0].getClassId()));
 
-        assertSame(logicalClass, versions[0].getLogicalClassSchema());
+        assertSame(classSchema, versions[0].getClassSchema());
         
         assertEquals(2, versions[0].getSuperTypeNames().length);
         List<String> superTypes = Arrays.asList(versions[0].getSuperTypeNames());
@@ -202,9 +202,9 @@ public class SchemaTest extends DatabaseTestCase
         assertEquals("mTransient", versions[0].getTransientFieldNames()[0] );
     }
     
-    private void checkLogicalClassSchema(LogicalClassSchema aLogicalClassSchema) throws Exception
+    private void checkClassSchema(ClassSchema aClassSchema) throws Exception
     {
-        for (ClassVersionSchema version : aLogicalClassSchema.getVersions()) { 
+        for (ClassVersionSchema version : aClassSchema.getVersions()) { 
             checkClassVersionSchema(version);
         }
     }

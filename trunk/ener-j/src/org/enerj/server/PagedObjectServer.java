@@ -752,7 +752,7 @@ public class PagedObjectServer extends BaseObjectServer
                         Schema schema = getSchema();
                         ClassVersionSchema version = schema.findClassVersion(cid);
                         if (version != null) {
-                            className = version.getLogicalClassSchema().getClassName();
+                            className = version.getClassSchema().getClassName();
                         }
                     }
                     

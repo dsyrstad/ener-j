@@ -87,14 +87,14 @@ DatabaseRoot:
     + Check that description can be set.
 
 Schema:
-    + Test getting LogicalClassSchema.
+    + Test getting ClassSchema.
     + Test getting ClassVersionSchema by class Id.
-    + Test adding LogicalClassSchema.
-    + Test removing LogicalClassSchema.
+    + Test adding ClassSchema.
+    + Test removing ClassSchema.
     + Check that create date and description are set properly. 
     + Check that description can be set.
 
-LogicalClassSchema:
+ClassSchema:
     + Check that create date and description are set properly. 
     + Check that description can be set.
     + Test adding ClassVersionSchema. This should also add the ClassVersionSchema to the Schema

@@ -49,7 +49,7 @@ public class SystemCIDMap
         // NOTE! These CIDs must NEVER change!
         sNameToCIDMap.put("org.enerj.core.Schema",                           1L);
         sNameToCIDMap.put("org.enerj.core.ClassVersionSchema",               2L);
-        sNameToCIDMap.put("org.enerj.core.LogicalClassSchema",               3L);
+        sNameToCIDMap.put("org.enerj.core.ClassSchema",               3L);
         sNameToCIDMap.put("org.enerj.core.PersistentHashMap",                4L);
         sNameToCIDMap.put("org.enerj.core.PersistentHashSet",                5L);
         sNameToCIDMap.put("org.enerj.server.ExtentMap",                      6L);

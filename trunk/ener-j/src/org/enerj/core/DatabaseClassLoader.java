@@ -184,10 +184,10 @@ public class DatabaseClassLoader extends ClassLoader
             }
 
             // Ensure class name matches.
-            String logicalClassName = classVersion.getLogicalClassSchema().getClassName();
-            if ( !logicalClassName.equals(aClassName) ) {
+            String schemaClassName = classVersion.getClassSchema().getClassName();
+            if ( !schemaClassName.equals(aClassName) ) {
                 throw new ClassNotFoundException("Requested class " + aClassName + 
-                    ", CID " + cid + " does not match name in database schema: " + logicalClassName);
+                    ", CID " + cid + " does not match name in database schema: " + schemaClassName);
             }
 
             // Proxy bytecodes override the enhanced version.

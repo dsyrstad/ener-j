@@ -64,8 +64,8 @@ public class Schema
     //  TODO  need other audit info on this and other classes - who, machine, mod date
     private Date mCreateDate;
 
-    /** Map of class descriptions. Key is class name. Value is LogicalClassSchema. */
-    private LinkedHashMap<String, LogicalClassSchema> mClassMap;
+    /** Map of class descriptions. Key is class name. Value is ClassSchema. */
+    private LinkedHashMap<String, ClassSchema> mClassMap;
     
     /** Map of class ids to ClassVersionSchema. Key is Long(CID). Value is ClassVersionSchema. */
     private Map<Long, ClassVersionSchema> mClassIdMap;
@@ -91,7 +91,7 @@ public class Schema
     {
         mCreateDate = new Date();
         mDescription = (aDescription == null ? "" : aDescription);
-        mClassMap = new LinkedHashMap<String, LogicalClassSchema>(1024);
+        mClassMap = new LinkedHashMap<String, ClassSchema>(1024);
         mClassIdMap = new HashMap<Long, ClassVersionSchema>(2048);
         mSubclassMap = new HashMap<String, Set<ClassVersionSchema>>(2048);
     }
@@ -177,26 +177,26 @@ public class Schema
     
 
     /**
-     * Add a LogicalClassSchema to this Schema.
+     * Add a ClassSchema to this Schema.
      *
-     * @param aLogicalClassSchema the LogicalClassSchema to be added.
+     * @param aClassSchema the ClassSchema to be added.
      *
      * @throws org.odmg.ObjectNameNotUniqueException if the class name
      *  is already defined in the Schema.
      */
-    public void addLogicalClass(LogicalClassSchema aLogicalClassSchema) throws org.odmg.ObjectNameNotUniqueException
+    public void addClassSchema(ClassSchema aClassSchema) throws org.odmg.ObjectNameNotUniqueException
     {
-        String className = aLogicalClassSchema.getClassName();
+        String className = aClassSchema.getClassName();
         if (mClassMap.containsKey(className)) {
             throw new org.odmg.ObjectNameNotUniqueException("Class " + className + " is already in the schema.");
         }
         
-        mClassMap.put(className, aLogicalClassSchema);
+        mClassMap.put(className, aClassSchema);
     }
 
 
     /**
-     * Removes a LogicalClassSchema from this Schema.
+     * Removes a ClassSchema from this Schema.
      * This should be used with extreme caution because objects referencing the
      * class may still exist.
      *
@@ -205,7 +205,7 @@ public class Schema
      * @throws org.odmg.ObjectNameNotFoundException if the class name
      *  is not defined in the Schema.
      */
-    public void removeLogicalClass(String aClassName) throws org.odmg.ObjectNameNotFoundException
+    public void removeClassSchema(String aClassName) throws org.odmg.ObjectNameNotFoundException
     {
         /**  TODO  run thru the versions and remove them from the class id map */
         if (mClassMap.remove(aClassName) == null) {
@@ -215,28 +215,28 @@ public class Schema
 
 
     /**
-     * Finds a LogicalClassSchema in this Schema.
+     * Finds a ClassSchema in this Schema.
      *
      * @param aClassName the class name to find.
      *
-     * @return the LogicalClassSchema for aClassName, or null if the class name
+     * @return the ClassSchema for aClassName, or null if the class name
      *  cannot be found in the Schema.
      */
-    public LogicalClassSchema findLogicalClass(String aClassName)
+    public ClassSchema findClassSchema(String aClassName)
     {
-        return (LogicalClassSchema)mClassMap.get(aClassName);
+        return (ClassSchema)mClassMap.get(aClassName);
     }
 
 
     /**
-     * Gets an Iterator of all LogicalClassSchemas.
+     * Gets an Iterator of all ClassSchemas.
      *
-     * @return an Collection of LogicalClassSchema, representing all of the classes
-     *  in this schema. The Collection will be empty if no LogicalClassSchemas
+     * @return an Collection of ClassSchema, representing all of the classes
+     *  in this schema. The Collection will be empty if no ClassSchemas
      *  exist. The classes are ordered from the first one added to the schema to
      *  the last one.
      */
-    public Collection<LogicalClassSchema> getLogicalClasses()
+    public Collection<ClassSchema> getClassSchemas()
     {
         return mClassMap.values();
     }
@@ -264,7 +264,7 @@ public class Schema
 
     /**
      * Adds a ClassVersionSchema to the global map of Class Id to class version.
-     * Should only be used by LogicalClassSchema.
+     * Should only be used by ClassSchema.
      *
      * @param aClassVersionSchema the ClassVersionSchema to add.
      *
@@ -322,7 +322,7 @@ public class Schema
 
     /**
      * Removes a ClassVersionSchema from the global map of Class Id to class version.
-     * Should only be used by LogicalClassSchema.
+     * Should only be used by ClassSchema.
      *
      * @param aCID the class id to remove.
      *

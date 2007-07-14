@@ -18,7 +18,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/LogicalClassSchema.java,v 1.5 2006/05/05 13:47:14 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/ClassSchema.java,v 1.5 2006/05/05 13:47:14 dsyrstad Exp $
 
 package org.enerj.core;
 
@@ -34,11 +34,11 @@ import org.enerj.annotations.Persist;
  * A logical class represents the class name, extent, indexes, and a list of
  * versions of a class (ClassVersionSchema).
  *
- * @version $Id: LogicalClassSchema.java,v 1.5 2006/05/05 13:47:14 dsyrstad Exp $
+ * @version $Id: ClassSchema.java,v 1.5 2006/05/05 13:47:14 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
 @Persist
-public class LogicalClassSchema
+public class ClassSchema
 {
     // Note: All object references should be objects defined in SystemCID, or SCOs.
 
@@ -61,14 +61,14 @@ public class LogicalClassSchema
 
 
     /**
-     * Constructs an empty LogicalClassSchema.
+     * Constructs an empty ClassSchema.
      *
      * @param aSchema the Schema object which will contain this class.
      * @param aClassName the name of the class.
      * @param aDescription the class description. If this is null, the
      *  description is set to an empty string.
      */
-    public LogicalClassSchema(Schema aSchema, String aClassName, String aDescription)
+    public ClassSchema(Schema aSchema, String aClassName, String aDescription)
     {
         assert aSchema != null && aClassName != null;
         
@@ -237,22 +237,22 @@ public class LogicalClassSchema
 
 
     /**
-     * Two LogicalClassSchema's are equal if their class names are equal.
+     * Two ClassSchema's are equal if their class names are equal.
      *
      * @return true if they are equal.
      */
     public boolean equals(Object anOther)
     {
-        if ( !(anOther instanceof LogicalClassSchema) ) {
+        if ( !(anOther instanceof ClassSchema) ) {
             return false;
         }
         
-        return mClassName.equals( ((LogicalClassSchema)anOther).mClassName );
+        return mClassName.equals( ((ClassSchema)anOther).mClassName );
     }
 
 
     /**
-     * The hashcode of a LogicalClassSchema is the hashCode of the class name.
+     * The hashcode of a ClassSchema is the hashCode of the class name.
      *
      * @return the hashCode.
      */

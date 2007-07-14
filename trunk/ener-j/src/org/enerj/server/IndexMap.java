@@ -29,7 +29,7 @@ import org.enerj.annotations.Persist;
 import org.enerj.apache.commons.collections.comparators.NullComparator;
 import org.enerj.core.IndexSchema;
 import org.enerj.core.LargePersistentHashMap;
-import org.enerj.core.LogicalClassSchema;
+import org.enerj.core.ClassSchema;
 import org.enerj.core.PersistentBxTree;
 import org.odmg.ODMGException;
 
@@ -61,7 +61,7 @@ class IndexMap
      * 
      * @return the key for the map.
      */
-    private String createKey(LogicalClassSchema aClassSchema, IndexSchema anIndexSchema)
+    private String createKey(ClassSchema aClassSchema, IndexSchema anIndexSchema)
     {
        return aClassSchema.getClassName() + '@' + anIndexSchema.getName(); 
     }
@@ -74,7 +74,7 @@ class IndexMap
      * 
      * @throws ODMGException if an error occurs.
      */
-    void createIndexForClass(LogicalClassSchema aClassSchema, IndexSchema anIndexSchema) throws ODMGException
+    void createIndexForClass(ClassSchema aClassSchema, IndexSchema anIndexSchema) throws ODMGException
     {
         String key = createKey(aClassSchema, anIndexSchema);
         Map map;
@@ -120,7 +120,7 @@ class IndexMap
      * @param aClassSchema
      * @param anIndexSchema
      */
-    void dropIndexForClass(LogicalClassSchema aClassSchema, IndexSchema anIndexSchema)
+    void dropIndexForClass(ClassSchema aClassSchema, IndexSchema anIndexSchema)
     {
         String key = createKey(aClassSchema, anIndexSchema);
         mIndexMap.remove(key);
@@ -134,7 +134,7 @@ class IndexMap
      * 
      * @return the Map representing the index, or null if no index is defined for the class.
      */
-    Map getIndex(LogicalClassSchema aClassSchema, IndexSchema anIndexSchema)
+    Map getIndex(ClassSchema aClassSchema, IndexSchema anIndexSchema)
     {
         String key = createKey(aClassSchema, anIndexSchema);
         return (Map)mIndexMap.get(key);
