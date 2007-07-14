@@ -41,8 +41,8 @@ public class ClassVersionSchema
 {
     // Note: All object references should be objects defined in SystemCID, or SCOs.
 
-    /** The LogicalClassSchema which contains this class. */
-    private LogicalClassSchema mLogicalClassSchema;
+    /** The ClassSchema which contains this class. */
+    private ClassSchema mClassSchema;
     
     /** The GMT date on which this class version was created. */
     private Date mCreateDate;
@@ -74,26 +74,26 @@ public class ClassVersionSchema
     /**
      * Constructs a ClassVersionSchema.
      *
-     * @param aLogicalClassSchema the LogicalClassSchema object which will contain this class version.
-     *   aLogicalClassSchema.getClassName() must be loadable by the class loader.
+     * @param aClassSchema the ClassSchema object which will contain this class version.
+     *   aClassSchema.getClassName() must be loadable by the class loader.
      * @param aCID the class Id of this class.
-     * @param someSuperTypeNames  Array of superclass and superinterface names that go all of the way up the hierarchy.
+     * @param someSuperTypeNames  Array of superclass and super-interface names that go all of the way up the hierarchy.
      *  Class names might not be Persistable in our schema.
      * @param anOriginalBytecodeDef the original, unenhanced bytecodes for the class.
      * @param anEnhancedBytecodeDef the enhanced bytecodes, based on anOriginalBytecodeDef. May be null.
      * @param somePersistentFieldNames the names of the persistent fields of the class.
      * @param someTransientFieldNames the names of the transient fields of the class.
      *
-     * @throws ODMGException if an error occurs resolving the class' supertypes.
+     * @throws ODMGException if an error occurs resolving the class' super-types.
      */
-    public ClassVersionSchema(LogicalClassSchema aLogicalClassSchema, long aCID, 
+    public ClassVersionSchema(ClassSchema aClassSchema, long aCID, 
             String[] someSuperTypeNames, byte[] anOriginalBytecodeDef, byte[] anEnhancedBytecodeDef,
             String[] somePersistentFieldNames, String[] someTransientFieldNames)
             throws ODMGException
     {
-        assert aLogicalClassSchema != null;
+        assert aClassSchema != null;
         
-        mLogicalClassSchema = aLogicalClassSchema;
+        mClassSchema = aClassSchema;
         mCreateDate = new Date();
         mCID = aCID;
         mSuperTypeNames = someSuperTypeNames;
@@ -139,13 +139,13 @@ public class ClassVersionSchema
     
 
     /**
-     * Gets the LogicalClassSchema containing this class.
+     * Gets the ClassSchema containing this class.
      *
-     * @return a LogicalClassSchema.
+     * @return a ClassSchema.
      */
-    public LogicalClassSchema getLogicalClassSchema()
+    public ClassSchema getClassSchema()
     {
-        return mLogicalClassSchema;
+        return mClassSchema;
     }
     
 

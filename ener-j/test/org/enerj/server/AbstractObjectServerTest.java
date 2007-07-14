@@ -166,7 +166,7 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         Schema schema = mSession.getSchema();
         // Use SparseBitSet's CID as a valid cid to test.
-        long sparseBitSetCID = schema.findLogicalClass(SparseBitSet.class.getName()).getLatestVersion().getClassId();
+        long sparseBitSetCID = schema.findClassSchema(SparseBitSet.class.getName()).getLatestVersion().getClassId();
         SerializedObject[] objects = new SerializedObject[someOIDs.length];
         for (int i = 0; i < someOIDs.length; i++) {
             objects[i] = new SerializedObject(someOIDs[i], sparseBitSetCID, generateBytes(aLength, someOIDs[i], sparseBitSetCID), true);

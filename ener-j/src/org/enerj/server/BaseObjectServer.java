@@ -33,7 +33,7 @@ import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.GenericKey;
 import org.enerj.core.IndexAlreadyExistsException;
 import org.enerj.core.IndexSchema;
-import org.enerj.core.LogicalClassSchema;
+import org.enerj.core.ClassSchema;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
 import org.enerj.core.Schema;
@@ -179,8 +179,8 @@ abstract public class BaseObjectServer implements ObjectServer
 
             // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
             for (String schemaClassName : SystemCIDMap.getSystemClassNames()) {
-                LogicalClassSchema classSchema = new LogicalClassSchema(schema, schemaClassName, null);
-                schema.addLogicalClass(classSchema);
+                ClassSchema classSchema = new ClassSchema(schema, schemaClassName, null);
+                schema.addClassSchema(classSchema);
                 
                 long cid = SystemCIDMap.getSystemCIDForClassName(schemaClassName);
                 ClassVersionSchema version = new ClassVersionSchema(classSchema, cid, sObjectNameArray, null, null, null, null);
@@ -320,10 +320,10 @@ abstract public class BaseObjectServer implements ObjectServer
                     schemaSession.beginTransaction();
                     Schema schema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
     
-                    LogicalClassSchema logicalClass = schema.findLogicalClass(aClassName);
+                    ClassSchema logicalClass = schema.findClassSchema(aClassName);
                     if (logicalClass == null) {
-                        logicalClass = new LogicalClassSchema(schema, aClassName, "");
-                        schema.addLogicalClass(logicalClass);
+                        logicalClass = new ClassSchema(schema, aClassName, "");
+                        schema.addClassSchema(logicalClass);
                     }
                     
                     ClassVersionSchema classVersion = 
@@ -380,7 +380,7 @@ abstract public class BaseObjectServer implements ObjectServer
                 Schema schema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
                 
                 // Class name exists?
-                LogicalClassSchema classSchema = schema.findLogicalClass(aClassName);
+                ClassSchema classSchema = schema.findClassSchema(aClassName);
                 if (classSchema == null) {
                     throw new ODMGException("Class " + aClassName + " does not exist");
                 }

@@ -33,12 +33,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.enerj.core.ClassSchema;
 import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.DefaultPersistableObjectCache;
 import org.enerj.core.GenericKey;
 import org.enerj.core.IndexAlreadyExistsException;
 import org.enerj.core.IndexSchema;
-import org.enerj.core.LogicalClassSchema;
 import org.enerj.core.ModifiedPersistableList;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
@@ -148,12 +148,26 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                         throw new ODMGRuntimeException("Cannot find class version in schema for CID " + Long.toHexString(cid));
                     }
                     
-                    LogicalClassSchema classSchema = version.getLogicalClassSchema();
-                    List<IndexSchema> indexes = classSchema.getIndexes();
-                    SparseBitSet extent = extentMap.getExtent( classSchema.getClassName() );
-                    boolean hasIndexes = !indexes.isEmpty();
+                    ClassSchema classSchema = version.getClassSchema();
+                    String className = classSchema.getClassName();
+                    SparseBitSet extent = extentMap.getExtent(className);
                     boolean hasExtent = extent != null;
+                    
+                    // TODO In the future, we should spin this off to a separate thread that handles
+                    // index updates. To check that the index is in sync, the index will post a txn id
+                    // when the transaction's index updates are complete.
+                    
+                    // For indexes, we have to go all of the way up the class hierarchy and
+                    // find parent indexes too.
                     IndexMap indexMap = (IndexMap)getObjectForOID(BaseObjectServer.INDEXES_OID);
+                    List<IndexInfo> indexes = new ArrayList<IndexInfo>();
+                    buildIndexList(schema, indexMap, className, indexes);
+                    String[] superTypeNames = version.getSuperTypeNames();
+                    for (String superTypeName : superTypeNames) {
+                        buildIndexList(schema, indexMap, superTypeName, indexes);
+                    }
+                    
+                    boolean hasIndexes = !indexes.isEmpty();
 
                     for (StoredOID storedOID : oids) {
                         long oid = storedOID.getOID();
@@ -167,14 +181,12 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                             // TODO session method to retrieve stored object, (not updated) but
                             // TODO what about second update.
                             // TODO Add method to tree to get current key for oid.
-                            // TODO Need builder in case index set on super class that is newly 
-                            // TODO added to schema.
-                            // TODO BaseObjectServerSession needs to add to super class indexes if they exist.
                             ClassInfo classInfo = getClassInfoForOIDs(new long[] { oid } )[0];
                             Persistable obj = PersistableHelper.createHollowPersistable(classInfo, oid, this);
-                            for (IndexSchema indexSchema : indexes) {
-                                Map index = indexMap.getIndex(classSchema, indexSchema);
-                                GenericKey key = new GenericKey(indexSchema, obj);
+                            for (IndexInfo indexInfo : indexes) {
+                                GenericKey key = new GenericKey(indexInfo.indexSchema, obj);
+                                Logger.global.info("indexing key " + key);
+                                Map index = indexInfo.index;
                                 if (index instanceof PersistentBxTree) {
                                     ((PersistentBxTree)index).insert(key, obj);
                                 }
@@ -195,6 +207,22 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
         finally {
             popAsPersister();
+        }
+    }
+
+    /**
+     * Builds a list of IndexInfo for the given class. Adds the IndexInfos to indexes. 
+     */
+    private void buildIndexList(Schema schema, IndexMap indexMap, String className, List<IndexInfo> indexes)
+    {
+        ClassSchema classSchema = schema.findClassSchema(className);
+        if (classSchema == null) {
+            return;
+        }
+        
+        List<IndexSchema> indexSchemas = classSchema.getIndexes();
+        for (IndexSchema indexSchema : indexSchemas) {
+            indexes.add( new IndexInfo(indexMap.getIndex(classSchema, indexSchema), indexSchema) );
         }
     }
     
@@ -403,7 +431,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             ClassVersionSchema version = schema.findClassVersion( classInfo.getCID() );
             // TODO handle indexes too!
             if (version != null) {
-                SparseBitSet extent = extentMap.getExtent( version.getLogicalClassSchema().getClassName() );
+                SparseBitSet extent = extentMap.getExtent( version.getClassSchema().getClassName() );
                 if (extent != null) {
                     extent.set(anOID, false);
                 }
@@ -444,7 +472,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             if (wantSubclasses) {
                 Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
                 for (ClassVersionSchema classVersion : subclasses) {
-                    extent = extentMap.getExtent( classVersion.getLogicalClassSchema().getClassName() );
+                    extent = extentMap.getExtent( classVersion.getClassSchema().getClassName() );
                     if (extent != null) {
                         result += extent.getNumBitsSet();
                     }
@@ -485,7 +513,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             if (wantSubclasses) {
                 Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
                 for (ClassVersionSchema classVersion : subclasses) {
-                    extent = extentMap.getExtent( classVersion.getLogicalClassSchema().getClassName() );
+                    extent = extentMap.getExtent( classVersion.getClassSchema().getClassName() );
                     if (extent != null) {
                         extents.add(extent);
                     }
@@ -526,7 +554,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         // CID already in schema?
         ClassVersionSchema version = schema.findClassVersion(aCID);
         if (version != null) {
-            String existingClassName = version.getLogicalClassSchema().getClassName();
+            String existingClassName = version.getClassSchema().getClassName();
             if (!existingClassName.equals(aClassName)) {
                 throw new ODMGException("Given class name " + aClassName + " does not match existing class name " + existingClassName
                                 + " for CID " + aCID);
@@ -910,6 +938,21 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
             }
             
             return mOID == ((StoredOID)anObject).mOID;
+        }
+    }
+    
+    /**
+     * Holder for an association between the index and its IndexSchema.
+     */
+    private static final class IndexInfo
+    {
+        Map index;
+        IndexSchema indexSchema;
+
+        public IndexInfo(Map someIndex, IndexSchema someIndexSchema)
+        {
+            index = someIndex;
+            indexSchema = someIndexSchema;
         }
     }
 }

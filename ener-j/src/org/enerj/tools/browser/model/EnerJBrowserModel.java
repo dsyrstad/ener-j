@@ -42,7 +42,7 @@ import javax.swing.ListModel;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJImplementation;
 import org.enerj.core.EnerJOQLQuery;
-import org.enerj.core.LogicalClassSchema;
+import org.enerj.core.ClassSchema;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
 import org.enerj.core.Schema;
@@ -153,10 +153,10 @@ public class EnerJBrowserModel
                 return null;
             }
 
-            Collection<LogicalClassSchema> classSchemas = schema.getLogicalClasses();
+            Collection<ClassSchema> classSchemas = schema.getClassSchemas();
             mExtents = new ArrayList( classSchemas.size() );
-            for (Iterator<LogicalClassSchema> iter = classSchemas.iterator(); iter.hasNext(); ) {
-                LogicalClassSchema classSchema = iter.next();
+            for (Iterator<ClassSchema> iter = classSchemas.iterator(); iter.hasNext(); ) {
+                ClassSchema classSchema = iter.next();
                 mExtents.add( classSchema.getClassName() );
             }
         }
