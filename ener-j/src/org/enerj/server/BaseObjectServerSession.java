@@ -185,7 +185,6 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                             Persistable obj = PersistableHelper.createHollowPersistable(classInfo, oid, this);
                             for (IndexInfo indexInfo : indexes) {
                                 GenericKey key = new GenericKey(indexInfo.indexSchema, obj);
-                                Logger.global.info("indexing key " + key);
                                 Map index = indexInfo.index;
                                 if (index instanceof PersistentBxTree) {
                                     ((PersistentBxTree)index).insert(key, obj);
