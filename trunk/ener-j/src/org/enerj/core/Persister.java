@@ -85,7 +85,7 @@ public interface Persister
      *
      * @param someOIDs the database Object IDs to be retrieved.
      *
-     * @return an array of hollow Persistables. 
+     * @return an array of hollow Persistables with the same number of elements as someOIDs. 
      *  An element in the array my be null if the corresponding OID doesn't exist.
      *
      * @throws ODMGRuntimeException if an error occurs.

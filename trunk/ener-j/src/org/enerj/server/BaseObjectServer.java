@@ -397,6 +397,8 @@ abstract public class BaseObjectServer implements ObjectServer
                 // TODOLOW maybe this should be optional?
                 IndexMap indexMap = (IndexMap)schemaSession.getObjectForOID(INDEXES_OID);
                 indexMap.createIndexForClass(classSchema, anIndexSchema);
+                
+                classSchema.getIndexes().add(anIndexSchema);
 
                 schemaSession.flushModifiedObjects();
                 schemaSession.commitTransaction();
