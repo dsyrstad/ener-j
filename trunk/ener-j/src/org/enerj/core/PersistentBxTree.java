@@ -40,6 +40,7 @@ import java.util.SortedMap;
 
 import org.enerj.annotations.Persist;
 import org.enerj.annotations.PersistenceAware;
+import org.enerj.apache.commons.collections.comparators.ComparableComparator;
 import org.enerj.apache.commons.collections.comparators.NullComparator;
 import org.enerj.apache.commons.collections.comparators.ReverseComparator;
 import org.odmg.DCollection;
@@ -96,7 +97,7 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     private Comparator<K> mOrigComparator = null;
     /** The root node of the tree. */
     private Node<K> mRootNode;
-    /** Maxmimum number of keys in a node. */
+    /** Maximum number of keys in a node. */
     private int mNodeSize;
     /** The number of entries in the map. */
     private int mSize = 0;
@@ -155,7 +156,8 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
         mComparator = aComparator;
         if (mComparator == null) {
             // ComparableComparator in one that handles comparison of nulls. Nulls always compare higher.
-            mComparator = (Comparator<K>)NullComparator.COMPARABLE_INSTANCE_NULLS_HIGH;
+            // NOTE: NEVER use the static instances of these. Statics and persistent objects don't mix.
+            mComparator = new NullComparator( new ComparableComparator(), true);
         }
         else if (!(mComparator instanceof NullComparator)) {
             try {
@@ -703,10 +705,10 @@ public class PersistentBxTree<K, V> extends AbstractMap<K, V> implements DMap<K,
     }
 
     /**
-     * Inserts a key into and it's corresponding value OID into the tree.
+     * Inserts a key into and its corresponding value OID into the tree.
      *
      * @param aKey the key.
-     * @param aValueOID the OID refering to the value for the key. 
+     * @param aValueOID the OID referring to the value for the key. 
      */
     private void insert(K aKey, long aValueOID)
     {

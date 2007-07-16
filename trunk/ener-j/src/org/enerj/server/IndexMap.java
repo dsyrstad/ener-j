@@ -26,10 +26,11 @@ import java.util.Map;
 
 import org.enerj.annotations.Index;
 import org.enerj.annotations.Persist;
+import org.enerj.apache.commons.collections.comparators.ComparableComparator;
 import org.enerj.apache.commons.collections.comparators.NullComparator;
+import org.enerj.core.ClassSchema;
 import org.enerj.core.IndexSchema;
 import org.enerj.core.LargePersistentHashMap;
-import org.enerj.core.ClassSchema;
 import org.enerj.core.PersistentBxTree;
 import org.odmg.ODMGException;
 
@@ -100,10 +101,12 @@ class IndexMap
             
             if (comparator == null && anIndexSchema.allowsNullKeys()) {
                 // TODOLOW should be option for null high/low comparison
-                comparator = NullComparator.COMPARABLE_INSTANCE_NULLS_HIGH;
+                // NOTE: NEVER use the static instances of these. Statics and persistent objects don't mix.
+                comparator = new NullComparator( new ComparableComparator(), true);
             }
             
-            map = new PersistentBxTree(PersistentBxTree.DEFAULT_KEYS_PER_NODE, comparator, 
+            // TODO The node size should be tunable.
+            map = new PersistentBxTree(1000, comparator, 
                             anIndexSchema.allowsDuplicateKeys(), false, anIndexSchema.isAscending());
         }
         else {

@@ -77,7 +77,7 @@ public class ObjectSerializer
     
     private static final Object PLACEHOLDER = new Object();
 
-    // Type ID markers (a psuedo-class ID). Mainly for SCOs.
+    // Type ID markers (a pseudo-class ID). Mainly for SCOs.
     // ! ! ! NOTE ! ! ! - The assigned numbers must NEVER change!
     private static final byte sNull_TypeId                        =   0;
     private static final byte sFCO_TypeId                         =   1;
@@ -2166,7 +2166,7 @@ public class ObjectSerializer
 
         public void resolve(ObjectSerializer anObjectSerializer, Object anObject, boolean shouldDisassociate) throws IOException
         {
-            // Nothing to do.
+            anObjectSerializer.resolveCollection((Collection)anObject, shouldDisassociate);
         }
     }
 

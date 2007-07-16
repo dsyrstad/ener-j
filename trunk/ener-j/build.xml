@@ -45,7 +45,8 @@ Available targets:
     	<property name="junit.jar" value="${lib.dir}/junit-3.8.1.jar" />
     	<property name="asm.jar" value="${lib.dir}/asm-3.0.jar" />
     	<property name="agent.jar" value="${lib.dir}/${agent-jarname}.jar" />
-        <property name="class.path" value="${build.dest}:${junit.jar}:${asm.jar}"/>
+    	<property name="commons-logging.jar" value="${lib.dir}/commons-logging-1.1.jar" />
+        <property name="class.path" value="${build.dest}:${junit.jar}:${asm.jar}:${commons-logging.jar}"/>
         <property name="sourceLevel" value="1.5"/>
         <property name="jvmopts"  value="-Xms512m -Xmx512m" />
 
@@ -289,6 +290,7 @@ LockScheduler.deadlockAlgorithm=Waits-For
   				<pathelement location="${build.testdest}"/>
     		    <pathelement location="${build.dest}"/>
                 <pathelement location="${asm.jar}"/>
+                <pathelement location="${commons-logging.jar}"/>
 			</classpath>
             <sysproperty key="enerj.dbpath" value="${databases.dir}"/>
             <arg value="${db}" />
@@ -311,6 +313,7 @@ LockScheduler.deadlockAlgorithm=Waits-For
   				<pathelement location="${build.testdest}"/>
     		    <pathelement location="${build.dest}"/>
                 <pathelement location="${asm.jar}"/>
+                <pathelement location="${commons-logging.jar}"/>
 			</classpath>
             <sysproperty key="enerj.dbpath" value="${databases.dir}"/>
             <arg value="${db}" />
@@ -327,6 +330,7 @@ LockScheduler.deadlockAlgorithm=Waits-For
   				<pathelement location="${build.testdest}"/>
     		    <pathelement location="${build.dest}"/>
                 <pathelement location="${asm.jar}"/>
+                <pathelement location="${commons-logging.jar}"/>
 			</classpath>
             <sysproperty key="enerj.dbpath" value="${databases.dir}"/>
             <arg value="${db}" />
