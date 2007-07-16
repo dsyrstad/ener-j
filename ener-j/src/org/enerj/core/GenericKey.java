@@ -41,36 +41,48 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
     private Object[] mComponents;
     
     /**
-     * Construct a GenericKey. 
+     * Construct either a GenericKey or, if the key is a single simple Comparable type, the key object itself. 
      *
      * @param anIndexSchema the index schema corresponding to anIndexObject. 
      * @param anIndexedObject the object being indexed.
+     * 
+     * @return a Comparable object that is the key.
      */
-    public GenericKey(IndexSchema anIndexSchema, Object anIndexedObject)
+    public static Comparable<?> createKey(IndexSchema anIndexSchema, Object anIndexedObject)
     {
-        // Build the key. All the capabilities of Apach Beanutils are available for a property.
+        // Build the key. All the capabilities of Apache Beanutils are available for a property.
+        // TODO Remove reliance on BeanUtils. It also has dependencies on commons-logging.
         String[] properties = anIndexSchema.getProperties();
-        mComponents = new Object[ properties.length ];
-        for (int i = 0; i < properties.length; i++) {
-            try {
-                mComponents[i] = PropertyUtils.getProperty(anIndexedObject, properties[i]);
-            }
-            catch (IllegalAccessException e) {
-                throw new ODMGRuntimeException(e);
-            }
-            catch (InvocationTargetException e) {
-                throw new ODMGRuntimeException(e.getCause());
-            }
-            catch (NoSuchMethodException e) {
-                throw new ODMGRuntimeException(e);
-            }
-            
-            if (mComponents[i] != null && !(mComponents[i] instanceof Comparable)) {
-                throw new ODMGRuntimeException("Property \"" + properties[i] + "\" must be a Comparable.");
+        Object[] components = new Object[ properties.length ];
+        if (anIndexedObject != null) {
+            for (int i = 0; i < properties.length; i++) {
+                try {
+                    components[i] = PropertyUtils.getProperty(anIndexedObject, properties[i]);
+                }
+                catch (IllegalAccessException e) {
+                    throw new ODMGRuntimeException(e);
+                }
+                catch (InvocationTargetException e) {
+                    throw new ODMGRuntimeException(e.getCause());
+                }
+                catch (NoSuchMethodException e) {
+                    throw new ODMGRuntimeException(e);
+                }
+                
+                if (components[i] != null && !(components[i] instanceof Comparable)) {
+                    throw new ODMGRuntimeException("Property \"" + properties[i] + "\" must be a Comparable.");
+                }
             }
         }
         
         // TODO Handle this. anIndexSchema.getComparatorClassName(); Use it to compare elements.
+        
+        // Simple optimization. If one element that is itself a Comparable, use it directly.
+        if (components.length == 1 && components[0] instanceof Comparable) {
+            return (Comparable<?>)components[0];
+        }
+        
+        return new GenericKey(components);
     }
     
     /**

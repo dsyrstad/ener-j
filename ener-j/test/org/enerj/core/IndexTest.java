@@ -28,6 +28,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import org.enerj.annotations.Index;
+import org.enerj.annotations.Indexes;
 import org.enerj.annotations.Persist;
 import org.odmg.Database;
 import org.odmg.Implementation;
@@ -83,10 +84,14 @@ public class IndexTest extends DatabaseTestCase
 
 
     @Persist
-    private static class TestClass1
+    @Indexes( {
+        @Index(name="testIndex", properties={ "string" }),
+        @Index(name="testIndex2", properties={ "value" }),
+        @Index(name="testIndex3", properties={ "value", "string" })
+    } )
+    public static class TestClass1
     {
         private int mValue;
-        @Index(name="testIndex")
         private String mString;
         
 
@@ -97,13 +102,13 @@ public class IndexTest extends DatabaseTestCase
         }
             
 
-        int getValue()
+        public int getValue()
         {
             return mValue;
         }
 
 
-        void setValue(int aValue)
+        public void setValue(int aValue)
         {
             mValue = aValue;
         }

@@ -4,6 +4,10 @@ $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/Notes.txt,v 1.1 2005/08/16 04
 Notes:
 ------
 
+- NEVER persist objects that are referenced as statics in a class. It causes the internal Ener-j state of
+  the static to get overwritten and when you try to use it (E.g., NullComparator), Ener-J thinks the
+  static is not loaded and attempts and fails to load it.
+
 - DefaultPersistableObjectCache is variable depending on the state of GCing. There's been at least one
   difficult/weird bug (ExtentTest) that was potentially due to the variable state of the cache. 
   

@@ -49,7 +49,7 @@ public class SystemCIDMap
         // NOTE! These CIDs must NEVER change!
         sNameToCIDMap.put("org.enerj.core.Schema",                           1L);
         sNameToCIDMap.put("org.enerj.core.ClassVersionSchema",               2L);
-        sNameToCIDMap.put("org.enerj.core.ClassSchema",               3L);
+        sNameToCIDMap.put("org.enerj.core.ClassSchema",                      3L);
         sNameToCIDMap.put("org.enerj.core.PersistentHashMap",                4L);
         sNameToCIDMap.put("org.enerj.core.PersistentHashSet",                5L);
         sNameToCIDMap.put("org.enerj.server.ExtentMap",                      6L);
@@ -66,6 +66,8 @@ public class SystemCIDMap
         sNameToCIDMap.put("org.enerj.core.LargePersistentArrayList$Node",   17L);
         sNameToCIDMap.put("org.enerj.core.PersistentBxTree",                18L);
         sNameToCIDMap.put("org.enerj.core.PersistentBxTree$Node",           19L);
+        sNameToCIDMap.put("org.enerj.apache.commons.collections.comparators.NullComparator", 20L);
+        sNameToCIDMap.put("org.enerj.apache.commons.collections.comparators.ComparableComparator", 21L);
         
         for (Map.Entry<String, Long> entry : (Set<Map.Entry<String, Long>>)sNameToCIDMap.entrySet()) {
             sCIDToNameMap.put(entry.getValue(), entry.getKey());

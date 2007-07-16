@@ -140,6 +140,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         pushAsPersister();
         try {
             ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
+            IndexMap indexMap = (IndexMap)getObjectForOID(BaseObjectServer.INDEXES_OID);
             for (long cid : mStoredOIDs.keySet()) {
                 Set<StoredOID> oids = mStoredOIDs.get(cid);
                 if (oids != null) {
@@ -159,7 +160,6 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                     
                     // For indexes, we have to go all of the way up the class hierarchy and
                     // find parent indexes too.
-                    IndexMap indexMap = (IndexMap)getObjectForOID(BaseObjectServer.INDEXES_OID);
                     List<IndexInfo> indexes = new ArrayList<IndexInfo>();
                     buildIndexList(schema, indexMap, className, indexes);
                     String[] superTypeNames = version.getSuperTypeNames();
@@ -184,7 +184,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                             ClassInfo classInfo = getClassInfoForOIDs(new long[] { oid } )[0];
                             Persistable obj = PersistableHelper.createHollowPersistable(classInfo, oid, this);
                             for (IndexInfo indexInfo : indexes) {
-                                GenericKey key = new GenericKey(indexInfo.indexSchema, obj);
+                                Object key = GenericKey.createKey(indexInfo.indexSchema, obj);
                                 Map index = indexInfo.index;
                                 if (index instanceof PersistentBxTree) {
                                     ((PersistentBxTree)index).insert(key, obj);

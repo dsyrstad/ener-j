@@ -22,6 +22,8 @@
 
 package org.enerj.core;
 
+import java.util.Comparator;
+
 import org.enerj.annotations.Index;
 import org.enerj.annotations.Indexes;
 
@@ -58,9 +60,9 @@ public class GenericKeyTest extends TestCase
      */
     public void testHashCode()
     {
-        GenericKey key1 = new GenericKey(mIndexSchemaEmplNum, mEmployee1);
-        GenericKey key1a = new GenericKey(mIndexSchemaEmplNum, mEmployee1a);
-        GenericKey key2 = new GenericKey(mIndexSchemaEmplNum, mEmployee2);
+        Object key1 = GenericKey.createKey(mIndexSchemaEmplNum, mEmployee1);
+        Object key1a = GenericKey.createKey(mIndexSchemaEmplNum, mEmployee1a);
+        Object key2 = GenericKey.createKey(mIndexSchemaEmplNum, mEmployee2);
         assertEquals( key1.hashCode(), key1a.hashCode() );
         assertTrue( key2.hashCode() != key1.hashCode() );
     }
@@ -70,20 +72,19 @@ public class GenericKeyTest extends TestCase
      */
     public void testCompare()
     {
-        GenericKey key1 = new GenericKey(mIndexSchemaEmplNum, mEmployee1);
-        GenericKey key2 = new GenericKey(mIndexSchemaEmplNum, mEmployee2);
-        assertTrue( key1.compare(key1, key2) < 0);
-        assertTrue( key2.compare(key2, key1) > 0);
-        assertTrue( key1.compare(key1, key1) == 0);
+        Comparable key1 = GenericKey.createKey(mIndexSchemaEmplNum, mEmployee1);
+        Comparable key2 = GenericKey.createKey(mIndexSchemaEmplNum, mEmployee2);
+        assertFalse( key1 instanceof Comparator );
+        assertFalse( key2 instanceof Comparator );
 
-        GenericKey key3 = new GenericKey(mIndexSchemaComposite, mEmployee1);
-        GenericKey key4 = new GenericKey(mIndexSchemaComposite, mEmployee2);
+        Comparator key3 = (Comparator)GenericKey.createKey(mIndexSchemaComposite, mEmployee1);
+        Comparator key4 = (Comparator)GenericKey.createKey(mIndexSchemaComposite, mEmployee2);
         assertTrue( key3.compare(key3, key4) < 0);
         assertTrue( key4.compare(key4, key3) > 0);
         assertTrue( key3.compare(key3, key3) == 0);
 
-        GenericKey key5 = new GenericKey(mIndexSchemaComposite2, mEmployee1);
-        GenericKey key6 = new GenericKey(mIndexSchemaComposite2, mEmployee2);
+        Comparator key5 = (Comparator)GenericKey.createKey(mIndexSchemaComposite2, mEmployee1);
+        Comparator key6 = (Comparator)GenericKey.createKey(mIndexSchemaComposite2, mEmployee2);
         assertTrue( key5.compare(key5, key6) > 0);
         assertTrue( key6.compare(key6, key5) < 0);
         assertTrue( key5.compare(key5, key5) == 0);
@@ -94,20 +95,20 @@ public class GenericKeyTest extends TestCase
      */
     public void testCompareTo()
     {
-        GenericKey key1 = new GenericKey(mIndexSchemaEmplNum, mEmployee1);
-        GenericKey key2 = new GenericKey(mIndexSchemaEmplNum, mEmployee2);
+        Comparable key1 = GenericKey.createKey(mIndexSchemaEmplNum, mEmployee1);
+        Comparable key2 = GenericKey.createKey(mIndexSchemaEmplNum, mEmployee2);
         assertTrue( key1.compareTo(key2) < 0);
         assertTrue( key2.compareTo(key1) > 0);
         assertTrue( key1.compareTo(key1) == 0);
 
-        GenericKey key3 = new GenericKey(mIndexSchemaComposite, mEmployee1);
-        GenericKey key4 = new GenericKey(mIndexSchemaComposite, mEmployee2);
+        Comparable key3 = GenericKey.createKey(mIndexSchemaComposite, mEmployee1);
+        Comparable key4 = GenericKey.createKey(mIndexSchemaComposite, mEmployee2);
         assertTrue( key3.compareTo(key4) < 0);
         assertTrue( key4.compareTo(key3) > 0);
         assertTrue( key3.compareTo(key3) == 0);
 
-        GenericKey key5 = new GenericKey(mIndexSchemaComposite2, mEmployee1);
-        GenericKey key6 = new GenericKey(mIndexSchemaComposite2, mEmployee2);
+        Comparable key5 = GenericKey.createKey(mIndexSchemaComposite2, mEmployee1);
+        Comparable key6 = GenericKey.createKey(mIndexSchemaComposite2, mEmployee2);
         assertTrue( key5.compareTo(key6) > 0);
         assertTrue( key6.compareTo(key5) < 0);
         assertTrue( key5.compareTo(key5) == 0);
@@ -118,9 +119,9 @@ public class GenericKeyTest extends TestCase
      */
     public void testEqualsObject()
     {
-        GenericKey key1 = new GenericKey(mIndexSchemaEmplNum, mEmployee1);
-        GenericKey key1a = new GenericKey(mIndexSchemaEmplNum, mEmployee1a);
-        GenericKey key2 = new GenericKey(mIndexSchemaEmplNum, mEmployee2);
+        Comparable key1 = GenericKey.createKey(mIndexSchemaEmplNum, mEmployee1);
+        Comparable key1a = GenericKey.createKey(mIndexSchemaEmplNum, mEmployee1a);
+        Comparable key2 = GenericKey.createKey(mIndexSchemaEmplNum, mEmployee2);
         assertTrue( key1.equals(key1a) );
         assertFalse( key2.equals(key1) );
     }
