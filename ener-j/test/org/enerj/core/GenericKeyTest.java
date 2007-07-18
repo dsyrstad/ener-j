@@ -131,7 +131,7 @@ public class GenericKeyTest extends TestCase
     @Indexes( {
         @Index(type=Index.Type.BTree, name="emplNum", properties={ "employeeNumber" } ),
         @Index(type=Index.Type.BTree, name="composite", properties={ "firstName", "lastName", "address.city" } ),
-        @Index(type=Index.Type.BTree, name="composite2", properties={ "lastName", "firstName", "address.city" } ),
+        @Index(type=Index.Type.BTree, name="composite2", properties={ "lastName", "firstName", "address.city" } )
     } )
     public static final class Employee 
     {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000, 2006 Visual Systems Corporation.
+ * Copyright 2000, 2007 Visual Systems Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License version 2
  * which accompanies this distribution in a file named "COPYING".
@@ -37,28 +37,10 @@ import org.enerj.annotations.Persist;
 import org.enerj.annotations.PersistenceAware;
 import org.odmg.QueryInvalidException;
 
-/*
- * Note: This class was derived from Apache's Harmony project. 
- * 
- *  Licensed to the Apache Software Foundation (ASF) under one or more
- *  contributor license agreements.  See the NOTICE file distributed with
- *  this work for additional information regarding copyright ownership.
- *  The ASF licenses this file to You under the Apache License, Version 2.0
- *  (the "License"); you may not use this file except in compliance with
- *  the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-
 /**
- * Ener-J implementation of org.odmg.DMap which supports large persistable hash maps
- * as first-class objects (FCOs). This type of map is useful when the map itself cannot
+ * Ener-J implementation of org.odmg.DMap which supports persistable linear hash tables (the linear hash
+ * table algorithm as described by W. Litwin in 1980) as first-class objects (FCOs). 
+ * This type of map is useful when the map itself cannot
  * fit entirely in memory at one time. The map never needs to be resized like a
  * HashMap sometimes does. If you have an map that can fit
  * reasonably in memory or you want to conserve disk storage space, consider {@link PersistentHashMap}.
@@ -76,13 +58,12 @@ import org.odmg.QueryInvalidException;
  * <p>
  * This map optionally supports duplicate keys, which may be retrieved using the DuplicateKeyMap interface.
  *
- * @version $Id: PersistentMap.java,v 1.3 2006/05/05 13:47:14 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.DMap
  * @see PersistentHashMap
  */
 @Persist
-public class LargePersistentHashMap<K, V> extends AbstractMap<K, V> 
+public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V> 
     implements org.odmg.DMap<K, V>, Cloneable, DuplicateKeyMap<K, V>
 {
     public static final int DEFAULT_NODE_SIZE = 1024;
@@ -97,7 +78,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
      * Constructs a new empty instance of LargePersistentHashMap with a node size of 1024.
      * This will comfortably support about 1 billion objects. The map does not support duplicate keys.
      */
-    public LargePersistentHashMap()
+    public PersistentLinearHashMap()
     {
         this(DEFAULT_NODE_SIZE, false);
     }
@@ -113,7 +94,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
      * @exception IllegalArgumentException
      *                when the nodeSize is less than zero.
      */
-    public LargePersistentHashMap(int nodeSize)
+    public PersistentLinearHashMap(int nodeSize)
     {
         this(nodeSize, false);
     }
@@ -129,7 +110,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
      * @exception IllegalArgumentException
      *                when the nodeSize is less than zero.
      */
-    public LargePersistentHashMap(int nodeSize, boolean allowDuplicateKeys)
+    public PersistentLinearHashMap(int nodeSize, boolean allowDuplicateKeys)
     {
         if (nodeSize < 0) {
             throw new IllegalArgumentException();
@@ -150,7 +131,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
      * @param map
      *            the mappings to add
      */
-    public LargePersistentHashMap(Map<? extends K, ? extends V> map)
+    public PersistentLinearHashMap(Map<? extends K, ? extends V> map)
     {
         this();
         putAll(map);
@@ -183,10 +164,10 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
      */
     @Override
     @SuppressWarnings("unchecked")
-    public LargePersistentHashMap<K, V> clone()
+    public PersistentLinearHashMap<K, V> clone()
     {
         try {
-            LargePersistentHashMap<K, V> map = (LargePersistentHashMap<K, V>)super.clone();
+            PersistentLinearHashMap<K, V> map = (PersistentLinearHashMap<K, V>)super.clone();
             map.elementData = new LargePersistentArrayList<Entry<K,V>>( elementData.getNodeSize() );
             long size = elementData.sizeAsLong();
             for (long i = 0; i < size; i++) {
@@ -273,7 +254,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
     
     public Collection<V> getValues(Object key)
     {
-        return new LargePersistentHashMap.ValuesForKeyCollection<V>(getEntry(key), this);
+        return new PersistentLinearHashMap.ValuesForKeyCollection<V>(getEntry(key), this);
     }
 
     private Entry<K, V> getEntry(Object key)
@@ -543,9 +524,9 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
 
         Entry<KT, VT> lastEntry;
 
-        final LargePersistentHashMap<KT, VT> associatedMap;
+        final PersistentLinearHashMap<KT, VT> associatedMap;
 
-        HashMapIterator(Entry.Type<E, KT, VT> value, LargePersistentHashMap<KT, VT> hm)
+        HashMapIterator(Entry.Type<E, KT, VT> value, PersistentLinearHashMap<KT, VT> hm)
         {
             associatedMap = hm;
             type = value;
@@ -626,14 +607,14 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
     @PersistenceAware
     static class HashMapEntrySet<KT, VT> extends AbstractSet<Map.Entry<KT, VT>>
     {
-        private final LargePersistentHashMap<KT, VT> associatedMap;
+        private final PersistentLinearHashMap<KT, VT> associatedMap;
 
-        HashMapEntrySet(LargePersistentHashMap<KT, VT> hm)
+        HashMapEntrySet(PersistentLinearHashMap<KT, VT> hm)
         {
             associatedMap = hm;
         }
 
-        LargePersistentHashMap<KT, VT> hashMap()
+        PersistentLinearHashMap<KT, VT> hashMap()
         {
             return associatedMap;
         }
@@ -686,10 +667,10 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
     private static final class ValuesForKeyCollection<V> extends AbstractCollection<V>
     {
         private Entry<?,V> mStartingEntry;
-        private LargePersistentHashMap<?, V> mMap;
+        private PersistentLinearHashMap<?, V> mMap;
         private int mSize = -1;
 
-        ValuesForKeyCollection(Entry<?,V> aStartingEntry, LargePersistentHashMap<?, V> aMap)
+        ValuesForKeyCollection(Entry<?,V> aStartingEntry, PersistentLinearHashMap<?, V> aMap)
         {
             mStartingEntry = aStartingEntry;
             mMap = aMap;
@@ -720,13 +701,13 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
     @PersistenceAware
     private static final class ValuesForKeyIterator<V> implements Iterator<V>
     {
-        LargePersistentHashMap<?, V> mMap;
+        PersistentLinearHashMap<?, V> mMap;
         int expectedModCount;
 
         Entry<?, V> entry;
         Object mKey;
 
-        ValuesForKeyIterator(Entry<?, V> aStartingEntry, LargePersistentHashMap<?, V> aMap)
+        ValuesForKeyIterator(Entry<?, V> aStartingEntry, PersistentLinearHashMap<?, V> aMap)
         {
             entry = aStartingEntry;
             mKey = aStartingEntry.getKey();
