@@ -110,7 +110,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
      * @param nodeSize the 
      *            the initial capacity of this LargePersistentHashMap.
      * 
-     * @exception IllegalArgumentException
+     * @throws IllegalArgumentException
      *                when the nodeSize is less than zero.
      */
     public LargePersistentHashMap(int nodeSize)
@@ -126,7 +126,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
      * @param nodeSize the 
      *            the initial capacity of this LargePersistentHashMap.
      * 
-     * @exception IllegalArgumentException
+     * @throws IllegalArgumentException
      *                when the nodeSize is less than zero.
      */
     public LargePersistentHashMap(int nodeSize, boolean allowDuplicateKeys)

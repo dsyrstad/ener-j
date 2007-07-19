@@ -39,99 +39,124 @@ import org.enerj.annotations.PersistenceAware;
 import org.odmg.QueryInvalidException;
 
 /**
- * Ener-J implementation of org.odmg.DMap which supports persistable linear hash tables (the linear hash
- * table algorithm as described by W. Litwin in 1980) as first-class objects (FCOs). 
- * This type of map is useful when the map itself cannot
- * fit entirely in memory at one time. If you have an map that can fit
- * reasonably in memory or you want to conserve disk storage space, consider {@link PersistentHashMap}.
+ * Ener-J implementation of org.odmg.DMap which supports persistable linear hash tables (the linear
+ * hash table algorithm as described by W. Litwin in 1980) as first-class objects (FCOs). This type
+ * of map is useful when the map itself cannot fit entirely in memory at one time. If you have an
+ * map that can fit reasonably in memory or you want to conserve disk storage space, consider
+ * {@link PersistentHashMap}.
  * <p>
- * The algorithm for deletion is somewhat different from Litwin's in that blocks are never removed from the
- * chain or combined. Instead, the key is simply removed from the block's array of Key/OID pairs. If the block
- * is reduced to zero keys, it is left in the chain for later reuse. A rebuild of the index is required to
- * remove this extra space if it is never reused.  
+ * The algorithm for deletion is somewhat different from Litwin's in that blocks are never removed
+ * from the chain or combined. Instead, the key is simply removed from the block's array of Key/OID
+ * pairs. If the block is reduced to zero keys, it is left in the chain for later reuse. A rebuild
+ * of the index is required to remove this extra space if it is never reused.
  * 
- * If you reference this type of map in your object, it is treated as a FCO,
- * meaning that it will be loaded only when directly referenced (demand loaded).
- * It also allows the map to be referenced from several different persistable
- * objects, all sharing the same instance of the collection. 
+ * If you reference this type of map in your object, it is treated as a FCO, meaning that it will be
+ * loaded only when directly referenced (demand loaded). It also allows the map to be referenced
+ * from several different persistable objects, all sharing the same instance of the collection.
  * <p>
- * If you were to reference a java.util.HashMap directly in your object (rather than this class), the
- * collection would be treated as an SCO (second-class object) and be loaded when
- * your object is loaded. Also, any changes to the collection would cause your object
- * to also be written to the database. 
+ * If you were to reference a java.util.HashMap directly in your object (rather than this class),
+ * the collection would be treated as an SCO (second-class object) and be loaded when your object is
+ * loaded. Also, any changes to the collection would cause your object to also be written to the
+ * database.
  * <p>
- * This map optionally supports duplicate keys, which may be retrieved using the DuplicateKeyMap interface.
- *
+ * This map optionally supports duplicate keys, which may be retrieved using the DuplicateKeyMap
+ * interface.
+ * 
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see org.odmg.DMap
  * @see PersistentHashMap
+ * @see LargePersistentHashMap
  */
 @Persist
-public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V> 
-    implements org.odmg.DMap<K, V>, Cloneable, DuplicateKeyMap<K, V>
+public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V> implements org.odmg.DMap<K, V>, Cloneable,
+    DuplicateKeyMap<K, V>
 {
-    /** With this size, if every bucket has one block, 1,073,741,824,000 (1 trillion) entries are supported.
-     * However, the table is not limited to this size because blocks can be chained.
+    /**
+     * With this size, if every bucket has one block, 1,073,741,824,000 (1 trillion) entries are
+     * supported. However, the table is not limited to this size because blocks can be chained.
      */
     public static final int DEFAULT_NUM_KEYS_PER_BLOCK = 500;
-    /** Maximum number of bits that we'll use from the hash code. We always clear the sign bit, so we
-     * use the least significant 31 bits. 
-     */
-    public static final int MAX_BITS = 31;
+    public static final double DEFAULT_CAPACITY_LIMIT = .75;
     
+    /**
+     * Maximum number of bits that we'll use from the hash code. 31 bits allows us to always deal with positive values. 
+     */
+    private static final int MAX_HASH_CODE_BITS = 31;
+    private static final int NUM_BITS_IN_INT = 32;
+
+    /** The capacity limit ratio set initially. */ 
+    private double capacityLimit; 
     private boolean allowDuplicateKeys;
     private int elementCount = 0;
     /* Number of key/oid pairs in a block. */
     private int blockSize;
-    /** Number of bits currently being used from the hash code. buckets.length is always 2^numBits. 
+    /**
+     * Number of bits currently being used from the hash code. buckets.length is always 2^numBits.
      * We start out with 8 bits which allows for about 70,000 entries before growing the table.
-     */ 
+     */
     private int numBits = 8;
-    /* The Bucket table. The size of this table is always a power of 2 and always
-     * 2^numBits. Each bucket points to the first block in the chain, or null. */
+    /*
+     * The Bucket table. The size of this table is always a power of 2 and always 2^numBits. Each
+     * bucket points to the first block in the chain, or null.
+     */
     private Block[] buckets = new Block[256];
+    /** The table capacity limit before growing the table. Indexed by numBits. Represents maxmium number of 
+     * entries in the table.
+     * If elementCount >= capacityLimitsForNumBits[numBits], buckets[] size doubles. */
+    private long[] capacityLimitsForNumBits = new long[MAX_HASH_CODE_BITS + 1];
 
     transient int modCount = 0;
 
     /**
-     * Constructs a new empty instance of PersistentLinearHashMap that does not support duplicate keys.
-     * The block size is DEFAULT_NUM_KEYS_PER_BLOCK.
+     * Constructs a new empty instance of PersistentLinearHashMap that does not support duplicate
+     * keys. The block size is DEFAULT_NUM_KEYS_PER_BLOCK and capacity limit is DEFAULT_CAPACITY_LIMIT.
      */
     public PersistentLinearHashMap()
     {
-        this(DEFAULT_NUM_KEYS_PER_BLOCK, false);
+        this(DEFAULT_NUM_KEYS_PER_BLOCK, false, DEFAULT_CAPACITY_LIMIT);
     }
 
     /**
-     * Constructs a new instance of PersistentLinearHashMap with the specified block size. The map does not support duplicate keys.  
+     * Constructs a new instance of PersistentLinearHashMap with the specified block size. The map
+     * does not support duplicate keys. The capacity limit is DEFAULT_CAPACITY_LIMIT.
      * 
-     * @param blockSize the maximum number of keys per block. There may be multiple blocks chained to a bucket,
-     *  but typically there is only one.
+     * @param blockSize the maximum number of keys per block. There may be multiple blocks chained
+     *        to a bucket, but typically there is only one.
      * 
-     * @exception IllegalArgumentException if blockSize is less than zero.
+     * @throws IllegalArgumentException if blockSize is less than zero.
      */
     public PersistentLinearHashMap(int blockSize)
     {
-        this(blockSize, false);
+        this(blockSize, false, DEFAULT_CAPACITY_LIMIT);
     }
 
     /**
-     * Constructs a new instance of PersistentLinearHashMap with the specified block size. 
-     * The map optionally supports duplicate keys.  
+     * Constructs a new instance of PersistentLinearHashMap with the specified block size. The map
+     * optionally supports duplicate keys.
      * 
-     * @param blockSize the maximum number of keys per block. There may be multiple blocks chained to a bucket,
-     *  but typically there is only one.
+     * @param blockSize the maximum number of keys per block. There may be multiple blocks chained
+     *        to a bucket, but typically there is only one.
+     * @param capacityLimit the capacity ratio that, when exceed, the table will grow. Must be > .1 and < .9. 
      * 
-     * @exception IllegalArgumentException if blockSize is less than zero.
+     * @throws IllegalArgumentException if blockSize is less than zero.
      */
-    public PersistentLinearHashMap(int blockSize, boolean allowDuplicateKeys)
+    public PersistentLinearHashMap(int blockSize, boolean allowDuplicateKeys, double capacityLimit)
     {
         if (blockSize < 0) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Block size too small");
+        }
+        
+        if (capacityLimit < .1 || capacityLimit > .9) {
+            throw new IllegalArgumentException("Capacity limit must be between .1 and .9");
         }
 
         this.allowDuplicateKeys = allowDuplicateKeys;
         this.blockSize = blockSize;
+        
+        // Calculate the capacity limit table.
+        for (int i = 0; i <= MAX_HASH_CODE_BITS; i++) {
+            capacityLimitsForNumBits[i] = (long)((1 << i) * blockSize * capacityLimit);
+        }
     }
 
     /**
@@ -151,7 +176,8 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
     }
 
     /**
-     * Answers a new PersistentLinearHashMap with the same mappings and size as this PersistentLinearHashMap.
+     * Answers a new PersistentLinearHashMap with the same mappings and size as this
+     * PersistentLinearHashMap.
      * 
      * @return a shallow copy of this PersistentLinearHashMap
      * 
@@ -162,16 +188,14 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
     public PersistentLinearHashMap<K, V> clone()
     {
         try {
-            PersistentLinearHashMap<K, V> map = (PersistentLinearHashMap<K, V>)super.clone();
-            map.elementData = new LargePersistentArrayList<Entry<K,V>>( elementData.getNodeSize() );
-            long size = elementData.sizeAsLong();
-            for (long i = 0; i < size; i++) {
-                Entry<K, V> entry = elementData.getAtIndex(i);
-                if (entry  != null) {
-                    map.elementData.setAtIndex(i, (Entry<K, V>)entry.clone());
+            PersistentLinearHashMap<K, V> map = (PersistentLinearHashMap<K, V>) super.clone();
+            map.buckets = new Block[buckets.length];
+            for (int i = 0; i < buckets.length; i++) {
+                if (buckets[i] != null) {
+                    map.buckets[i] = buckets[i].clone();
                 }
             }
-            
+
             return map;
         }
         catch (CloneNotSupportedException e) {
@@ -182,43 +206,41 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
     /**
      * Searches this PersistentLinearHashMap for the specified key.
      * 
-     * @param key
-     *            the object to search for
-     * @return true if <code>key</code> is a key of this PersistentLinearHashMap, false
-     *         otherwise
+     * @param key the object to search for
+     * @return true if <code>key</code> is a key of this PersistentLinearHashMap, false otherwise
      */
     @Override
     public boolean containsKey(Object key)
     {
-        return getEntry(key) != null;
+        return getBlockPos(key) != null;
     }
 
     /**
      * Tests two keys for equality. This method calls key.equals() but also handles nulls.
      * 
-     * @param k1
-     *            first key to compare
-     * @param k2
-     *            second key to compare
-     * @return true if the keys are considered equal
+     * @param k1 first key to compare.
+     * @param blockPos the BlockPos of the second key to compare.
+     * 
+     * @return true if the keys are considered equal.
      */
-    private static boolean keysEqual(Object k1, Entry<?, ?> entry)
+    private static boolean keysEqual(Object k1, BlockPos<?, ?> blockPos)
     {
-        if (k1 == null && entry.key == null) {
+        Object k2 = blockPos.getKey();
+        if (k1 == null && k2 == null) {
             return true;
         }
-        
-        if (k1 == null || entry.key == null) {
+
+        if (k1 == null || k2 == null) {
             return false;
         }
 
-        return k1.equals(entry.key);
+        return k1.equals(k2);
     }
 
     /**
-     * Answers a Set of the mappings contained in this PersistentLinearHashMap. Each element in
-     * the set is a Map.Entry. The set is backed by this PersistentLinearHashMap so changes to
-     * one are reflected by the other. The set does not support adding.
+     * Answers a Set of the mappings contained in this PersistentLinearHashMap. Each element in the
+     * set is a Map.Entry. The set is backed by this PersistentLinearHashMap so changes to one are
+     * reflected by the other. The set does not support adding.
      * 
      * @return a Set of the mappings
      */
@@ -232,60 +254,60 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
      * Answers the value of the mapping with the specified key. If the map supports duplicate keys,
      * one of the corresponding is returned. If you want all duplicate key values, use getValues().
      * 
-     * @param key
-     *            the key
+     * @param key the key
      * @return the value of the mapping with the specified key
      */
     @Override
     public V get(Object key)
     {
-        Entry<K, V> m = getEntry(key);
-        if (m != null) {
-            return m.value;
+        BlockPos<K, V> pos = getBlockPos(key);
+        if (pos != null) {
+            return pos.getValue();
         }
+        
         return null;
     }
-    
+
     public Collection<V> getValues(Object key)
     {
-        return new PersistentLinearHashMap.ValuesForKeyCollection<V>(getEntry(key), this);
+        return new PersistentLinearHashMap.ValuesForKeyCollection<V>(getBlockPos(key), this);
     }
 
-    private Entry<K, V> getEntry(Object key)
+    /**
+     * Finds key in the table and return its block position.
+     * 
+     * @param key the key to find.
+     * 
+     * @return the BlockPos, or null if not found.
+     */
+    private BlockPos getBlockPos(Object key)
     {
-        long index = getModuloHash(key);
-        return findEntry(key, index);
+        int index = getBucketIndex(key);
+        Block head = buckets[index];
+        if (head == null) {
+            return null;
+        }
+        
+        return head.find(key);
     }
 
-    private long getModuloHash(Object key)
+    /**
+     * Gets the bucket index based on the hash code of the given key.
+     * 
+     * @param key the key, which may be null.
+     * 
+     * @return the bucket index. Null keys return an index of zero.
+     */
+    private int getBucketIndex(Object key)
     {
         if (key == null) {
+            // Nulls hash to bucket zero.
             return 0;
         }
-        
-        long positiveHash = (key.hashCode() & 0x7FFFFFFF);
-        long tableSize = elementData.sizeAsLong();
-        if (positiveHash < tableSize) {
-            return positiveHash; // Most typical case. Save a modulo op.
-        }
-        
-        return positiveHash % tableSize;  
-    }
 
-    private Entry<K, V> findEntry(Object key, long index)
-    {
-        Entry<K, V> entry = elementData.getAtIndex(index);
-        if (key != null) {
-            while (entry != null && !keysEqual(key, entry)) {
-                entry = entry.next;
-            }
-        }
-        else {
-            while (entry != null && entry.key != null) {
-                entry = entry.next;
-            }
-        }
-        return entry;
+        // The shift below shifts so there is at most numBits left. This can be
+        // used to directly index the bucket array.
+        return key.hashCode() >>> (NUM_BITS_IN_INT - numBits);
     }
 
     /**
@@ -302,90 +324,145 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
     }
 
     /**
-     * Maps the specified key to the specified value. If duplicate keys are support and a duplicate key 
-     * already exists, a new entry will be added and null will be returned. If duplicate keys are
-     * not supported and the key already exists, the entries value is replaced.
+     * Maps the specified key to the specified value. If duplicate keys are supported and a duplicate
+     * key already exists, a new entry will be added and null will be returned. If duplicate keys
+     * are not supported and the key already exists, the entries value is replaced.
      * 
-     * @param key
-     *            the key
-     * @param value
-     *            the value
-     * @return the value of any previous mapping with the specified key or null
-     *         if there was no mapping.
+     * @param key the key
+     * @param value the value
+     * @return the value of any previous mapping with the specified key or null if there was no
+     *         mapping.
      */
     @Override
     public V put(K key, V value)
     {
-        long index = getModuloHash(key);
-        Entry<K, V> entry = null;
-        
+        int index = getBucketIndex(key);
+
         if (!allowDuplicateKeys) {
-            entry = findEntry(key, index);
+            // Check to replace existing key
+            BlockPos<K, V> entry = buckets[index].find(key);
+            if (entry != null) {
+                // Replace existing value
+                V result = entry.getValue();
+                entry.setValue(value);
+                return result;
+            }
         }
 
-        if (entry == null) {
-            entry = createEntry(key, index, value);
-            ++elementCount;
-            return null;
+        // Adding a new entry.
+        // Over capacity limit?  
+        if (numBits < MAX_HASH_CODE_BITS && elementCount >= capacityLimitsForNumBits[numBits]) {
+            growTable();
+            // Need to get new index for the key now that the table has grown.
+            index = getBucketIndex(key);
+        }
+        
+        Block block = buckets[index];
+        if (block == null) {
+            // Create a new block head ;-)
+            block = new Block(blockSize, (byte)numBits);
+            buckets[index] = block;
+            EnerJImplementation.setModified(this);
         }
 
-        // Replace existing value
-        V result = entry.value;
-        entry.value = value;
-        return result;
-    }
-
-    private Entry<K, V> createEntry(K key, long index, V value)
-    {
-        Entry<K, V> entry = new Entry<K, V>(key, value);
-        entry.next = elementData.getAtIndex(index);
-        elementData.setAtIndex(index, entry);
+        // TODO check if a split is needed/possible. Possible if number of bits on the block
+        // is less than numBits. Also if more than one less, distribution may be around several 
+        // neighboring buckets. If bucket is occupied, combine (use add).
+        block.add(key, getOidAndWrapIfNeeded(this, value));
+        ++elementCount;
         ++modCount;
-        return entry;
-    }
 
+        return null;
+    }
+    
+    /**
+     * Doubles the size of the table, increments numBits, and reorganizes the bucket entries.
+     */
+    private void growTable()
+    {
+        //TODO
+        EnerJImplementation.setModified(this);
+    }
+    
+    /**
+     * @param object gets the OID for the specified object. If the object is not a Persistable, it is
+     *  first wrapped in a SCOWrapper and then the OID for the SCOWrapper is returned.
+     */
+    private static long getOidAndWrapIfNeeded(Object persistable, Object object)
+    {
+        Persister persister = PersistableHelper.getPersister(persistable);
+        if (persister == null) {
+            throw new IllegalStateException("Database must be open");
+        }
+        
+        long oid = persister.getOID(object);
+        if (oid == ObjectSerializer.NULL_OID) {
+            // Might be an SCO, wrap it.
+            SCOWrapper wrapper = new SCOWrapper(object);
+            oid = persister.getOID(wrapper);
+        }
+        
+        return oid;
+    }
+    
+    /**
+     * Performs the inverse function of getOidAndWrapIfNeeded().
+     */
+    private static Object getUnwrappedValue(Object persistable, long oid)
+    {
+        Object obj = PersistableHelper.getPersister(persistable).getObjectForOID(oid);
+        if (obj instanceof SCOWrapper) {
+            SCOWrapper wrapper = (SCOWrapper)obj;
+            obj = wrapper.getObject();
+        }
+        
+        return obj;
+    }
+    
     /**
      * Removes a mapping with the specified key from this PersistentLinearHashMap.
      * 
-     * @param key
-     *            the key of the mapping to remove
-     * @return the value of the removed mapping or null if key is not a key in
-     *         this PersistentLinearHashMap
+     * @param key the key of the mapping to remove.
+     * @return the value of the removed mapping or null if key is not a key in this
+     *         PersistentLinearHashMap.
      */
     @Override
     public V remove(Object key)
     {
-        Entry<K, V> entry = removeEntry(key);
-        if (entry != null) {
-            return entry.value;
+        long oid = removeEntry(key);
+        if (oid != ObjectSerializer.NULL_OID) {
+            return (V)getUnwrappedValue(this, oid);
         }
+        
         return null;
     }
 
-    private Entry<K, V> removeEntry(Object key)
+    /**
+     * Removes the first instance of the key that is found.
+     * 
+     * @param key the key whose entry is to be removed.
+     * 
+     * @return the OID corresponding to the key removed, or ObjectSerializer.NULL_OID if not found.
+     */
+    private long removeEntry(Object key)
     {
-        long index = getModuloHash(key);
-        Entry<K, V> last = null;
-        Entry<K, V> entry = elementData.getAtIndex(index);
-        while (entry != null && !keysEqual(key, entry)) {
-            last = entry;
-            entry = entry.next;
-        }
-
-        if (entry == null) {
-            return null;
-        }
-
-        if (last == null) {
-            elementData.setAtIndex(index, entry.next);
-        }
-        else {
-            last.next = entry.next;
+        int index = getBucketIndex(key);
+        Block block = buckets[index];
+        if (block == null) {
+            return ObjectSerializer.NULL_OID;
         }
         
+        BlockPos<K, V> blockPos = block.find(key);
+        if (blockPos == null) {
+            return ObjectSerializer.NULL_OID;
+        }
+
+        long oid = blockPos.getOid();
+        blockPos.remove();
+
         modCount++;
         elementCount--;
-        return entry;
+        return oid;
     }
 
     /**
@@ -398,101 +475,40 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
     {
         return elementCount;
     }
+
     public java.util.Iterator<V> select(String str) throws org.odmg.QueryInvalidException
     {
-        // TODO  finish
+        // TODO finish
         throw new QueryInvalidException("Not implemented yet");
     }
 
     public boolean existsElement(String str) throws org.odmg.QueryInvalidException
     {
-        // TODO  finish
+        // TODO finish
         throw new QueryInvalidException("Not implemented yet");
     }
 
     public org.odmg.DCollection<V> query(String str) throws org.odmg.QueryInvalidException
     {
-        // TODO  finish
+        // TODO finish
         throw new QueryInvalidException("Not implemented yet");
     }
 
     public V selectElement(String str) throws org.odmg.QueryInvalidException
     {
-        // TODO  finish
+        // TODO finish
         throw new QueryInvalidException("Not implemented yet");
-    }
-
-
-    // Private Map.Entry implementation
-    @Persist
-    private static class Entry<K, V> implements Map.Entry<K, V>
-    {
-        K key;
-        V value;
-
-        interface Type<RT, KT, VT>
-        {
-            RT get(Entry<KT, VT> entry);
-        }
-
-        Entry(K theKey, V theValue)
-        {
-            key = theKey;
-            value = theValue;
-        }
-
-        public K getKey()
-        {
-            return key;
-        }
-
-        public V getValue()
-        {
-            return value;
-        }
-
-        @Override
-        public boolean equals(Object object)
-        {
-            if (this == object) {
-                return true;
-            }
-            if (object instanceof Map.Entry) {
-                Map.Entry<?, ?> entry = (Map.Entry<?, ?>)object;
-                return (key == null ? entry.getKey() == null : key.equals(entry.getKey()))
-                                && (value == null ? entry.getValue() == null : value.equals(entry.getValue()));
-            }
-            return false;
-        }
-        
-        @Override
-        public int hashCode()
-        {
-            return (key == null ? 0 : key.hashCode()) ^ (value == null ? 0 : value.hashCode());
-        }
-
-        public V setValue(V object)
-        {
-            V result = value;
-            value = object;
-            return result;
-        }
-
-        @Override
-        public String toString()
-        {
-            return key + "=" + value;
-        }
     }
 
     @PersistenceAware
     private static class HashMapIterator<E, KT, VT> implements Iterator<E>
     {
+
         private long position = 0;
 
         int expectedModCount;
 
-        final Entry.Type<E, KT, VT> type;
+        final BlockPos.Type<E, KT, VT> type;
 
         boolean canRemove = false;
 
@@ -502,7 +518,7 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
 
         final PersistentLinearHashMap<KT, VT> associatedMap;
 
-        HashMapIterator(Entry.Type<E, KT, VT> value, PersistentLinearHashMap<KT, VT> hm)
+        HashMapIterator(BlockPos.Type<E, KT, VT> value, PersistentLinearHashMap<KT, VT> hm)
         {
             associatedMap = hm;
             type = value;
@@ -514,7 +530,7 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
             if (entry != null) {
                 return true;
             }
-            
+
             position = associatedMap.elementData.getNextNonNullIndex(position);
             return position >= 0;
         }
@@ -543,11 +559,11 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
                 if (lastEntry.next != entry) {
                     lastEntry = lastEntry.next;
                 }
-                
+
                 result = entry;
                 entry = entry.next;
             }
-            
+
             canRemove = true;
             return type.get(result);
         }
@@ -566,7 +582,7 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
                 // Find previous non-null.
                 while (associatedMap.elementData.getAtIndex(--position) == null) {
                 }
-            
+
                 associatedMap.elementData.setAtIndex(position, associatedMap.elementData.getAtIndex(position).next);
                 entry = null;
             }
@@ -579,10 +595,10 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
         }
     }
 
-
     @PersistenceAware
     static class HashMapEntrySet<KT, VT> extends AbstractSet<Map.Entry<KT, VT>>
     {
+
         private final PersistentLinearHashMap<KT, VT> associatedMap;
 
         HashMapEntrySet(PersistentLinearHashMap<KT, VT> hm)
@@ -611,7 +627,7 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
         public boolean remove(Object object)
         {
             if (contains(object)) {
-                associatedMap.remove(((Map.Entry)object).getKey());
+                associatedMap.remove(((Map.Entry) object).getKey());
                 return true;
             }
             return false;
@@ -621,7 +637,7 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
         public boolean contains(Object object)
         {
             if (object instanceof Map.Entry) {
-                Entry<KT, VT> entry = associatedMap.getEntry(((Map.Entry)object).getKey());
+                Entry<KT, VT> entry = associatedMap.getEntry(((Map.Entry) object).getKey());
                 return object.equals(entry);
             }
             return false;
@@ -630,7 +646,8 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
         @Override
         public Iterator<Map.Entry<KT, VT>> iterator()
         {
-            return new HashMapIterator<Map.Entry<KT, VT>, KT, VT>(new Entry.Type<Map.Entry<KT, VT>, KT, VT>() {
+            return new HashMapIterator<Map.Entry<KT, VT>, KT, VT>(new BlockPos.Type<Map.Entry<KT, VT>, KT, VT>() {
+
                 public Map.Entry<KT, VT> get(Entry<KT, VT> entry)
                 {
                     return entry;
@@ -642,11 +659,12 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
     @PersistenceAware
     private static final class ValuesForKeyCollection<V> extends AbstractCollection<V>
     {
-        private Entry<?,V> mStartingEntry;
+
+        private Entry<?, V> mStartingEntry;
         private PersistentLinearHashMap<?, V> mMap;
         private int mSize = -1;
 
-        ValuesForKeyCollection(Entry<?,V> aStartingEntry, PersistentLinearHashMap<?, V> aMap)
+        ValuesForKeyCollection(Entry<?, V> aStartingEntry, PersistentLinearHashMap<?, V> aMap)
         {
             mStartingEntry = aStartingEntry;
             mMap = aMap;
@@ -667,16 +685,16 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
                     ++mSize;
                 }
             }
-            
+
             return mSize;
         }
-        
-        
+
     }
 
     @PersistenceAware
     private static final class ValuesForKeyIterator<V> implements Iterator<V>
     {
+
         PersistentLinearHashMap<?, V> mMap;
         int expectedModCount;
 
@@ -712,9 +730,9 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
 
             Entry<?, V> result = entry;
             // Set entry to next matching key.
-            for (entry = entry.next; entry != null && !keysEqual(mKey, entry); entry = entry.next) 
-                    ;
-            
+            for (entry = entry.next; entry != null && !keysEqual(mKey, entry); entry = entry.next)
+                ;
+
             return result.getValue();
         }
 
@@ -724,30 +742,30 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
         }
     }
 
-    
     /**
      * Describes a block of keys and their OIDs. A block may also chain to another block.
      */
     @Persist
-    private static final class Block
+    private static final class Block implements Cloneable
     {
-        /** For keys contained in this block, the number of bits of the hash code used. */ 
+
+        /** For keys contained in this block, the number of bits of the hash code used. */
         private byte bitsUsed;
         /** Max number entries in this block. */
         private short blockSize;
         /** Number of entries consumed in keys and oids. */
         private int numEntriesUsed = 0;
         /** Typically these are SCOs (such as GenericKey) and are stored directly in the block. */
-        private Object[] keys; 
+        private Object[] keys;
         /** One-to-one correspondence with keys. The OID points to the object represented by the key. */
         private long[] oids;
         /** Next block in the chain. */
         private Block nextBlock = null;
-        
+
         Block(int blockSize, byte bitsUsed)
         {
             this.bitsUsed = bitsUsed;
-            this.blockSize = (short)blockSize;
+            this.blockSize = (short) blockSize;
             this.keys = new Object[blockSize];
             this.oids = new long[blockSize];
         }
@@ -766,20 +784,26 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
         {
             return nextBlock;
         }
-        
-        Object getKeyAt(BlockPos pos)
+
+        Object getKeyAt(int idx)
         {
-            return pos.block.keys[ pos.idx ];
+            return keys[idx];
+        }
+
+        long getOidAt(int idx)
+        {
+            return oids[idx];
         }
         
-        long getOidAt(BlockPos pos)
+        void setOidAt(int idx, long oid)
         {
-            return pos.block.oids[ pos.idx ];
+            oids[idx] = oid;
+            EnerJImplementation.setModified(this);
         }
-        
+
         /**
-         * Adds a key and an OID to the block. If this block is full, the chain is searched for available space.
-         * If no space is available, a new block is added to the chain.
+         * Adds a key and an OID to the block. If this block is full, the chain is searched for
+         * available space. If no space is available, a new block is added to the chain.
          */
         void add(Object key, long oid)
         {
@@ -790,26 +814,25 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
                     break;
                 }
             }
-            
+
             if (block == null) {
                 block = new Block(blockSize, bitsUsed);
                 prevBlock.nextBlock = block;
             }
-            
+
             block.keys[numEntriesUsed] = key;
             block.oids[numEntriesUsed] = oid;
             ++block.numEntriesUsed;
             EnerJImplementation.setModified(block);
         }
-        
+
         /**
-         * Finds the specified key. If duplicate keys exist, the first one found is returned. 
-         * If the key is not found in this block, subsequent blocks in the chain
-         * are searched.
+         * Finds the specified key. If duplicate keys exist, the first one found is returned. If the
+         * key is not found in this block, subsequent blocks in the chain are searched.
          * 
          * @param key the key to search for.
          * 
-         * @return the BlockPos, or null if the key could not be found. 
+         * @return the BlockPos, or null if the key could not be found.
          */
         BlockPos find(Object key)
         {
@@ -820,18 +843,17 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
                     }
                 }
             }
-            
+
             return null;
         }
-        
+
         /**
-         * Finds the specified oid. If duplicate OIDs exist, the first one found is returned. 
-         * If the OID is not found in this block, subsequent blocks in the chain
-         * are searched.
+         * Finds the specified oid. If duplicate OIDs exist, the first one found is returned. If the
+         * OID is not found in this block, subsequent blocks in the chain are searched.
          * 
          * @param oid the oid to search for.
          * 
-         * @return the BlockPos, or null if the oid could not be found. 
+         * @return the BlockPos, or null if the oid could not be found.
          */
         BlockPos find(long oid)
         {
@@ -842,51 +864,13 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
                     }
                 }
             }
-            
+
             return null;
         }
 
         /**
-         * Removes the specified key and its OID. If duplicate keys exist, the first one found is removed. 
-         * If the key is not found in this block, subsequent blocks in the chain
-         * are searched.
-         * 
-         * @param key the key to be removed.
-         * 
-         * @return true if the entry was removed, else false.
-         */
-        boolean remove(Object key)
-        {
-            BlockPos pos = find(key);
-            if (pos == null) {
-                return false;
-            }
-            
-            pos.block.removeAtIdx(pos.idx);
-            return true;
-        }
-        
-        /**
-         * Removes the specified oid and its key. If duplicate OIDs exist, the first one found is removed. 
-         * If the OID is not found in this block, subsequent blocks in the chain
-         * are searched.
-         * 
-         * @return true if the entry was removed, else false.
-         */
-        boolean remove(long oid)
-        {
-            BlockPos pos = find(oid);
-            if (pos == null) {
-                return false;
-            }
-            
-            pos.block.removeAtIdx(pos.idx);
-            return true;
-        }
-        
-        /**
          * Removes the key/oid pair at the specified index.
-         *  
+         * 
          * @param idx the index.
          */
         void removeAtIdx(int idx)
@@ -896,27 +880,132 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
                 System.arraycopy(keys, idx + 1, keys, idx, length);
                 System.arraycopy(oids, idx + 1, oids, idx, length);
             }
-            
+
             --numEntriesUsed;
             // Null-out the old last entry.
             keys[numEntriesUsed] = null;
             oids[numEntriesUsed] = 0;
             EnerJImplementation.setModified(this);
         }
+
+        /**
+         * {@inheritDoc} Clones this Block. If the block has subsequent blocks chained to it, those
+         * blocks are also cloned and a cloned chain is returned.
+         * 
+         * @see java.lang.Object#clone()
+         */
+        public Block clone()
+        {
+            try {
+                Block clone = (Block) super.clone();
+                clone.keys = this.keys.clone();
+                clone.oids = this.oids.clone();
+                if (this.nextBlock != null) {
+                    clone.nextBlock = this.nextBlock.clone();
+                }
+            }
+            catch (CloneNotSupportedException e) {
+                return null; // Shouldn't happen.
+            }
+
+            return null;
+        }
     }
-    
+
     /**
      * Represents a position in a block. Used as a return value.
      */
-    private static final class BlockPos
+    @PersistenceAware
+    private static final class BlockPos<K, V> implements Map.Entry<K, V>
     {
         Block block;
         int idx;
+
+        interface Type<RT, KT, VT>
+        {
+            RT get(Entry<KT, VT> entry);
+        }
 
         BlockPos(Block block, int idx)
         {
             this.block = block;
             this.idx = idx;
+        }
+
+        @Override
+        public K getKey()
+        {
+            return (K)block.getKeyAt(idx);
+        }
+
+        long getOid()
+        {
+            return block.getOidAt(idx);
+        }
+        
+        void setOid(long oid)
+        {
+            block.setOidAt(idx, oid);
+        }
+        
+        /**
+         * Remove the key/oid at this block position.
+         */
+        void remove()
+        {
+            block.removeAtIdx(idx);
+        }
+        
+        /**
+         * @return the value for the OID at this block position, unwrapping SCOWrappers if necessary.
+         */
+        @Override
+        public V getValue()
+        {
+            return (V)getUnwrappedValue(block, getOid());
+        }
+
+        @Override
+        public boolean equals(Object object)
+        {
+            if (this == object) {
+                return true;
+            }
+            
+            if (object instanceof Map.Entry) {
+                K key = getKey();
+                V value = getValue();
+                Map.Entry<?, ?> entry = (Map.Entry<?, ?>) object;
+                return (key == null ? entry.getKey() == null : key.equals(entry.getKey()))
+                    && (value == null ? entry.getValue() == null : value.equals(entry.getValue()));
+            }
+
+            return false;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            K key = getKey();
+            V value = getValue();
+            return (key == null ? 0 : key.hashCode()) ^ (value == null ? 0 : value.hashCode());
+        }
+
+        public V setValue(V object)
+        {
+            long oid = getOidAndWrapIfNeeded(block, object);
+
+            V prevValue = getValue();
+            
+            setOid(oid);
+            
+            return prevValue;
+        }
+
+        @Override
+        public String toString()
+        {
+            return getKey() + "=" + getValue();
         }
     }
 }
