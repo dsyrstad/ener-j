@@ -26,6 +26,7 @@ package org.enerj.core;
 import java.util.AbstractCollection;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
@@ -79,7 +80,8 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
     public static final int MAX_BITS = 31;
     
     private boolean allowDuplicateKeys;
-    private int elementCount;
+    private int elementCount = 0;
+    /* Number of key/oid pairs in a block. */
     private int blockSize;
     /** Number of bits currently being used from the hash code. buckets.length is always 2^numBits. 
      * We start out with 8 bits which allows for about 70,000 entries before growing the table.
@@ -128,10 +130,6 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
             throw new IllegalArgumentException();
         }
 
-        elementCount = 0;
-        elementData = new LargePersistentArrayList<Entry<K,V>>(nodeSize);
-        // Max-out the table size.
-        elementData.resize( elementData.getMaximumSize() );
         this.allowDuplicateKeys = allowDuplicateKeys;
         this.blockSize = blockSize;
     }
@@ -147,9 +145,7 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
     {
         if (elementCount > 0) {
             elementCount = 0;
-            elementData.clear();
-            // Max-out the table size.
-            elementData.resize( elementData.getMaximumSize() );
+            Arrays.fill(buckets, null);
             modCount++;
         }
     }
@@ -198,8 +194,7 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
     }
 
     /**
-     * Tests two keys for equality. This method just calls key.equals but can be
-     * overridden.
+     * Tests two keys for equality. This method calls key.equals() but also handles nulls.
      * 
      * @param k1
      *            first key to compare
@@ -789,7 +784,8 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
         void add(Object key, long oid)
         {
             Block block = this;
-            for (; block != null; block = block.nextBlock) {
+            Block prevBlock = block;
+            for (; block != null; prevBlock = block, block = block.nextBlock) {
                 if (!block.isFull()) {
                     break;
                 }
@@ -797,7 +793,7 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V>
             
             if (block == null) {
                 block = new Block(blockSize, bitsUsed);
-                this.nextBlock = block;
+                prevBlock.nextBlock = block;
             }
             
             block.keys[numEntriesUsed] = key;
