@@ -255,7 +255,7 @@ public class LargePersistentHashMap<K, V> extends AbstractMap<K, V>
 
     /**
      * Answers the value of the mapping with the specified key. If the map supports duplicate keys,
-     * one of the corresponding is returned. If you want all duplicate key values, use getValues().
+     * one of the corresponding is returned. If you want all duplicate key values, use getValues(Object key).
      * 
      * @param key
      *            the key
