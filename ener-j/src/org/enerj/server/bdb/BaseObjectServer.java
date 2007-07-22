@@ -55,6 +55,7 @@ abstract public class BaseObjectServer implements ObjectServer
     public static final long SCHEMA_OID = 1L;
     /** System OID: the Bindery. */
     public static final long BINDERY_OID = 2L;
+    public static final long NEXT_OID_NUM_OID = 3L; // OID whose data contains the next available OID number.
 
     static final String ENERJ_SCHEMA_SESSION_PROPERTY = "enerj.schemaSession";
     

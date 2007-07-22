@@ -24,54 +24,29 @@
 
 package org.enerj.server.bdb;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.enerj.core.ClassVersionSchema;
-import org.enerj.core.EnerJTransaction;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
 import org.enerj.server.ClassInfo;
-import org.enerj.server.FilePageServer;
-import org.enerj.server.LockMode;
-import org.enerj.server.LockServer;
-import org.enerj.server.LockServerTransaction;
 import org.enerj.server.ObjectServer;
 import org.enerj.server.ObjectServerSession;
-import org.enerj.server.PageServer;
-import org.enerj.server.PageServerException;
-import org.enerj.server.PageServerNotFoundException;
-import org.enerj.server.PagedStore;
-import org.enerj.server.PluginHelper;
-import org.enerj.server.RedoLogServer;
 import org.enerj.server.SerializedObject;
-import org.enerj.server.logentry.BeginTransactionLogEntry;
-import org.enerj.server.logentry.CheckpointTransactionLogEntry;
-import org.enerj.server.logentry.CommitTransactionLogEntry;
-import org.enerj.server.logentry.EndDatabaseCheckpointLogEntry;
-import org.enerj.server.logentry.RollbackTransactionLogEntry;
-import org.enerj.server.logentry.StartDatabaseCheckpointLogEntry;
-import org.enerj.server.logentry.StoreObjectLogEntry;
 import org.enerj.util.FileUtil;
-import org.enerj.util.RequestProcessor;
-import org.enerj.util.StringUtil;
 import org.odmg.DatabaseClosedException;
 import org.odmg.DatabaseNotFoundException;
 import org.odmg.LockNotGrantedException;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
-import org.odmg.Transaction;
 import org.odmg.TransactionNotInProgressException;
 
 import com.sleepycat.bind.tuple.TupleBinding;
@@ -83,8 +58,12 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
+import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
-import com.sleepycat.je.txn.Lock;
+import com.sleepycat.je.Sequence;
+import com.sleepycat.je.SequenceConfig;
+import com.sleepycat.je.Transaction;
+import com.sleepycat.je.TransactionConfig;
 
 /** 
  * Ener-J ObjectServer based on Berkeley DB Java Edition. Stores objects in BDB databases.
@@ -114,10 +93,13 @@ public class BDBObjectServer extends BaseObjectServer
     /** Berkeley DB Database. This is the main OID to object map. */
     private Database bdbDatabase = null;
     
-    /** List of active transactions. List of BDBObjectServer.Transaction. Synchronized
+    /** List of active transactions. List of BDB Transaction. Synchronized
      * around mTransactionLock.
      */
     private List<Transaction> mActiveTransactions = new LinkedList<Transaction>();
+
+    /** Synchronization lock for transaction-oriented methods. */
+    private Object mTransactionLock = new Object();
     
     /** List of active sessions. */
     private List<Session> mActiveSessions = new LinkedList<Session>();
@@ -157,13 +139,15 @@ public class BDBObjectServer extends BaseObjectServer
         try {
             EnvironmentConfig bdbEnvConfig = new EnvironmentConfig();
             bdbEnvConfig.setTransactional(true);
-    
+            //bdbEnvConfig.setCacheSize(512000000); // TODO config
+            bdbEnvConfig.setTxnSerializableIsolation(true); // TODO This should be config, and should be able to override by txn
+            // THIS IS IMPORTANT -- read up writes thru BDB buffers, but not thru OS. We use Transaction.commitSync() to force OS update.
+            bdbEnvConfig.setTxnWriteNoSync(true); 
             bdbEnvironment = new Environment( new File(dbDir), bdbEnvConfig);
             
             DatabaseConfig bdbDBConfig = new DatabaseConfig();
             bdbDBConfig.setTransactional(true);
-            bdbDBConfig.setDeferredWrite(false);
-            // TODOLOW In-memory db's could be supported with DeferredWrite(true)
+
             // TODO bdbDBConfig.setReadOnly(true); based on Prop
     
             bdbDatabase = bdbEnvironment.openDatabase(null, mDBName, bdbDBConfig);
@@ -243,15 +227,16 @@ public class BDBObjectServer extends BaseObjectServer
      * @param aDescription a description for the database. May be null.
      * @param aDBName The database name. See {@link #connect(Properties)}.
      * @param someDBProps the database properties, normally read from a database propeties file.
-     * @param aDBDir the base directory of the database.
+     * @param aDBPropFile the properties file of the database.
      * 
      * @throws ODMGException if an error occurs.
      */
-	private static void createDatabase(String aDescription, String aDBName, Properties someDBProps, File aDBDir) throws ODMGException 
+	private static void createDatabase(String aDescription, String aDBName, Properties someDBProps, File aDBPropFile) throws ODMGException 
     {
 	    sLogger.fine("Creating database: " + aDBName);
         
-		someDBProps.setProperty(ENERJ_DBDIR_PROP, aDBDir.getParent() );
+	    File dbDir = aDBPropFile.getParentFile();
+		someDBProps.setProperty(ENERJ_DBDIR_PROP, dbDir.getAbsolutePath());
         someDBProps.setProperty(ENERJ_DBNAME_PROP, aDBName);
 
         Session session = null;
@@ -263,16 +248,28 @@ public class BDBObjectServer extends BaseObjectServer
             bdbEnvConfig.setAllowCreate(true);
             bdbEnvConfig.setTransactional(true);
 
-            bdbEnv = new Environment(aDBDir, bdbEnvConfig);
+            bdbEnv = new Environment(dbDir, bdbEnvConfig);
             
             DatabaseConfig bdbDBConfig = new DatabaseConfig();
             bdbDBConfig.setAllowCreate(true);
             bdbDBConfig.setExclusiveCreate(true);
             bdbDBConfig.setTransactional(true);
             bdbDBConfig.setDeferredWrite(false);
+            bdbDBConfig.setNodeMaxEntries(1024);
             
             // This database's key is an OID.
             bdbDB = bdbEnv.openDatabase(null, aDBName, bdbDBConfig);
+
+            // Create the OID number sequence.
+            DatabaseEntry key = createOIDKey(NEXT_OID_NUM_OID);
+            SequenceConfig config = new SequenceConfig();
+            config.setAllowCreate(true);
+            config.setExclusiveCreate(true);
+            config.setInitialValue(ObjectSerializer.FIRST_USER_OID);
+            config.setCacheSize(1);
+            Sequence seq = bdbDB.openSequence(null, key, config);
+            seq.close();
+            
             bdbDB.close();
             bdbDB = null;
             
@@ -320,6 +317,20 @@ public class BDBObjectServer extends BaseObjectServer
         }
 	}
 
+    /**
+     * Creates a DatabaseEntry key from an OID.
+     *
+     * @param anOID
+     * 
+     * @return the key.
+     */
+    private static DatabaseEntry createOIDKey(long anOID)
+    {
+        DatabaseEntry key = new DatabaseEntry();
+        TupleBinding.getPrimitiveBinding(Long.class).objectToEntry(anOID, key);
+        return key;
+    }
+    
     /**
      * Shuts down this server.
      */
@@ -523,23 +534,6 @@ public class BDBObjectServer extends BaseObjectServer
 
             return mTxn;
         }
-        
-        /**
-         * Gets the BDB transaction associated with this session.
-         *
-         * @return a Transaction.
-         *
-         * @throws TransactionNotInProgressException if transaction is not in progress and non-transactional reads are not allowed.
-         */
-        private com.sleepycat.je.Transaction getBDBTransaction() throws TransactionNotInProgressException
-        {
-            Transaction txn = getTransaction();
-            if (txn == null) {
-                return null;
-            }
-            
-            return txn.getBdbTransaction();
-        }
 
         /**
          * Gets the transaction associated with this session.
@@ -550,7 +544,6 @@ public class BDBObjectServer extends BaseObjectServer
         {
             return mTxn;
         }
-        
 
         /**
          * Sets the transaction associated with this session.
@@ -585,14 +578,14 @@ public class BDBObjectServer extends BaseObjectServer
         /**
          * @return the LockMode to use for reads.
          */
-        private com.sleepycat.je.LockMode getReadLockMode()
+        private LockMode getReadLockMode()
         {
-            return getAllowNontransactionalReads() ? com.sleepycat.je.LockMode.READ_UNCOMMITTED : com.sleepycat.je.LockMode.DEFAULT;
+            return getAllowNontransactionalReads() ? LockMode.READ_UNCOMMITTED : LockMode.READ_COMMITTED;
         }
 
         public ClassInfo[] getClassInfoForOIDs(long[] someOIDs) throws ODMGException
         {
-            com.sleepycat.je.Transaction txn = getBDBTransaction();
+            Transaction txn = getTransaction();
 
             ClassInfo[] classInfo = new ClassInfo[someOIDs.length];
             for (int i = 0; i < someOIDs.length; i++) {
@@ -641,10 +634,10 @@ public class BDBObjectServer extends BaseObjectServer
          */
         private DatabaseEntry readObjectEntry(long anOID) throws ODMGException
         {
-            com.sleepycat.je.Transaction txn = getBDBTransaction();
+            Transaction txn = getTransaction();
             if (!getAllowNontransactionalReads()) {
                 // Validate txn active - interface requirement
-                txn = getBDBTransaction();
+                txn = getTransaction();
             }
 
             DatabaseEntry key = createOIDKey(anOID);
@@ -669,20 +662,6 @@ public class BDBObjectServer extends BaseObjectServer
         }
 
         /**
-         * Creates a DatabaseEntry key from an OID.
-         *
-         * @param anOID
-         * 
-         * @return the key.
-         */
-        private DatabaseEntry createOIDKey(long anOID)
-        {
-            DatabaseEntry key = new DatabaseEntry();
-            TupleBinding.getPrimitiveBinding(Long.class).objectToEntry(anOID, key);
-            return key;
-        }
-        
-        /**
          * @return the CID stored in an object entry.
          */
         private long getCIDFromEntry(DatabaseEntry entry)
@@ -693,7 +672,7 @@ public class BDBObjectServer extends BaseObjectServer
 
         public void storeObjects(SerializedObject[] someObjects) throws ODMGException
         {
-            com.sleepycat.je.Transaction txn = getBDBTransaction();
+            Transaction txn = getTransaction();
             
             // TODO - SerializedObject should contain the version #. We should compare the object's version
             // to the current version before writing.
@@ -722,42 +701,48 @@ public class BDBObjectServer extends BaseObjectServer
             super.storeObjects(someObjects);
         }
 
-
         public byte[][] loadObjects(long[] someOIDs) throws ODMGException
         {
-            if (!getAllowNontransactionalReads()) {
-                // Validate txn active - interface requirement
-                getTransaction();
-            }
+            Transaction txn = getTransaction();
+            SerializedObjectTupleBinding binding = new SerializedObjectTupleBinding(true);
 
             byte[][] objects = new byte[someOIDs.length][];
             int idx = 0;
             for (long oid : someOIDs) {
-                // Check the update cache first and get the object from the store request, if there is one.
-                PagedStore.StoreObjectRequest storeRequest = mServerUpdateCache.lookupStoreRequest(oid);
-                if (storeRequest == null) {
-                    // Get a READ lock. 
-                    // TODO Configurable timeout?
-                    getLock(oid, EnerJTransaction.READ, -1);
-                    // Not found - load object from PagedStore.
-                    objects[idx++] = mPagedStore.loadObject(oid); // TODO Make PagedStore take a array of oids.
+                DatabaseEntry data = readObjectEntry(oid);
+                if (data == null) {
+                    throw new ODMGException("Cannot find object for OID " + oid);
                 }
-                else {
-                    // Found in update cache. use updated object.
-                    objects[idx++] = storeRequest.resolveSerializedObject();
-                }
+                
+                SerializedObject serializedObj = (SerializedObject)binding.entryToObject(data);
+                objects[idx++] = serializedObj.getImage();
             }
             
             return objects;
         }
-
 
         public long[] getNewOIDBlock(int anOIDCount) throws ODMGException
         {
             // Validate txn active - interface requirement
             getTransaction();
 
-            return mPagedStore.getNewOIDBlock(anOIDCount);
+            long oidNum;
+            try {
+                SequenceConfig config = new SequenceConfig();
+                config.setCacheSize(1);
+                Sequence seq = bdbDatabase.openSequence(null, createOIDKey(NEXT_OID_NUM_OID), config);
+                oidNum = seq.get(null, anOIDCount);
+            }
+            catch (DatabaseException e) {
+                throw new ODMGException("Unable to get an OID block", e);
+            }
+            
+            long[] oids = new long[anOIDCount];
+            for (int i = 0; i < anOIDCount; i++, oidNum++) {
+                oids[i] = oidNum; 
+            }
+            
+            return oids;
         }
 
 
@@ -775,47 +760,29 @@ public class BDBObjectServer extends BaseObjectServer
                         // Ignore
                     }
                 }
+            } // ...end synchronized (mTransactionLock).
 
-                try {
-                    BeginTransactionLogEntry logEntry = new BeginTransactionLogEntry();
-                    // This append gives us the transaction id too.
-                    mRedoLogServer.append(logEntry);
+            Transaction txn;
+            try {
+                // TODO Nested transactions are allowed by BDB, as well as txn semantics.
+                txn = bdbEnvironment.beginTransaction(null, null);
+                setTransaction(txn);
+            }
+            catch (DatabaseException e) {
+                throw new ODMGRuntimeException("Error starting transaction", e);
+            }
 
-                    LockServerTransaction lockTxn = mLockServer.startTransaction();
-                    Transaction txn = new Transaction(this, lockTxn, logEntry.getLogPosition(), logEntry.getTransactionId() );
-                    setTransaction(txn);
-                    mActiveTransactions.add(txn);
-                }
-                catch (ODMGRuntimeException e) {
-                    throw e;
-                }
-                catch (Exception e) {
-                    throw new ODMGRuntimeException("Error starting transaction: " + e, e);
-                }
+            synchronized (mTransactionLock) {
+                mActiveTransactions.add(txn);
             } // ...end synchronized (mTransactionLock).
         }
 
 
         public void checkpointTransaction() throws ODMGRuntimeException 
         {
+            // TODO Hmmmm... How to support this? Suppose to be like a commit, but with locks retained and txn stays active. 
+            // Rollback rolls back to checkpoint.
             super.checkpointTransaction();
-
-            synchronized (mTransactionLock) {
-                // Basically a commit without releasing locks or closing the transaction.
-                try {
-                    Transaction txn = getTransaction();
-                    CheckpointTransactionLogEntry logEntry = new CheckpointTransactionLogEntry( txn.getLogTransactionId() );
-                    mRedoLogServer.append(logEntry);
-
-                    txn.prepareTransaction(mPagedStore);
-                }
-                catch (ODMGRuntimeException e) {
-                    throw e;
-                }
-                catch (Exception e) {
-                    throw new ODMGRuntimeException("Error checkpointing transaction: " + e, e);
-                }
-            } // ...end synchronized (mTransactionLock).
         }
 
 
@@ -824,26 +791,18 @@ public class BDBObjectServer extends BaseObjectServer
             super.commitTransaction();
 
             Transaction txn = getTransaction();
+            try {
+                // commitSync is because the environment is set to txnWriteNoSync() which doesn't flush OS buffers by default.
+                txn.commitSync(); 
+            }
+            catch (DatabaseException e) {
+                throw new ODMGRuntimeException("Error committing transaction", e);
+            }
             
             synchronized (mTransactionLock) {
-                try {
-                    CommitTransactionLogEntry logEntry = new CommitTransactionLogEntry( txn.getLogTransactionId() );
-                    mRedoLogServer.append(logEntry);
-
-                    txn.prepareTransaction(mPagedStore);
-                }
-                catch (ODMGRuntimeException e) {
-                    throw e;
-                }
-                catch (Exception e) {
-                    throw new ODMGRuntimeException("Error committing transaction: " + e, e);
-                }
-
-                endTransactionAndCheckpoint(txn);
+                mActiveTransactions.remove(txn);
+                mTransactionLock.notifyAll();
             } // ...end synchronized (mTransactionLock).
-
-            // Release all locks.
-            txn.getLockServerTransaction().end();
 
             // Transaction no longer active.
             setTransaction(null);
@@ -855,36 +814,17 @@ public class BDBObjectServer extends BaseObjectServer
             super.rollbackTransaction();
             
             Transaction txn = getTransaction();
-
+            try {
+                txn.abort();
+            }
+            catch (DatabaseException e) {
+                throw new ODMGRuntimeException("Error committing transaction", e);
+            }
+            
             synchronized (mTransactionLock) {
-                try {
-                    RollbackTransactionLogEntry logEntry = new RollbackTransactionLogEntry( txn.getLogTransactionId() );
-                    mRedoLogServer.append(logEntry);
-                }
-                catch (ODMGRuntimeException  e) {
-                    throw e;
-                }
-                catch (Exception e) {
-                    throw new ODMGRuntimeException("Error rolling back transaction: " + e, e);
-                }
-
-                endTransactionAndCheckpoint(txn);
+                mActiveTransactions.remove(txn);
+                mTransactionLock.notifyAll();
             } // ...end synchronized (mTransactionLock).
-
-            // Dump the update list.
-            PagedStore.UpdateRequest request = txn.getFirstUpdateRequest();
-            for (; request != null; request = request.mNext) {
-                if (request instanceof PagedStore.StoreObjectRequest) {
-                    mServerUpdateCache.removeStoreRequest((PagedStore.StoreObjectRequest)request);
-                }
-            }
-
-            txn.clearUpdateRequests();
-
-            // Release all locks.
-            if (txn.getLockServerTransaction().isActive()) {
-                txn.getLockServerTransaction().end();
-            }
 
             // Transaction no longer active.
             setTransaction(null);
@@ -897,28 +837,32 @@ public class BDBObjectServer extends BaseObjectServer
                 return;
             }
 
-            //  TODO  check granularity here...
             Object lockObj = anOID;
 
             LockMode lockMode;
             switch (aLockLevel) {
             case org.odmg.Transaction.READ:
-                lockMode = LockMode.READ;
+                lockMode = getReadLockMode();
                 break;
 
             case org.odmg.Transaction.UPGRADE:
-                lockMode = LockMode.UPGRADE;
-                break;
-
             case org.odmg.Transaction.WRITE:
-                lockMode = LockMode.WRITE;
+                lockMode = LockMode.RMW;
                 break;
 
             default:
                 throw new LockNotGrantedException("Invalid lock mode: " + aLockLevel);
             }
 
-            getTransaction().getLockServerTransaction().lock(lockObj, lockMode, aWaitTime);
+            DatabaseEntry key = createOIDKey(anOID);
+            DatabaseEntry data = new DatabaseEntry();
+            OperationStatus status;
+            try {
+                status = bdbDatabase.get(getTransaction(), key, data, lockMode);
+            }
+            catch (DatabaseException e) {
+                throw new LockNotGrantedException("Error reading object", e);
+            }
         }
 
         // ...End of ObjectServerSession interface methods.
@@ -952,46 +896,6 @@ public class BDBObjectServer extends BaseObjectServer
                 System.err.println("Shutdown problem:");
                 e.printStackTrace();
             }
-        }
-    }
-    
-
-
-    /**
-     * Internal Transaction representation.
-     * This class is <em>not</em> thread-safe - it doesn't need to be.
-     */
-    private static final class Transaction
-    {
-        private Session mSession;
-        private com.sleepycat.je.Transaction bdbTransaction; 
-
-        /**
-         * Constructs a new Transaction.
-         *
-         * @param session the Session for the ObjectServer.
-         */
-        Transaction(Session session, com.sleepycat.je.Transaction bdbTransaction)
-        {
-            this.mSession = session;
-            this.bdbTransaction = bdbTransaction;
-        }
-
-
-        /**
-         * Gets the Session of this transaction.
-         *
-         * @return the Session.
-         */
-        Session getSession()
-        {
-            return mSession;
-        }
-
-
-        com.sleepycat.je.Transaction getBdbTransaction()
-        {
-            return bdbTransaction;
         }
     }
 

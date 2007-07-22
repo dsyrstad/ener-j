@@ -25,6 +25,7 @@
 package org.enerj.util;
 
 import org.enerj.server.PagedObjectServer;
+import org.enerj.server.bdb.BDBObjectServer;
 
 /**
  * Utility to create a database.
@@ -99,7 +100,9 @@ public class CreateDatabase
         }
 
         try {
-            PagedObjectServer.createDatabase(description, dbName, maxVolSize, preAlloc);
+            // TODO Allow for store-type 
+            //PagedObjectServer.createDatabase(description, dbName, maxVolSize, preAlloc);
+            BDBObjectServer.createDatabase(description, dbName);
         }
         catch (Exception e) {
             //System.err.println( e.toString() );
