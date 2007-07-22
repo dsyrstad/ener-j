@@ -61,7 +61,7 @@ import org.odmg.ODMGRuntimeException;
 import org.odmg.TransactionNotInProgressException;
 
 /** 
- * The defautl Ener-J ObjectServer. Stores objects in pages on a PageServer.
+ * The default Ener-J ObjectServer. Stores objects in pages on a PageServer.
  * This class is thread-safe.<p>
  *
  * This server is referenced by the properties described in the {@link connect} method.
@@ -524,20 +524,20 @@ public class PagedObjectServer extends BaseObjectServer
      * @param someProperties properties which specify the connect parameters.
      * The properties must contain the following keys:<br>
      * <ul>
-     * <li><i>vo.dbname</i> - the database name. </li>
+     * <li><i>enerj.dbname</i> - the database name. </li>
      * <li><i>PagedObjectServer.PageServerClass</i> - the class name for the PageServer. </li>
      * <li><i>PagedObjectServer.LockServerClass</i> - the class name for the LockServer. </li>
      * <li><i>PagedObjectServer.RedoLogServerClass</i> - the class name for the RedoLogServer. </li>
      * <li><i>PagedObjectServer.MaxUpdateCacheSize</i> - the maximum size in bytes of the 
      *       Update Cache. The Update Cache is used to hold updated objects for all uncommitted
-     *       and recently commited transactions. After this specified maximum size is
+     *       and recently committed transactions. After this specified maximum size is
      *       reached, newly updated objects are not held in memory. Instead, the recovery
      *       log entry is referenced. This reduces performance but allows for large/long
      *       transactions that would otherwise consume a large amount of memory. </li>
      * <li><i>PagedObjectServer.UpdateCacheInitialHashSize</i> - Initial size of the Hash Map for the Update Cache.
      *       For good performance, this should generally be the number of objects
      *       that can be updated at one time by all simultaneous transactions. However,
-     *       if necessary, the Hash Map will grow to accomodate more entries.</li>
+     *       if necessary, the Hash Map will grow to accommodate more entries.</li>
      * </ul>
      *
      * @return an ObjectServerSession.
