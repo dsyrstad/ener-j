@@ -58,6 +58,7 @@ import org.enerj.server.ObjectServerSession;
 import org.enerj.server.PagedObjectServer;
 import org.enerj.server.PluginHelper;
 import org.enerj.server.SerializedObject;
+import org.enerj.server.bdb.BDBObjectServer;
 import org.enerj.util.ClassUtil;
 import org.enerj.util.URIUtil;
 import org.odmg.ClassNotPersistenceCapableException;
@@ -1097,12 +1098,14 @@ public class EnerJDatabase implements Database, Persister
             if (host == null || host.length() == 0 || host.equals("-")) {
                 // Local connection with PagedObjectServer - default.
                 host = null;
-                pluginClassName = PagedObjectServer.class.getName();
+                //pluginClassName = PagedObjectServer.class.getName();
+                pluginClassName = BDBObjectServer.class.getName();
                 mIsLocal = true;
             }
             else {
                 // TODO --  no remote plug-in yet...
-                pluginClassName = PagedObjectServer.class.getName();
+                //pluginClassName = PagedObjectServer.class.getName();
+                pluginClassName = BDBObjectServer.class.getName();
             }
         }
         else if (scheme.startsWith("enerj.")) {
