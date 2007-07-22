@@ -27,6 +27,7 @@ package org.enerj.server.bdb;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,8 +37,10 @@ import java.util.logging.Logger;
 import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Schema;
+import org.enerj.core.SparseBitSet;
 import org.enerj.core.SystemCIDMap;
 import org.enerj.server.ClassInfo;
+import org.enerj.server.ExtentIterator;
 import org.enerj.server.ObjectServer;
 import org.enerj.server.ObjectServerSession;
 import org.enerj.server.SerializedObject;
@@ -47,6 +50,9 @@ import org.odmg.DatabaseNotFoundException;
 import org.odmg.LockNotGrantedException;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
+import org.odmg.ObjectNameNotFoundException;
+import org.odmg.ObjectNameNotUniqueException;
+import org.odmg.ObjectNotPersistentException;
 import org.odmg.TransactionNotInProgressException;
 
 import com.sleepycat.bind.tuple.TupleBinding;
@@ -63,7 +69,6 @@ import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Sequence;
 import com.sleepycat.je.SequenceConfig;
 import com.sleepycat.je.Transaction;
-import com.sleepycat.je.TransactionConfig;
 
 /** 
  * Ener-J ObjectServer based on Berkeley DB Java Edition. Stores objects in BDB databases.
@@ -77,7 +82,10 @@ import com.sleepycat.je.TransactionConfig;
  */
 public class BDBObjectServer extends BaseObjectServer
 {
-    private static final Logger sLogger = Logger.getLogger(BDBObjectServer.class.getName()); 
+    private static final Logger sLogger = Logger.getLogger(BDBObjectServer.class.getName());
+    
+    private static final String BINDERY_SUFFIX = ":Bindery";
+    private static final String EXTENT_SUFFIX = ":Extents";
     
     /** HashMap of database names to BDBObjectServers. */
     private static HashMap<String, BDBObjectServer> sCurrentServers = new HashMap<String, BDBObjectServer>(20);
@@ -92,6 +100,10 @@ public class BDBObjectServer extends BaseObjectServer
     private Environment bdbEnvironment = null;
     /** Berkeley DB Database. This is the main OID to object map. */
     private Database bdbDatabase = null;
+    /** Bindery Database. Key is binding name, value is OID. */
+    private Database bdbBinderyDatabase = null;
+    /** Extent Database. Key is binding name, value is OID. */
+    private Database bdbExtentDatabase = null;
     
     /** List of active transactions. List of BDB Transaction. Synchronized
      * around mTransactionLock.
@@ -151,6 +163,10 @@ public class BDBObjectServer extends BaseObjectServer
             // TODO bdbDBConfig.setReadOnly(true); based on Prop
     
             bdbDatabase = bdbEnvironment.openDatabase(null, mDBName, bdbDBConfig);
+            bdbBinderyDatabase = bdbEnvironment.openDatabase(null, mDBName + BINDERY_SUFFIX, bdbDBConfig);
+            DatabaseConfig extentConfig = bdbDBConfig.cloneConfig();
+            extentConfig.setSortedDuplicates(true);
+            bdbExtentDatabase = bdbEnvironment.openDatabase(null, mDBName + EXTENT_SUFFIX, extentConfig);
             success = true;
         }
         catch (DatabaseException e) {
@@ -161,10 +177,22 @@ public class BDBObjectServer extends BaseObjectServer
                 try {
                     if (bdbDatabase != null) {
                         bdbDatabase.close();
+                        bdbDatabase = null;
+                    }
+    
+                    if (bdbExtentDatabase != null) {
+                        bdbExtentDatabase.close();
+                        bdbExtentDatabase = null;
+                    }
+    
+                    if (bdbBinderyDatabase != null) {
+                        bdbBinderyDatabase.close();
+                        bdbBinderyDatabase = null;
                     }
     
                     if (bdbEnvironment != null) {
                         bdbEnvironment.close();
+                        bdbEnvironment = null;
                     }
                 }
                 catch (DatabaseException e) {
@@ -255,13 +283,13 @@ public class BDBObjectServer extends BaseObjectServer
             bdbDBConfig.setExclusiveCreate(true);
             bdbDBConfig.setTransactional(true);
             bdbDBConfig.setDeferredWrite(false);
-            bdbDBConfig.setNodeMaxEntries(1024);
+            bdbDBConfig.setNodeMaxEntries(400); // Tunable - 256-400 looks good for OO7
             
-            // This database's key is an OID.
+            // The main database's key is an OID.
             bdbDB = bdbEnv.openDatabase(null, aDBName, bdbDBConfig);
 
             // Create the OID number sequence.
-            DatabaseEntry key = createOIDKey(NEXT_OID_NUM_OID);
+            DatabaseEntry key = createLongKey(NEXT_OID_NUM_OID);
             SequenceConfig config = new SequenceConfig();
             config.setAllowCreate(true);
             config.setExclusiveCreate(true);
@@ -273,6 +301,19 @@ public class BDBObjectServer extends BaseObjectServer
             bdbDB.close();
             bdbDB = null;
             
+            // The Bindery's database key is the binding name, the data is an OID.
+            bdbDB = bdbEnv.openDatabase(null, aDBName + BINDERY_SUFFIX, bdbDBConfig);
+            bdbDB.close();
+            bdbDB = null;
+
+            // The Extent's database key is the CID, the data is an OID. The database allows duplicates.
+            DatabaseConfig extentConfig = bdbDBConfig.cloneConfig();
+            extentConfig.setSortedDuplicates(true);
+            extentConfig.setNodeMaxEntries(8192);
+            bdbDB = bdbEnv.openDatabase(null, aDBName + EXTENT_SUFFIX, extentConfig);
+            bdbDB.close();
+            bdbDB = null;
+
             bdbEnv.close();
             bdbEnv = null;
             
@@ -318,16 +359,16 @@ public class BDBObjectServer extends BaseObjectServer
 	}
 
     /**
-     * Creates a DatabaseEntry key from an OID.
+     * Creates a DatabaseEntry key from a long.
      *
-     * @param anOID
+     * @param value
      * 
      * @return the key.
      */
-    private static DatabaseEntry createOIDKey(long anOID)
+    private static DatabaseEntry createLongKey(long value)
     {
         DatabaseEntry key = new DatabaseEntry();
-        TupleBinding.getPrimitiveBinding(Long.class).objectToEntry(anOID, key);
+        TupleBinding.getPrimitiveBinding(Long.class).objectToEntry(value, key);
         return key;
     }
     
@@ -370,6 +411,14 @@ public class BDBObjectServer extends BaseObjectServer
         try {
             if (bdbDatabase != null) {
                 bdbDatabase.close();
+            }
+
+            if (bdbExtentDatabase != null) {
+                bdbExtentDatabase.close();
+            }
+
+            if (bdbBinderyDatabase != null) {
+                bdbBinderyDatabase.close();
             }
 
             if (bdbEnvironment != null) {
@@ -640,7 +689,7 @@ public class BDBObjectServer extends BaseObjectServer
                 txn = getTransaction();
             }
 
-            DatabaseEntry key = createOIDKey(anOID);
+            DatabaseEntry key = createLongKey(anOID);
             DatabaseEntry data = new DatabaseEntry();
             OperationStatus status;
             try {
@@ -674,6 +723,8 @@ public class BDBObjectServer extends BaseObjectServer
         {
             Transaction txn = getTransaction();
             
+            Schema schema = null;
+            
             // TODO - SerializedObject should contain the version #. We should compare the object's version
             // to the current version before writing.
 
@@ -686,19 +737,33 @@ public class BDBObjectServer extends BaseObjectServer
                     throw new ODMGException("Client is not allowed to update schema via object modification.");
                 }
                 
-                DatabaseEntry key = createOIDKey(oid);
+                DatabaseEntry oidKey = createLongKey(oid);
                 DatabaseEntry data = new DatabaseEntry();
                 binding.objectToEntry(object, data);
                 
                 try {
-                    bdbDatabase.put(txn, key, data);
+                    bdbDatabase.put(txn, oidKey, data);
                 }
                 catch (DatabaseException e) {
                     throw new ODMGException("Error writing object", e);
                 }
+                
+                long cid = object.getCID();
+                if (!SystemCIDMap.isSystemCID(cid)) {
+                    if (schema == null) {
+                        schema = getSchema();
+                    }
+                    
+                    // Add to extent.
+                    DatabaseEntry extentKey = createLongKey(cid);
+                    try {
+                        bdbExtentDatabase.putNoOverwrite(txn, extentKey, oidKey);
+                    }
+                    catch (DatabaseException e) {
+                        throw new ODMGException("Error writing to extent", e);
+                    }
+                }
             }
-            
-            super.storeObjects(someObjects);
         }
 
         public byte[][] loadObjects(long[] someOIDs) throws ODMGException
@@ -730,7 +795,7 @@ public class BDBObjectServer extends BaseObjectServer
             try {
                 SequenceConfig config = new SequenceConfig();
                 config.setCacheSize(1);
-                Sequence seq = bdbDatabase.openSequence(null, createOIDKey(NEXT_OID_NUM_OID), config);
+                Sequence seq = bdbDatabase.openSequence(null, createLongKey(NEXT_OID_NUM_OID), config);
                 oidNum = seq.get(null, anOIDCount);
             }
             catch (DatabaseException e) {
@@ -854,7 +919,7 @@ public class BDBObjectServer extends BaseObjectServer
                 throw new LockNotGrantedException("Invalid lock mode: " + aLockLevel);
             }
 
-            DatabaseEntry key = createOIDKey(anOID);
+            DatabaseEntry key = createLongKey(anOID);
             DatabaseEntry data = new DatabaseEntry();
             OperationStatus status;
             try {
@@ -865,6 +930,194 @@ public class BDBObjectServer extends BaseObjectServer
             }
         }
 
+
+        /** 
+         * {@inheritDoc}
+         * @see org.enerj.server.ObjectServerSession#bind(long, java.lang.String)
+         */
+        public void bind(long anOID, String aName) throws ObjectNameNotUniqueException
+        {
+            Transaction txn = getTransaction();
+            
+            try {
+                DatabaseEntry key = new DatabaseEntry();
+                TupleBinding.getPrimitiveBinding(String.class).objectToEntry(aName, key);
+                DatabaseEntry data = createLongKey(anOID);
+                OperationStatus status = bdbBinderyDatabase.putNoDupData(txn, key, data);
+                if (status == OperationStatus.KEYEXIST) {
+                    throw new ObjectNameNotUniqueException("Bind name " + aName + " is not unique");
+                }
+            }
+            catch (DatabaseException e) {
+                throw new ODMGRuntimeException("Error binding to " + aName);
+            }
+        }
+
+        /** 
+         * {@inheritDoc}
+         * @see org.enerj.server.ObjectServerSession#lookup(java.lang.String)
+         */
+        public long lookup(String aName) throws ObjectNameNotFoundException
+        {
+            Transaction txn = getTransaction();
+            
+            try {
+                DatabaseEntry key = new DatabaseEntry();
+                TupleBinding.getPrimitiveBinding(String.class).objectToEntry(aName, key);
+                DatabaseEntry data = new DatabaseEntry();
+                OperationStatus status = bdbBinderyDatabase.get(txn, key, data, getReadLockMode());
+                if (status == OperationStatus.NOTFOUND) {
+                    throw new ObjectNameNotFoundException("Bind name " + aName + " was not found");
+                }
+                
+                return (Long)TupleBinding.getPrimitiveBinding(Long.class).entryToObject(data);
+            }
+            catch (DatabaseException e) {
+                throw new ODMGRuntimeException("Error looking up binding to " + aName);
+            }
+        }
+
+        /** 
+         * {@inheritDoc}
+         * @see org.enerj.server.ObjectServerSession#unbind(java.lang.String)
+         */
+        public void unbind(String aName) throws ObjectNameNotFoundException
+        {
+            Transaction txn = getTransaction();
+            
+            try {
+                DatabaseEntry key = new DatabaseEntry();
+                TupleBinding.getPrimitiveBinding(String.class).objectToEntry(aName, key);
+                OperationStatus status = bdbBinderyDatabase.delete(txn, key);
+                if (status == OperationStatus.NOTFOUND) {
+                    throw new ObjectNameNotFoundException("Bind name " + aName + " was not found");
+                }
+            }
+            catch (DatabaseException e) {
+                throw new ODMGRuntimeException("Error deleting binding to " + aName);
+            }
+        }
+        
+        /** 
+         * {@inheritDoc}
+         * @see org.enerj.server.ObjectServerSession#removeFromExtent(long)
+         */
+        public void removeFromExtent(long anOID) throws ObjectNotPersistentException
+        {
+            Transaction txn = getTransaction();
+            
+            ClassInfo classInfo;
+            try {
+                classInfo = getClassInfoForOIDs(new long[] { anOID })[0];
+            }
+            catch (ODMGException e) {
+                throw new ObjectNotPersistentException("Object is not persistent", e);
+            }
+
+            if (classInfo == null) {
+                throw new ObjectNotPersistentException("Object is not persistent");
+            }
+            
+            try {
+                DatabaseEntry key = createLongKey(classInfo.getCID());
+                OperationStatus status = bdbExtentDatabase.delete(txn, key);
+                if (status == OperationStatus.NOTFOUND) {
+                    throw new ObjectNotPersistentException("OID " + anOID + " not found in extent");
+                }
+            }
+            catch (DatabaseException e) {
+                throw new ODMGRuntimeException("Error removing OID " + anOID + " from extent");
+            }
+            
+
+            // TODO Remove from indexes too
+        }
+
+        /** 
+         * {@inheritDoc}
+         * @see org.enerj.server.ObjectServerSession#getExtentSize(java.lang.String, boolean)
+         */
+        public long getExtentSize(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
+        {
+            Schema schema;
+            try {
+                schema = getSchema();
+            }
+            catch (ODMGException e) {
+                throw new ODMGRuntimeException(e);
+            }
+
+            pushAsPersister();
+            try {
+                long result = 0;
+                /* TODO
+                ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
+                SparseBitSet extent = extentMap.getExtent(aClassName);
+                if (extent != null) {
+                    result += extent.getNumBitsSet();
+                }
+        
+                if (wantSubclasses) {
+                    Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
+                    for (ClassVersionSchema classVersion : subclasses) {
+                        extent = extentMap.getExtent( classVersion.getClassSchema().getClassName() );
+                        if (extent != null) {
+                            result += extent.getNumBitsSet();
+                        }
+                    }
+                }
+                 */
+                return result;
+            }
+            finally {
+                popAsPersister();
+            }
+        }
+
+        /** 
+         * {@inheritDoc}
+         * @see org.enerj.server.ObjectServerSession#createExtentIterator(java.lang.String, boolean)
+         */
+        public ExtentIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
+        {
+            // TODO What about objects added during txn? Flush from client first? I think we're OK. Flush updates extents.
+            Schema schema;
+            try {
+                schema = getSchema();
+            }
+            catch (ODMGException e) {
+                throw new ODMGRuntimeException(e);
+            }
+
+            pushAsPersister();
+            try {
+                List<SparseBitSet> extents = new ArrayList<SparseBitSet>();
+                /* TODO
+                ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
+                SparseBitSet extent = extentMap.getExtent(aClassName);
+                if (extent != null) {
+                    extents.add(extent);
+                }
+        
+                if (wantSubclasses) {
+                    Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
+                    for (ClassVersionSchema classVersion : subclasses) {
+                        extent = extentMap.getExtent( classVersion.getClassSchema().getClassName() );
+                        if (extent != null) {
+                            extents.add(extent);
+                        }
+                    }
+                }
+        
+                ExtentIterator extentIterator = new DefaultExtentIterator(extents);
+                return extentIterator;
+                */
+                return null;
+            }
+            finally {
+                popAsPersister();
+            }
+        }
         // ...End of ObjectServerSession interface methods.
     }
 
