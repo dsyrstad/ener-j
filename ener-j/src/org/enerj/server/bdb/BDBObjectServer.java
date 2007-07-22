@@ -698,6 +698,7 @@ public class BDBObjectServer extends BaseObjectServer
             // TODO - SerializedObject should contain the version #. We should compare the object's version
             // to the current version before writing.
 
+            SerializedObjectTupleBinding binding = new SerializedObjectTupleBinding(true);
             for (SerializedObject object : someObjects) {
                 long oid = object.getOID();
 
@@ -708,7 +709,6 @@ public class BDBObjectServer extends BaseObjectServer
                 
                 DatabaseEntry key = createOIDKey(oid);
                 DatabaseEntry data = new DatabaseEntry();
-                SerializedObjectTupleBinding binding = new SerializedObjectTupleBinding(true);
                 binding.objectToEntry(object, data);
                 
                 try {
