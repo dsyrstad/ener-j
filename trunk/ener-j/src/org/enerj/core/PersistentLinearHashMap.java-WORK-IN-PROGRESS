@@ -38,6 +38,9 @@ import org.enerj.annotations.Persist;
 import org.enerj.annotations.PersistenceAware;
 import org.odmg.QueryInvalidException;
 
+
+THIS IS A WORK IN-PROGRESS......
+
 /**
  * Ener-J implementation of org.odmg.DMap which supports persistable linear hash tables (the linear
  * hash table algorithm as described by W. Litwin in 1980) as first-class objects (FCOs). This type
@@ -76,7 +79,7 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V> implements 
      * supported. However, the table is not limited to this size because blocks can be chained.
      */
     public static final int DEFAULT_NUM_KEYS_PER_BLOCK = 500;
-    public static final double DEFAULT_CAPACITY_LIMIT = .75;
+    public static final double DEFAULT_ELEMENTS_TO_BUCKETS_RATIO = ;
     
     /**
      * Maximum number of bits that we'll use from the hash code. 31 bits allows us to always deal with positive values. 
@@ -84,14 +87,14 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V> implements 
     private static final int MAX_HASH_CODE_BITS = 31;
     private static final int NUM_BITS_IN_INT = 32;
 
-    /** The capacity limit ratio set initially. */ 
-    private double capacityLimit; 
+    /** The capacity ratio set initially. */ 
+    private double capacityRatio; 
     private boolean allowDuplicateKeys;
     private int elementCount = 0;
     /* Number of key/oid pairs in a block. */
     private int blockSize;
     /**
-     * Number of bits currently being used from the hash code. buckets.length is always 2^numBits.
+     * Number of bits currently being used from the hash code. 2^numBits <= buckets.length is always true.
      * We start out with 8 bits which allows for about 70,000 entries before growing the table.
      */
     private int numBits = 8;
@@ -100,25 +103,21 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V> implements 
      * bucket points to the first block in the chain, or null.
      */
     private Block[] buckets = new Block[256];
-    /** The table capacity limit before growing the table. Indexed by numBits. Represents maxmium number of 
-     * entries in the table.
-     * If elementCount >= capacityLimitsForNumBits[numBits], buckets[] size doubles. */
-    private long[] capacityLimitsForNumBits = new long[MAX_HASH_CODE_BITS + 1];
 
     transient int modCount = 0;
 
     /**
      * Constructs a new empty instance of PersistentLinearHashMap that does not support duplicate
-     * keys. The block size is DEFAULT_NUM_KEYS_PER_BLOCK and capacity limit is DEFAULT_CAPACITY_LIMIT.
+     * keys. The block size is DEFAULT_NUM_KEYS_PER_BLOCK and capacity ratio is DEFAULT_ELEMENTS_TO_BUCKETS_RATIO.
      */
     public PersistentLinearHashMap()
     {
-        this(DEFAULT_NUM_KEYS_PER_BLOCK, false, DEFAULT_CAPACITY_LIMIT);
+        this(DEFAULT_NUM_KEYS_PER_BLOCK, false, DEFAULT_ELEMENTS_TO_BUCKETS_RATIO);
     }
 
     /**
      * Constructs a new instance of PersistentLinearHashMap with the specified block size. The map
-     * does not support duplicate keys. The capacity limit is DEFAULT_CAPACITY_LIMIT.
+     * does not support duplicate keys. The capacity ratio is DEFAULT_ELEMENTS_TO_BUCKETS_RATIO.
      * 
      * @param blockSize the maximum number of keys per block. There may be multiple blocks chained
      *        to a bucket, but typically there is only one.
@@ -127,7 +126,7 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V> implements 
      */
     public PersistentLinearHashMap(int blockSize)
     {
-        this(blockSize, false, DEFAULT_CAPACITY_LIMIT);
+        this(blockSize, false, DEFAULT_ELEMENTS_TO_BUCKETS_RATIO);
     }
 
     /**
@@ -136,27 +135,34 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V> implements 
      * 
      * @param blockSize the maximum number of keys per block. There may be multiple blocks chained
      *        to a bucket, but typically there is only one.
-     * @param capacityLimit the capacity ratio that, when exceed, the table will grow. Must be > .1 and < .9. 
+     * @param capacityRatio the capacity ratio of elements to buckets that, when exceed, the table will grow.  
      * 
      * @throws IllegalArgumentException if blockSize is less than zero.
      */
-    public PersistentLinearHashMap(int blockSize, boolean allowDuplicateKeys, double capacityLimit)
+    public PersistentLinearHashMap(int blockSize, boolean allowDuplicateKeys, double capacityRatio)
     {
         if (blockSize < 0) {
             throw new IllegalArgumentException("Block size too small");
         }
         
-        if (capacityLimit < .1 || capacityLimit > .9) {
+        if (capacityRatio < .1 || capacityRatio > .9) {
             throw new IllegalArgumentException("Capacity limit must be between .1 and .9");
         }
 
         this.allowDuplicateKeys = allowDuplicateKeys;
         this.blockSize = blockSize;
-        
-        // Calculate the capacity limit table.
-        for (int i = 0; i <= MAX_HASH_CODE_BITS; i++) {
-            capacityLimitsForNumBits[i] = (long)((1 << i) * blockSize * capacityLimit);
-        }
+        this.capacityRatio = capacityRatio;
+    }
+
+
+    /**
+     * Gets the capacity limit ratio that, when exceed, the table will grow. Must be > .1 and < .9.
+     *
+     * @return a ratio expressed as a decimal.
+     */
+    public double getCapacityLimit()
+    {
+        return capacityRatio;
     }
 
     /**
@@ -351,7 +357,7 @@ public class PersistentLinearHashMap<K, V> extends AbstractMap<K, V> implements 
 
         // Adding a new entry.
         // Over capacity limit?  
-        if (numBits < MAX_HASH_CODE_BITS && elementCount >= capacityLimitsForNumBits[numBits]) {
+        if (numBits < MAX_HASH_CODE_BITS && elementCount >= capacityRatiosForNumBits[numBits]) {
             growTable();
             // Need to get new index for the key now that the table has grown.
             index = getBucketIndex(key);
