@@ -1111,12 +1111,12 @@ public class BDBObjectServer extends BaseObjectServer
                 for (ClassVersionSchema version : classSchema.getVersions()) {
                     cids.add( version.getClassId() );
                 }
+            }
                 
-                if (wantSubclasses) {
-                    Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
-                    for (ClassVersionSchema version : subclasses) {
-                        cids.add( version.getClassId() );
-                    }
+            if (wantSubclasses) {
+                Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
+                for (ClassVersionSchema version : subclasses) {
+                    cids.add( version.getClassId() );
                 }
             }
             
