@@ -28,16 +28,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 
+import org.enerj.core.ClassSchema;
 import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Schema;
-import org.enerj.core.SparseBitSet;
 import org.enerj.core.SystemCIDMap;
 import org.enerj.server.ClassInfo;
 import org.enerj.server.ExtentIterator;
@@ -58,6 +60,7 @@ import org.odmg.TransactionNotInProgressException;
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.bind.tuple.TupleInput;
 import com.sleepycat.bind.tuple.TupleOutput;
+import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
@@ -116,6 +119,9 @@ public class BDBObjectServer extends BaseObjectServer
     /** List of active sessions. */
     private List<Session> mActiveSessions = new LinkedList<Session>();
     
+    /** List of active extent iterators. */
+    private List<BDBExtentIterator> mActiveExtents = Collections.synchronizedList( new LinkedList<BDBExtentIterator>() );
+
     /** True if any session that connected was running locally in the client. */
     private boolean mIsLocal = false;
     
@@ -409,6 +415,12 @@ public class BDBObjectServer extends BaseObjectServer
         } // End synchronized
         
         try {
+            // We need a copy because extents are removed from this list and would cause a concurrent operation exception.
+            List<BDBExtentIterator> copyActiveExtents = new ArrayList<BDBExtentIterator>(mActiveExtents);
+            for (BDBExtentIterator iter : copyActiveExtents) {
+                iter.close();
+            }
+            
             if (bdbDatabase != null) {
                 bdbDatabase.close();
             }
@@ -551,7 +563,7 @@ public class BDBObjectServer extends BaseObjectServer
     /**
      * The ObjectServerSession object returned by this server.
      */
-    private final class Session extends BaseObjectServerSession
+    class Session extends BaseObjectServerSession
     {
         private Transaction mTxn = null;
         /** If true, this is a privileged session that may update the schema. */
@@ -742,14 +754,17 @@ public class BDBObjectServer extends BaseObjectServer
                 binding.objectToEntry(object, data);
                 
                 try {
-                    bdbDatabase.put(txn, oidKey, data);
+                    OperationStatus status = bdbDatabase.put(txn, oidKey, data);
+                    if (status != OperationStatus.SUCCESS) {
+                        throw new ODMGException("Error writing object. Status is " + status);
+                    }
                 }
                 catch (DatabaseException e) {
                     throw new ODMGException("Error writing object", e);
                 }
                 
                 long cid = object.getCID();
-                if (!SystemCIDMap.isSystemCID(cid)) {
+                if (object.isNew() && !SystemCIDMap.isSystemCID(cid)) {
                     if (schema == null) {
                         schema = getSchema();
                     }
@@ -757,11 +772,16 @@ public class BDBObjectServer extends BaseObjectServer
                     // Add to extent.
                     DatabaseEntry extentKey = createLongKey(cid);
                     try {
-                        bdbExtentDatabase.putNoOverwrite(txn, extentKey, oidKey);
+                        OperationStatus status = bdbExtentDatabase.put(txn, extentKey, oidKey);
+                        if (status != OperationStatus.SUCCESS) {
+                            throw new ODMGException("Error writing to extent. Status is " + status);
+                        }
                     }
                     catch (DatabaseException e) {
                         throw new ODMGException("Error writing to extent", e);
                     }
+                    
+                    // TODO add to indexes
                 }
             }
         }
@@ -943,13 +963,13 @@ public class BDBObjectServer extends BaseObjectServer
                 DatabaseEntry key = new DatabaseEntry();
                 TupleBinding.getPrimitiveBinding(String.class).objectToEntry(aName, key);
                 DatabaseEntry data = createLongKey(anOID);
-                OperationStatus status = bdbBinderyDatabase.putNoDupData(txn, key, data);
+                OperationStatus status = bdbBinderyDatabase.putNoOverwrite(txn, key, data);
                 if (status == OperationStatus.KEYEXIST) {
                     throw new ObjectNameNotUniqueException("Bind name " + aName + " is not unique");
                 }
             }
             catch (DatabaseException e) {
-                throw new ODMGRuntimeException("Error binding to " + aName);
+                throw new ODMGRuntimeException("Error binding to " + aName, e);
             }
         }
 
@@ -973,7 +993,7 @@ public class BDBObjectServer extends BaseObjectServer
                 return (Long)TupleBinding.getPrimitiveBinding(Long.class).entryToObject(data);
             }
             catch (DatabaseException e) {
-                throw new ODMGRuntimeException("Error looking up binding to " + aName);
+                throw new ODMGRuntimeException("Error looking up binding to " + aName, e);
             }
         }
 
@@ -994,7 +1014,7 @@ public class BDBObjectServer extends BaseObjectServer
                 }
             }
             catch (DatabaseException e) {
-                throw new ODMGRuntimeException("Error deleting binding to " + aName);
+                throw new ODMGRuntimeException("Error deleting binding to " + aName, e);
             }
         }
         
@@ -1026,7 +1046,7 @@ public class BDBObjectServer extends BaseObjectServer
                 }
             }
             catch (DatabaseException e) {
-                throw new ODMGRuntimeException("Error removing OID " + anOID + " from extent");
+                throw new ODMGRuntimeException("Error removing OID " + anOID + " from extent", e);
             }
             
 
@@ -1039,6 +1059,44 @@ public class BDBObjectServer extends BaseObjectServer
          */
         public long getExtentSize(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
         {
+            List<Long> cids = getExtentCIDs(aClassName, wantSubclasses);
+            
+            Cursor cursor = null;
+            try {
+                long size = 0;
+                cursor = bdbExtentDatabase.openCursor(getTransaction(), null);
+                for (Long cid : cids) {
+                    DatabaseEntry key = createLongKey(cid);
+                    DatabaseEntry data = new DatabaseEntry();
+                    if (cursor.getSearchKey(key, data, getReadLockMode()) == OperationStatus.SUCCESS) {
+                        size += cursor.count();
+                    }
+                }
+                
+                return size;
+            }
+            catch (DatabaseException e) {
+                throw new ODMGRuntimeException("Error opening extent", e);
+            }
+            finally {
+                if (cursor != null) {
+                    try { cursor.close(); } catch (DatabaseException e) { /* Ignore */ }
+                }
+            }
+        }
+
+        /**
+         * Gets all of the CIDs that make up the extent, optionally with subclasses.
+         *
+         * @param aClassName
+         * @param wantSubclasses if true, subclasses will be included.
+         * 
+         * @return a List of CIDs.
+         * 
+         * @throws ODMGRuntimeException if an error occurs.
+         */
+        private List<Long> getExtentCIDs(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
+        {
             Schema schema;
             try {
                 schema = getSchema();
@@ -1046,77 +1104,57 @@ public class BDBObjectServer extends BaseObjectServer
             catch (ODMGException e) {
                 throw new ODMGRuntimeException(e);
             }
-
-            pushAsPersister();
-            try {
-                long result = 0;
-                /* TODO
-                ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
-                SparseBitSet extent = extentMap.getExtent(aClassName);
-                if (extent != null) {
-                    result += extent.getNumBitsSet();
+            
+            List<Long> cids = new ArrayList<Long>();
+            ClassSchema classSchema = schema.findClassSchema(aClassName);
+            if (classSchema != null) {
+                for (ClassVersionSchema version : classSchema.getVersions()) {
+                    cids.add( version.getClassId() );
                 }
-        
+                
                 if (wantSubclasses) {
                     Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
-                    for (ClassVersionSchema classVersion : subclasses) {
-                        extent = extentMap.getExtent( classVersion.getClassSchema().getClassName() );
-                        if (extent != null) {
-                            result += extent.getNumBitsSet();
-                        }
+                    for (ClassVersionSchema version : subclasses) {
+                        cids.add( version.getClassId() );
                     }
                 }
-                 */
-                return result;
             }
-            finally {
-                popAsPersister();
-            }
+            
+            return cids;
         }
-
+        
         /** 
          * {@inheritDoc}
          * @see org.enerj.server.ObjectServerSession#createExtentIterator(java.lang.String, boolean)
          */
         public ExtentIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
         {
-            // TODO What about objects added during txn? Flush from client first? I think we're OK. Flush updates extents.
-            Schema schema;
-            try {
-                schema = getSchema();
-            }
-            catch (ODMGException e) {
-                throw new ODMGRuntimeException(e);
+            List<Long> cids = getExtentCIDs(aClassName, wantSubclasses);
+            List<DatabaseEntry> cidKeys = new ArrayList<DatabaseEntry>(cids.size());
+            for (Long cid : cids) {
+                cidKeys.add( createLongKey(cid) );
             }
 
-            pushAsPersister();
             try {
-                List<SparseBitSet> extents = new ArrayList<SparseBitSet>();
-                /* TODO
-                ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
-                SparseBitSet extent = extentMap.getExtent(aClassName);
-                if (extent != null) {
-                    extents.add(extent);
-                }
-        
-                if (wantSubclasses) {
-                    Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
-                    for (ClassVersionSchema classVersion : subclasses) {
-                        extent = extentMap.getExtent( classVersion.getClassSchema().getClassName() );
-                        if (extent != null) {
-                            extents.add(extent);
-                        }
-                    }
-                }
-        
-                ExtentIterator extentIterator = new DefaultExtentIterator(extents);
-                return extentIterator;
-                */
-                return null;
+                Cursor cursor = bdbExtentDatabase.openCursor(getTransaction(), null);
+                BDBExtentIterator iter = new BDBExtentIterator(this, cursor, cidKeys, getReadLockMode());
+                mActiveExtents.add(iter);
+                return iter;
             }
-            finally {
-                popAsPersister();
+            catch (DatabaseException e) {
+                throw new ODMGRuntimeException("Error opening extent", e);
             }
+            
+        }
+        
+        /**
+         * Removes an extent iterator from the list of active ones.
+         *
+         * @param iter
+         */
+        void removeExtentIterator(BDBExtentIterator iter)
+        {
+            mActiveExtents.remove(iter);
         }
         // ...End of ObjectServerSession interface methods.
     }
