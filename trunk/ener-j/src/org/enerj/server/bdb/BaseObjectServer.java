@@ -183,13 +183,6 @@ abstract public class BaseObjectServer implements ObjectServer
             PersistableHelper.setOID(aSession, BaseObjectServer.SCHEMA_OID, schemaPersistable);
             aSession.addToModifiedList(schemaPersistable);
 
-            // Create the bindery.
-            // Special OID for bindery.
-            Bindery bindery = new Bindery();
-            Persistable binderyPersistable = (Persistable)bindery;
-            PersistableHelper.setOID(aSession, BaseObjectServer.BINDERY_OID, binderyPersistable);
-            aSession.addToModifiedList(binderyPersistable);
-            
             aSession.flushModifiedObjects();
             
             aSession.commitTransaction();
