@@ -57,21 +57,21 @@ import org.odmg.ObjectNameNotUniqueException;
 import org.odmg.ObjectNotPersistentException;
 import org.odmg.TransactionNotInProgressException;
 
-import com.sleepycat.bind.tuple.TupleBinding;
-import com.sleepycat.bind.tuple.TupleInput;
-import com.sleepycat.bind.tuple.TupleOutput;
-import com.sleepycat.je.Cursor;
-import com.sleepycat.je.Database;
-import com.sleepycat.je.DatabaseConfig;
-import com.sleepycat.je.DatabaseEntry;
-import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.Environment;
-import com.sleepycat.je.EnvironmentConfig;
-import com.sleepycat.je.LockMode;
-import com.sleepycat.je.OperationStatus;
-import com.sleepycat.je.Sequence;
-import com.sleepycat.je.SequenceConfig;
-import com.sleepycat.je.Transaction;
+import com.sleepycatje.bind.tuple.TupleBinding;
+import com.sleepycatje.bind.tuple.TupleInput;
+import com.sleepycatje.bind.tuple.TupleOutput;
+import com.sleepycatje.je.Cursor;
+import com.sleepycatje.je.Database;
+import com.sleepycatje.je.DatabaseConfig;
+import com.sleepycatje.je.DatabaseEntry;
+import com.sleepycatje.je.DatabaseException;
+import com.sleepycatje.je.Environment;
+import com.sleepycatje.je.EnvironmentConfig;
+import com.sleepycatje.je.LockMode;
+import com.sleepycatje.je.OperationStatus;
+import com.sleepycatje.je.Sequence;
+import com.sleepycatje.je.SequenceConfig;
+import com.sleepycatje.je.Transaction;
 
 /** 
  * Ener-J ObjectServer based on Berkeley DB Java Edition. Stores objects in BDB databases.
