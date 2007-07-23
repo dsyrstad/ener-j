@@ -564,9 +564,10 @@ public class BDBObjectServer extends BaseObjectServer
      */
     class Session extends BaseObjectServerSession
     {
-        private Transaction mTxn = null;
+        private Transaction txn = null;
         /** If true, this is a privileged session that may update the schema. */
-        private boolean mIsSchemaSession = false;
+        private boolean isSchemaSession = false;
+        private List<BDBExtentIterator> sessionIterators = new ArrayList<BDBExtentIterator>(); 
 
         /**
          * Constructs a new Session in a connected state.
@@ -576,7 +577,7 @@ public class BDBObjectServer extends BaseObjectServer
         Session(BDBObjectServer anObjectServer, boolean isSchemaSession)
         {
             super(anObjectServer);
-            mIsSchemaSession = isSchemaSession;
+            isSchemaSession = isSchemaSession;
         }
         
         /**
@@ -588,11 +589,11 @@ public class BDBObjectServer extends BaseObjectServer
          */
         Transaction getTransaction() throws TransactionNotInProgressException
         {
-            if (mTxn == null && !getAllowNontransactionalReads()) {
+            if (txn == null && !getAllowNontransactionalReads()) {
                 throw new TransactionNotInProgressException("Transaction not in progress.");
             }
 
-            return mTxn;
+            return txn;
         }
 
         /**
@@ -602,7 +603,7 @@ public class BDBObjectServer extends BaseObjectServer
          */
         Transaction getTransactionOrNull()
         {
-            return mTxn;
+            return txn;
         }
 
         /**
@@ -612,8 +613,8 @@ public class BDBObjectServer extends BaseObjectServer
          */
         void setTransaction(Transaction aTransaction)
         {
-            mTxn = aTransaction;
-            setTransactionActive(mTxn != null);
+            txn = aTransaction;
+            setTransactionActive(txn != null);
         }
         
 
@@ -626,7 +627,7 @@ public class BDBObjectServer extends BaseObjectServer
             }
 
             // If transaction is active on session, roll it back.
-            if (mTxn != null) {
+            if (txn != null) {
                 //  TODO  Log in messages as forced rollback.
                 rollbackTransaction();
             }
@@ -744,7 +745,7 @@ public class BDBObjectServer extends BaseObjectServer
                 long oid = object.getOID();
 
                 // Prevent schema OIDs from being stored unless this is the schema session.
-                if (!mIsSchemaSession && oid == SCHEMA_OID) {
+                if (!isSchemaSession && oid == SCHEMA_OID) {
                     throw new ODMGException("Client is not allowed to update schema via object modification.");
                 }
                 
@@ -875,6 +876,8 @@ public class BDBObjectServer extends BaseObjectServer
             super.commitTransaction();
 
             Transaction txn = getTransaction();
+            
+            closeActiveIterators();
             try {
                 // commitSync is because the environment is set to txnWriteNoSync() which doesn't flush OS buffers by default.
                 txn.commitSync(); 
@@ -898,6 +901,8 @@ public class BDBObjectServer extends BaseObjectServer
             super.rollbackTransaction();
             
             Transaction txn = getTransaction();
+
+            closeActiveIterators();
             try {
                 txn.abort();
             }
@@ -1137,6 +1142,7 @@ public class BDBObjectServer extends BaseObjectServer
             try {
                 Cursor cursor = bdbExtentDatabase.openCursor(getTransaction(), null);
                 BDBExtentIterator iter = new BDBExtentIterator(this, cursor, cidKeys, getReadLockMode());
+                sessionIterators.add(iter);
                 mActiveExtents.add(iter);
                 return iter;
             }
@@ -1146,6 +1152,17 @@ public class BDBObjectServer extends BaseObjectServer
             
         }
         
+        void closeActiveIterators()
+        {
+            List<BDBExtentIterator> iters = new ArrayList<BDBExtentIterator>(sessionIterators);
+            for (BDBExtentIterator iter : sessionIterators) {
+                if (iter.isOpen()) {
+                    iter.close();
+                }
+            }
+        }
+        
+        
         /**
          * Removes an extent iterator from the list of active ones.
          *
@@ -1153,6 +1170,7 @@ public class BDBObjectServer extends BaseObjectServer
          */
         void removeExtentIterator(BDBExtentIterator iter)
         {
+            sessionIterators.remove(iter);
             mActiveExtents.remove(iter);
         }
         // ...End of ObjectServerSession interface methods.

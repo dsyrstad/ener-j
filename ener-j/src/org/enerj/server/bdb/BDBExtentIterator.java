@@ -79,6 +79,11 @@ public class BDBExtentIterator implements ExtentIterator
     }
 
 
+    public boolean isOpen()
+    {
+        return isOpen;
+    }
+
     /**
      * Determines if more objects are available from this iterator. Primes nextOIDToReturn if necessary.
      *
