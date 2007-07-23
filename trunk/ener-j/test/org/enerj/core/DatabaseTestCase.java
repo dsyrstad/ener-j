@@ -31,6 +31,7 @@ import junit.framework.TestCase;
 
 import org.enerj.server.PagedObjectServer;
 import org.enerj.server.bdb.BDBObjectServer;
+import org.enerj.util.CreateDatabase;
 
 /**
  * Handles creation and deletion of a temporary database for testing. NOTE: This is a TestCase
@@ -44,7 +45,7 @@ public abstract class DatabaseTestCase extends TestCase
 {
     private static final Logger sLogger = Logger.getLogger(DatabaseTestCase.class.getName());
     
-    private static final String DB_PATH = System.getProperty("enerj.dbpath");
+    private static final String DB_PATH = System.getProperty("enerj.dbpath") == null ? "databases" : System.getProperty("enerj.dbpath");
     private static final String DBNAME = "GeneralDB";
     private static final String DBNAME2 = "GeneralDB2";
     private static final String PARENT_DIR = DB_PATH + "/JUnit/";
@@ -85,7 +86,7 @@ public abstract class DatabaseTestCase extends TestCase
     {
         clearDBFiles();
         System.setProperty("enerj.dbpath", PARENT_DIR);
-        BDBObjectServer.createDatabase("Test", DBNAME);
+        CreateDatabase.createDatabase(DBNAME);
     }
 
     /**
@@ -99,10 +100,13 @@ public abstract class DatabaseTestCase extends TestCase
     
     public static void deleteDBFilesInDir(String dirName)
     {
-        for (File file : new File(dirName).listFiles()) {
-            String name = file.getName();
-            if (name.endsWith(".jdb") || name.endsWith(".enerj") || name.endsWith(".log")) {
-                file.delete();
+        File[] files = new File(dirName).listFiles();
+        if (files != null) {
+            for (File file : files) {
+                String name = file.getName();
+                if (name.equals("je.lck") || name.endsWith(".jdb") || name.endsWith(".enerj") || name.endsWith(".log")) {
+                    file.delete();
+                }
             }
         }
     }
@@ -124,7 +128,7 @@ public abstract class DatabaseTestCase extends TestCase
     {
         clearDB2Files();
         System.setProperty("enerj.dbpath", PARENT_DIR);
-        BDBObjectServer.createDatabase("Test", DBNAME2);
+        CreateDatabase.createDatabase(DBNAME2);
     }
 
 }

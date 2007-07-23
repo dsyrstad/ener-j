@@ -210,67 +210,17 @@ public class BDBObjectServer extends BaseObjectServer
     }
     
     /**
-     * Creates a new database on disk. The "enerj.dbpath" system property must be set.
+     * Creates a new database on disk. The "enerj.dbpath" and "enerj.dbdir" system property must be set.
      *
-     * @param aDescription a description for the database. May be null.
-     * @param aDBName The database name. See {@link #connect(Properties)}.
-
-     * @throws ODMGException if an error occurs.
-     */
-    public static void createDatabase(String aDescription, String aDBName) throws ODMGException
-    {
-        // Load database properties.  First copy system properties.
-        Properties props = new Properties( System.getProperties() );
-
-        String propFileName = aDBName + File.separatorChar + aDBName + ".properties";
-        String dbPath = getRequiredProperty(props, ENERJ_DBPATH_PROP);
-        File propFile = FileUtil.findFileOnPath(propFileName, dbPath);
-        if (propFile == null) {
-            throw new DatabaseNotFoundException("Cannot find " + propFileName + " in any of the directories " + dbPath); 
-        }
-
-        FileInputStream inPropFile = null;
-        try {
-            inPropFile = new FileInputStream(propFile);
-            props.load(inPropFile);
-        }
-        catch (IOException e) {
-            throw new ODMGException("Error reading " + propFile, e);
-        }
-        finally {
-            if (inPropFile != null) {
-                try {
-                    inPropFile.close();
-                }
-                catch (IOException e) {
-                    throw new ODMGException("Error closing properties file: " + propFile, e);
-                }
-                
-                inPropFile = null;
-            }
-        }
-
-        createDatabase(aDescription, aDBName, props, propFile);
-    }
-
-
-    /**
-     * Creates a new database on disk. The "enerj.dbpath" system property must be set.
-     *
-     * @param aDescription a description for the database. May be null.
-     * @param aDBName The database name. See {@link #connect(Properties)}.
-     * @param someDBProps the database properties, normally read from a database propeties file.
-     * @param aDBPropFile the properties file of the database.
+     * @param someDBProps the database properties, normally read from a database properties file.
      * 
      * @throws ODMGException if an error occurs.
      */
-	private static void createDatabase(String aDescription, String aDBName, Properties someDBProps, File aDBPropFile) throws ODMGException 
+	public static void createDatabase(Properties someDBProps) throws ODMGException 
     {
+	    String aDBName = getRequiredProperty(someDBProps, ObjectServer.ENERJ_DBNAME_PROP);
+	    String dbDir = getRequiredProperty(someDBProps, ObjectServer.ENERJ_DBDIR_PROP);
 	    sLogger.fine("Creating database: " + aDBName);
-        
-	    File dbDir = aDBPropFile.getParentFile();
-		someDBProps.setProperty(ENERJ_DBDIR_PROP, dbDir.getAbsolutePath());
-        someDBProps.setProperty(ENERJ_DBNAME_PROP, aDBName);
 
         Session session = null;
         boolean completed = false;
@@ -281,7 +231,7 @@ public class BDBObjectServer extends BaseObjectServer
             bdbEnvConfig.setAllowCreate(true);
             bdbEnvConfig.setTransactional(true);
 
-            bdbEnv = new Environment(dbDir, bdbEnvConfig);
+            bdbEnv = new Environment(new File(dbDir), bdbEnvConfig);
             
             DatabaseConfig bdbDBConfig = new DatabaseConfig();
             bdbDBConfig.setAllowCreate(true);
@@ -327,7 +277,7 @@ public class BDBObjectServer extends BaseObjectServer
             tmpDBProps.setProperty(ENERJ_CLIENT_LOCAL, "true");
 
             session = (Session)connect(tmpDBProps, true);
-            initDBObjects(session, aDescription);
+            initDBObjects(session);
             completed = true;
         }
         catch (ODMGException e) {
@@ -577,7 +527,7 @@ public class BDBObjectServer extends BaseObjectServer
         Session(BDBObjectServer anObjectServer, boolean isSchemaSession)
         {
             super(anObjectServer);
-            isSchemaSession = isSchemaSession;
+            this.isSchemaSession = isSchemaSession;
         }
         
         /**
@@ -1141,7 +1091,13 @@ public class BDBObjectServer extends BaseObjectServer
 
             try {
                 Cursor cursor = bdbExtentDatabase.openCursor(getTransaction(), null);
-                BDBExtentIterator iter = new BDBExtentIterator(this, cursor, cidKeys, getReadLockMode());
+                LockMode lockMode = getReadLockMode();
+                // BDB Cursor doesn't allow READ_COMMITTED
+                if (lockMode == LockMode.READ_COMMITTED) {
+                    lockMode = null;
+                }
+                
+                BDBExtentIterator iter = new BDBExtentIterator(this, cursor, cidKeys, lockMode);
                 sessionIterators.add(iter);
                 mActiveExtents.add(iter);
                 return iter;
@@ -1155,7 +1111,7 @@ public class BDBObjectServer extends BaseObjectServer
         void closeActiveIterators()
         {
             List<BDBExtentIterator> iters = new ArrayList<BDBExtentIterator>(sessionIterators);
-            for (BDBExtentIterator iter : sessionIterators) {
+            for (BDBExtentIterator iter : iters) {
                 if (iter.isOpen()) {
                     iter.close();
                 }

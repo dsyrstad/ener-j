@@ -48,7 +48,8 @@ import org.odmg.ODMGException;
  * <li>enerj.password - the password for username. Optional.</li>
  * <li>enerj.hostname - the host to connect to. Required for a remote connection. Does not exist for a in-client local connection.</li>
  * <li>enerj.port - the port on the host to connect to. Optional. </li>
- * <li>enerj.dbpath - a list of database directory names, separated by File.pathSeparator. Required on non-proxy servers.</li> 
+ * <li>enerj.dbpath - a list of database directory names, separated by File.pathSeparator. Required on non-proxy servers.</li>
+ * <li>enerj.object.server - the class name of an ObjectServer to use. If not specified, the default one is used.</li> 
  * </ul>
  * 
  * These are also statically defined by this interface.
@@ -62,7 +63,16 @@ import org.odmg.ODMGException;
  * Returns: a ObjectServerSession which references the same ObjectServer object 
  * for a given URI that refers to the same ObjectServer. <p>
  *
- * 2. The ObjectServer must be thread-safe. It is not recommended that the "synchronized"
+ * 2. A static factory method "createDatabase" must be defined. The signature
+ *    for the method is:<p>
+ *
+ * public static void createDatabase(Properties someProperties) throws ODMGException;<p>
+ * 
+ * This method can find the ENERJ_DBPATH_PROP, ENERJ_DBNAME_PROP, and ENERJ_DBDIR_PROP properties in the argument passed. 
+ * Before this method is called, the contents of the {dbName}.properties file are used to construct the argument passed.
+ * The argument contains information on how to construct the database.<p>
+ *
+ * 3. The ObjectServer must be thread-safe. It is not recommended that the "synchronized"
  *    keyword be used on methods since this will have the effect of single-threading
  *    the ObjectServer. Finer-grained/shorter-term locking should be used instead.<p>
  *
@@ -90,6 +100,8 @@ public interface ObjectServer
     public static final String ENERJ_DBDIR_PROP = "enerj.dbdir";
     /** A boolean indicating whether the ObjectServer is running locally within the client. */
     public static final String ENERJ_CLIENT_LOCAL = "enerj.clientLocal";
+    /** Specifes the ObjectServer class to use within the client. */
+    public static final String ENERJ_OBJECT_SERVER = "enerj.object.server";
 
     
     /**

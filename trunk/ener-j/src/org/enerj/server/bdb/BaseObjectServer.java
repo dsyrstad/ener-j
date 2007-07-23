@@ -156,18 +156,17 @@ abstract public class BaseObjectServer implements ObjectServer
      * Initialize primordial database objects needed to run the database.
      *
      * @param aSession a session on which to write the objects.
-     * @param aDescription a description for the database.
      * 
      * @throws ODMGException if an error occurs.
      */
-    protected static void initDBObjects(BaseObjectServerSession aSession, String aDescription) throws ODMGException
+    protected static void initDBObjects(BaseObjectServerSession aSession) throws ODMGException
     {
         aSession.pushAsPersister();
         aSession.setInSchemaInit(true);
         try {
             aSession.beginTransaction();
 
-            Schema schema = new Schema(aDescription);
+            Schema schema = new Schema("");
 
             // Initialize DB Schema. Add schema classes themselves to schema to bootstrap it.
             for (String schemaClassName : SystemCIDMap.getSystemClassNames()) {

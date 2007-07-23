@@ -24,13 +24,21 @@
 
 package org.enerj.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+
+import org.enerj.server.ObjectServer;
 import org.enerj.server.PagedObjectServer;
+import org.enerj.server.PluginHelper;
 import org.enerj.server.bdb.BDBObjectServer;
+import org.odmg.DatabaseNotFoundException;
+import org.odmg.ODMGException;
 
 /**
  * Utility to create a database.
  *
- * @version $Id: CreateDatabase.java,v 1.3 2005/08/12 02:56:45 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
 public class CreateDatabase 
@@ -39,20 +47,12 @@ public class CreateDatabase
 
     public static void usage()
     {
-        System.err.println("Usage: " + CreateDatabase.class.getName() + " [options] DatabaseName");
+        System.err.println("Usage: " + CreateDatabase.class.getName() + " DatabaseName");
         System.err.println("DatabaseName - The database name.");
         System.err.println("    The database name must correspond to a base filename with \".properties\"");
         System.err.println("    appended that can be found along the path specified by enerj.dbpath.");
         System.err.println("    This is a Java properties file. See the plug-in class descriptions");
         System.err.println("    for information on the contents of the configuration file.");
-        System.err.println("");
-        System.err.println("Options:");
-        System.err.println("  --description \"...\" - a description of the database.");
-        System.err.println("  --max-vol-size # - the maximum size in bytes for the volume. This will be");
-        System.err.println("     rounded up to the nearest page boundary. If this value is zero, the ");
-        System.err.println("     volume will grow unbounded. Default is zero.");
-        System.err.println("  --pre-alloc # - the number of bytes to pre-allocate. This will be rounded up");
-        System.err.println("     to the nearest page boundary. Default is zero.");
 
         System.exit(1);
     }
@@ -64,23 +64,19 @@ public class CreateDatabase
             usage();
         }
         
-        long maxVolSize = 0;
-        long preAlloc = 0;
         
         String dbName = null;
-        String description = null;
-        
         for (int i = 0; i < args.length; i++) {
             if (args[i].startsWith("--")) {
-                if (args[i].equals("--max-vol-size") && (i + 1) < args.length) {
+                /*if (args[i].equals("--max-vol-size") && (i + 1) < args.length) {
                     ++i;
                     maxVolSize = Long.parseLong(args[i]);
                 }
                 else if (args[i].equals("--pre-alloc") && (i + 1) < args.length) {
                     ++i;
                     preAlloc = Long.parseLong(args[i]);
-                }
-                else {
+                } else */
+                {
                     System.err.println("Invalid option: " + args[i]);
                     usage();
                 }
@@ -100,16 +96,61 @@ public class CreateDatabase
         }
 
         try {
-            // TODO Allow for store-type 
-            //PagedObjectServer.createDatabase(description, dbName, maxVolSize, preAlloc);
-            BDBObjectServer.createDatabase(description, dbName);
+            createDatabase(dbName);
         }
         catch (Exception e) {
-            //System.err.println( e.toString() );
             e.printStackTrace();
             System.exit(1);
         }
         
         System.exit(0);
+    }
+    
+    /**
+     * Creates a database. enerj.dbpath must be set.
+     *
+     * @param dbName the name of the database.
+     */
+    public static void createDatabase(String dbName) throws ODMGException
+    {
+        // Load database properties.  First copy system properties.
+        Properties props = new Properties( System.getProperties() );
+
+        String propFileName = dbName + File.separatorChar + dbName + ".properties";
+        String dbPath = props.getProperty(ObjectServer.ENERJ_DBPATH_PROP);
+        if (dbPath == null) {
+            throw new ODMGException("Property " + ObjectServer.ENERJ_DBPATH_PROP + " must be defined");
+        }
+        
+        File propFile = FileUtil.findFileOnPath(propFileName, dbPath);
+        if (propFile == null) {
+            throw new DatabaseNotFoundException("Cannot find " + propFileName + " in any of the directories " + dbPath); 
+        }
+
+        FileInputStream inPropFile = null;
+        try {
+            inPropFile = new FileInputStream(propFile);
+            props.load(inPropFile);
+        }
+        catch (IOException e) {
+            throw new ODMGException("Error reading " + propFile, e);
+        }
+        finally {
+            if (inPropFile != null) {
+                try {
+                    inPropFile.close();
+                }
+                catch (IOException e) {
+                    throw new ODMGException("Error closing properties file: " + propFile, e);
+                }
+                
+                inPropFile = null;
+            }
+        }
+
+        props.setProperty(ObjectServer.ENERJ_DBDIR_PROP, propFile.getParentFile().getAbsolutePath());
+        props.setProperty(ObjectServer.ENERJ_DBNAME_PROP, dbName);
+
+        PluginHelper.createDatabase(null, props);
     }
 }
