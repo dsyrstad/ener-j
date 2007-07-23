@@ -23,11 +23,14 @@
 package org.enerj.core;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.util.logging.Logger;
 
 import junit.framework.TestCase;
 
 import org.enerj.server.PagedObjectServer;
+import org.enerj.server.bdb.BDBObjectServer;
 
 /**
  * Handles creation and deletion of a temporary database for testing. NOTE: This is a TestCase
@@ -48,12 +51,6 @@ public abstract class DatabaseTestCase extends TestCase
     
     protected static final String DATABASE_URI = DBNAME;
     protected static final String DATABASE2_URI = DBNAME2;
-    
-    private static final String PAGE_FILE_NAME = PARENT_DIR + DBNAME + '/' + DBNAME + ".enerj";
-    private static final String LOG_FILE_NAME = PARENT_DIR + DBNAME + '/' + DBNAME + ".log";
-    
-    private static final String PAGE_FILE2_NAME = PARENT_DIR + DBNAME2 + '/' + DBNAME2 + ".enerj";
-    private static final String LOG_FILE2_NAME = PARENT_DIR + DBNAME2 + '/' + DBNAME2 + ".log";
 
     /**
      * Construct a DatabaseTestCase. 
@@ -88,7 +85,7 @@ public abstract class DatabaseTestCase extends TestCase
     {
         clearDBFiles();
         System.setProperty("enerj.dbpath", PARENT_DIR);
-        PagedObjectServer.createDatabase("Test", DBNAME, 0L, 0L);
+        BDBObjectServer.createDatabase("Test", DBNAME);
     }
 
     /**
@@ -96,10 +93,18 @@ public abstract class DatabaseTestCase extends TestCase
      */
     public static void clearDBFiles()
     {
-        new File(PAGE_FILE_NAME).delete();
-        new File(LOG_FILE_NAME).delete();
-        
+        deleteDBFilesInDir(PARENT_DIR + '/' + DBNAME);
         clearDB2Files();
+    }
+    
+    public static void deleteDBFilesInDir(String dirName)
+    {
+        for (File file : new File(dirName).listFiles()) {
+            String name = file.getName();
+            if (name.endsWith(".jdb") || name.endsWith(".enerj") || name.endsWith(".log")) {
+                file.delete();
+            }
+        }
     }
 
     /**
@@ -107,8 +112,7 @@ public abstract class DatabaseTestCase extends TestCase
      */
     public static void clearDB2Files()
     {
-        new File(PAGE_FILE2_NAME).delete();
-        new File(LOG_FILE2_NAME).delete();
+        deleteDBFilesInDir(PARENT_DIR + '/' + DBNAME2);
     }
     
     /**
@@ -120,7 +124,7 @@ public abstract class DatabaseTestCase extends TestCase
     {
         clearDB2Files();
         System.setProperty("enerj.dbpath", PARENT_DIR);
-        PagedObjectServer.createDatabase("Test", DBNAME2, 0L, 0L);
+        BDBObjectServer.createDatabase("Test", DBNAME2);
     }
 
 }
