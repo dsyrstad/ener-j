@@ -158,6 +158,7 @@ Available targets:
   				<pathelement location="${build.testdest}"/>
     		    <pathelement location="${build.dest}"/>
                 <pathelement location="${asm.jar}"/>
+                <pathelement location="${commons-logging.jar}"/>
                 <pathelement location="${bdbje.jar}"/>
         		<pathelement location="${junit.jar}"/>
 			</classpath>
