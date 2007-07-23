@@ -57,6 +57,10 @@ public class BDBExtentIterator implements ExtentIterator
     /**
      * Constructs a DefaultExtentIterator.
      *
+     * @param session the session that owns this extent iterator.
+     * @param cursor the cursor to use.
+     * @param cidKeys the CIDs to be iterated over.
+     * @param lockMode the lock mode for the Cursor. May be null.
      *
      * @throws ODMGRuntimeException if an error occurs.
      */

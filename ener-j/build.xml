@@ -44,7 +44,7 @@ Available targets:
         <property name="databases.dir" value="${basedir}/databases"/>
     	<property name="junit.jar" value="${lib.dir}/junit-3.8.1.jar" />
     	<property name="asm.jar" value="${lib.dir}/asm-3.0.jar" />
-    	<property name="bdbje.jar" value="${lib.dir}/je-3.2.23.jar" />
+    	<property name="bdbje.jar" value="${lib.dir}/bdb-je-3.2.23.jar" />
     	<property name="agent.jar" value="${lib.dir}/${agent-jarname}.jar" />
     	<property name="commons-logging.jar" value="${lib.dir}/commons-logging-1.1.jar" />
         <property name="class.path" value="${build.dest}:${junit.jar}:${asm.jar}:${commons-logging.jar}:${bdbje.jar}"/>

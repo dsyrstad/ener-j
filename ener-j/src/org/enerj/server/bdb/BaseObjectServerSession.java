@@ -24,7 +24,6 @@ package org.enerj.server.bdb;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.enerj.core.ClassVersionSchema;
@@ -39,24 +38,14 @@ import org.enerj.core.PersistableObjectCache;
 import org.enerj.core.Persister;
 import org.enerj.core.PersisterRegistry;
 import org.enerj.core.Schema;
-import org.enerj.core.SparseBitSet;
-import org.enerj.server.Bindery;
 import org.enerj.server.ClassInfo;
-import org.enerj.server.ExtentIterator;
 import org.enerj.server.ObjectServer;
 import org.enerj.server.ObjectServerSession;
 import org.enerj.server.SerializedObject;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
-import org.odmg.ObjectNameNotFoundException;
-import org.odmg.ObjectNameNotUniqueException;
-import org.odmg.ObjectNotPersistentException;
 import org.odmg.TransactionInProgressException;
 import org.odmg.TransactionNotInProgressException;
-
-import com.sleepycat.bind.tuple.TupleBinding;
-import com.sleepycat.bind.tuple.TupleInput;
-import com.sleepycat.bind.tuple.TupleOutput;
 
 /**
  * Implements common code that can be used by an ObjectServerSession implementation.

@@ -1098,14 +1098,10 @@ public class EnerJDatabase implements Database, Persister
             if (host == null || host.length() == 0 || host.equals("-")) {
                 // Local connection with PagedObjectServer - default.
                 host = null;
-                //pluginClassName = PagedObjectServer.class.getName();
-                pluginClassName = BDBObjectServer.class.getName();
                 mIsLocal = true;
             }
             else {
                 // TODO --  no remote plug-in yet...
-                //pluginClassName = PagedObjectServer.class.getName();
-                pluginClassName = BDBObjectServer.class.getName();
             }
         }
         else if (scheme.startsWith("enerj.")) {
@@ -1145,7 +1141,7 @@ public class EnerJDatabase implements Database, Persister
 
         props.setProperty(ENERJ_CLIENT_LOCAL, Boolean.toString(mIsLocal));
         
-        mObjectServerSession = (ObjectServerSession)PluginHelper.connect(pluginClassName, props);
+        mObjectServerSession = (ObjectServerSession)PluginHelper.connect(null, props);
 
         // TODO Allow cache size to be set.
         mClientCache = new DefaultPersistableObjectCache(5000);

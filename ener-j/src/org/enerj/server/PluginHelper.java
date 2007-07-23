@@ -29,6 +29,7 @@ import java.net.*;
 import java.util.*;
 
 import org.odmg.*;
+import org.enerj.server.bdb.BDBObjectServer;
 import org.enerj.util.*;
 
 /**
@@ -40,13 +41,15 @@ import org.enerj.util.*;
  */
 public class PluginHelper 
 {
-    private static final Class[] CONNECT_PARAMETERS = { Properties.class };
+    private static String DEFAULT_LOCAL_OBJECT_SERVER = BDBObjectServer.class.getName();
+    private static String DEFAULT_REMOTE_OBJECT_SERVER = BDBObjectServer.class.getName();
     
-
+    private static final Class[] PARAMETERS = { Properties.class };
+    
     /**
      * Given a plug-in class name and properties, resolve and connect to a plug-in.
      *
-     * @param aClassName the plug-in class name.
+     * @param aClassName the plug-in class name. If null, the default object server plug-in is used.
      * @param someProperties the properties to provide to the plug-in's static connect(Properties) method. 
      *
      * @return an Object returned from the plugin's connect method.
@@ -55,9 +58,52 @@ public class PluginHelper
      */
     public static Object connect(String aClassName, Properties someProperties) throws ODMGException
     {
+        return invoke("connect", aClassName, someProperties);
+    }
+    
+    /**
+     * Given an ObjectServer plug-in class name and properties, resolve and call createDatabase on the plug-in.
+     *
+     * @param aClassName the plug-in class name. If null, the default object server plug-in is used.
+     * @param someProperties the properties to provide to the plug-in's static connect(Properties) method. 
+     *
+     * @return an Object returned from the plugin's connect method.
+     *
+     * @throws ODMGException in the event of an error. <p>
+     */
+    public static void createDatabase(String aClassName, Properties someProperties) throws ODMGException
+    {
+        invoke("createDatabase", aClassName, someProperties);
+    }
+    
+    /**
+     * Given a plug-in class name and properties, resolve and call method on a plug-in.
+     *
+     * @param methodName the static method on the plug-in. Must take a single Properties parameter.
+     * @param aClassName the plug-in class name. If null, the default object server plug-in is used.
+     * @param someProperties the properties to provide to the plug-in's static connect(Properties) method. 
+     *
+     * @return an Object returned from the plugin's connect method.
+     *
+     * @throws ODMGException in the event of an error. <p>
+     */
+    private static Object invoke(String methodName, String aClassName, Properties someProperties) throws ODMGException
+    {
+        if (aClassName == null) {
+            aClassName = someProperties.getProperty(ObjectServer.ENERJ_OBJECT_SERVER);
+            if (aClassName == null) {
+                if (Boolean.valueOf(someProperties.getProperty(ObjectServer.ENERJ_CLIENT_LOCAL, "false"))) {
+                    aClassName = DEFAULT_LOCAL_OBJECT_SERVER;
+                }
+                else {
+                    aClassName = DEFAULT_REMOTE_OBJECT_SERVER;
+                }
+            }
+        }
+        
         try {
             Class pluginClass = Class.forName(aClassName);
-            Method method = pluginClass.getMethod("connect", CONNECT_PARAMETERS);
+            Method method = pluginClass.getMethod(methodName, PARAMETERS);
             return method.invoke(null, new Object[] { someProperties } );
         }
         catch (Exception e) {
