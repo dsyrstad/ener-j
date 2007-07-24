@@ -162,14 +162,15 @@ public class BDBNIObjectServer extends BaseObjectServer
             bdbEnvConfig.setTxnWriteNoSync(true); 
             bdbEnvConfig.setInitializeCache(true);
             bdbEnvConfig.setInitializeLocking(true);
-            bdbEnvironment = new Environment( new File(dbDir), bdbEnvConfig);
+            File dbDirFile = new File(dbDir).getAbsoluteFile();
+            bdbEnvironment = new Environment(dbDirFile, bdbEnvConfig);
             
             DatabaseConfig bdbDBConfig = new DatabaseConfig();
             bdbDBConfig.setTransactional(true);
             bdbDBConfig.setType(DatabaseType.BTREE);
             // TODO bdbDBConfig.setReadOnly(true); based on Prop
     
-            String dbFileName = dbDir + '/' + mDBName + ".db";
+            String dbFileName = dbDirFile.getAbsolutePath() + '/' + mDBName + ".db";
             bdbDatabase = bdbEnvironment.openDatabase(null, dbFileName, mDBName, bdbDBConfig);
             bdbBinderyDatabase = bdbEnvironment.openDatabase(null, dbFileName, mDBName + BINDERY_SUFFIX, bdbDBConfig);
 
@@ -242,7 +243,8 @@ public class BDBNIObjectServer extends BaseObjectServer
             bdbEnvConfig.setInitializeCache(true);
             bdbEnvConfig.setInitializeLocking(true);
 
-            bdbEnv = new Environment(new File(dbDir), bdbEnvConfig);
+            File dbDirFile = new File(dbDir).getAbsoluteFile();
+            bdbEnv = new Environment(dbDirFile, bdbEnvConfig);
             
             DatabaseConfig bdbDBConfig = new DatabaseConfig();
             bdbDBConfig.setAllowCreate(true);
@@ -251,7 +253,7 @@ public class BDBNIObjectServer extends BaseObjectServer
             bdbDBConfig.setType(DatabaseType.BTREE);
             
             // The main database's key is an OID.
-            String dbFileName = dbDir + '/' + aDBName + ".db";
+            String dbFileName = dbDirFile.getAbsolutePath() + '/' + aDBName + ".db";
             bdbDB = bdbEnv.openDatabase(null, dbFileName, aDBName, bdbDBConfig);
 
             // Create the OID number sequence.
