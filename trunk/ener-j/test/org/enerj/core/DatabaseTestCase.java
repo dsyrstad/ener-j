@@ -104,7 +104,8 @@ public abstract class DatabaseTestCase extends TestCase
         if (files != null) {
             for (File file : files) {
                 String name = file.getName();
-                if (name.equals("je.lck") || name.endsWith(".jdb") || name.endsWith(".enerj") || name.endsWith(".log")) {
+                if (name.equals("je.lck") || name.endsWith(".jdb") || name.endsWith(".enerj") || name.endsWith(".log") || 
+                    name.endsWith(".db") || name.startsWith("__db") || name.startsWith("log.")) {
                     file.delete();
                 }
             }

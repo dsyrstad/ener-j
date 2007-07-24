@@ -30,12 +30,12 @@ import java.util.NoSuchElementException;
 import org.enerj.server.ExtentIterator;
 import org.odmg.ODMGRuntimeException;
 
-import com.sleepycatni.bind.tuple.TupleBinding;
-import com.sleepycatni.db.Cursor;
-import com.sleepycatni.db.DatabaseEntry;
-import com.sleepycatni.db.DatabaseException;
-import com.sleepycatni.db.LockMode;
-import com.sleepycatni.db.OperationStatus;
+import com.sleepycat.bind.tuple.TupleBinding;
+import com.sleepycat.db.Cursor;
+import com.sleepycat.db.DatabaseEntry;
+import com.sleepycat.db.DatabaseException;
+import com.sleepycat.db.LockMode;
+import com.sleepycat.db.OperationStatus;
 
 /**
  * BDB ExtentIterator implementation.
