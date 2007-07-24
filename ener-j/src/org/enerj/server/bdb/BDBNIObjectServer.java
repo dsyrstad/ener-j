@@ -57,21 +57,22 @@ import org.odmg.ObjectNameNotUniqueException;
 import org.odmg.ObjectNotPersistentException;
 import org.odmg.TransactionNotInProgressException;
 
-import com.sleepycatni.bind.tuple.TupleBinding;
-import com.sleepycatni.bind.tuple.TupleInput;
-import com.sleepycatni.bind.tuple.TupleOutput;
-import com.sleepycatni.db.Cursor;
-import com.sleepycatni.db.Database;
-import com.sleepycatni.db.DatabaseConfig;
-import com.sleepycatni.db.DatabaseEntry;
-import com.sleepycatni.db.DatabaseException;
-import com.sleepycatni.db.Environment;
-import com.sleepycatni.db.EnvironmentConfig;
-import com.sleepycatni.db.LockMode;
-import com.sleepycatni.db.OperationStatus;
-import com.sleepycatni.db.Sequence;
-import com.sleepycatni.db.SequenceConfig;
-import com.sleepycatni.db.Transaction;
+import com.sleepycat.bind.tuple.TupleBinding;
+import com.sleepycat.bind.tuple.TupleInput;
+import com.sleepycat.bind.tuple.TupleOutput;
+import com.sleepycat.db.Cursor;
+import com.sleepycat.db.Database;
+import com.sleepycat.db.DatabaseConfig;
+import com.sleepycat.db.DatabaseEntry;
+import com.sleepycat.db.DatabaseException;
+import com.sleepycat.db.DatabaseType;
+import com.sleepycat.db.Environment;
+import com.sleepycat.db.EnvironmentConfig;
+import com.sleepycat.db.LockMode;
+import com.sleepycat.db.OperationStatus;
+import com.sleepycat.db.Sequence;
+import com.sleepycat.db.SequenceConfig;
+import com.sleepycat.db.Transaction;
 
 /** 
  * Ener-J ObjectServer based on Berkeley DB using the Java JNI interface. Stores objects in BDB databases.
@@ -159,20 +160,24 @@ public class BDBNIObjectServer extends BaseObjectServer
             bdbEnvConfig.setTransactional(true);
             // THIS IS IMPORTANT -- writes thru BDB buffers, but not thru OS. We use Transaction.commitSync() to force OS update.
             bdbEnvConfig.setTxnWriteNoSync(true); 
+            bdbEnvConfig.setInitializeCache(true);
+            bdbEnvConfig.setInitializeLocking(true);
             bdbEnvironment = new Environment( new File(dbDir), bdbEnvConfig);
             
             DatabaseConfig bdbDBConfig = new DatabaseConfig();
             bdbDBConfig.setTransactional(true);
-
+            bdbDBConfig.setType(DatabaseType.BTREE);
             // TODO bdbDBConfig.setReadOnly(true); based on Prop
     
-            bdbDatabase = bdbEnvironment.openDatabase(null, null, mDBName, bdbDBConfig);
-            bdbBinderyDatabase = bdbEnvironment.openDatabase(null, null, mDBName + BINDERY_SUFFIX, bdbDBConfig);
+            String dbFileName = dbDir + '/' + mDBName + ".db";
+            bdbDatabase = bdbEnvironment.openDatabase(null, dbFileName, mDBName, bdbDBConfig);
+            bdbBinderyDatabase = bdbEnvironment.openDatabase(null, dbFileName, mDBName + BINDERY_SUFFIX, bdbDBConfig);
 
             DatabaseConfig extentConfig = new DatabaseConfig();
             extentConfig.setSortedDuplicates(true);
             extentConfig.setTransactional(true);
-            bdbExtentDatabase = bdbEnvironment.openDatabase(null, null, mDBName + EXTENT_SUFFIX, extentConfig);
+            bdbDBConfig.setType(DatabaseType.BTREE);
+            bdbExtentDatabase = bdbEnvironment.openDatabase(null, dbFileName, mDBName + EXTENT_SUFFIX, extentConfig);
             success = true;
         }
         catch (FileNotFoundException e) {
@@ -234,6 +239,8 @@ public class BDBNIObjectServer extends BaseObjectServer
             EnvironmentConfig bdbEnvConfig = new EnvironmentConfig();
             bdbEnvConfig.setAllowCreate(true);
             bdbEnvConfig.setTransactional(true);
+            bdbEnvConfig.setInitializeCache(true);
+            bdbEnvConfig.setInitializeLocking(true);
 
             bdbEnv = new Environment(new File(dbDir), bdbEnvConfig);
             
@@ -241,17 +248,20 @@ public class BDBNIObjectServer extends BaseObjectServer
             bdbDBConfig.setAllowCreate(true);
             bdbDBConfig.setExclusiveCreate(true);
             bdbDBConfig.setTransactional(true);
+            bdbDBConfig.setType(DatabaseType.BTREE);
             
             // The main database's key is an OID.
-            bdbDB = bdbEnv.openDatabase(null, null, aDBName, bdbDBConfig);
+            String dbFileName = dbDir + '/' + aDBName + ".db";
+            bdbDB = bdbEnv.openDatabase(null, dbFileName, aDBName, bdbDBConfig);
 
             // Create the OID number sequence.
-            DatabaseEntry key = createLongKey(NEXT_OID_NUM_OID);
             SequenceConfig config = new SequenceConfig();
             config.setAllowCreate(true);
             config.setExclusiveCreate(true);
             config.setInitialValue(ObjectSerializer.FIRST_USER_OID);
             config.setCacheSize(1);
+
+            DatabaseEntry key = createLongKey(NEXT_OID_NUM_OID);
             Sequence seq = bdbDB.openSequence(null, key, config);
             seq.close();
             
@@ -259,7 +269,7 @@ public class BDBNIObjectServer extends BaseObjectServer
             bdbDB = null;
             
             // The Bindery's database key is the binding name, the data is an OID.
-            bdbDB = bdbEnv.openDatabase(null, null, aDBName + BINDERY_SUFFIX, bdbDBConfig);
+            bdbDB = bdbEnv.openDatabase(null, dbFileName, aDBName + BINDERY_SUFFIX, bdbDBConfig);
             bdbDB.close();
             bdbDB = null;
 
@@ -269,8 +279,9 @@ public class BDBNIObjectServer extends BaseObjectServer
             extentConfig.setAllowCreate(true);
             extentConfig.setExclusiveCreate(true);
             extentConfig.setTransactional(true);
+            extentConfig.setType(DatabaseType.BTREE); // TODO HASH? setUnsortedDuplicates
 
-            bdbDB = bdbEnv.openDatabase(null, null, aDBName + EXTENT_SUFFIX, extentConfig);
+            bdbDB = bdbEnv.openDatabase(null, dbFileName, aDBName + EXTENT_SUFFIX, extentConfig);
             bdbDB.close();
             bdbDB = null;
 

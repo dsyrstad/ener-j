@@ -44,13 +44,12 @@ Available targets:
         <property name="databases.dir" value="${basedir}/databases"/>
     	<property name="junit.jar" value="${lib.dir}/junit-3.8.1.jar" />
     	<property name="asm.jar" value="${lib.dir}/asm-3.0.jar" />
-    	<property name="bdbje.jar" value="${lib.dir}/bdb-je-3.2.23.jar" />
     	<property name="agent.jar" value="${lib.dir}/${agent-jarname}.jar" />
     	<property name="commons-logging.jar" value="${lib.dir}/commons-logging-1.1.jar" />
-        <property name="class.path" value="${build.dest}:${junit.jar}:${asm.jar}:${commons-logging.jar}:${bdbje.jar}"/>
+        <property name="class.path" value="${build.dest}:${junit.jar}:${asm.jar}:${commons-logging.jar}"/>
         <property name="sourceLevel" value="1.5"/>
-        <property name="jvmopts"  value="-Xms512m -Xmx512m" />
-
+        <property name="jvmopts"  value="-Xms512m -Xmx512m -javaagent:${agent.jar} " />
+        <property name="xjvmopts"  value="-Xms512m -Xmx512m -javaagent:${agent.jar} -Denerj.object.server=org.enerj.server.bdb.BDBNIObjectServer -Djava.library.path=lib" />
     </target>
 
     <target name="compile-src" depends="init" >
@@ -152,8 +151,9 @@ Available targets:
             </fileset>
         </delete>
     	<junit fork="true" reloading="false" haltonerror="false" haltonfailure="false" printsummary="false" >
-    		<jvmarg value="-javaagent:${agent.jar}"/>
+    		<jvmarg line="${jvmopts}" />
     		<jvmarg value="-Denerj.dbpath=databases"/>
+    		<jvmarg value="-Djava.library.path=lib"/>
   			<classpath>
   				<pathelement location="${build.testdest}"/>
     		    <pathelement location="${build.dest}"/>
@@ -209,8 +209,7 @@ Available targets:
 		
 	<target name="browser" depends="requiredb" description="Runs the object browser.">
         <java classname="org.enerj.tools.browser.EnerJBrowser" failonerror="true" fork="true">
-    		<jvmarg value="-javaagent:${agent.jar}"/>
-        	<!-- jvmarg line="${jvmopts}" / -->
+        	<jvmarg line="${jvmopts}" />
   			<classpath>
   				<pathelement location="${build.testdest}"/>
     		    <pathelement location="${build.dest}"/>
@@ -232,15 +231,13 @@ Available targets:
 		</delete>
 
         <java classname="org.enerj.util.CreateDatabase" failonerror="true" fork="true">
-    		<jvmarg value="-javaagent:${agent.jar}"/>
-        	<!-- jvmarg line="${jvmopts}" / -->
+        	<jvmarg line="${jvmopts}" />
   			<classpath>
     		    <pathelement location="${build.dest}"/>
                 <pathelement location="${asm.jar}"/>
                 <pathelement location="${bdbje.jar}"/>
 			</classpath>
             <sysproperty key="enerj.dbpath" value="${databases.dir}"/>
-        	<arg value="--pre-alloc"/> <arg value="48000000"/>
             <arg value="${db}" />
         </java>
 	</target>
@@ -249,21 +246,6 @@ Available targets:
 		<mkdir dir="${databases.dir}/${db}" />
 		
 		<echo file="${databases.dir}/${db}/${db}.properties">
-PagedObjectServer.PageServerClass=org.enerj.server.CachedPageServer
-PagedObjectServer.LockServerClass=org.enerj.server.LockScheduler
-PagedObjectServer.RedoLogServerClass=org.enerj.server.ArchivingRedoLogServer
-PagedObjectServer.MaxUpdateCacheSize=256000000
-PagedObjectServer.UpdateCacheInitialHashSize=100000
-ArchivingRedoLogServer.logName=${enerj.dbdir}/${db}.log
-ArchivingRedoLogServer.shouldArchive=true
-ArchivingRedoLogServer.requestedLogSize=0
-CachedPageServer.delegatePageServerClass=org.enerj.server.FilePageServer
-CachedPageServer.numberOfCachedPages=10000
-CachedPageServer.writeThru=false
-FilePageServer.volume=${enerj.dbdir}/${db}.enerj
-FilePageServer.pageSize=8192
-LockScheduler.initialNumObjs=20000
-LockScheduler.deadlockAlgorithm=Waits-For
 </echo>
 	</target>
 	
@@ -296,7 +278,6 @@ LockScheduler.deadlockAlgorithm=Waits-For
 	<target name="oql" depends="requiredb" description="Runs arbitrary oql.">
 		<fail unless="oql" message="You must specify -Doql=OQL-statement"/>
         <java classname="org.enerj.util.EnerJOQLCmdLine" failonerror="true" fork="true" >
-    		<jvmarg value="-javaagent:${agent.jar}"/>
         	<jvmarg line="${jvmopts}" />
   			<classpath>
   				<pathelement location="${build.testdest}"/>
@@ -320,7 +301,6 @@ LockScheduler.deadlockAlgorithm=Waits-For
 		<fail unless="type" message="You must specify -Dtype={t|m|l}"/>
 		<fail unless="size" message="You must specify -Dsize={3|6|9}"/>
         <java classname="org.enerj.oo7.OO7Loader" failonerror="true" fork="true" >
-    		<jvmarg value="-javaagent:${agent.jar}"/>
         	<jvmarg line="${jvmopts}" />
   			<classpath>
   				<pathelement location="${build.testdest}"/>
@@ -338,7 +318,6 @@ LockScheduler.deadlockAlgorithm=Waits-For
 
 	<target name="benchmarkOO7" depends="requiredb" description="Benchmarks the oo7 database">
         <java classname="org.enerj.oo7.OO7Bench" failonerror="true" fork="true" >
-    		<jvmarg value="-javaagent:${agent.jar}"/>
         	<jvmarg line="${jvmopts}" />
   			<classpath>
   				<pathelement location="${build.testdest}"/>
