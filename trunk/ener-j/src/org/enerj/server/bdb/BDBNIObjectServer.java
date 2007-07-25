@@ -609,7 +609,7 @@ public class BDBNIObjectServer extends BaseObjectServer
          */
         private LockMode getReadLockMode()
         {
-            return getAllowNontransactionalReads() ? LockMode.DIRTY_READ : LockMode.DEFAULT; // TODO Revisit these
+            return getAllowNontransactionalReads() ? LockMode.READ_UNCOMMITTED : LockMode.READ_COMMITTED;
         }
 
         public ClassInfo[] getClassInfoForOIDs(long[] someOIDs) throws ODMGException
@@ -1111,7 +1111,7 @@ public class BDBNIObjectServer extends BaseObjectServer
                 Cursor cursor = bdbExtentDatabase.openCursor(getTransaction(), null);
                 LockMode lockMode = getReadLockMode();
                 // BDB Cursor doesn't allow READ_COMMITTED
-                if (lockMode == LockMode.DEFAULT) { // TODO REVISIT
+                if (lockMode == LockMode.READ_COMMITTED) {
                     lockMode = null;
                 }
                 
