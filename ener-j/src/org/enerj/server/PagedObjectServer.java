@@ -189,56 +189,19 @@ public class PagedObjectServer extends BaseObjectServer
     }
     
     /**
-     * Creates a new database on disk. The "enerj.dbpath" system property must be set.
+     * Creates a new database on disk. The "enerj.dbpath" and "enerj.dbdir" system property must be set.
      *
-     * @param aDescription a description for the database. May be null.
-     * @param aDBName The database name. See {@link #connect(Properties)}.
-     * @param aMaximumSize the maximum size for the volume. This will be rounded up
-     *  to the nearest page boundary. If this value is zero, the volume will grow unbounded.
-     * @param aPreAllocatedSize the number of bytes to pre-allocate. This will be rounded up
-     *  to the nearest page boundary.
-
+     * @param someDBProps the database properties, normally read from a database properties file.
+     * 
      * @throws ODMGException if an error occurs.
-     *
-     *  TODO  Allow multiple volumes to be specfiied.
      */
-    public static void createDatabase(String aDescription, String aDBName, long aMaximumSize, long aPreAllocatedSize) throws ODMGException
+    public static void createDatabase(Properties someDBProps) throws ODMGException 
     {
-        // Load database properties.  First copy system properties.
-        Properties props = new Properties( System.getProperties() );
-
-        String propFileName = aDBName + File.separatorChar + aDBName + ".properties";
-        String dbPath = getRequiredProperty(props, ObjectServer.ENERJ_DBPATH_PROP);
-        File propFile = FileUtil.findFileOnPath(propFileName, dbPath);
-        if (propFile == null) {
-            throw new DatabaseNotFoundException("Cannot find " + propFileName + " in any of the directories " + dbPath); 
-        }
-
-        FileInputStream inPropFile = null;
-        try {
-            inPropFile = new FileInputStream(propFile);
-            props.load(inPropFile);
-        }
-        catch (IOException e) {
-            throw new ODMGException("Error reading " + propFile, e);
-        }
-        finally {
-            if (inPropFile != null) {
-                try {
-                    inPropFile.close();
-                }
-                catch (IOException e) {
-                    throw new ODMGException("Error closing properties file: " + propFile, e);
-                }
-                
-                inPropFile = null;
-            }
-        }
-
-        createDatabase(aDescription, aDBName, aMaximumSize, aPreAllocatedSize, props, propFile);
+        String dbName = getRequiredProperty(someDBProps, ObjectServer.ENERJ_DBNAME_PROP);
+        String dbDir = getRequiredProperty(someDBProps, ObjectServer.ENERJ_DBDIR_PROP);
+        createDatabase("", dbName, 0L, 0L, someDBProps, new File(dbDir).getAbsoluteFile());
     }
-
-
+    
     /**
      * Creates a new database on disk. The "enerj.dbpath" system property must be set.
      *
@@ -248,20 +211,18 @@ public class PagedObjectServer extends BaseObjectServer
      *  to the nearest page boundary. If this value is zero, the volume will grow unbounded.
      * @param aPreAllocatedSize the number of bytes to pre-allocate. This will be rounded up
      *  to the nearest page boundary.
-     * @param someDBProps the database properties, normally read from a database propeties file.
+     * @param someDBProps the database properties, normally read from a database properties file.
      * @param aDBDir the base directory of the database.
      * 
      * @throws ODMGException if an error occurs.
      *
-     *  TODO  Allow multiple volumes to be specfiied.
+     *  TODO  Allow multiple volumes to be specified.
      */
 	private static void createDatabase(String aDescription, String aDBName, long aMaximumSize, long aPreAllocatedSize, 
 			Properties someDBProps, File aDBDir) throws ODMGException 
     {
 	    sLogger.fine("Creating database: " + aDBName);
         
-		someDBProps.setProperty(ObjectServer.ENERJ_DBDIR_PROP, aDBDir.getParent() );
-        someDBProps.setProperty(ObjectServer.ENERJ_DBNAME_PROP, aDBName);
         String volumeFileName = StringUtil.substituteMacros( getRequiredProperty(someDBProps, FilePageServer.VOLUME_PROP), someDBProps);
         int pageSize = getRequiredIntProperty(someDBProps, FilePageServer.PAGE_SIZE_PROP);
 

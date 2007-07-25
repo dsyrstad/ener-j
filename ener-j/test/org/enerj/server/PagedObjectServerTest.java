@@ -29,6 +29,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.enerj.util.CreateDatabase;
+
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -99,7 +101,7 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
         FileOutputStream propStream = new FileOutputStream(new File(dbdir, DB_NAME + ".properties"));
         props.store(propStream, null);
         propStream.close();
-        PagedObjectServer.createDatabase("test", DB_NAME, 0L, 0L);
+        CreateDatabase.createDatabase(DB_NAME);
     }
     
 

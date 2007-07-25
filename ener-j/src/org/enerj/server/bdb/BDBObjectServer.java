@@ -48,7 +48,6 @@ import org.enerj.server.ObjectServerSession;
 import org.enerj.server.SerializedObject;
 import org.enerj.util.FileUtil;
 import org.odmg.DatabaseClosedException;
-import org.odmg.DatabaseNotFoundException;
 import org.odmg.LockNotGrantedException;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
@@ -685,8 +684,6 @@ public class BDBObjectServer extends BaseObjectServer
         {
             Transaction txn = getTransaction();
             
-            Schema schema = null;
-            
             // TODO - SerializedObject should contain the version #. We should compare the object's version
             // to the current version before writing.
 
@@ -715,10 +712,6 @@ public class BDBObjectServer extends BaseObjectServer
                 
                 long cid = object.getCID();
                 if (object.isNew() && !SystemCIDMap.isSystemCID(cid)) {
-                    if (schema == null) {
-                        schema = getSchema();
-                    }
-                    
                     // Add to extent.
                     DatabaseEntry extentKey = createLongKey(cid);
                     try {

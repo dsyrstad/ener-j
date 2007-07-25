@@ -34,7 +34,6 @@ import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
-import org.enerj.server.Bindery;
 import org.enerj.server.ObjectServer;
 import org.enerj.server.PluginHelper;
 import org.enerj.util.StringUtil;
@@ -244,7 +243,8 @@ abstract public class BaseObjectServer implements ObjectServer
                 BaseObjectServerSession schemaSession = getSchemaSession();
                 schemaSession.pushAsPersister();
                 try {
-                    schemaSession.beginTransaction();
+                    // Don't need a transaction here - the schema is already locked.
+                    schemaSession.setAllowNontransactionalReads(true);
                     mCachedSchema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
                     // Resolve all references in the schema. Also disassociate from this Persister. 
                     PersistableHelper.resolveObject((Persistable)mCachedSchema, true);
@@ -253,7 +253,7 @@ abstract public class BaseObjectServer implements ObjectServer
                     throw new ODMGException(e);
                 }
                 finally {
-                    schemaSession.rollbackTransaction();
+                    schemaSession.setAllowNontransactionalReads(false);
                     schemaSession.popAsPersister();
                 }
             }
@@ -262,6 +262,15 @@ abstract public class BaseObjectServer implements ObjectServer
         }
     }
     
+    /**
+     * Forces mCachedSchema to be reloaded.
+     * @throws ODMGException
+     */
+    private void reloadCachedSchema() throws ODMGException
+    {
+        mCachedSchema = null;
+        getSchema();
+    }
     
     /**
      * Adds a new ClassVersion to the schema if it doesn't already exist.
@@ -302,15 +311,11 @@ abstract public class BaseObjectServer implements ObjectServer
                                     null, somePersistentFieldNames, someTransientFieldNames);
                     logicalClass.addVersion(classVersion);
                     
-                    // Create an extent for the class.
-                    // TODOLOW maybe this should be optional?
-//                    ExtentMap extentMap = (ExtentMap)schemaSession.getObjectForOID(EXTENTS_OID);
-//                    extentMap.createExtentForClassName(aClassName);
-    
                     schemaSession.flushModifiedObjects();
                     schemaSession.commitTransaction();
                     // Force cached schema to be re-read.
-                    mCachedSchema = null;
+                    reloadCachedSchema();
+
                     success = true;
                 }
                 finally {
@@ -374,7 +379,8 @@ abstract public class BaseObjectServer implements ObjectServer
                 schemaSession.flushModifiedObjects();
                 schemaSession.commitTransaction();
                 // Force cached schema to be re-read.
-                mCachedSchema = null;
+                reloadCachedSchema();
+                
                 success = true;
             }
             finally {

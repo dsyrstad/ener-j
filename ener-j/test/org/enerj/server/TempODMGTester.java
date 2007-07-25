@@ -35,6 +35,7 @@ import org.enerj.annotations.Persist;
 import org.enerj.core.EnerJImplementation;
 import org.enerj.core.EnerJTransaction;
 import org.enerj.core.LargePersistentArrayList;
+import org.enerj.util.CreateDatabase;
 
 
 /**
@@ -58,7 +59,7 @@ class TempODMGTester
         File tmpLogFile = new File("databases/JUnit/TempODMGTest/TempODMGTest.log");
         tmpLogFile.delete();
 
-        PagedObjectServer.createDatabase("Test", "TempODMGTest", 0L, 64000000L);
+        CreateDatabase.createDatabase("TempODMGTest");
     }
     
 

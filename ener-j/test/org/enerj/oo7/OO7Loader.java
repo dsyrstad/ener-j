@@ -27,12 +27,9 @@ import java.util.Random;
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJImplementation;
 import org.enerj.core.PersistentArrayList;
-import org.enerj.core.LargePersistentArrayList;
-import org.odmg.DArray;
 import org.odmg.Database;
 import org.odmg.Implementation;
 import org.odmg.ODMGException;
-import org.odmg.ObjectNameNotFoundException;
 import org.odmg.Transaction;
 
 public class OO7Loader
@@ -47,7 +44,6 @@ public class OO7Loader
     private Implementation mImplementation;
     private Random mRandom;
     private EnerJDatabase mDB;
-    private DArray mAtomicPartByIDMap;
     private int mType;
     private int mSize;
     
@@ -88,11 +84,6 @@ public class OO7Loader
                             mRandom.nextInt());
 
             int id = result[idx].getId();
-            if (id >= mAtomicPartByIDMap.size()) {
-                mAtomicPartByIDMap.resize(id + 1);
-            }
-            
-            mAtomicPartByIDMap.set(id, result[idx]);
 //          This isn't really necessary since it's in the map, but it'll flush out of memory faster this way.
             mDB.makePersistent(result[idx]); 
         }
@@ -225,16 +216,6 @@ public class OO7Loader
             }
             */
             
-            mAtomicPartByIDMap = new LargePersistentArrayList();
-            try {
-                mDB.unbind("AtomicPartsByID");
-            }
-            catch (ObjectNameNotFoundException e) {
-                // Ignore
-            }
-            
-            mDB.bind(mAtomicPartByIDMap, "AtomicPartsByID");
-
             for (int idx = 0; idx < size; idx++) {
                 Module module = buildModule();
                 mDB.makePersistent(module);

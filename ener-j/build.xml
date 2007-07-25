@@ -48,8 +48,8 @@ Available targets:
     	<property name="commons-logging.jar" value="${lib.dir}/commons-logging-1.1.jar" />
         <property name="class.path" value="${build.dest}:${junit.jar}:${asm.jar}:${commons-logging.jar}"/>
         <property name="sourceLevel" value="1.5"/>
-        <property name="jvmopts"  value="-Xms512m -Xmx512m -javaagent:${agent.jar} " />
-        <property name="xjvmopts"  value="-Xms512m -Xmx512m -javaagent:${agent.jar} -Denerj.object.server=org.enerj.server.bdb.BDBNIObjectServer -Djava.library.path=lib" />
+    	<property name="objserver" value="" />
+        <property name="jvmopts"  value="-Xms512m -Xmx512m -javaagent:${agent.jar} ${objserver} -Djava.library.path=lib" />
     </target>
 
     <target name="compile-src" depends="init" >
@@ -227,6 +227,10 @@ Available targets:
 		<delete >
 	    	<fileset dir="${databases.dir}/${db}" casesensitive="yes">
 	    	  <include name="*.jdb"/>
+	    	  <include name="__db.*"/>
+	    	  <include name="log.*"/>
+	    	  <include name="je.lck"/>
+	    	  <include name="*.db"/>
 	    	</fileset>
 		</delete>
 
@@ -246,6 +250,21 @@ Available targets:
 		<mkdir dir="${databases.dir}/${db}" />
 		
 		<echo file="${databases.dir}/${db}/${db}.properties">
+PagedObjectServer.PageServerClass=org.enerj.server.CachedPageServer
+PagedObjectServer.LockServerClass=org.enerj.server.LockScheduler
+PagedObjectServer.RedoLogServerClass=org.enerj.server.ArchivingRedoLogServer
+PagedObjectServer.MaxUpdateCacheSize=256000000
+PagedObjectServer.UpdateCacheInitialHashSize=100000
+ArchivingRedoLogServer.logName=${enerj.dbdir}/${db}.log
+ArchivingRedoLogServer.shouldArchive=true
+ArchivingRedoLogServer.requestedLogSize=0
+CachedPageServer.delegatePageServerClass=org.enerj.server.FilePageServer
+CachedPageServer.numberOfCachedPages=10000
+CachedPageServer.writeThru=false
+FilePageServer.volume=${enerj.dbdir}/${db}.enerj
+FilePageServer.pageSize=8192
+LockScheduler.initialNumObjs=20000
+LockScheduler.deadlockAlgorithm=Waits-For
 </echo>
 	</target>
 	
