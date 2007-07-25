@@ -1,0 +1,10 @@
+Building the BDB JNI interface - 4.6.18
+
+Linux (Fedora Core 6 & 7)
+-----
+cd build_unix
+make realclean (if not empty)
+../dist/configure --enable-java --enable-diagnotic --enable-fine_grained_lock_manager --disable-cryptography --enable-debug
+make
+su root -c 'make install'
+cp /usr/local/BerkeleyDB.4.6/lib/libdb_java-4.6.so {Eclipse-Workspace}/Ener-J/lib/.

@@ -160,8 +160,17 @@ public class BDBNIObjectServer extends BaseObjectServer
             bdbEnvConfig.setTransactional(true);
             // THIS IS IMPORTANT -- writes thru BDB buffers, but not thru OS. We use Transaction.commitSync() to force OS update.
             bdbEnvConfig.setTxnWriteNoSync(true); 
-            bdbEnvConfig.setInitializeCache(true);
             bdbEnvConfig.setInitializeLocking(true);
+            bdbEnvConfig.setCacheSize(256000000);
+            bdbEnvConfig.setInitializeCache(true);
+
+            // causes lock not granted bdbEnvConfig.setTxnNoWait(true);
+            // crashes on crypto, otherwise gives error about can't find environment bdbEnvConfig.setPrivate(true);
+            // WORKS, BUT DANGEROUS: 
+            sLogger.warning("RUNNING WITH NoLocking mutexes");
+            bdbEnvConfig.setNoLocking(true);
+            
+            
             File dbDirFile = new File(dbDir).getAbsoluteFile();
             bdbEnvironment = new Environment(dbDirFile, bdbEnvConfig);
             
@@ -175,7 +184,7 @@ public class BDBNIObjectServer extends BaseObjectServer
             bdbBinderyDatabase = bdbEnvironment.openDatabase(null, dbFileName, mDBName + BINDERY_SUFFIX, bdbDBConfig);
 
             DatabaseConfig extentConfig = new DatabaseConfig();
-            extentConfig.setSortedDuplicates(true);
+            extentConfig.setUnsortedDuplicates(true);
             extentConfig.setTransactional(true);
             bdbDBConfig.setType(DatabaseType.BTREE);
             bdbExtentDatabase = bdbEnvironment.openDatabase(null, dbFileName, mDBName + EXTENT_SUFFIX, extentConfig);
@@ -240,8 +249,10 @@ public class BDBNIObjectServer extends BaseObjectServer
             EnvironmentConfig bdbEnvConfig = new EnvironmentConfig();
             bdbEnvConfig.setAllowCreate(true);
             bdbEnvConfig.setTransactional(true);
-            bdbEnvConfig.setInitializeCache(true);
             bdbEnvConfig.setInitializeLocking(true);
+            bdbEnvConfig.setCacheSize(128000000);
+            bdbEnvConfig.setInitializeCache(true);
+            //bdbEnvConfig.setPrivate(true);
 
             File dbDirFile = new File(dbDir).getAbsoluteFile();
             bdbEnv = new Environment(dbDirFile, bdbEnvConfig);
@@ -250,6 +261,7 @@ public class BDBNIObjectServer extends BaseObjectServer
             bdbDBConfig.setAllowCreate(true);
             bdbDBConfig.setExclusiveCreate(true);
             bdbDBConfig.setTransactional(true);
+            // It's surprising, but BTREE is faster than HASH for OIDs.
             bdbDBConfig.setType(DatabaseType.BTREE);
             
             // The main database's key is an OID.
@@ -277,11 +289,12 @@ public class BDBNIObjectServer extends BaseObjectServer
 
             // The Extent's database key is the CID, the data is an OID. The database allows duplicates.
             DatabaseConfig extentConfig = new DatabaseConfig();
+            //extentConfig.setUnsortedDuplicates(true); // For HASH
             extentConfig.setSortedDuplicates(true);
             extentConfig.setAllowCreate(true);
             extentConfig.setExclusiveCreate(true);
             extentConfig.setTransactional(true);
-            extentConfig.setType(DatabaseType.BTREE); // TODO HASH? setUnsortedDuplicates
+            extentConfig.setType(DatabaseType.BTREE); 
 
             bdbDB = bdbEnv.openDatabase(null, dbFileName, aDBName + EXTENT_SUFFIX, extentConfig);
             bdbDB.close();
@@ -703,8 +716,6 @@ public class BDBNIObjectServer extends BaseObjectServer
         {
             Transaction txn = getTransaction();
             
-            Schema schema = null;
-            
             // TODO - SerializedObject should contain the version #. We should compare the object's version
             // to the current version before writing.
 
@@ -733,10 +744,6 @@ public class BDBNIObjectServer extends BaseObjectServer
                 
                 long cid = object.getCID();
                 if (object.isNew() && !SystemCIDMap.isSystemCID(cid)) {
-                    if (schema == null) {
-                        schema = getSchema();
-                    }
-                    
                     // Add to extent.
                     DatabaseEntry extentKey = createLongKey(cid);
                     try {
