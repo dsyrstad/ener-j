@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000, 2006 Visual Systems Corporation.
+ * Copyright 2000, 2007 Visual Systems Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License version 2
  * which accompanies this distribution in a file named "COPYING".
@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
-// Ener-J
-// Copyright 2001-2003 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/BDBObjectServer.java,v 1.6 2006/05/05 13:47:14 dsyrstad Exp $
 
 package org.enerj.server.bdb;
 
