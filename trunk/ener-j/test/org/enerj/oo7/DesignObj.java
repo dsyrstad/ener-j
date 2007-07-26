@@ -25,7 +25,7 @@ import org.enerj.annotations.Index;
 
 public class DesignObj
 {
-    @Index(name="id", type=Index.Type.Hash)
+    //@Index(name="id", type=Index.Type.Hash)
     private int id;
     private int buildDate;
     private String type;
