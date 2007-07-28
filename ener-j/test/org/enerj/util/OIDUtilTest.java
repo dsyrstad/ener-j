@@ -19,37 +19,60 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
 
-package org.enerj.server;
+package org.enerj.util;
+
+import junit.framework.TestCase;
 
 /**
- * Represent class information returned by the server. <p>
+ * Tests OIDUtil. <p>
  * 
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
-public class ClassInfo
+public class OIDUtilTest extends TestCase
 {
-    private String mClassName;
-
     /**
-     * Construct a ClassInfo. 
+     * Construct a OIDUtilTest. 
+     *
+     * @param name
      */
-    public ClassInfo(String aClassName)
+    public OIDUtilTest(String name)
     {
-        mClassName = aClassName;
+        super(name);
     }
 
-    /**
-     * Gets the className.
-     *
-     * @return a String.
-     */
-    public String getClassName()
+    public void testNormalRange()
     {
-        return mClassName;
+        long oidx = 289;
+        int cidx = 781;
+        
+        long oid = OIDUtil.createOID(cidx, oidx);
+        
+        assertEquals(13739497300689185L, oid);
+        assertEquals(cidx, OIDUtil.getCIDX(oid));
+        assertEquals(oidx, OIDUtil.getOIDX(oid));
     }
     
-    public String toString()
+    public void testMin()
     {
-        return "ClassInfo:[" + mClassName + ']';
+        long oidx = 0;
+        int cidx = 0;
+        
+        long oid = OIDUtil.createOID(cidx, oidx);
+        
+        assertEquals(0L, oid);
+        assertEquals(cidx, OIDUtil.getCIDX(oid));
+        assertEquals(oidx, OIDUtil.getOIDX(oid));
+    }
+
+    public void testMax()
+    {
+        long oidx = (long)Math.pow(2, 44) - 1;
+        int cidx = (int)Math.pow(2, 20) - 1;
+        
+        long oid = OIDUtil.createOID(cidx, oidx);
+        
+        assertEquals(0xFFFFFFFFFFFFFFFFL, oid);
+        assertEquals(cidx, OIDUtil.getCIDX(oid));
+        assertEquals(oidx, OIDUtil.getOIDX(oid));
     }
 }

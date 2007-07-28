@@ -399,14 +399,13 @@ public class PagedStore
     /**
      * Called from StorageThread to store an object.
      *
-     * @param aCID a Class Id.
      * @param anOID an Object ID.
      * @param aSerializedObject the serialized bytes for the object.
      *
      * @throws PageServerException if a storage error occurs.
      * @throws ODMGRuntimeException if a database storage integrity error is encountered
      */
-    private synchronized void processStoreRequest(long aCID, long anOID, byte[] aSerializedObject) 
+    private synchronized void processStoreRequest(long anOID, byte[] aSerializedObject) 
         throws PageServerException
     {
         long currentObjectPtr = mOIDList.getObjectOffsetForOID(anOID);
@@ -430,7 +429,7 @@ public class PagedStore
                 // Same code handles both cases.
                 
                 // Set OID info now in case we compact the page later.
-                mOIDList.setOIDInfo(anOID, currentObjectPtr, aCID);
+                mOIDList.setOIDInfo(anOID, currentObjectPtr);
 
                 int lengthWritten = 0;
                 int lengthLeft = aSerializedObject.length;
@@ -553,7 +552,7 @@ public class PagedStore
         hdr.mOverflowPtr = PageServer.NULL_OFFSET;
         hdr.write(previousObjectPtr);
 
-        mOIDList.setOIDInfo(anOID, currentObjectPtr, aCID);
+        mOIDList.setOIDInfo(anOID, currentObjectPtr);
     }
 
 
@@ -628,41 +627,20 @@ public class PagedStore
             throw new ODMGRuntimeException("Error loading object for OID " + anOID + ": " + e, e);
         }
     }
-    
 
     /**
-     * Get the CID corresponding to anOID.
-     *
-     * @param anOID an Object ID.
-     *
-     * @return the CID, or ObjectServer.NULL_CID if the object does not exist.
-     *
-     * @throws ODMGRuntimeException if a database storage integrity error is encountered
-     */
-    public synchronized long getCIDForOID(long anOID)
-    {
-        try {
-            return mOIDList.getCIDforOID(anOID);
-        }
-        catch (Exception e) {
-            throw new ODMGRuntimeException("Error getting CID for OID " + anOID + ": " + e, e);
-        }
-    }
-    
-
-    /**
-     * Get a block of new OIDs.
+     * Get a block of new OIDXs.
      * 
-     * @param anOIDCount the number of OIDs to get.
+     * @param anOIDXCount the number of OIDXs to get.
      *
-     * @return an array of OIDs.
+     * @return an array of OIDXs.
      *
      * @throws ODMGRuntimeException if a database storage integrity error is encountered
      */
-    public synchronized long[] getNewOIDBlock(int anOIDCount)
+    public synchronized long[] getNewOIDXBlock(int anOIDXCount)
     {
         try {
-            return mOIDList.allocateOIDBlock(anOIDCount);
+            return mOIDList.allocateOIDXBlock(anOIDXCount);
         }
         catch (Exception e) {
             throw new ODMGRuntimeException("Error allocating OID Block: " + e, e);
@@ -841,14 +819,12 @@ public class PagedStore
      */
     final class StoreObjectRequest extends UpdateRequest
     {
-        long mCID; 
         byte[] mSerializedObject;
 
 
-        StoreObjectRequest(long aCID, long anOID, byte[] aSerializedObject)
+        StoreObjectRequest(long anOID, byte[] aSerializedObject)
         {
             super(anOID);
-            mCID = aCID;
             mSerializedObject = aSerializedObject;
         }
 
@@ -856,7 +832,7 @@ public class PagedStore
         public void run()
         {
             try {
-                processStoreRequest(mCID, mOID, resolveSerializedObject() );
+                processStoreRequest(mOID, resolveSerializedObject() );
                 complete(null);
             }
             catch (Exception e) {
@@ -914,7 +890,7 @@ public class PagedStore
         public void run()
         {
             try {
-                //  TODO  - processDeleteRequest(mCID, mOID, mSerializedObject);
+                //  TODO  - processDeleteRequest(mOID, mSerializedObject);
                 complete(null);
                 throw new Exception("Not implemented");
             }

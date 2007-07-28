@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000, 2006 Visual Systems Corporation.
+ * Copyright 2000, 2007 Visual Systems Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License version 2
  * which accompanies this distribution in a file named "COPYING".
@@ -19,24 +19,20 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
 // Ener-J
-// Copyright 2001-2004 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/SerializedObject.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
 
 package org.enerj.server;
 
 import java.io.Serializable;
 
 /**
- * Represents an object serialized as a byte[] with its associated CID and OID.
+ * Represents an object serialized as a byte[] with its associated OID.
  *
- * @version $Id: SerializedObject.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
 public class SerializedObject implements Serializable
 {
     private byte[] mImage;
     private long mOID;
-    private long mCID;
     private boolean mIsNew = false;
 
 
@@ -44,13 +40,11 @@ public class SerializedObject implements Serializable
      * Constructs a SerializedObject that is not new.
      *
      * @param anOID the OID of the object.
-     * @param aCID the CID of the object.
      * @param anImage the serialized image of the object, as serialized by ObjectSerializer.
      */
-    public SerializedObject(long anOID, long aCID, byte[] anImage)
+    public SerializedObject(long anOID, byte[] anImage)
     {
         mOID = anOID;
-        mCID = aCID;
         mImage = anImage;
     }
 
@@ -59,14 +53,12 @@ public class SerializedObject implements Serializable
      * Constructs a SerializedObject.
      *
      * @param anOID the OID of the object.
-     * @param aCID the CID of the object.
      * @param anImage the serialized image of the object, as serialized by ObjectSerializer.
      * @param isNew true if the object is new.
      */
-    public SerializedObject(long anOID, long aCID, byte[] anImage, boolean isNew)
+    public SerializedObject(long anOID, byte[] anImage, boolean isNew)
     {
         mOID = anOID;
-        mCID = aCID;
         mImage = anImage;
         mIsNew = isNew;
     }
@@ -82,13 +74,6 @@ public class SerializedObject implements Serializable
     {
         return mOID;
     }
-
-
-    public long getCID()
-    {
-        return mCID;
-    }
-
 
     /**
      * Determines if the object is new.

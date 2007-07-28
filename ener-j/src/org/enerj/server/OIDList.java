@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000, 2006 Visual Systems Corporation.
+ * Copyright 2000, 2007 Visual Systems Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License version 2
  * which accompanies this distribution in a file named "COPYING".
@@ -19,8 +19,6 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
 // Ener-J
-// Copyright 2001-2003 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/OIDList.java,v 1.4 2006/05/05 13:47:14 dsyrstad Exp $
 
 package org.enerj.server;
 
@@ -30,6 +28,7 @@ import static org.enerj.util.ByteArrayUtil.putLong;
 import java.util.Arrays;
 
 import org.enerj.core.ObjectSerializer;
+import org.enerj.util.OIDUtil;
 
 /** 
  * Manages the list of OIDs for PagedObjectServer. Could be used in other ObjectServers as well
@@ -44,9 +43,9 @@ import org.enerj.core.ObjectSerializer;
  * </pre><p>
  * The OID list is a linked list of pages formatted as follows:
  * <p><pre>
- * |Next OID | ---       OID[k]           --- | ... OID[k+n] --- |Slack |
- * |Page (8) | Offset to Object (8) | CID (8) |      ....        | (<16)|
- * +---------+----------------------+---------+------------------+------+
+ * |Next OID | ---       OID[k] --- | ... OID[k+n] --- |Slack |
+ * |Page (8) | Offset to Object (8) |      ....        | (<16)|
+ * +---------+----------------------+------------------+------+
  * </pre><p>
  *
  * Next OID Page points to the next page in the OID list, or zero if this is
@@ -67,7 +66,6 @@ import org.enerj.core.ObjectSerializer;
  * The lesson is: for larger databases, use larger page sizes.
  * <p>
  *
- * @version $Id: OIDList.java,v 1.4 2006/05/05 13:47:14 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  * @see PagedObjectServer
  *
@@ -77,8 +75,7 @@ import org.enerj.core.ObjectSerializer;
 public class OIDList
 {
     private static final int PTR_SIZE = 8;
-    private static final int CID_SIZE = 8;
-    private static final int OID_SIZE = PTR_SIZE + CID_SIZE;
+    private static final int OID_SIZE = PTR_SIZE;
     private static final int HDR_SIZE = PTR_SIZE + PTR_SIZE;
 
     private PageServer mPageServer;
@@ -173,22 +170,22 @@ public class OIDList
     
 
     /**
-     * Allocates a block of OIDs.
+     * Allocates a block of OIDXs.
      *
-     * @param anOIDCount the number of OIDs to allocate.
+     * @param anOIDCount the number of OIDXs to allocate.
      *
-     * @return a block of OIDs of length anOIDCount.
+     * @return a block of OIDXs of length anOIDXCount.
      *
      * @throws PageServerException if an error occurs.
      */
-    public long[] allocateOIDBlock(int anOIDCount) throws PageServerException
+    public long[] allocateOIDXBlock(int anOIDXCount) throws PageServerException
     {
-        long[] oids = new long[anOIDCount];
-        for (int i = 0; i < oids.length; i++) {
-            oids[i] = mNumOIDs++;
+        long[] oidxs = new long[anOIDXCount];
+        for (int i = 0; i < anOIDXCount; i++) {
+            oidxs[i] = mNumOIDs++;
         }
 
-        return oids;
+        return oidxs;
     }
 
 
@@ -203,7 +200,8 @@ public class OIDList
      */
     public void ensureOIDAllocated(long anOID) throws PageServerException
     {
-        if (anOID >= mNumOIDs) {
+        long oidx = OIDUtil.getOIDX(anOID);
+        if (oidx >= mNumOIDs) {
             mNumOIDs = anOID + 1;
         }
     }
@@ -211,7 +209,7 @@ public class OIDList
 
     /**
      * Gets the index for mOIDPages given anOID. The array will grow to 
-     * accomodate the returned index. A new page is allocated if
+     * accommodate the returned index. A new page is allocated if
      * necessary and linked to the list.
      *
      * @param anOID the OID.
@@ -222,7 +220,8 @@ public class OIDList
      */
     protected long getPageIndexForOID(long anOID) throws PageServerException
     {
-        long pageIndex = (int)(anOID / mOIDsPerPage);
+        long oidx = OIDUtil.getOIDX(anOID);
+        long pageIndex = (int)(oidx / mOIDsPerPage);
         if (pageIndex >= mOIDPages.length) {
             long[] newOIDPages = new long[(int)pageIndex + 1000];
             System.arraycopy(mOIDPages, 0, newOIDPages, 0, mOIDPages.length);
@@ -266,33 +265,13 @@ public class OIDList
      */
     protected int getOffsetWithinPage(long aPageIndex, long anOID)
     {
-        return PTR_SIZE + ((int)(anOID - (aPageIndex * mOIDsPerPage)) * OID_SIZE);
+        return PTR_SIZE + ((int)(OIDUtil.getOIDX(anOID) - (aPageIndex * mOIDsPerPage)) * OID_SIZE);
     }
-
-
-    /**
-     * Gets the CID associated with the specified OID.
-     *
-     * @param anOID the OID to get the CID for.
-     *
-     * @return the CID.
-     *
-     * @throws PageServerException if an error occurs.
-     */
-    public long getCIDforOID(long anOID) throws PageServerException
-    {
-        long pageIndex = getPageIndexForOID(anOID);
-        long pageOffset = mOIDPages[(int)pageIndex];
-        int offsetWithinPage = getOffsetWithinPage(pageIndex, anOID);
-        mPageServer.loadPage(mBuffer, 0, CID_SIZE, pageOffset, offsetWithinPage + PTR_SIZE);
-        return getLong(mBuffer, 0);
-    }
-
 
     /**
      * Gets the pointer to the object (object offset) for anOID.
      *
-     * @param anOID the OID to get the CID for.
+     * @param anOID the OID to get the offset for.
      *
      * @return the object's offset, or PageServer.NULL_OFFSET if anOID is
      *  not in use.
@@ -301,9 +280,10 @@ public class OIDList
      */
     public long getObjectOffsetForOID(long anOID) throws PageServerException
     {
-        long pageIndex = getPageIndexForOID(anOID);
+        long oidx = OIDUtil.getOIDX(anOID);
+        long pageIndex = getPageIndexForOID(oidx);
         long pageOffset = mOIDPages[(int)pageIndex];
-        int offsetWithinPage = getOffsetWithinPage(pageIndex, anOID);
+        int offsetWithinPage = getOffsetWithinPage(pageIndex, oidx);
         mPageServer.loadPage(mBuffer, 0, PTR_SIZE, pageOffset, offsetWithinPage);
         return getLong(mBuffer, 0);
     }
@@ -315,23 +295,21 @@ public class OIDList
      *
      * @param anOID the OID.
      * @param anOffset the object offset.
-     * @param aCID the CID.
      *
      * @throws PageServerException if an error occurs.
      */
-    public void setOIDInfo(long anOID, long anOffset, long aCID) throws PageServerException
+    public void setOIDInfo(long anOID, long anOffset) throws PageServerException
     {
+        long oidx = OIDUtil.getOIDX(anOID);
         // only update if there is a change so we don't dirty the page.
-        long pageIndex = getPageIndexForOID(anOID);
+        long pageIndex = getPageIndexForOID(oidx);
         long pageOffset = mOIDPages[(int)pageIndex];
-        int offsetWithinPage = getOffsetWithinPage(pageIndex, anOID);
-        mPageServer.loadPage(mBuffer, 0, PTR_SIZE + CID_SIZE, pageOffset, offsetWithinPage);
+        int offsetWithinPage = getOffsetWithinPage(pageIndex, oidx);
+        mPageServer.loadPage(mBuffer, 0, PTR_SIZE, pageOffset, offsetWithinPage);
         long currentOffset = getLong(mBuffer, 0);
-        long currentCID = getLong(mBuffer, PTR_SIZE);
-        if (anOffset != currentOffset || aCID != currentCID) {
+        if (anOffset != currentOffset) {
             putLong(mBuffer, 0, anOffset);
-            putLong(mBuffer, PTR_SIZE, aCID);
-            mPageServer.storePage(mBuffer, 0, PTR_SIZE + CID_SIZE, pageOffset, offsetWithinPage);
+            mPageServer.storePage(mBuffer, 0, PTR_SIZE, pageOffset, offsetWithinPage);
         }
     }
 }

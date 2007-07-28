@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000, 2006 Visual Systems Corporation.
+ * Copyright 2000, 2007 Visual Systems Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License version 2
  * which accompanies this distribution in a file named "COPYING".
@@ -19,12 +19,11 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
 // Ener-J
-// Copyright 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/Schema.java,v 1.7 2006/05/14 02:43:16 dsyrstad Exp $
 
 package org.enerj.core;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,9 +35,8 @@ import org.enerj.annotations.Persist;
 import org.odmg.ODMGException;
 
 /**
- * Schema root for a Ener-J ODBMS.
+ * Schema root for a Ener-J ODBMS.<p>
  *
- * @version $Id: Schema.java,v 1.7 2006/05/14 02:43:16 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
 @Persist
@@ -46,10 +44,8 @@ public class Schema
 {
     private static final int CURRENT_DATABASE_VERSION = 1;
     private static final int CURRENT_SCHEMA_VERSION = 1;
-    
-    private static final Set EMPTY_SET = new HashSet(1);
 
-    // Note: All object references should be objects defined in SystemCID, or SCOs.
+    // Note: All object references within this class should be objects defined in SystemCID, or SCOs.
     
     /** This database's version. */
     private int mDatabaseVersion = CURRENT_DATABASE_VERSION;
@@ -66,9 +62,15 @@ public class Schema
 
     /** Map of class descriptions. Key is class name. Value is ClassSchema. */
     private LinkedHashMap<String, ClassSchema> mClassMap;
+
+    /** Set of CIDs that exist in this schema. */
+    private Set<Long> mCIDSet;
     
-    /** Map of class ids to ClassVersionSchema. Key is Long(CID). Value is ClassVersionSchema. */
-    private Map<Long, ClassVersionSchema> mClassIdMap;
+    /** Map of class indexes (CIDXs) to ClassVersionSchema. Key is Integer(CIDX). Value is ClassVersionSchema. */
+    private Map<Integer, ClassVersionSchema> mCIDXMap;
+    
+    /** The next CIDX to be used. Note that this starts past the system CIDs because system CIDs and system CIDXs are the same. */
+    private int mNextCIDX = (int)ObjectSerializer.LAST_SYSTEM_CID + 1;
     
     /** Maps possibly non-Persistable class or interface name to a set of Persistable subclasses for that name. 
      * Key is fully-qualified dot-form class or interface name, value is a Set of ClassVersionSchema.
@@ -92,55 +94,20 @@ public class Schema
         mCreateDate = new Date();
         mDescription = (aDescription == null ? "" : aDescription);
         mClassMap = new LinkedHashMap<String, ClassSchema>(1024);
-        mClassIdMap = new HashMap<Long, ClassVersionSchema>(2048);
+        mCIDXMap = new HashMap<Integer, ClassVersionSchema>(2048);
+        mCIDSet = new HashSet<Long>(2048);
         mSubclassMap = new HashMap<String, Set<ClassVersionSchema>>(2048);
     }
-
-
+    
     /**
-     * Resolve all supertype names (classes and interfaces) for the given class.
+     * Gets the next Class Index (CIDX) to use. The next number in the Schema is incremented. 
      *
-     * @param aClass the class.
-     *
-     * @return an array of supertype names.
+     * @return the next CIDX.
      */
-    private static String[] getSuperTypeNames(Class aClass)
+    public int getNextClassIndex()
     {
-        // Build the names of the super-types.
-        Set superTypeNames = new HashSet(100);
-
-        // Do all superclasses first.
-        Class currentClass = aClass;
-        Class superClass;
-        while ((superClass = currentClass.getSuperclass()) != null) {
-            superTypeNames.add( superClass.getName() );
-            currentClass = superClass;
-        }
-
-        // Get all interface names.
-        resolveInterfaceNames(aClass, superTypeNames);
-
-        String[] returnSuperTypeNames = new String[ superTypeNames.size() ];
-        superTypeNames.toArray(returnSuperTypeNames);
-        return returnSuperTypeNames;
+        return mNextCIDX++;
     }
-
-
-    /**
-     * Resolve all superinterface names recursively and add them to someNames.
-     *
-     * @param aClass the class or interface to resolve the superinterfaces on.
-     * @param someNames a Set that will receive the interface names.
-     */
-    private static void resolveInterfaceNames(Class aClass, Set someNames)
-    {
-        Class[] interfaces = aClass.getInterfaces();
-        for (int i = 0; i < interfaces.length; i++) {
-            someNames.add( interfaces[i].getName() );
-            resolveInterfaceNames(interfaces[i], someNames);
-        }
-    }
-
 
     /**
      * Gets the schema description.
@@ -151,7 +118,6 @@ public class Schema
     {
         return mDescription;
     }
-    
 
     /**
      * Sets the schema description.
@@ -164,7 +130,6 @@ public class Schema
         mDescription = (aDescription == null ? "" : aDescription);
     }
     
-
     /**
      * Gets the date that this schema was created.
      *
@@ -175,7 +140,6 @@ public class Schema
         return mCreateDate;
     }
     
-
     /**
      * Add a ClassSchema to this Schema.
      *
@@ -193,7 +157,6 @@ public class Schema
         
         mClassMap.put(className, aClassSchema);
     }
-
 
     /**
      * Removes a ClassSchema from this Schema.
@@ -213,7 +176,6 @@ public class Schema
         }
     }
 
-
     /**
      * Finds a ClassSchema in this Schema.
      *
@@ -227,9 +189,8 @@ public class Schema
         return (ClassSchema)mClassMap.get(aClassName);
     }
 
-
     /**
-     * Gets an Iterator of all ClassSchemas.
+     * Gets a Collection of all ClassSchemas.
      *
      * @return an Collection of ClassSchema, representing all of the classes
      *  in this schema. The Collection will be empty if no ClassSchemas
@@ -255,37 +216,36 @@ public class Schema
     {
         Set subclasses = (Set)mSubclassMap.get(aClassName);
         if (subclasses == null) {
-            return EMPTY_SET;
+            return (Set<ClassVersionSchema>)Collections.EMPTY_SET;
         }
         
         return subclasses;
     }
     
-
     /**
-     * Adds a ClassVersionSchema to the global map of Class Id to class version.
+     * Adds a ClassVersionSchema to the global map of Class Indexes to class version.
      * Should only be used by ClassSchema.
      *
      * @param aClassVersionSchema the ClassVersionSchema to add.
      *
-     * @throws org.odmg.ObjectNameNotUniqueException if the class id
+     * @throws org.odmg.ObjectNameNotUniqueException if the class index
      *  is already defined in the Schema.
      */
     void addClassVersion(ClassVersionSchema aClassVersionSchema) throws org.odmg.ObjectNameNotUniqueException
     {
-        long cidKey = aClassVersionSchema.getClassId();
-        if (mClassIdMap.containsKey(cidKey)) {
-            throw new org.odmg.ObjectNameNotUniqueException("Class id " + cidKey + " is already in the schema. Try modifying your class to produce a different Id.");
+        int cidxKey = aClassVersionSchema.getClassIndex();
+        if (mCIDXMap.containsKey(cidxKey)) {
+            throw new org.odmg.ObjectNameNotUniqueException("Class index " + cidxKey + " is already in the schema.");
         }
         
-        mClassIdMap.put(cidKey, aClassVersionSchema);
+        mCIDXMap.put(cidxKey, aClassVersionSchema);
+        mCIDSet.add(aClassVersionSchema.getClassId());
 
         String[] superTypeNames = aClassVersionSchema.getSuperTypeNames();
         for (int i = 0; i < superTypeNames.length; i++) {
             addToSubclassMap(superTypeNames[i], aClassVersionSchema);
         }
     }
-
 
     /**
      * Adds a subclass to the set of subclasses for a given superclass name.
@@ -304,7 +264,6 @@ public class Schema
         subclasses.add(aClassVersionSchema);
     }
     
-
     /**
      * Removes a subclass from the set of subclasses for a given superclass name.
      *
@@ -319,21 +278,20 @@ public class Schema
         }
     }
     
-
     /**
-     * Removes a ClassVersionSchema from the global map of Class Id to class version.
+     * Removes a ClassVersionSchema from the global map of Class Indexes to class version.
      * Should only be used by ClassSchema.
      *
-     * @param aCID the class id to remove.
+     * @param aCIDX the class index to be removed.
      *
-     * @throws org.odmg.ObjectNameNotFoundException if the class id
+     * @throws org.odmg.ObjectNameNotFoundException if the class index
      *  is not defined in the Schema.
      */
-    void removeClassVersion(long aCID) throws org.odmg.ObjectNameNotFoundException
+    void removeClassVersion(int aCIDX) throws org.odmg.ObjectNameNotFoundException
     {
-        ClassVersionSchema classVersionSchema = findClassVersion(aCID);
+        ClassVersionSchema classVersionSchema = findClassVersion(aCIDX);
         if (classVersionSchema == null) {
-            throw new org.odmg.ObjectNameNotFoundException("Class id " + aCID + " is not in the schema.");
+            throw new org.odmg.ObjectNameNotFoundException("Class index " + aCIDX + " is not in the schema.");
         }
         
         String[] superTypeNames = classVersionSchema.getSuperTypeNames();
@@ -341,21 +299,34 @@ public class Schema
             removeFromSubclassMap(superTypeNames[i], classVersionSchema);
         }
 
-        mClassIdMap.remove(aCID);
+        mCIDXMap.remove(aCIDX);
+        mCIDSet.remove(classVersionSchema.getClassId());
     }
 
 
     /**
-     * Finds a ClassVersionSchema in this Schema using the Class Id.
+     * Finds a ClassVersionSchema in this Schema using the Class Index.
      *
-     * @param aCID the class id to find.
+     * @param aCIDX the class index to find.
      *
-     * @return the ClassVersionSchema for aCID, or null if aCID
+     * @return the ClassVersionSchema for aCIDX, or null if aCIDX
      *  cannot be found in the Schema.
      */
-    public ClassVersionSchema findClassVersion(long aCID)
+    public ClassVersionSchema findClassVersion(int aCIDX)
     {
-        return (ClassVersionSchema)mClassIdMap.get(aCID);
+        return (ClassVersionSchema)mCIDXMap.get(aCIDX);
+    }
+
+    /**
+     * Determines if a CID exists in this Schema.
+     *
+     * @param aCID the CID to find.
+     *
+     * @return true if aCID exists, or null if aCID cannot be found in the Schema.
+     */
+    public boolean doesCIDExist(long aCID)
+    {
+        return mCIDSet.contains(aCID);
     }
 
 

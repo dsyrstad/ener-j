@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.enerj.annotations.Index;
 import org.enerj.annotations.Persist;
 
 /**
@@ -150,39 +149,13 @@ public class ClassSchema
     public void addVersion(ClassVersionSchema aClassVersionSchema) throws org.odmg.ObjectNameNotUniqueException
     {
         long cid = aClassVersionSchema.getClassId();
-        if (findVersion(cid) != null) {
+        if (mSchema.doesCIDExist(cid)) {
             throw new org.odmg.ObjectNameNotUniqueException("Class id " + cid + " is already in the schema.");
         }
         
         mSchema.addClassVersion(aClassVersionSchema);
         mClassVersions.add(aClassVersionSchema);
     }
-
-
-    /**
-     * Removes a ClassVersionSchema from this logical class.
-     * This should be used with extreme caution because objects referencing this
-     * class may still exist.
-     *
-     * @param aCID the class Id to be removed.
-     *
-     * @throws org.odmg.ObjectNameNotFoundException if the class id
-     *  is not defined within this logical class.
-     */
-    public void removeVersion(long aCID) throws org.odmg.ObjectNameNotFoundException
-    {
-        mSchema.removeClassVersion(aCID);
-        for (int i = 0; i < mClassVersions.size(); i++) {
-            ClassVersionSchema classVersion = (ClassVersionSchema)mClassVersions.get(i);
-            if (classVersion.getClassId() == aCID) {
-                mClassVersions.remove(i);
-                return;
-            }
-        }
-
-        throw new org.odmg.ObjectNameNotFoundException("Class id " + aCID + " does not exist in the schema.");
-    }
-
 
     /**
      * Finds a ClassVersionSchema within this logical class.

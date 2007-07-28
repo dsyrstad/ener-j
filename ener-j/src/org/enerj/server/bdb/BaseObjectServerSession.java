@@ -458,6 +458,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     public Persistable[] getObjectsForOIDs(long[] someOIDs)
     {
+        // TODO We could cache these as in EnerJDatabase.
         ClassInfo[] classInfo;
         try {
             classInfo = getClassInfoForOIDs(someOIDs);

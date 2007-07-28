@@ -59,16 +59,34 @@ import org.enerj.util.ByteArrayUtil;
 
 /**
  * Helper class for Persistable.enerj_ReadObject and enerj_WriteObject. 
- * Handles internal serialization and representation of objects.
- *
- * @version $Id: ObjectSerializer.java,v 1.3 2006/05/30 19:05:26 dsyrstad Exp $
+ * Handles internal serialization and representation of objects.<p>
+ * Terms:<p>
+ * <ul>
+ * <li>CID - Class ID. A globally unique hash generated from the bytecodes of the class. This is unique for every unique version of a class.</li>
+ * <li>CIDX - Class Index. A sequential number used to uniquely identify a class version within this database's schema.</li>
+ * <li>OID - Object ID. An ID generated from the combination of a CIDX and a OIDX used to uniquely identify an object and its class within the database.</li>
+ * <li>OIDX - Object Index. A sequential number used uniquely identify an object within the database, without regard to its class.</li>
+ * </li>
+ * </ul>
+ * <p>
+ * OIDs are a 8-byte long constructed from a Class Index
+ * and Object Index. The Class Index (CIDX) is the most significant 20 bits of the OID while the Object Index (OIDX)
+ * is the least significant 44 bits. The CIDX references classes that exist within a specific database schema, while the CID is
+ * a unique hash generated from the contents of a class. OIDX references the specific object, without regard to 
+ * its class. Both CIDX and OIDX are sequential numbers that start at one and increment by one. Given the
+ * bit segmentation of the OID, Ener-J can store (2^20 - 1) (1,048,575) class versions and (2^44 - 1) (17,592,186,044,415; 17 trillion)
+ * objects within a single database.
+ * 
+ * TODO When classes are versioned, this strategy could change the OID. So it may break references to the object. OIDs will have to be 
+ * upgraded if they change, otherwise we use the proxying approach and never change the version unless an explicit upgrade is run.
+ * 
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
 public class ObjectSerializer
 {
     /** First available user OID. */
     public static final long FIRST_USER_OID = 1000L;
-    /** Last available system CID. CIDs from 1 to this value are reserved for pre-enhanced system classes. */
+    /** Last available system CID. CIDs from 1 to this value are reserved for system classes. */
     public static final long LAST_SYSTEM_CID = 1000L;
     /** System OID: the null OID. */
     public static final long NULL_OID = 0L;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000, 2006 Visual Systems Corporation.
+ * Copyright 2000, 2007 Visual Systems Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License version 2
  * which accompanies this distribution in a file named "COPYING".
@@ -33,7 +33,6 @@ import org.enerj.annotations.Persist;
  * Schema for a version of a class in a Ener-J ODBMS.
  * A class version represents a specific implementation of a class at a point in time.
  *
- * @version $Id: ClassVersionSchema.java,v 1.4 2006/05/05 13:47:14 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
 @Persist
@@ -47,8 +46,11 @@ public class ClassVersionSchema
     /** The GMT date on which this class version was created. */
     private Date mCreateDate;
 
-    /** Class Id. */
+    /** Class Id (CID). */
     private long mCID;
+    
+    /** Class Index (CIDX). */
+    private int mCIDX;
     
     /** Array of superclass and superinterface names that go all of the way up the hierarchy.
      * Class names contained here might not be Persistable in our schema.
@@ -101,6 +103,7 @@ public class ClassVersionSchema
         mEnhancedBytecodes = anEnhancedBytecodeDef;
         mPersistentFields = somePersistentFieldNames;
         mTransientFields = someTransientFieldNames;
+        mCIDX = aClassSchema.getSchema().getNextClassIndex();
     }
     
 
@@ -218,7 +221,7 @@ public class ClassVersionSchema
 
 
     /**
-     * Two ClassVersionSchema's are equal if their class Ids are equal.
+     * Two ClassVersionSchema's are equal if their class indexes are equal.
      *
      * @return true if they are equal.
      */
@@ -228,19 +231,29 @@ public class ClassVersionSchema
             return false;
         }
         
-        return mCID == ((ClassVersionSchema)anOther).mCID;
+        return mCIDX == ((ClassVersionSchema)anOther).mCIDX;
                 
     }
 
 
     /**
-     * The hashcode of a ClassVersionSchema is its class Id, truncated to
+     * The hashcode of a ClassVersionSchema is its class index, truncated to
      * an int.
      *
      * @return the hashCode.
      */
     public int hashCode()
     {
-        return (int)mCID;
+        return mCIDX;
+    }
+
+    /**
+     * Gets the Class Index (CIDX).
+     *
+     * @return the CIDX for this class version.
+     */
+    public int getClassIndex()
+    {
+        return mCIDX;
     }
 }
