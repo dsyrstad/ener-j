@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000, 2006 Visual Systems Corporation.
+ * Copyright 2000, 2007 Visual Systems Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License version 2
  * which accompanies this distribution in a file named "COPYING".
@@ -19,8 +19,6 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
 // Ener-J
-// Copyright 2001 - 2003 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/ObjectServerSession.java,v 1.4 2006/01/09 02:25:12 dsyrstad Exp $
 
 package org.enerj.server;
 
@@ -40,7 +38,6 @@ import org.odmg.ObjectNotPersistentException;
  * a session at any given time. Only one top-level transaction may be active on
  * a session at any give time.
  *
- * @version $Id: ObjectServerSession.java,v 1.4 2006/01/09 02:25:12 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
 public interface ObjectServerSession
@@ -99,7 +96,6 @@ public interface ObjectServerSession
     /**
      * Gets ClassInfos for the given OIDs.
      * A transaction must be active on session, or non-transactional reads must be allowed.
-     * A READ lock is automatically obtained on each OID if it doesn't exist already.
      *
      * @param someOIDs an array of OIDs to get ClassInfos for. Note that if any element
      *  of this array is {@link ObjectSerializer#NULL_OID}, the corresponding ClassInfo will
@@ -140,27 +136,25 @@ public interface ObjectServerSession
     
 
     /**
-     * Get a block of unused OIDs from the database. No other transaction
-     * can use these OIDs while this transaction is active.
+     * Get a block of unused Object Indexes from the database. No other transaction
+     * can use these OIDXs while this transaction is active.
      * A transaction must be active on session.
      * <p>
      * Typically if an object is never stored under an
-     * OID by the commit of a transaction, the OID is released back to the 
-     * unallocated pool. If the transaction is rolled back, all of the OIDs
+     * OIDX by the commit of a transaction, the OIDX is released back to the 
+     * unallocated pool. If the transaction is rolled back, all of the OIDXs
      * are released.
      * 
-     * @param anOIDCount the number of OIDs to get.
+     * @param anOIDXCount the number of OIDXs to get.
      *
-     * @return an array of unused OIDs.
+     * @return an array of unused OIDXs.
      *
      * @throws ODMGException in the event of an error. 
      */
-    public long[] getNewOIDBlock(int anOIDCount) throws ODMGException;
+    public long[] getNewOIDXBlock(int anOIDXCount) throws ODMGException;
     
 
     // Transaction support...
-
-
 
     // TODO Note: Nested transactions could be supported by calling this again
     // TODO while a transaction is active.

@@ -24,25 +24,23 @@ package org.enerj.server;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import org.enerj.annotations.Index;
+import org.enerj.core.ClassSchema;
 import org.enerj.core.ClassVersionSchema;
-import org.enerj.core.GenericKey;
 import org.enerj.core.IndexAlreadyExistsException;
 import org.enerj.core.IndexSchema;
-import org.enerj.core.ClassSchema;
 import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
+import org.enerj.util.OIDUtil;
 import org.enerj.util.StringUtil;
 import org.odmg.ODMGException;
 
 /**
- * A base ObjectServer that may be used by ObjectServer implementations. Implmenting ObjectServer
+ * A base ObjectServer that may be used by ObjectServer implementations. Implementing ObjectServer
  * must support a boolean property of "enerj.schemaSession" (ENERJ_SCHEMA_SESSION_PROPERTY) to indicate the connection is the 
  * privileged schema session.<p>
  * 
@@ -53,18 +51,19 @@ abstract public class BaseObjectServer implements ObjectServer
 {
     private static final Logger sLogger = Logger.getLogger(BaseObjectServer.class.getName()); 
 
-    /** System OID: the Schema. */
-    public static final long SCHEMA_OID = 1L;
+    protected static final String SCHEMA_CLASS_NAME = Schema.class.getName();
+
+    /** System OID: the Schema. These must NEVER change! */
+    public static final long SCHEMA_OID = OIDUtil.createOID( (int)SystemCIDMap.getSystemCIDForClassName(SCHEMA_CLASS_NAME), 1L);
     /** System OID: the Bindery. */
-    public static final long BINDERY_OID = 2L;
-    /** System OID: the Class Extents. */
-    public static final long EXTENTS_OID = 3L;
-    /** System OID: the Class Indexes. */
-    public static final long INDEXES_OID = 4L;
+    public static final long BINDERY_OID = OIDUtil.createOID( (int)SystemCIDMap.getSystemCIDForClassName(Bindery.class.getName()), 2L);
+    /** System OID: the Class ExtentMap. */
+    public static final long EXTENTS_OID = OIDUtil.createOID( (int)SystemCIDMap.getSystemCIDForClassName(ExtentMap.class.getName()), 3L);
+    /** System OID: the Class IndexMap. */
+    public static final long INDEXES_OID = OIDUtil.createOID( (int)SystemCIDMap.getSystemCIDForClassName(IndexMap.class.getName()), 4L);
 
     static final String ENERJ_SCHEMA_SESSION_PROPERTY = "enerj.schemaSession";
     
-    protected static final String SCHEMA_CLASS_NAME = Schema.class.getName();
     protected static final String[] sObjectNameArray = { Object.class.getName() };
     
     /** Properties that were used to create the server/session. */

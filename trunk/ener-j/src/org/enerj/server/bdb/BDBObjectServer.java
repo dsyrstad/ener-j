@@ -676,7 +676,7 @@ public class BDBObjectServer extends BaseObjectServer
          */
         private long getCIDFromEntry(DatabaseEntry entry)
         {
-            return (Long)TupleBinding.getPrimitiveBinding(Long.class).entryToObject(entry);
+            return ((SerializedObject)new SerializedObjectTupleBinding(false).entryToObject(entry)).getCID();
         }
 
 
@@ -1173,16 +1173,13 @@ public class BDBObjectServer extends BaseObjectServer
         public SerializedObject entryToObject(TupleInput input)
         {
             int len = input.getBufferLength();
-            long cid = input.readLong();
-            byte[] obj;
+            byte[] obj = null;
             if (readObjBytes) {
-                obj = new byte[ len - 8 ]; // long(CID) is 8 bytes
-                input.readFast(obj);
-            }
-            else {
-                obj = null;
+                obj = input.getBufferBytes(); // Avoid copying this buffer. Use it directly.
             }
 
+            input.skipFast(len - 8);
+            long cid = input.readLong();
             return new SerializedObject(0, cid, obj);
         }
 
@@ -1190,8 +1187,8 @@ public class BDBObjectServer extends BaseObjectServer
         public void objectToEntry(Object object, TupleOutput output)
         {
             SerializedObject serializedObj = (SerializedObject)object;
-            output.writeLong(serializedObj.getCID());
             output.writeFast(serializedObj.getImage());
+            output.writeLong(serializedObj.getCID());
         }
     }
 }

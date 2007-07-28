@@ -34,8 +34,10 @@ import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
+import org.enerj.server.Bindery;
 import org.enerj.server.ObjectServer;
 import org.enerj.server.PluginHelper;
+import org.enerj.util.OIDUtil;
 import org.enerj.util.StringUtil;
 import org.odmg.ODMGException;
 
@@ -50,11 +52,11 @@ abstract public class BaseObjectServer implements ObjectServer
 {
     private static final Logger sLogger = Logger.getLogger(BaseObjectServer.class.getName()); 
 
-    /** System OID: the Schema. */
-    public static final long SCHEMA_OID = 1L;
+    /** System OID: the Schema. These must NEVER change! */
+    public static final long SCHEMA_OID = OIDUtil.createOID( (int)SystemCIDMap.getSystemCIDForClassName(Schema.class.getName()), 1L);
     /** System OID: the Bindery. */
-    public static final long BINDERY_OID = 2L;
-    public static final long NEXT_OID_NUM_OID = 3L; // OID whose data contains the next available OID number.
+    public static final long BINDERY_OID = OIDUtil.createOID( (int)SystemCIDMap.getSystemCIDForClassName(Bindery.class.getName()), 2L);
+    public static final long NEXT_OID_NUM_OID = 3L; // OID whose data contains the next available OID number. - No CIDX
 
     static final String ENERJ_SCHEMA_SESSION_PROPERTY = "enerj.schemaSession";
     

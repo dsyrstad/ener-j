@@ -19,37 +19,63 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
 
-package org.enerj.server;
+package org.enerj.util;
+
+import org.enerj.core.ObjectSerializer;
 
 /**
- * Represent class information returned by the server. <p>
+ * Static utilities to deal with OIDs. <p>
  * 
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
-public class ClassInfo
+public class OIDUtil
 {
-    private String mClassName;
-
-    /**
-     * Construct a ClassInfo. 
+    /** Mask for OIDs to get the Object Index from the OID.  
      */
-    public ClassInfo(String aClassName)
-    {
-        mClassName = aClassName;
-    }
+    private static long OIDX_OID_MASK = 0xFFFFFFFFFFFL; // Least significant 44 bits
+    private static long CIDX_OID_BIT_SHIFT = 44; // Shift OID (>>>) 44 bits to get CIDX (upper 20 bits).
+    private static int MAX_CIDX = 0xFFFFF;
+
+    // No construction.
+    private OIDUtil() { } 
 
     /**
-     * Gets the className.
+     * Gets the Object Index from an OID. 
      *
-     * @return a String.
+     * @param anOID the OID.
+     * 
+     * @return the OIDX.
      */
-    public String getClassName()
+    public static long getOIDX(long anOID)
     {
-        return mClassName;
+        return anOID & OIDX_OID_MASK;
     }
     
-    public String toString()
+    /**
+     * Gets the Class Index from an OID. 
+     *
+     * @param anOID the OID.
+     * 
+     * @return the CIDX.
+     */
+    public static int getCIDX(long anOID)
     {
-        return "ClassInfo:[" + mClassName + ']';
+        return (int)(anOID >>> CIDX_OID_BIT_SHIFT);
+    }
+    
+    /**
+     * Creates an OID from a Class Index and Object Index.
+     *
+     * @param aCIDX the class index.
+     * @param anOIDX the object index.
+     * 
+     * @return the OID.
+     */
+    public static long createOID(int aCIDX, long anOIDX)
+    {
+        assert anOIDX <= OIDX_OID_MASK;
+        assert aCIDX <= MAX_CIDX;
+        
+        return ((long)aCIDX << CIDX_OID_BIT_SHIFT) | anOIDX; 
     }
 }

@@ -35,6 +35,7 @@ import java.util.Set;
  * Provides a mapping of system persistable class names and corresponding CIDs.
  * This is needed for bootstrapping purposes, so we can read schema
  * without out using the schema to resolve the class name for itself.
+ * Note that System CIDs and System CIDXs are the same.
  *
  * @version $Id: SystemCIDMap.java,v 1.4 2006/05/16 02:40:27 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
