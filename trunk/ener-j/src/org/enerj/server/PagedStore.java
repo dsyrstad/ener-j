@@ -399,13 +399,14 @@ public class PagedStore
     /**
      * Called from StorageThread to store an object.
      *
+     * @param aCID the Class ID.
      * @param anOID an Object ID.
      * @param aSerializedObject the serialized bytes for the object.
      *
      * @throws PageServerException if a storage error occurs.
      * @throws ODMGRuntimeException if a database storage integrity error is encountered
      */
-    private synchronized void processStoreRequest(long anOID, byte[] aSerializedObject) 
+    private synchronized void processStoreRequest(long aCID, long anOID, byte[] aSerializedObject) 
         throws PageServerException
     {
         long currentObjectPtr = mOIDList.getObjectOffsetForOID(anOID);
@@ -429,7 +430,7 @@ public class PagedStore
                 // Same code handles both cases.
                 
                 // Set OID info now in case we compact the page later.
-                mOIDList.setOIDInfo(anOID, currentObjectPtr);
+                mOIDList.setOIDInfo(anOID, currentObjectPtr, aCID);
 
                 int lengthWritten = 0;
                 int lengthLeft = aSerializedObject.length;
@@ -552,7 +553,7 @@ public class PagedStore
         hdr.mOverflowPtr = PageServer.NULL_OFFSET;
         hdr.write(previousObjectPtr);
 
-        mOIDList.setOIDInfo(anOID, currentObjectPtr);
+        mOIDList.setOIDInfo(anOID, currentObjectPtr, aCID);
     }
 
 
@@ -667,7 +668,24 @@ public class PagedStore
         }
     }
     
-
+    /**
+     * Get the CID corresponding to anOID.
+     *
+     * @param anOID an Object ID.
+     *
+     * @return the CID, or ObjectServer.NULL_CID if the object does not exist.
+     *
+     * @throws ODMGRuntimeException if a database storage integrity error is encountered
+     */
+    public synchronized long getCIDForOID(long anOID)
+    {
+        try {
+            return mOIDList.getCIDforOID(anOID);
+        }
+        catch (Exception e) {
+            throw new ODMGRuntimeException("Error getting CID for OID " + anOID + ": " + e, e);
+        }
+    }
 
     /**
      * Object header as stored in a page.
@@ -819,12 +837,14 @@ public class PagedStore
      */
     final class StoreObjectRequest extends UpdateRequest
     {
+        long mCID;
         byte[] mSerializedObject;
 
 
-        StoreObjectRequest(long anOID, byte[] aSerializedObject)
+        StoreObjectRequest(long aCID, long anOID, byte[] aSerializedObject)
         {
             super(anOID);
+            mCID = aCID;
             mSerializedObject = aSerializedObject;
         }
 
@@ -832,7 +852,7 @@ public class PagedStore
         public void run()
         {
             try {
-                processStoreRequest(mOID, resolveSerializedObject() );
+                processStoreRequest(mCID, mOID, resolveSerializedObject() );
                 complete(null);
             }
             catch (Exception e) {
@@ -890,7 +910,7 @@ public class PagedStore
         public void run()
         {
             try {
-                //  TODO  - processDeleteRequest(mOID, mSerializedObject);
+                //  TODO  - processDeleteRequest(mCID, mOID, mSerializedObject);
                 complete(null);
                 throw new Exception("Not implemented");
             }

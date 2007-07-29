@@ -186,7 +186,7 @@ abstract public class BaseObjectServer implements ObjectServer
                 classSchema.addVersion(version);
 
                 // Create an extent for this class.
-                extentMap.createExtentForClassName(schemaClassName);
+                extentMap.createExtentForClassName((int)cid); // System CIDs and CIDXs are the same.
             }
 
             // Special OID for schema.
@@ -319,21 +319,21 @@ abstract public class BaseObjectServer implements ObjectServer
                     schemaSession.beginTransaction();
                     Schema schema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
     
-                    ClassSchema logicalClass = schema.findClassSchema(aClassName);
-                    if (logicalClass == null) {
-                        logicalClass = new ClassSchema(schema, aClassName, "");
-                        schema.addClassSchema(logicalClass);
+                    ClassSchema classSchema = schema.findClassSchema(aClassName);
+                    if (classSchema == null) {
+                        classSchema = new ClassSchema(schema, aClassName, "");
+                        schema.addClassSchema(classSchema);
                     }
                     
                     ClassVersionSchema classVersion = 
-                        new ClassVersionSchema(logicalClass, aCID, someSuperTypeNames, anOriginalByteCodeDef,
+                        new ClassVersionSchema(classSchema, aCID, someSuperTypeNames, anOriginalByteCodeDef,
                                     null, somePersistentFieldNames, someTransientFieldNames);
-                    logicalClass.addVersion(classVersion);
+                    classSchema.addVersion(classVersion);
                     
                     // Create an extent for the class.
                     // TODOLOW maybe this should be optional?
                     ExtentMap extentMap = (ExtentMap)schemaSession.getObjectForOID(EXTENTS_OID);
-                    extentMap.createExtentForClassName(aClassName);
+                    extentMap.createExtentForClassName(classSchema.getClassIndex());
     
                     schemaSession.flushModifiedObjects();
                     schemaSession.commitTransaction();

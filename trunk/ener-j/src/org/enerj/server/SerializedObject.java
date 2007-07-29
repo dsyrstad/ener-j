@@ -33,19 +33,20 @@ public class SerializedObject implements Serializable
 {
     private byte[] mImage;
     private long mOID;
-    private boolean mIsNew = false;
+    private long mCID;
+    private boolean mIsNew;
 
 
     /**
      * Constructs a SerializedObject that is not new.
      *
      * @param anOID the OID of the object.
+     * @param aCID the CID of the object.
      * @param anImage the serialized image of the object, as serialized by ObjectSerializer.
      */
-    public SerializedObject(long anOID, byte[] anImage)
+    public SerializedObject(long anOID, long aCID, byte[] anImage)
     {
-        mOID = anOID;
-        mImage = anImage;
+        this(aCID, anOID, anImage, false);
     }
 
 
@@ -53,12 +54,14 @@ public class SerializedObject implements Serializable
      * Constructs a SerializedObject.
      *
      * @param anOID the OID of the object.
+     * @param aCID the CID of the object.
      * @param anImage the serialized image of the object, as serialized by ObjectSerializer.
      * @param isNew true if the object is new.
      */
-    public SerializedObject(long anOID, byte[] anImage, boolean isNew)
+    public SerializedObject(long anOID, long aCID, byte[] anImage, boolean isNew)
     {
         mOID = anOID;
+        mCID = aCID;
         mImage = anImage;
         mIsNew = isNew;
     }
@@ -85,7 +88,6 @@ public class SerializedObject implements Serializable
         return mIsNew;
     }
 
-
     /**
      * Sets whether the object is new.
      *
@@ -94,6 +96,16 @@ public class SerializedObject implements Serializable
     public void setIsNew(boolean isNew)
     {
         mIsNew = isNew;
+    }
+
+    /**
+     * Gets the CID.
+     *
+     * @return the CID.
+     */
+    public long getCID()
+    {
+        return mCID;
     }
 }
 

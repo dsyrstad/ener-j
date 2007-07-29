@@ -124,13 +124,13 @@ public class OIDListTest extends TestCase
         
         assertEquals(ObjectSerializer.FIRST_USER_OID, list.getListSize());
 
-        long[] oids1 = list.allocateOIDBlock(40);
+        long[] oids1 = list.allocateOIDXBlock(40);
         assertNotNull( oids1 );
         assertEquals(40, oids1.length);
         assertEquals((oids1.length + ObjectSerializer.FIRST_USER_OID), list.getListSize());
         
         // Make sure new oids are returned each time and that they're not the null OID.
-        long[] oids2 = list.allocateOIDBlock(10);
+        long[] oids2 = list.allocateOIDXBlock(10);
         assertEquals(10, oids2.length);
         assertEquals((oids1.length + oids2.length + ObjectSerializer.FIRST_USER_OID), list.getListSize());
         
@@ -153,7 +153,7 @@ public class OIDListTest extends TestCase
     {
         OIDList list = new OIDList(mPageServer, mPageServer.getLogicalFirstPageOffset() );
 
-        long[] oids = list.allocateOIDBlock(aNumOIDs);
+        long[] oids = list.allocateOIDXBlock(aNumOIDs);
         assertTrue(oids.length == aNumOIDs);
         
         for (int i = 0; i < oids.length; i++) {
@@ -221,7 +221,7 @@ public class OIDListTest extends TestCase
     {
         OIDList list = new OIDList(mPageServer, mPageServer.getLogicalFirstPageOffset() );
 
-        long[] oids = list.allocateOIDBlock(aNumOIDs);
+        long[] oids = list.allocateOIDXBlock(aNumOIDs);
         assertTrue(oids.length == aNumOIDs);
         
         long firstOID = oids[0];

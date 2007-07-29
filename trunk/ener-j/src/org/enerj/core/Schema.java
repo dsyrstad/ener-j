@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -63,11 +62,11 @@ public class Schema
     /** Map of class descriptions. Key is class name. Value is ClassSchema. */
     private LinkedHashMap<String, ClassSchema> mClassMap;
 
-    /** Set of CIDs that exist in this schema. */
-    private Set<Long> mCIDSet;
+    /** Map of class IDs (CIDs) to ClassVersionSchema. Key is Long(CID). Value is ClassVersionSchema. */
+    private Map<Long, ClassVersionSchema> mClassVersionSchemaMap;
     
-    /** Map of class indexes (CIDXs) to ClassVersionSchema. Key is Integer(CIDX). Value is ClassVersionSchema. */
-    private Map<Integer, ClassVersionSchema> mCIDXMap;
+    /** Map of class indexes (CIDXs) to ClassSchema. Key is Integer(CIDX). Value is ClassSchema. */
+    private Map<Integer, ClassSchema> mClassSchemaMap;
     
     /** The next CIDX to be used. Note that this starts past the system CIDs because system CIDs and system CIDXs are the same. */
     private int mNextCIDX = (int)ObjectSerializer.LAST_SYSTEM_CID + 1;
@@ -94,8 +93,8 @@ public class Schema
         mCreateDate = new Date();
         mDescription = (aDescription == null ? "" : aDescription);
         mClassMap = new LinkedHashMap<String, ClassSchema>(1024);
-        mCIDXMap = new HashMap<Integer, ClassVersionSchema>(2048);
-        mCIDSet = new HashSet<Long>(2048);
+        mClassSchemaMap = new HashMap<Integer, ClassSchema>(2048);
+        mClassVersionSchemaMap = new HashMap<Long, ClassVersionSchema>(2048);
         mSubclassMap = new HashMap<String, Set<ClassVersionSchema>>(2048);
     }
     
@@ -223,23 +222,24 @@ public class Schema
     }
     
     /**
-     * Adds a ClassVersionSchema to the global map of Class Indexes to class version.
+     * Adds a ClassVersionSchema to the global map of CIDs to class version.
      * Should only be used by ClassSchema.
      *
      * @param aClassVersionSchema the ClassVersionSchema to add.
      *
-     * @throws org.odmg.ObjectNameNotUniqueException if the class index
+     * @throws org.odmg.ObjectNameNotUniqueException if the CID
      *  is already defined in the Schema.
      */
     void addClassVersion(ClassVersionSchema aClassVersionSchema) throws org.odmg.ObjectNameNotUniqueException
     {
-        int cidxKey = aClassVersionSchema.getClassIndex();
-        if (mCIDXMap.containsKey(cidxKey)) {
-            throw new org.odmg.ObjectNameNotUniqueException("Class index " + cidxKey + " is already in the schema.");
+        int cidxKey = aClassVersionSchema.getClassSchema().getClassIndex();
+        long cid = aClassVersionSchema.getClassId();
+        if (doesCIDExist(cid)) {
+            throw new org.odmg.ObjectNameNotUniqueException("Class ID " + cid + " is already in the schema.");
         }
         
-        mCIDXMap.put(cidxKey, aClassVersionSchema);
-        mCIDSet.add(aClassVersionSchema.getClassId());
+        mClassVersionSchemaMap.put(cid, aClassVersionSchema);
+        mClassSchemaMap.put(cidxKey, aClassVersionSchema.getClassSchema());
 
         String[] superTypeNames = aClassVersionSchema.getSuperTypeNames();
         for (int i = 0; i < superTypeNames.length; i++) {
@@ -279,19 +279,19 @@ public class Schema
     }
     
     /**
-     * Removes a ClassVersionSchema from the global map of Class Indexes to class version.
+     * Removes a ClassVersionSchema from the global map of CIDs to class version.
      * Should only be used by ClassSchema.
      *
-     * @param aCIDX the class index to be removed.
+     * @param aCID the CID to be removed.
      *
      * @throws org.odmg.ObjectNameNotFoundException if the class index
      *  is not defined in the Schema.
      */
-    void removeClassVersion(int aCIDX) throws org.odmg.ObjectNameNotFoundException
+    void removeClassVersion(long aCID) throws org.odmg.ObjectNameNotFoundException
     {
-        ClassVersionSchema classVersionSchema = findClassVersion(aCIDX);
+        ClassVersionSchema classVersionSchema = findClassVersion(aCID);
         if (classVersionSchema == null) {
-            throw new org.odmg.ObjectNameNotFoundException("Class index " + aCIDX + " is not in the schema.");
+            throw new org.odmg.ObjectNameNotFoundException("Class ID " + aCID + " is not in the schema.");
         }
         
         String[] superTypeNames = classVersionSchema.getSuperTypeNames();
@@ -299,22 +299,35 @@ public class Schema
             removeFromSubclassMap(superTypeNames[i], classVersionSchema);
         }
 
-        mCIDXMap.remove(aCIDX);
-        mCIDSet.remove(classVersionSchema.getClassId());
+        mClassVersionSchemaMap.remove(aCID);
+        // Do NOT remove from mClassSchemaMap, there may be other versions.
     }
 
 
     /**
-     * Finds a ClassVersionSchema in this Schema using the Class Index.
+     * Finds a ClassVersionSchema in this Schema using the CID.
      *
-     * @param aCIDX the class index to find.
+     * @param aCID the CID to find.
+     *
+     * @return the ClassVersionSchema for aCID, or null if aCID
+     *  cannot be found in the Schema.
+     */
+    public ClassVersionSchema findClassVersion(long aCID)
+    {
+        return mClassVersionSchemaMap.get(aCID);
+    }
+
+    /**
+     * Finds a ClassSchema in this Schema using the CIDX.
+     *
+     * @param aCIDX the CIDX to find.
      *
      * @return the ClassVersionSchema for aCIDX, or null if aCIDX
      *  cannot be found in the Schema.
      */
-    public ClassVersionSchema findClassVersion(int aCIDX)
+    public ClassSchema findClassSchema(int aCIDX)
     {
-        return (ClassVersionSchema)mCIDXMap.get(aCIDX);
+        return mClassSchemaMap.get(aCIDX);
     }
 
     /**
@@ -326,7 +339,7 @@ public class Schema
      */
     public boolean doesCIDExist(long aCID)
     {
-        return mCIDSet.contains(aCID);
+        return mClassVersionSchemaMap.containsKey(aCID);
     }
 
 

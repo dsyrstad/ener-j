@@ -21,7 +21,6 @@
 
 package org.enerj.util;
 
-import org.enerj.core.ObjectSerializer;
 
 /**
  * Static utilities to deal with OIDs. <p>

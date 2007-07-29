@@ -280,11 +280,26 @@ public class PersistableHelper
             throw new ODMGRuntimeException("Cannot find class " + aClassInfo + " for OID " + anOID, e);
         }
         
-        
+        return createHollowPersistable(objClass, anOID, aPersister);
+    }
+
+    /**
+     * Creates a hollow object initialized by a ClassInfo definition.
+     *
+     * @param aClass the Class for anOID.
+     * @param anOID the oid being loaded.
+     * @param aPersister a Persister responsible for the object.
+     * 
+     * @return the Persistable.
+     * 
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    public static final Persistable createHollowPersistable(Class aClass, long anOID, Persister aPersister) 
+    {
         // Create a hollow (non-loaded) object. PersistableHelper.checkLoaded() will
         // actually load the contents (via Persister.loadObject) when a field is accessed.
         try {
-            Constructor constructor = objClass.getDeclaredConstructor(sPeristerArgType);
+            Constructor constructor = aClass.getDeclaredConstructor(sPeristerArgType);
             constructor.setAccessible(true);
             Persistable persistable = (Persistable)constructor.newInstance(sPersisterArg);
 

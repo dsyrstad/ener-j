@@ -31,6 +31,7 @@ import java.util.Properties;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Schema;
 import org.enerj.core.SparseBitSet;
+import org.enerj.util.OIDUtil;
 
 import junit.framework.TestCase;
 
@@ -116,15 +117,15 @@ public abstract class AbstractObjectServerTest extends TestCase
     
 
     /**
-     * Allocates a certain number of OIDs.
+     * Allocates a certain number of OIDXs.
      */
-    private long[] allocateOIDs(int anOIDCount) throws Exception
+    private long[] allocateOIDXs(int anOIDCount) throws Exception
     {
         long[] oids = new long[anOIDCount];
         int idx = 0;
         int numToAlloc = anOIDCount;
         while (numToAlloc > 0) {
-            long[] oidBlock = mSession.getNewOIDBlock(10);
+            long[] oidBlock = mSession.getNewOIDXBlock(10);
             int copyLength = (numToAlloc < oidBlock.length ? numToAlloc : oidBlock.length);
             System.arraycopy(oidBlock, 0, oids, idx, copyLength);
             idx += copyLength;
@@ -136,13 +137,11 @@ public abstract class AbstractObjectServerTest extends TestCase
     
 
     /**
-     * Generates a patterned byte array of aLength bytes using anOID and
-     * aCID.
+     * Generates a patterned byte array of aLength bytes using anOID.
      */
-    private byte[] generateBytes(int aLength, long anOID, long aCID)
+    private byte[] generateBytes(int aLength, long anOID)
     {
         ByteBuffer buffer = ByteBuffer.allocate(16);
-        buffer.putLong(aCID);
         buffer.putLong(anOID);
         byte[] sig = buffer.array();
         byte[] bytes = new byte[aLength];
@@ -160,31 +159,32 @@ public abstract class AbstractObjectServerTest extends TestCase
     
 
     /**
-     * Stores anObjectCount objects of length aLength and verifies the store.
+     * Stores anObjectCount objects of length aLength and verifies the store. someOIDXs are updated to include the CIDX.
      */
-    private void storeObjects(long[] someOIDs, int aLength) throws Exception
+    private void storeObjects(long[] someOIDXs, int aLength) throws Exception
     {
         Schema schema = mSession.getSchema();
-        // Use SparseBitSet's CID as a valid cid to test.
+        // Use SparseBitSet's CIDx as a valid cidx to test.
+        int sparseBitSetCIDX = schema.findClassSchema(SparseBitSet.class.getName()).getClassIndex();
         long sparseBitSetCID = schema.findClassSchema(SparseBitSet.class.getName()).getLatestVersion().getClassId();
-        SerializedObject[] objects = new SerializedObject[someOIDs.length];
-        for (int i = 0; i < someOIDs.length; i++) {
-            objects[i] = new SerializedObject(someOIDs[i], sparseBitSetCID, generateBytes(aLength, someOIDs[i], sparseBitSetCID), true);
+        SerializedObject[] objects = new SerializedObject[someOIDXs.length];
+        for (int i = 0; i < someOIDXs.length; i++) {
+            someOIDXs[i] = OIDUtil.createOID(sparseBitSetCIDX, someOIDXs[i]);
+            objects[i] = new SerializedObject(someOIDXs[i], sparseBitSetCID, generateBytes(aLength, someOIDXs[i]), true);
         }
 
         mSession.storeObjects(objects);
 
-        byte[][] loadedObjects = mSession.loadObjects(someOIDs);
+        byte[][] loadedObjects = mSession.loadObjects(someOIDXs);
         assertNotNull(objects);
-        ClassInfo[] testClassInfos = mSession.getClassInfoForOIDs(someOIDs);
-        for (int i = 0; i < someOIDs.length; i++) {
+        ClassInfo[] testClassInfos = mSession.getClassInfoForOIDs(someOIDXs);
+        for (int i = 0; i < someOIDXs.length; i++) {
             byte[] obj = loadedObjects[i];
             assertTrue( obj.length == aLength );
 
-            long testCID = testClassInfos[i].getCID();
-            assertEquals(sparseBitSetCID, testCID);
+            assertEquals(SparseBitSet.class.getName(), testClassInfos[i].getClassName());
 
-            byte[] testBytes = generateBytes(aLength, someOIDs[i], testCID);
+            byte[] testBytes = generateBytes(aLength, someOIDXs[i]);
             assertTrue( Arrays.equals(testBytes, obj) );
         }
     }
@@ -195,7 +195,7 @@ public abstract class AbstractObjectServerTest extends TestCase
      */
     private void storeObjects(int anObjectCount, int aLength) throws Exception
     {
-        storeObjects( allocateOIDs(anObjectCount), aLength);
+        storeObjects( allocateOIDXs(anObjectCount), aLength);
     }
     
 
@@ -205,10 +205,10 @@ public abstract class AbstractObjectServerTest extends TestCase
     public void testOIDs() throws Exception
     {
         mSession.beginTransaction();
-        long[] oids1 = mSession.getNewOIDBlock(10);
+        long[] oids1 = mSession.getNewOIDXBlock(10);
         verifyOIDs(oids1);
 
-        long[] oids2 = mSession.getNewOIDBlock(10);
+        long[] oids2 = mSession.getNewOIDXBlock(10);
         verifyOIDs(oids2);
 
         for (int i = 0; i < oids1.length; i++) {
@@ -270,9 +270,9 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         mSession.beginTransaction();
 
-        long[] oids = allocateOIDs(1000);
-        storeObjects(oids, 100);
-        storeObjects(oids, 110);    // Larger object.
+        long[] oidxs = allocateOIDXs(1000);
+        storeObjects(oidxs, 100);
+        storeObjects(oidxs, 110);    // Larger object.
 
         mSession.commitTransaction();
     }
@@ -285,9 +285,9 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         mSession.beginTransaction();
 
-        long[] oids = allocateOIDs(100);
-        storeObjects(oids, PAGE_SIZE + 10);
-        storeObjects(oids, PAGE_SIZE + 20);    // Larger object.
+        long[] oidxs = allocateOIDXs(100);
+        storeObjects(oidxs, PAGE_SIZE + 10);
+        storeObjects(oidxs, PAGE_SIZE + 20);    // Larger object.
 
         mSession.commitTransaction();
     }
@@ -300,9 +300,9 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         mSession.beginTransaction();
 
-        long[] oids = allocateOIDs(1000);
-        storeObjects(oids, 100);
-        storeObjects(oids, 100);
+        long[] oidxs = allocateOIDXs(1000);
+        storeObjects(oidxs, 100);
+        storeObjects(oidxs, 100);
 
         mSession.commitTransaction();
     }
@@ -315,9 +315,9 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         mSession.beginTransaction();
 
-        long[] oids = allocateOIDs(1000);
-        storeObjects(oids, 0);
-        storeObjects(oids, 0);
+        long[] oidxs = allocateOIDXs(1000);
+        storeObjects(oidxs, 0);
+        storeObjects(oidxs, 0);
 
         mSession.commitTransaction();
     }
@@ -330,9 +330,9 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         mSession.beginTransaction();
 
-        long[] oids = allocateOIDs(100);
-        storeObjects(oids, PAGE_SIZE + 10);
-        storeObjects(oids, PAGE_SIZE + 10);
+        long[] oidxs = allocateOIDXs(100);
+        storeObjects(oidxs, PAGE_SIZE + 10);
+        storeObjects(oidxs, PAGE_SIZE + 10);
 
         mSession.commitTransaction();
     }
@@ -345,9 +345,9 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         mSession.beginTransaction();
 
-        long[] oids = allocateOIDs(1000);
-        storeObjects(oids, 100);
-        storeObjects(oids, 10);  // Smaller object
+        long[] oidxs = allocateOIDXs(1000);
+        storeObjects(oidxs, 100);
+        storeObjects(oidxs, 10);  // Smaller object
 
         mSession.commitTransaction();
     }
@@ -360,9 +360,9 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         mSession.beginTransaction();
 
-        long[] oids = allocateOIDs(100);
-        storeObjects(oids, (PAGE_SIZE * 3) + 10);
-        storeObjects(oids, (PAGE_SIZE * 3) + 9);  // Smaller object
+        long[] oidxs = allocateOIDXs(100);
+        storeObjects(oidxs, (PAGE_SIZE * 3) + 10);
+        storeObjects(oidxs, (PAGE_SIZE * 3) + 9);  // Smaller object
 
         mSession.commitTransaction();
     }
@@ -376,9 +376,9 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         mSession.beginTransaction();
 
-        long[] oids = allocateOIDs(100);
-        storeObjects(oids, (PAGE_SIZE * 3) + 10);
-        storeObjects(oids, PAGE_SIZE + 9);  // Smaller object
+        long[] oidxs = allocateOIDXs(100);
+        storeObjects(oidxs, (PAGE_SIZE * 3) + 10);
+        storeObjects(oidxs, PAGE_SIZE + 9);  // Smaller object
 
         mSession.commitTransaction();
     }
@@ -392,9 +392,9 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         mSession.beginTransaction();
 
-        long[] oids = allocateOIDs(100);
-        storeObjects(oids, (PAGE_SIZE * 3) + 10);
-        storeObjects(oids, 10);  // Smaller object
+        long[] oidxs = allocateOIDXs(100);
+        storeObjects(oidxs, (PAGE_SIZE * 3) + 10);
+        storeObjects(oidxs, 10);  // Smaller object
 
         mSession.commitTransaction();
     }
@@ -408,9 +408,9 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         mSession.beginTransaction();
 
-        long[] oids = allocateOIDs(1000);
-        storeObjects(oids, 100);
-        storeObjects(oids, 0);
+        long[] oidxs = allocateOIDXs(1000);
+        storeObjects(oidxs, 100);
+        storeObjects(oidxs, 0);
 
         mSession.commitTransaction();
     }
@@ -424,9 +424,9 @@ public abstract class AbstractObjectServerTest extends TestCase
     {
         mSession.beginTransaction();
 
-        long[] oids = allocateOIDs(100);
-        storeObjects(oids, PAGE_SIZE * 3);
-        storeObjects(oids, 0);
+        long[] oidxs = allocateOIDXs(100);
+        storeObjects(oidxs, PAGE_SIZE * 3);
+        storeObjects(oidxs, 0);
 
         mSession.commitTransaction();
     }
@@ -440,8 +440,8 @@ public abstract class AbstractObjectServerTest extends TestCase
         // Create some objects.
         mSession.beginTransaction();
 
-        long[] oids = allocateOIDs(2);
-        storeObjects(oids, 10);
+        long[] oidxs = allocateOIDXs(2);
+        storeObjects(oidxs, 10);
 
         mSession.commitTransaction();
 
@@ -449,15 +449,15 @@ public abstract class AbstractObjectServerTest extends TestCase
         assertTrue( mSession.getAllowNontransactionalReads() );
 
         // Should succeed
-        mSession.loadObjects(new long[] { oids[0] });
-        mSession.loadObjects(new long[] { oids[1] });
+        mSession.loadObjects(new long[] { oidxs[0] });
+        mSession.loadObjects(new long[] { oidxs[1] });
 
         mSession.setAllowNontransactionalReads(false);
         assertFalse( mSession.getAllowNontransactionalReads() );
         
         try {
             // Should fail
-            mSession.loadObjects( new long[] { oids[0] });
+            mSession.loadObjects( new long[] { oidxs[0] });
             fail("Expected failure");
         }
         catch (Exception e) {

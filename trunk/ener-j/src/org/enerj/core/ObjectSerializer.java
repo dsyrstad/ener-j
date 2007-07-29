@@ -63,7 +63,7 @@ import org.enerj.util.ByteArrayUtil;
  * Terms:<p>
  * <ul>
  * <li>CID - Class ID. A globally unique hash generated from the bytecodes of the class. This is unique for every unique version of a class.</li>
- * <li>CIDX - Class Index. A sequential number used to uniquely identify a class version within this database's schema.</li>
+ * <li>CIDX - Class Index. A sequential number used to uniquely identify a class (not a class version) within this database's schema.</li>
  * <li>OID - Object ID. An ID generated from the combination of a CIDX and a OIDX used to uniquely identify an object and its class within the database.</li>
  * <li>OIDX - Object Index. A sequential number used uniquely identify an object within the database, without regard to its class.</li>
  * </li>
@@ -72,13 +72,10 @@ import org.enerj.util.ByteArrayUtil;
  * OIDs are a 8-byte long constructed from a Class Index
  * and Object Index. The Class Index (CIDX) is the most significant 20 bits of the OID while the Object Index (OIDX)
  * is the least significant 44 bits. The CIDX references classes that exist within a specific database schema, while the CID is
- * a unique hash generated from the contents of a class. OIDX references the specific object, without regard to 
+ * a unique hash generated from the contents of a version of a class. OIDX references the specific object, without regard to 
  * its class. Both CIDX and OIDX are sequential numbers that start at one and increment by one. Given the
  * bit segmentation of the OID, Ener-J can store (2^20 - 1) (1,048,575) class versions and (2^44 - 1) (17,592,186,044,415; 17 trillion)
  * objects within a single database.
- * 
- * TODO When classes are versioned, this strategy could change the OID. So it may break references to the object. OIDs will have to be 
- * upgraded if they change, otherwise we use the proxying approach and never change the version unless an explicit upgrade is run.
  * 
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
