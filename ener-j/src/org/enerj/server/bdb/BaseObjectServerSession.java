@@ -508,7 +508,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         if (persistable.enerj_IsNew()) {
             try {
                 // Allocate one new oid.
-                oid = getNewOIDBlock(1)[0];
+                oid = getNewOIDXBlock(1)[0];
             }
             catch (ODMGException e) {
                 throw new ODMGRuntimeException(e);

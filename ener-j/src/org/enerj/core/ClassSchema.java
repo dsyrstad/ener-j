@@ -47,6 +47,9 @@ public class ClassSchema
     /** Description of the class. */
     private String mDescription;
     
+    /** Class Index (CIDX). Numbered class within Schema. */
+    private int mCIDX;
+    
     /** The GMT date on which this logical class was created. */
     private Date mCreateDate;
 
@@ -77,6 +80,7 @@ public class ClassSchema
         setDescription(aDescription);
         mClassVersions = new ArrayList<ClassVersionSchema>();
         mIndexes = new ArrayList<IndexSchema>();
+        mCIDX = mSchema.getNextClassIndex();
     }
     
 
@@ -220,7 +224,7 @@ public class ClassSchema
             return false;
         }
         
-        return mClassName.equals( ((ClassSchema)anOther).mClassName );
+        return mCIDX == ((ClassSchema)anOther).mCIDX;
     }
 
 
@@ -231,7 +235,7 @@ public class ClassSchema
      */
     public int hashCode()
     {
-        return mClassName.hashCode();
+        return mCIDX;
     }
 
 
@@ -245,4 +249,13 @@ public class ClassSchema
         return mIndexes;
     }
 
+    /**
+     * Gets the Class Index (CIDX).
+     *
+     * @return the CIDX for this class version.
+     */
+    public int getClassIndex()
+    {
+        return mCIDX;
+    }
 }

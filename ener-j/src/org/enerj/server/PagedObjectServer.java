@@ -29,28 +29,18 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.enerj.core.ClassSchema;
-import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.EnerJTransaction;
-import org.enerj.core.GenericKey;
-import org.enerj.core.IndexSchema;
 import org.enerj.core.ObjectSerializer;
-import org.enerj.core.Persistable;
-import org.enerj.core.PersistableHelper;
-import org.enerj.core.PersistentBxTree;
 import org.enerj.core.Schema;
-import org.enerj.core.SparseBitSet;
 import org.enerj.core.SystemCIDMap;
 import org.enerj.server.PagedStore.StoreObjectRequest;
 import org.enerj.server.logentry.BeginTransactionLogEntry;
@@ -708,9 +698,10 @@ public class PagedObjectServer extends BaseObjectServer
                     String className = SystemCIDMap.getSystemClassNameForCID(cidx);
                     if (className == null) {
                         Schema schema = getSchema();
-                        ClassVersionSchema version = schema.findClassVersion(cidx);
-                        if (version != null) {
-                            className = version.getClassSchema().getClassName();
+                        // TODO When we implement Schema Evolution, this will need to return version-specific information.
+                        ClassSchema classSchema = schema.findClassSchema(cidx);
+                        if (classSchema != null) {
+                            className = classSchema.getClassName();
                         }
                     }
                     
@@ -731,6 +722,7 @@ public class PagedObjectServer extends BaseObjectServer
 
             for (SerializedObject object : someObjects) {
                 long oid = object.getOID();
+                long cid = object.getCID();
 
                 // Prevent schema OIDs from being stored unless this is the schema session.
                 if (!mIsSchemaSession && oid == SCHEMA_OID) {
@@ -742,10 +734,10 @@ public class PagedObjectServer extends BaseObjectServer
                 
                 Transaction txn = getTransaction();
     
-                StoreObjectLogEntry logEntry = new StoreObjectLogEntry( txn.getLogTransactionId(), oid, object.getImage());
+                StoreObjectLogEntry logEntry = new StoreObjectLogEntry( txn.getLogTransactionId(), oid, cid, object.getImage());
                 mRedoLogServer.append(logEntry);
     
-                StoreObjectRequest request = mPagedStore.new StoreObjectRequest(oid, object.getImage());
+                StoreObjectRequest request = mPagedStore.new StoreObjectRequest(cid, oid, object.getImage());
                 request.mLogEntryPosition = logEntry.getLogPosition();
     
                 // Throw update into the cache. It doesn't hit the database (PagedStore) until checkpoint or commit.
@@ -832,7 +824,6 @@ public class PagedObjectServer extends BaseObjectServer
         public void checkpointTransaction() throws ODMGRuntimeException 
         {
             super.checkpointTransaction();
-            updateExtentsAndIndexes();
 
             synchronized (mTransactionLock) {
                 // Basically a commit without releasing locks or closing the transaction.
@@ -856,7 +847,6 @@ public class PagedObjectServer extends BaseObjectServer
         public void commitTransaction() throws ODMGRuntimeException 
         {
             super.commitTransaction();
-            updateExtentsAndIndexes();
 
             Transaction txn = getTransaction();
             
@@ -956,114 +946,7 @@ public class PagedObjectServer extends BaseObjectServer
             getTransaction().getLockServerTransaction().lock(lockObj, lockMode, aWaitTime);
         }
 
-
-        /**
-         * Flush pending updates out to the extents and indexes.
-         */
-        private void updateExtentsAndIndexes()
-        {
-            // Is Schema being built?
-            if (isInSchemaInit()) {
-                mStoredOIDs.clear();
-                return;
-            }
-
-            Schema schema;
-            try {
-                schema = getSchemaOrNull();
-            }
-            catch (ODMGException e) {
-                throw new ODMGRuntimeException(e);
-            }
-
-            pushAsPersister();
-            try {
-                ExtentMap extentMap = (ExtentMap)getObjectForOID(BaseObjectServer.EXTENTS_OID);
-                IndexMap indexMap = (IndexMap)getObjectForOID(BaseObjectServer.INDEXES_OID);
-                for (int cidx : mStoredOIDs.keySet()) {
-                    Set<StoredOID> oids = mStoredOIDs.get(cidx);
-                    if (oids != null) {
-                        ClassVersionSchema version = schema.findClassVersion(cidx);
-                        if (version == null) {
-                            throw new ODMGRuntimeException("Cannot find class version in schema for CIDX " + cidx);
-                        }
-                        
-                        ClassSchema classSchema = version.getClassSchema();
-                        String className = classSchema.getClassName();
-                        SparseBitSet extent = extentMap.getExtent(className);
-                        boolean hasExtent = extent != null;
-                        
-                        // TODO In the future, we should spin this off to a separate thread that handles
-                        // index updates. To check that the index is in sync, the index will post a txn id
-                        // when the transaction's index updates are complete.
-                        
-                        // For indexes, we have to go all of the way up the class hierarchy and
-                        // find parent indexes too.
-                        List<IndexInfo> indexes = new ArrayList<IndexInfo>();
-                        buildIndexList(schema, indexMap, className, indexes);
-                        String[] superTypeNames = version.getSuperTypeNames();
-                        for (String superTypeName : superTypeNames) {
-                            buildIndexList(schema, indexMap, superTypeName, indexes);
-                        }
-                        
-                        boolean hasIndexes = !indexes.isEmpty();
-
-                        for (StoredOID storedOID : oids) {
-                            long oid = storedOID.getOID();
-                            if (hasExtent && storedOID.isNew()) {
-                                extent.set(oid, true);
-                            }
-                            
-                            if (hasIndexes) {
-                                // TODO We need to handle replace somehow, which means we need the key
-                                // TODO that existed prior to update. For dupl keys, must match OID too.
-                                // TODO session method to retrieve stored object, (not updated) but
-                                // TODO what about second update.
-                                // TODO Add method to tree to get current key for oid.
-                                ClassInfo classInfo = getClassInfoForOIDs(new long[] { oid } )[0];
-                                Persistable obj = PersistableHelper.createHollowPersistable(classInfo, oid, this);
-                                for (IndexInfo indexInfo : indexes) {
-                                    Object key = GenericKey.createKey(indexInfo.indexSchema, obj);
-                                    Map index = indexInfo.index;
-                                    if (index instanceof PersistentBxTree) {
-                                        ((PersistentBxTree)index).insert(key, obj);
-                                    }
-                                    else {
-                                        index.put(key, obj);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                flushModifiedObjects();
-                mStoredOIDs.clear();
-            }
-            catch (ODMGException e) {
-                throw new ODMGRuntimeException(e);
-            }
-            finally {
-                popAsPersister();
-            }
-        }
-
         // ...End of ObjectServerSession interface methods.
-        /**
-         * Builds a list of IndexInfo for the given class. Adds the IndexInfos to indexes. 
-         */
-        private void buildIndexList(Schema schema, IndexMap indexMap, String className, List<IndexInfo> indexes)
-        {
-            ClassSchema classSchema = schema.findClassSchema(className);
-            if (classSchema == null) {
-                return;
-            }
-            
-            List<IndexSchema> indexSchemas = classSchema.getIndexes();
-            for (IndexSchema indexSchema : indexSchemas) {
-                indexes.add( new IndexInfo(indexMap.getIndex(classSchema, indexSchema), indexSchema) );
-            }
-        }
     }
 
 
@@ -1409,21 +1292,6 @@ public class PagedObjectServer extends BaseObjectServer
             }
             
             aTransaction.addUpdateRequest(anUpdateRequest);
-        }
-    }
-
-    /**
-     * Holder for an association between the index and its IndexSchema.
-     */
-    private static final class IndexInfo
-    {
-        Map index;
-        IndexSchema indexSchema;
-
-        public IndexInfo(Map someIndex, IndexSchema someIndexSchema)
-        {
-            index = someIndex;
-            indexSchema = someIndexSchema;
         }
     }
 }

@@ -105,8 +105,9 @@ public class EnerJDatabase implements Database, Persister
      * grabbing a DatabaseRoot and read-locking it. */
     private Set<Long> mKnownSchemaCIDs;
     
-    /** Cache of ClassInfo keyed by CIDX. */
-    private Map<Integer, ClassInfo> mCachedClassInfo; 
+    /** Cache of Class keyed by CIDX.
+     * TODO SchemaEvolution must not proxy classes for this to work. It must upgrade the class to the latest version. */
+    private Map<Integer, Class<? extends Persistable>> mCachedClasses; 
 
     /** True if the database is open. */
     private boolean mIsOpen = false;
@@ -250,7 +251,7 @@ public class EnerJDatabase implements Database, Persister
         Persistable[] objects = new Persistable[someOIDs.length];
         long[] oidsToRetrieveClassInfoFor = new long[someOIDs.length];
         // Some of these may be null - corresponds to someOIDs.
-        ClassInfo[] cachedClassInfos = new ClassInfo[someOIDs.length];
+        Class[] cachedClasses = new Class[someOIDs.length];
         
         boolean foundAllInCache = true;
         for (int i = 0; i < someOIDs.length; i++) {
@@ -274,7 +275,7 @@ public class EnerJDatabase implements Database, Persister
     
                 objects[i] = checkPersistable;
             }
-            else if ((cachedClassInfos[i] = mCachedClassInfo.get(cidx)) != null) {
+            else if ((cachedClasses[i] = mCachedClasses.get(cidx)) != null) {
                 // We have the class info cached.
                 foundAllInCache = false;
             }
@@ -309,19 +310,19 @@ public class EnerJDatabase implements Database, Persister
             int cidx = OIDUtil.getCIDX(oid);
             
             ClassInfo classInfo = classInfos[i];
-            if (classInfo == null) {
-                classInfo = cachedClassInfos[i];
-            }
-            else {
-                // Cache this for later
-                mCachedClassInfo.put(cidx, classInfo);
-            }
-            
             Persistable persistable = null;
             if (classInfo != null && classInfo.getClassName() != null) {
                 persistable = PersistableHelper.createHollowPersistable(classInfo, oid, this);                
-                
-                // Cache it
+
+                // Cache this for later
+                mCachedClasses.put(cidx, persistable.getClass());
+            }
+            else if (cachedClasses[i] != null) {
+                persistable = PersistableHelper.createHollowPersistable(cachedClasses[i], oid, this);                
+            }
+
+            if (persistable != null) {
+                // Cache the persistable
                 mClientCache.add(oid, persistable);
             }
 
@@ -541,7 +542,7 @@ public class EnerJDatabase implements Database, Persister
 
         byte[] objectBytes = PersistableHelper.createSerializedImage(aPersistable);
         try {
-            addToSerializedObjectQueue(oid, objectBytes, aPersistable.enerj_IsNew() );
+            addToSerializedObjectQueue(aPersistable.enerj_GetClassId(), oid, objectBytes, aPersistable.enerj_IsNew() );
             // This will be write-locked by the server.
             aPersistable.enerj_SetLockLevel(EnerJTransaction.WRITE); 
         }
@@ -565,6 +566,7 @@ public class EnerJDatabase implements Database, Persister
      * The method {@link #flushSerializedObjectQueue()} must be 
      * called after the caller has finished storing objects. 
      *
+     * @param aCID the CID for the object.
      * @param anOID the OID of the object.
      * @param aSerializedObject the object serialized to a byte array. This
      *  array must <em>NOT</em> be reused by the caller after this call completes.
@@ -575,10 +577,10 @@ public class EnerJDatabase implements Database, Persister
      * 
      * TODO This and {@link #flushSerializedObjectQueue()} should be its own class.
      */
-    private void addToSerializedObjectQueue(long anOID, byte[] aSerializedObject, boolean isNew)
+    private void addToSerializedObjectQueue(long aCID, long anOID, byte[] aSerializedObject, boolean isNew)
         throws ODMGException
     {
-        mSerializedObjectQueue.add( new SerializedObject(anOID, aSerializedObject, isNew) );
+        mSerializedObjectQueue.add( new SerializedObject(aCID, anOID, aSerializedObject, isNew) );
         mSerializedObjectQueueSize += aSerializedObject.length;
         
         if (mSerializedObjectQueueSize >= sMaxSerializedObjectQueueSize) {
@@ -1168,7 +1170,7 @@ public class EnerJDatabase implements Database, Persister
         mModifiedObjects = new ModifiedPersistableList();
         mSerializedObjectQueue = new ArrayList<SerializedObject>(100);
         mKnownSchemaCIDs = new HashSet<Long>(127);
-        mCachedClassInfo = new HashMap<Integer, ClassInfo>(500);
+        mCachedClasses = new HashMap<Integer, Class<? extends Persistable>>(500);
 
         // Initialize CID map with known system CIDs.
         // This is so we don't try to update the schema with system CIDs, since they
@@ -1220,7 +1222,7 @@ public class EnerJDatabase implements Database, Persister
             mSerializedObjectQueue = null;
             mBoundToTransaction = null;
             mKnownSchemaCIDs = null;
-            mCachedClassInfo = null;
+            mCachedClasses = null;
             mIsOpen = false;
             mIsLocal = false;
         

@@ -49,10 +49,7 @@ public class ClassVersionSchema
     /** Class Id (CID). */
     private long mCID;
     
-    /** Class Index (CIDX). */
-    private int mCIDX;
-    
-    /** Array of superclass and superinterface names that go all of the way up the hierarchy.
+    /** Array of superclass and super-interface names that go all of the way up the hierarchy.
      * Class names contained here might not be Persistable in our schema.
      */
     private String[] mSuperTypeNames;
@@ -103,7 +100,6 @@ public class ClassVersionSchema
         mEnhancedBytecodes = anEnhancedBytecodeDef;
         mPersistentFields = somePersistentFieldNames;
         mTransientFields = someTransientFieldNames;
-        mCIDX = aClassSchema.getSchema().getNextClassIndex();
     }
     
 
@@ -231,7 +227,7 @@ public class ClassVersionSchema
             return false;
         }
         
-        return mCIDX == ((ClassVersionSchema)anOther).mCIDX;
+        return mCID == ((ClassVersionSchema)anOther).mCID;
                 
     }
 
@@ -244,16 +240,6 @@ public class ClassVersionSchema
      */
     public int hashCode()
     {
-        return mCIDX;
-    }
-
-    /**
-     * Gets the Class Index (CIDX).
-     *
-     * @return the CIDX for this class version.
-     */
-    public int getClassIndex()
-    {
-        return mCIDX;
+        return (int)mCID;
     }
 }

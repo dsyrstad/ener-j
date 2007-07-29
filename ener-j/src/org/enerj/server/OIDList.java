@@ -43,9 +43,9 @@ import org.enerj.util.OIDUtil;
  * </pre><p>
  * The OID list is a linked list of pages formatted as follows:
  * <p><pre>
- * |Next OID | ---       OID[k] --- | ... OID[k+n] --- |Slack |
- * |Page (8) | Offset to Object (8) |      ....        | (<16)|
- * +---------+----------------------+------------------+------+
+ * |Next OID | ---       OID[k]           --- | ... OID[k+n] --- |Slack |
+ * |Page (8) | Offset to Object (8) | CID (8) |      ....        | (<16)|
+ * +---------+----------------------+---------+------------------+------+
  * </pre><p>
  *
  * Next OID Page points to the next page in the OID list, or zero if this is
@@ -75,7 +75,8 @@ import org.enerj.util.OIDUtil;
 public class OIDList
 {
     private static final int PTR_SIZE = 8;
-    private static final int OID_SIZE = PTR_SIZE;
+    private static final int CID_SIZE = 8;
+    private static final int OID_SIZE = PTR_SIZE + CID_SIZE;
     private static final int HDR_SIZE = PTR_SIZE + PTR_SIZE;
 
     private PageServer mPageServer;
@@ -269,6 +270,25 @@ public class OIDList
     }
 
     /**
+     * Gets the CID associated with the specified OID.
+     *
+     * @param anOID the OID to get the CID for.
+     *
+     * @return the CID.
+     *
+     * @throws PageServerException if an error occurs.
+     */
+    public long getCIDforOID(long anOID) throws PageServerException
+    {
+        long oidx = OIDUtil.getOIDX(anOID);
+        long pageIndex = getPageIndexForOID(oidx);
+        long pageOffset = mOIDPages[(int)pageIndex];
+        int offsetWithinPage = getOffsetWithinPage(pageIndex, oidx);
+        mPageServer.loadPage(mBuffer, 0, CID_SIZE, pageOffset, offsetWithinPage + PTR_SIZE);
+        return getLong(mBuffer, 0);
+    }
+
+    /**
      * Gets the pointer to the object (object offset) for anOID.
      *
      * @param anOID the OID to get the offset for.
@@ -295,21 +315,24 @@ public class OIDList
      *
      * @param anOID the OID.
      * @param anOffset the object offset.
+     * @param aCID the class ID.
      *
      * @throws PageServerException if an error occurs.
      */
-    public void setOIDInfo(long anOID, long anOffset) throws PageServerException
+    public void setOIDInfo(long anOID, long anOffset, long aCID) throws PageServerException
     {
         long oidx = OIDUtil.getOIDX(anOID);
         // only update if there is a change so we don't dirty the page.
         long pageIndex = getPageIndexForOID(oidx);
         long pageOffset = mOIDPages[(int)pageIndex];
         int offsetWithinPage = getOffsetWithinPage(pageIndex, oidx);
-        mPageServer.loadPage(mBuffer, 0, PTR_SIZE, pageOffset, offsetWithinPage);
+        mPageServer.loadPage(mBuffer, 0, PTR_SIZE + CID_SIZE, pageOffset, offsetWithinPage);
         long currentOffset = getLong(mBuffer, 0);
-        if (anOffset != currentOffset) {
+        long currentCID = getLong(mBuffer, PTR_SIZE);
+        if (anOffset != currentOffset || aCID != currentCID) {
             putLong(mBuffer, 0, anOffset);
-            mPageServer.storePage(mBuffer, 0, PTR_SIZE, pageOffset, offsetWithinPage);
+            putLong(mBuffer, PTR_SIZE, aCID);
+            mPageServer.storePage(mBuffer, 0, PTR_SIZE + CID_SIZE, pageOffset, offsetWithinPage);
         }
     }
 }

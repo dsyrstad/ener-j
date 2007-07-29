@@ -46,8 +46,8 @@ public class BDBExtentIterator implements ExtentIterator
 {
     private Cursor cursor;
     /** List of CIDs to iterate over. */
-    private List<DatabaseEntry> cidKeys;
-    private int cidKeyIdx = -1;
+    private List<DatabaseEntry> cidxKeys;
+    private int cidxKeyIdx = -1;
     private DatabaseEntry nextOIDToReturn = null;
     private LockMode lockMode;
     private boolean isOpen = true;
@@ -59,15 +59,15 @@ public class BDBExtentIterator implements ExtentIterator
      *
      * @param session the session that owns this extent iterator.
      * @param cursor the cursor to use.
-     * @param cidKeys the CIDs to be iterated over.
+     * @param cidxKeys the CIDXs to be iterated over. These are partial OID keys.
      * @param lockMode the lock mode for the Cursor. May be null.
      *
      * @throws ODMGRuntimeException if an error occurs.
      */
-    public BDBExtentIterator(BDBObjectServer.Session session, Cursor cursor, List<DatabaseEntry> cidKeys, LockMode lockMode) throws ODMGRuntimeException
+    public BDBExtentIterator(BDBObjectServer.Session session, Cursor cursor, List<DatabaseEntry> cidxKeys, LockMode lockMode) throws ODMGRuntimeException
     {
         this.cursor = cursor;
-        this.cidKeys = cidKeys;
+        this.cidxKeys = cidxKeys;
         this.lockMode = lockMode;
         this.session = session;
     }
@@ -99,18 +99,18 @@ public class BDBExtentIterator implements ExtentIterator
     {
         checkOpen();
         if (nextOIDToReturn == null) {
-            ++cidKeyIdx;
+            ++cidxKeyIdx;
             DatabaseEntry next = new DatabaseEntry();
             try {
-                while (cidKeyIdx < cidKeys.size() && cursor.getSearchKey(cidKeys.get(cidKeyIdx), next, lockMode) == OperationStatus.NOTFOUND) {
-                    ++cidKeyIdx;
+                while (cidxKeyIdx < cidxKeys.size() && cursor.getSearchKeyRange(cidxKeys.get(cidxKeyIdx), next, lockMode) == OperationStatus.NOTFOUND) {
+                    ++cidxKeyIdx;
                 }
             }
             catch (DatabaseException e) {
                 throw new ODMGRuntimeException("Error reading extent cursor", e);
             }
             
-            if (cidKeyIdx >= cidKeys.size()) {
+            if (cidxKeyIdx >= cidxKeys.size()) {
                 return false;
             }
             
@@ -151,7 +151,7 @@ public class BDBExtentIterator implements ExtentIterator
             oids[numObjs] = (Long)binding.entryToObject(nextOIDToReturn);
             try {
                 // Prime next OID.
-                if (cursor.getNextDup(cidKeys.get(cidKeyIdx), nextOIDToReturn, lockMode) == OperationStatus.NOTFOUND) {
+                if (cursor.getNextDup(cidxKeys.get(cidxKeyIdx), nextOIDToReturn, lockMode) == OperationStatus.NOTFOUND) {
                     nextOIDToReturn = null; // Move to next CID.
                 }
             }

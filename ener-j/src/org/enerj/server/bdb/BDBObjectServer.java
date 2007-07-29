@@ -47,6 +47,7 @@ import org.enerj.server.ObjectServer;
 import org.enerj.server.ObjectServerSession;
 import org.enerj.server.SerializedObject;
 import org.enerj.util.FileUtil;
+import org.enerj.util.OIDUtil;
 import org.odmg.DatabaseClosedException;
 import org.odmg.LockNotGrantedException;
 import org.odmg.ODMGException;
@@ -87,7 +88,6 @@ public class BDBObjectServer extends BaseObjectServer
     private static final Logger sLogger = Logger.getLogger(BDBObjectServer.class.getName());
     
     private static final String BINDERY_SUFFIX = ":Bindery";
-    private static final String EXTENT_SUFFIX = ":Extents";
     
     /** HashMap of database names to BDBObjectServers. */
     private static HashMap<String, BDBObjectServer> sCurrentServers = new HashMap<String, BDBObjectServer>(20);
@@ -104,8 +104,6 @@ public class BDBObjectServer extends BaseObjectServer
     private Database bdbDatabase = null;
     /** Bindery Database. Key is binding name, value is OID. */
     private Database bdbBinderyDatabase = null;
-    /** Extent Database. Key is binding name, value is OID. */
-    private Database bdbExtentDatabase = null;
     
     /** List of active transactions. List of BDB Transaction. Synchronized
      * around mTransactionLock.
@@ -168,9 +166,6 @@ public class BDBObjectServer extends BaseObjectServer
     
             bdbDatabase = bdbEnvironment.openDatabase(null, mDBName, bdbDBConfig);
             bdbBinderyDatabase = bdbEnvironment.openDatabase(null, mDBName + BINDERY_SUFFIX, bdbDBConfig);
-            DatabaseConfig extentConfig = bdbDBConfig.cloneConfig();
-            extentConfig.setSortedDuplicates(true);
-            bdbExtentDatabase = bdbEnvironment.openDatabase(null, mDBName + EXTENT_SUFFIX, extentConfig);
             success = true;
         }
         catch (DatabaseException e) {
@@ -182,11 +177,6 @@ public class BDBObjectServer extends BaseObjectServer
                     if (bdbDatabase != null) {
                         bdbDatabase.close();
                         bdbDatabase = null;
-                    }
-    
-                    if (bdbExtentDatabase != null) {
-                        bdbExtentDatabase.close();
-                        bdbExtentDatabase = null;
                     }
     
                     if (bdbBinderyDatabase != null) {
@@ -243,7 +233,9 @@ public class BDBObjectServer extends BaseObjectServer
             bdbDB = bdbEnv.openDatabase(null, aDBName, bdbDBConfig);
 
             // Create the OID number sequence.
-            DatabaseEntry key = createLongKey(NEXT_OID_NUM_OID);
+            DatabaseEntry key = new DatabaseEntry();
+            TupleBinding.getPrimitiveBinding(Long.class).objectToEntry(NEXT_OID_NUM_OID, key);
+
             SequenceConfig config = new SequenceConfig();
             config.setAllowCreate(true);
             config.setExclusiveCreate(true);
@@ -257,14 +249,6 @@ public class BDBObjectServer extends BaseObjectServer
             
             // The Bindery's database key is the binding name, the data is an OID.
             bdbDB = bdbEnv.openDatabase(null, aDBName + BINDERY_SUFFIX, bdbDBConfig);
-            bdbDB.close();
-            bdbDB = null;
-
-            // The Extent's database key is the CID, the data is an OID. The database allows duplicates.
-            DatabaseConfig extentConfig = bdbDBConfig.cloneConfig();
-            extentConfig.setSortedDuplicates(true);
-            extentConfig.setNodeMaxEntries(8192);
-            bdbDB = bdbEnv.openDatabase(null, aDBName + EXTENT_SUFFIX, extentConfig);
             bdbDB.close();
             bdbDB = null;
 
@@ -313,16 +297,34 @@ public class BDBObjectServer extends BaseObjectServer
 	}
 
     /**
-     * Creates a DatabaseEntry key from a long.
+     * Creates a DatabaseEntry key from an OID.
      *
-     * @param value
+     * @param oid the oid.
      * 
      * @return the key.
      */
-    private static DatabaseEntry createLongKey(long value)
+    private static DatabaseEntry createOIDKey(long oid)
     {
+        OIDKey oidKey = new OIDKey(OIDUtil.getCIDX(oid), OIDUtil.getOIDX(oid));
+        
         DatabaseEntry key = new DatabaseEntry();
-        TupleBinding.getPrimitiveBinding(Long.class).objectToEntry(value, key);
+        new OIDKeyTupleBinding(true).objectToEntry(oidKey, key);
+        return key;
+    }
+    
+    /**
+     * Creates a partial DatabaseEntry OID key from a CIDX.
+     *
+     * @param cidx the CIDX.
+     * 
+     * @return the partial key.
+     */
+    private static DatabaseEntry createPartialOIDKey(int cidx)
+    {
+        OIDKey oidKey = new OIDKey(cidx, 0L);
+        
+        DatabaseEntry key = new DatabaseEntry();
+        new OIDKeyTupleBinding(false).objectToEntry(oidKey, key);
         return key;
     }
     
@@ -371,10 +373,6 @@ public class BDBObjectServer extends BaseObjectServer
             
             if (bdbDatabase != null) {
                 bdbDatabase.close();
-            }
-
-            if (bdbExtentDatabase != null) {
-                bdbExtentDatabase.close();
             }
 
             if (bdbBinderyDatabase != null) {
@@ -599,33 +597,25 @@ public class BDBObjectServer extends BaseObjectServer
 
             ClassInfo[] classInfo = new ClassInfo[someOIDs.length];
             for (int i = 0; i < someOIDs.length; i++) {
-                long anOID = someOIDs[i];
-                if (anOID == BaseObjectServer.SCHEMA_OID) {
-                    long cid = SystemCIDMap.getSystemCIDForClassName(SCHEMA_CLASS_NAME);
-                    classInfo[i] = new ClassInfo(cid, SCHEMA_CLASS_NAME);
+                long oid = someOIDs[i];
+                if (oid == BaseObjectServer.SCHEMA_OID) {
+                    classInfo[i] = new ClassInfo(SCHEMA_CLASS_NAME);
                 }
-                else if (anOID != ObjectSerializer.NULL_OID) {
-                    long cid;
-                    DatabaseEntry data = readObjectEntry(anOID);
-                    if (data == null) {
-                        cid = ObjectSerializer.NULL_CID;
-                    }
-                    else {
-                        cid = getCIDFromEntry(data);
-                    }
+                else if (oid != ObjectSerializer.NULL_OID) {
+                    int cidx = OIDUtil.getCIDX(oid);
                     
-                    // Resolve the class name. Try system CIDs first.
-                    String className = SystemCIDMap.getSystemClassNameForCID(cid);
+                    // Resolve the class name. Try system CIDs first, which is the same as a CIDX for system classes.
+                    String className = SystemCIDMap.getSystemClassNameForCID(cidx);
                     if (className == null) {
                         Schema schema = getSchema();
-                        ClassVersionSchema version = schema.findClassVersion(cid);
-                        if (version != null) {
-                            className = version.getClassSchema().getClassName();
+                        ClassSchema classSchema = schema.findClassSchema(cidx);
+                        if (classSchema != null) {
+                            className = classSchema.getClassName();
                         }
                     }
                     
                     if (className != null) {
-                        classInfo[i] = new ClassInfo(cid, className);
+                        classInfo[i] = new ClassInfo(className);
                     }
                 }
             }
@@ -650,7 +640,7 @@ public class BDBObjectServer extends BaseObjectServer
                 txn = getTransaction();
             }
 
-            DatabaseEntry key = createLongKey(anOID);
+            DatabaseEntry key = createOIDKey(anOID);
             DatabaseEntry data = new DatabaseEntry();
             OperationStatus status;
             try {
@@ -696,11 +686,13 @@ public class BDBObjectServer extends BaseObjectServer
                     throw new ODMGException("Client is not allowed to update schema via object modification.");
                 }
                 
-                DatabaseEntry oidKey = createLongKey(oid);
+                DatabaseEntry oidKey = createOIDKey(oid);
                 DatabaseEntry data = new DatabaseEntry();
                 binding.objectToEntry(object, data);
                 
                 try {
+                    // Because the Extent is implicitly part of the OID index (via the CIDX), this also makes the object part of
+                    // the extent for the class.
                     OperationStatus status = bdbDatabase.put(txn, oidKey, data);
                     if (status != OperationStatus.SUCCESS) {
                         throw new ODMGException("Error writing object. Status is " + status);
@@ -710,22 +702,7 @@ public class BDBObjectServer extends BaseObjectServer
                     throw new ODMGException("Error writing object", e);
                 }
                 
-                long cid = object.getCID();
-                if (object.isNew() && !SystemCIDMap.isSystemCID(cid)) {
-                    // Add to extent.
-                    DatabaseEntry extentKey = createLongKey(cid);
-                    try {
-                        OperationStatus status = bdbExtentDatabase.put(txn, extentKey, oidKey);
-                        if (status != OperationStatus.SUCCESS) {
-                            throw new ODMGException("Error writing to extent. Status is " + status);
-                        }
-                    }
-                    catch (DatabaseException e) {
-                        throw new ODMGException("Error writing to extent", e);
-                    }
-                    
-                    // TODO add to indexes
-                }
+                // TODO add to indexes
             }
         }
 
@@ -749,7 +726,7 @@ public class BDBObjectServer extends BaseObjectServer
             return objects;
         }
 
-        public long[] getNewOIDBlock(int anOIDCount) throws ODMGException
+        public long[] getNewOIDXBlock(int anOIDCount) throws ODMGException
         {
             // Validate txn active - interface requirement
             getTransaction();
@@ -758,7 +735,9 @@ public class BDBObjectServer extends BaseObjectServer
             try {
                 SequenceConfig config = new SequenceConfig();
                 config.setCacheSize(1);
-                Sequence seq = bdbDatabase.openSequence(null, createLongKey(NEXT_OID_NUM_OID), config);
+                DatabaseEntry key = new DatabaseEntry();
+                TupleBinding.getPrimitiveBinding(Long.class).objectToEntry(NEXT_OID_NUM_OID, key);
+                Sequence seq = bdbDatabase.openSequence(null, key, config);
                 oidNum = seq.get(null, anOIDCount);
             }
             catch (DatabaseException e) {
@@ -886,7 +865,7 @@ public class BDBObjectServer extends BaseObjectServer
                 throw new LockNotGrantedException("Invalid lock mode: " + aLockLevel);
             }
 
-            DatabaseEntry key = createLongKey(anOID);
+            DatabaseEntry key = createOIDKey(anOID);
             DatabaseEntry data = new DatabaseEntry();
             OperationStatus status;
             try {
@@ -909,7 +888,8 @@ public class BDBObjectServer extends BaseObjectServer
             try {
                 DatabaseEntry key = new DatabaseEntry();
                 TupleBinding.getPrimitiveBinding(String.class).objectToEntry(aName, key);
-                DatabaseEntry data = createLongKey(anOID);
+                DatabaseEntry data = new DatabaseEntry();
+                TupleBinding.getPrimitiveBinding(Long.class).objectToEntry(anOID, data);
                 OperationStatus status = bdbBinderyDatabase.putNoOverwrite(txn, key, data);
                 if (status == OperationStatus.KEYEXIST) {
                     throw new ObjectNameNotUniqueException("Bind name " + aName + " is not unique");
@@ -972,30 +952,7 @@ public class BDBObjectServer extends BaseObjectServer
         public void removeFromExtent(long anOID) throws ObjectNotPersistentException
         {
             Transaction txn = getTransaction();
-            
-            ClassInfo classInfo;
-            try {
-                classInfo = getClassInfoForOIDs(new long[] { anOID })[0];
-            }
-            catch (ODMGException e) {
-                throw new ObjectNotPersistentException("Object is not persistent", e);
-            }
-
-            if (classInfo == null) {
-                throw new ObjectNotPersistentException("Object is not persistent");
-            }
-            
-            try {
-                DatabaseEntry key = createLongKey(classInfo.getCID());
-                OperationStatus status = bdbExtentDatabase.delete(txn, key);
-                if (status == OperationStatus.NOTFOUND) {
-                    throw new ObjectNotPersistentException("OID " + anOID + " not found in extent");
-                }
-            }
-            catch (DatabaseException e) {
-                throw new ODMGRuntimeException("Error removing OID " + anOID + " from extent", e);
-            }
-            
+            // Hmmm... The object is implicitly part of its extent.
 
             // TODO Remove from indexes too
         }
@@ -1006,16 +963,16 @@ public class BDBObjectServer extends BaseObjectServer
          */
         public long getExtentSize(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
         {
-            List<Long> cids = getExtentCIDs(aClassName, wantSubclasses);
+            List<Integer> cidxs = getExtentCIDXs(aClassName, wantSubclasses);
             
             Cursor cursor = null;
             try {
                 long size = 0;
-                cursor = bdbExtentDatabase.openCursor(getTransaction(), null);
-                for (Long cid : cids) {
-                    DatabaseEntry key = createLongKey(cid);
+                cursor = bdbDatabase.openCursor(getTransaction(), null);
+                for (Integer cidx : cidxs) {
+                    DatabaseEntry partialKey = createPartialOIDKey(cidx);
                     DatabaseEntry data = new DatabaseEntry();
-                    if (cursor.getSearchKey(key, data, getReadLockMode()) == OperationStatus.SUCCESS) {
+                    if (cursor.getSearchKeyRange(partialKey, data, getReadLockMode()) == OperationStatus.SUCCESS) {
                         size += cursor.count();
                     }
                 }
@@ -1033,16 +990,16 @@ public class BDBObjectServer extends BaseObjectServer
         }
 
         /**
-         * Gets all of the CIDs that make up the extent, optionally with subclasses.
+         * Gets all of the CIDXs that make up the extent, optionally with subclasses.
          *
          * @param aClassName
          * @param wantSubclasses if true, subclasses will be included.
          * 
-         * @return a List of CIDs.
+         * @return a List of CIDXs.
          * 
          * @throws ODMGRuntimeException if an error occurs.
          */
-        private List<Long> getExtentCIDs(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
+        private List<Integer> getExtentCIDXs(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
         {
             Schema schema;
             try {
@@ -1052,22 +1009,20 @@ public class BDBObjectServer extends BaseObjectServer
                 throw new ODMGRuntimeException(e);
             }
             
-            List<Long> cids = new ArrayList<Long>();
+            List<Integer> cidxs = new ArrayList<Integer>();
             ClassSchema classSchema = schema.findClassSchema(aClassName);
             if (classSchema != null) {
-                for (ClassVersionSchema version : classSchema.getVersions()) {
-                    cids.add( version.getClassId() );
-                }
+                cidxs.add( classSchema.getClassIndex() );
             }
                 
             if (wantSubclasses) {
                 Set<ClassVersionSchema> subclasses = schema.getPersistableSubclasses(aClassName);
                 for (ClassVersionSchema version : subclasses) {
-                    cids.add( version.getClassId() );
+                    cidxs.add( version.getClassSchema().getClassIndex() );
                 }
             }
             
-            return cids;
+            return cidxs;
         }
         
         /** 
@@ -1076,21 +1031,21 @@ public class BDBObjectServer extends BaseObjectServer
          */
         public ExtentIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
         {
-            List<Long> cids = getExtentCIDs(aClassName, wantSubclasses);
-            List<DatabaseEntry> cidKeys = new ArrayList<DatabaseEntry>(cids.size());
-            for (Long cid : cids) {
-                cidKeys.add( createLongKey(cid) );
+            List<Integer> cidxs = getExtentCIDXs(aClassName, wantSubclasses);
+            List<DatabaseEntry> cidxKeys = new ArrayList<DatabaseEntry>(cidxs.size());
+            for (Integer cidx : cidxs) {
+                cidxKeys.add( createPartialOIDKey(cidx) );
             }
 
             try {
-                Cursor cursor = bdbExtentDatabase.openCursor(getTransaction(), null);
+                Cursor cursor = bdbDatabase.openCursor(getTransaction(), null);
                 LockMode lockMode = getReadLockMode();
                 // BDB Cursor doesn't allow READ_COMMITTED
                 if (lockMode == LockMode.READ_COMMITTED) {
                     lockMode = null;
                 }
                 
-                BDBExtentIterator iter = new BDBExtentIterator(this, cursor, cidKeys, lockMode);
+                BDBExtentIterator iter = new BDBExtentIterator(this, cursor, cidxKeys, lockMode);
                 sessionIterators.add(iter);
                 mActiveExtents.add(iter);
                 return iter;
@@ -1189,6 +1144,51 @@ public class BDBObjectServer extends BaseObjectServer
             SerializedObject serializedObj = (SerializedObject)object;
             output.writeFast(serializedObj.getImage());
             output.writeLong(serializedObj.getCID());
+        }
+    }
+
+    /**
+     * Serialize and deserialize the internal OID key entry. 
+     * Split the oid into cidx and oidx so we can do partial key searches.
+     */
+    private static final class OIDKeyTupleBinding extends TupleBinding
+    {
+        private boolean serializeOIDX;
+        
+        OIDKeyTupleBinding(boolean serializeOIDX)
+        {
+            this.serializeOIDX = serializeOIDX;
+        }
+        
+        @Override
+        public Object entryToObject(TupleInput input)
+        {
+            int cidx = input.readShort();
+            long oidx = input.readLong(); 
+            return new OIDKey(cidx, oidx);
+        }
+
+        @Override
+        public void objectToEntry(Object object, TupleOutput output)
+        {
+            OIDKey key = (OIDKey)object;
+            output.writeShort(key.cidx);
+            if (serializeOIDX) {
+                output.writeLong(key.oidx);
+            }
+        }
+    }
+    
+    // Split the oid into cidx and oidx so we can do partial key searches.
+    private static final class OIDKey 
+    {
+        int cidx;
+        long oidx;
+        
+        public OIDKey(int cidx, long oidx)
+        {
+            this.cidx = cidx;
+            this.oidx = oidx;
         }
     }
 }

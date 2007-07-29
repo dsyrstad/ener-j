@@ -39,8 +39,8 @@ import org.enerj.core.SparseBitSet;
 @Persist
 class ExtentMap
 {
-    /** Extent mapping. Key is Class name. */
-    private Map<String,SparseBitSet> mExtentMap = new LargePersistentHashMap<String, SparseBitSet>();
+    /** Extent mapping. Key is Class index (CIDX). */
+    private Map<Integer,SparseBitSet> mExtentMap = new LargePersistentHashMap<Integer, SparseBitSet>();
     
     /**
      * Construct a new ExtentMap.
@@ -50,24 +50,24 @@ class ExtentMap
     }
 
     /**
-     * Creates a new extent for the specified class name.
+     * Creates a new extent for the specified class index.
      * 
-     * @param aClassName the class name.
+     * @param aCIDX the class index.
      */
-    void createExtentForClassName(String aClassName)
+    void createExtentForClassName(int aCIDX)
     {
-        mExtentMap.put(aClassName, new SparseBitSet());
+        mExtentMap.put(aCIDX, new SparseBitSet());
     }
     
     /**
-     * Gets the extent for the specified class name.
+     * Gets the extent for the specified class index.
      * 
-     * @param aClassName the class name.
+     * @param aCIDX the class index.
      * 
      * @return the SparseBitSet representing the extent, or null if no extent is defined for the class.
      */
-    SparseBitSet getExtent(String aClassName)
+    SparseBitSet getExtent(int aCIDX)
     {
-        return mExtentMap.get(aClassName);
+        return mExtentMap.get(aCIDX);
     }
 }

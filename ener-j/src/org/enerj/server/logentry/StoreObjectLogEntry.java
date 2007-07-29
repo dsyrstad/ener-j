@@ -37,6 +37,7 @@ import java.io.*;
 public class StoreObjectLogEntry extends LogEntry
 {
     private long mOID = -1;
+    private long mNewCID = -1;
     private byte[] mNewObjectValue = null;
 
 
@@ -54,12 +55,14 @@ public class StoreObjectLogEntry extends LogEntry
      * @param aTransactionId the transaction id. This id must not conflict with any
      *  pre-existing transaction id in the log.
      * @param anOID the OID for the object.
+     * @param aNewCID the CID, possibly revised.
      * @param aNewObjectValue the new serialized object value being stored.
      */
-    public StoreObjectLogEntry(long aTransactionId, long anOID, byte[] aNewObjectValue)
+    public StoreObjectLogEntry(long aTransactionId, long anOID, long aNewCID, byte[] aNewObjectValue)
     {
         setTransactionId(aTransactionId);
         mOID = anOID;
+        mNewCID = aNewCID;
         mNewObjectValue = aNewObjectValue;
     }
 
@@ -81,6 +84,7 @@ public class StoreObjectLogEntry extends LogEntry
     protected int loadFromLog(DataInput aDataInput) throws IOException
     {
         mOID = aDataInput.readLong();
+        mNewCID = aDataInput.readLong();
         int objectLength = aDataInput.readInt();
         mNewObjectValue = new byte[objectLength];
         aDataInput.readFully(mNewObjectValue);
@@ -98,6 +102,7 @@ public class StoreObjectLogEntry extends LogEntry
         super.appendToLog(aDataOutput);
 
         aDataOutput.writeLong(mOID);
+        aDataOutput.writeLong(mNewCID);
         aDataOutput.writeInt(mNewObjectValue.length);
         aDataOutput.write(mNewObjectValue);
     }
@@ -113,7 +118,16 @@ public class StoreObjectLogEntry extends LogEntry
         return mOID;
     }
 
-
+    /**
+     * Gets the CID that was stored.
+     *
+     * @return the CID.
+     */
+    public long getCID()
+    {
+        return mNewCID;
+    }
+    
     /**
      * Gets the serialized object value that was stored.
      *
@@ -131,6 +145,6 @@ public class StoreObjectLogEntry extends LogEntry
     public String toString()
     {
         String name = this.getClass().getName();
-        return name.substring( name.lastIndexOf('.') + 1 ) + "[txnId=" + getTransactionId() + " oid=" + mOID + " objLength=" + mNewObjectValue.length + ']';
+        return name.substring( name.lastIndexOf('.') + 1 ) + "[txnId=" + getTransactionId() + " oid=" + mOID + " cid=" + Long.toHexString(mNewCID) + " objLength=" + mNewObjectValue.length + ']';
     }
 }
