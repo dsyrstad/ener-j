@@ -56,7 +56,9 @@ class ExtentMap
      */
     void createExtentForClassName(int aCIDX)
     {
-        mExtentMap.put(aCIDX, new SparseBitSet());
+        // TODO This large number is to handle the new CIDX scheme. But this is probably going to break extent performance. 
+        // TODO The number is large enough to handle an OID value of 2^63, but the extent will break after that because of signs. 
+        mExtentMap.put(aCIDX, new SparseBitSet(524288)); 
     }
     
     /**

@@ -585,7 +585,7 @@ public class EnerJDatabase implements Database, Persister
     private void addToSerializedObjectQueue(long aCID, long anOID, byte[] aSerializedObject, boolean isNew)
         throws ODMGException
     {
-        mSerializedObjectQueue.add( new SerializedObject(aCID, anOID, aSerializedObject, isNew) );
+        mSerializedObjectQueue.add( new SerializedObject(anOID, aCID, aSerializedObject, isNew) );
         mSerializedObjectQueueSize += aSerializedObject.length;
         
         if (mSerializedObjectQueueSize >= sMaxSerializedObjectQueueSize) {

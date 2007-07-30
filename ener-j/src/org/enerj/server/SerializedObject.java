@@ -36,20 +36,6 @@ public class SerializedObject implements Serializable
     private long mCID;
     private boolean mIsNew;
 
-
-    /**
-     * Constructs a SerializedObject that is not new.
-     *
-     * @param anOID the OID of the object.
-     * @param aCID the CID of the object.
-     * @param anImage the serialized image of the object, as serialized by ObjectSerializer.
-     */
-    public SerializedObject(long anOID, long aCID, byte[] anImage)
-    {
-        this(aCID, anOID, anImage, false);
-    }
-
-
     /**
      * Constructs a SerializedObject.
      *

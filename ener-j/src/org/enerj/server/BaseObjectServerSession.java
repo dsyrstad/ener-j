@@ -454,6 +454,10 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                 if (oids != null) {
                     ClassSchema classSchema = schema.findClassSchema(cidx);
                     if (classSchema == null) {
+                        if (SystemCIDMap.isSystemCID((long)cidx)) {
+                            continue; // Ignore.
+                        }
+
                         throw new ODMGRuntimeException("Cannot find class schema for CIDX " + cidx);
                     }
 
@@ -522,6 +526,10 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      */
     private void buildIndexList(Schema schema, IndexMap indexMap, ClassSchema classSchema, List<IndexInfo> indexes)
     {
+        if (classSchema == null) {
+            return;
+        }
+        
         List<IndexSchema> indexSchemas = classSchema.getIndexes();
         for (IndexSchema indexSchema : indexSchemas) {
             indexes.add( new IndexInfo(indexMap.getIndex(classSchema, indexSchema), indexSchema) );
