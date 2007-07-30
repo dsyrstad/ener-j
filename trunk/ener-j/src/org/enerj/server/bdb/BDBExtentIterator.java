@@ -48,6 +48,7 @@ public class BDBExtentIterator implements ExtentIterator
     /** List of CIDs to iterate over. */
     private List<DatabaseEntry> cidxKeys;
     private int cidxKeyIdx = -1;
+    private int currCIDX;
     private DatabaseEntry nextOIDToReturn = null;
     private LockMode lockMode;
     private boolean isOpen = true;
@@ -105,6 +106,11 @@ public class BDBExtentIterator implements ExtentIterator
                 while (cidxKeyIdx < cidxKeys.size() && cursor.getSearchKeyRange(cidxKeys.get(cidxKeyIdx), next, lockMode) == OperationStatus.NOTFOUND) {
                     ++cidxKeyIdx;
                 }
+                
+                // TOOD SAVE CIDX and compare while iterating
+                TupleBinding binding = new BDBObjectServer.OIDKeyTupleBinding(true);
+                BDBObjectServer.OIDKey oidKey = (BDBObjectServer.OIDKey)binding.entryToObject(cidxKeys.get(cidxKeyIdx));
+                currCIDX = oidKey.cidx;
             }
             catch (DatabaseException e) {
                 throw new ODMGRuntimeException("Error reading extent cursor", e);
@@ -146,13 +152,22 @@ public class BDBExtentIterator implements ExtentIterator
 
         long[] oids = new long[aMaxNumObjects];
         int numObjs;
-        TupleBinding binding = TupleBinding.getPrimitiveBinding(Long.class);
-        for (numObjs = 0; numObjs < aMaxNumObjects && hasNext(); numObjs++) {
-            oids[numObjs] = (Long)binding.entryToObject(nextOIDToReturn);
+        TupleBinding binding = new BDBObjectServer.OIDKeyTupleBinding(true);
+       
+        for (numObjs = 0; numObjs < aMaxNumObjects && hasNext(); ) {
+            DatabaseEntry key = cidxKeys.get(cidxKeyIdx);
+            BDBObjectServer.OIDKey oidKey = (BDBObjectServer.OIDKey)binding.entryToObject(key);
+            if (oidKey.cidx != currCIDX) {
+                nextOIDToReturn = null; // Move to next CID.
+                continue;
+            }
+
+            oids[numObjs++] = oidKey.getOID();
             try {
                 // Prime next OID.
-                if (cursor.getNextDup(cidxKeys.get(cidxKeyIdx), nextOIDToReturn, lockMode) == OperationStatus.NOTFOUND) {
+                if (cursor.getNext(key, nextOIDToReturn, lockMode) == OperationStatus.NOTFOUND) {
                     nextOIDToReturn = null; // Move to next CID.
+                    continue;
                 }
             }
             catch (DatabaseException e) {

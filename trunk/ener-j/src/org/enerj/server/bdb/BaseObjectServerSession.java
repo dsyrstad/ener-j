@@ -38,10 +38,12 @@ import org.enerj.core.PersistableObjectCache;
 import org.enerj.core.Persister;
 import org.enerj.core.PersisterRegistry;
 import org.enerj.core.Schema;
+import org.enerj.core.SystemCIDMap;
 import org.enerj.server.ClassInfo;
 import org.enerj.server.ObjectServer;
 import org.enerj.server.ObjectServerSession;
 import org.enerj.server.SerializedObject;
+import org.enerj.util.OIDUtil;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
 import org.odmg.TransactionInProgressException;
@@ -506,14 +508,25 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
         }
         
         if (persistable.enerj_IsNew()) {
+            long oidx;
             try {
                 // Allocate one new oid.
-                oid = getNewOIDXBlock(1)[0];
+                oidx = getNewOIDXBlock(1)[0];
             }
             catch (ODMGException e) {
                 throw new ODMGRuntimeException(e);
             }
+
+            long cid = persistable.enerj_GetClassId();
+            int cidx;
+            if (SystemCIDMap.isSystemCID(cid)) {
+                cidx = (int)cid;
+            }
+            else {
+                throw new ODMGRuntimeException("I found myself trying to create a new none System object: " + persistable.getClass().getName());
+            }
             
+            oid = OIDUtil.createOID(cidx, oidx);
             PersistableHelper.setOID(this, oid, persistable);
             // This call adds the object to the cache too.
             addToModifiedList(persistable);

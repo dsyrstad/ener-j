@@ -29,13 +29,35 @@ package org.enerj.server;
 public class ClassInfo
 {
     private String mClassName;
+    private int mCIDX; 
 
     /**
      * Construct a ClassInfo. 
      */
-    public ClassInfo(String aClassName)
+    public ClassInfo(String aClassName, int cidx)
     {
         mClassName = aClassName;
+        mCIDX = cidx;
+    }
+
+    /**
+     * Gets the CIDX.
+     *
+     * @return the CIDX.
+     */
+    public int getCIDX()
+    {
+        return mCIDX;
+    }
+
+    /**
+     * Sets someCidx.
+     *
+     * @param someCidx a int.
+     */
+    public void setCIDX(int someCidx)
+    {
+        mCIDX = someCidx;
     }
 
     /**

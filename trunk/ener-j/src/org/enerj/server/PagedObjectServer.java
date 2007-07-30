@@ -38,6 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.enerj.core.ClassSchema;
+import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.EnerJTransaction;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Schema;
@@ -688,12 +689,9 @@ public class PagedObjectServer extends BaseObjectServer
             ClassInfo[] classInfo = new ClassInfo[someOIDs.length];
             for (int i = 0; i < someOIDs.length; i++) {
                 long oid = someOIDs[i];
-                int cidx = OIDUtil.getCIDX(oid);
                 
-                if (oid == SCHEMA_OID) {
-                    classInfo[i] = new ClassInfo(SCHEMA_CLASS_NAME);
-                }
-                else if (oid != ObjectSerializer.NULL_OID) {
+                if (oid != ObjectSerializer.NULL_OID) {
+                    int cidx = OIDUtil.getCIDX(oid);
                     // Resolve the class name. Try system CIDs first.
                     String className = SystemCIDMap.getSystemClassNameForCID(cidx);
                     if (className == null) {
@@ -706,7 +704,7 @@ public class PagedObjectServer extends BaseObjectServer
                     }
                     
                     if (className != null) {
-                        classInfo[i] = new ClassInfo(className);
+                        classInfo[i] = new ClassInfo(className, cidx);
                     }
                 }
             }
@@ -714,6 +712,43 @@ public class PagedObjectServer extends BaseObjectServer
             return classInfo;
         }
 
+        public ClassInfo[] getClassInfoForCIDs(long[] someCIDs) throws ODMGException
+        {
+            if (!getAllowNontransactionalReads()) {
+                // Validate txn active - interface requirement
+                getTransaction();
+            }
+
+            ClassInfo[] classInfo = new ClassInfo[someCIDs.length];
+            for (int i = 0; i < someCIDs.length; i++) {
+                long cid = someCIDs[i];
+                
+                if (cid != ObjectSerializer.NULL_CID) {
+                    // Resolve the class name. Try system CIDs first.
+                    String className = SystemCIDMap.getSystemClassNameForCID(cid);
+                    int cidx = 0;
+                    if (className == null) {
+                        Schema schema = getSchema();
+                        // TODO When we implement Schema Evolution, this will need to return version-specific information.
+                        ClassVersionSchema classVersion = schema.findClassVersion(cid);
+                        if (classVersion != null) {
+                            ClassSchema classSchema = classVersion.getClassSchema(); 
+                            className = classSchema.getClassName();
+                            cidx = classSchema.getClassIndex();
+                        }
+                    }
+                    else {
+                        cidx = (int)cid;
+                    }
+                    
+                    if (className != null) {
+                        classInfo[i] = new ClassInfo(className, cidx);
+                    }
+                }
+            }
+
+            return classInfo;
+        }
 
         public void storeObjects(SerializedObject[] someObjects) throws ODMGException
         {
