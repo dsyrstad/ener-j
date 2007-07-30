@@ -1170,7 +1170,7 @@ public class BDBObjectServer extends BaseObjectServer
 
             input.skipFast(len - 8);
             long cid = input.readLong();
-            return new SerializedObject(0, cid, obj);
+            return new SerializedObject(0, cid, obj, false);
         }
 
         @Override
