@@ -107,6 +107,19 @@ public interface ObjectServerSession
      */
     public ClassInfo[] getClassInfoForOIDs(long[] someOIDs) throws ODMGException;
 
+    /**
+     * Gets ClassInfos for the given CIDs.
+     * A transaction must be active on session, or non-transactional reads must be allowed.
+     *
+     * @param someCIDs an array of CIDs to get ClassInfos for. Note that if any element
+     *  of this array is {@link ObjectSerializer#NULL_CID}, the corresponding ClassInfo will
+     *  be null.
+     *
+     * @return the ClassInfo. A null ClassInfo element will be returned if an CID doesn't exist.
+     *
+     * @throws ODMGException in the event of an error. 
+     */
+    public ClassInfo[] getClassInfoForCIDs(long[] someCIDs) throws ODMGException;
 
     /**
      * Stores some objects in the database.

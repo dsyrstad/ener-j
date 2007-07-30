@@ -598,10 +598,7 @@ public class BDBObjectServer extends BaseObjectServer
             ClassInfo[] classInfo = new ClassInfo[someOIDs.length];
             for (int i = 0; i < someOIDs.length; i++) {
                 long oid = someOIDs[i];
-                if (oid == BaseObjectServer.SCHEMA_OID) {
-                    classInfo[i] = new ClassInfo(SCHEMA_CLASS_NAME);
-                }
-                else if (oid != ObjectSerializer.NULL_OID) {
+                if (oid != ObjectSerializer.NULL_OID) {
                     int cidx = OIDUtil.getCIDX(oid);
                     
                     // Resolve the class name. Try system CIDs first, which is the same as a CIDX for system classes.
@@ -615,7 +612,45 @@ public class BDBObjectServer extends BaseObjectServer
                     }
                     
                     if (className != null) {
-                        classInfo[i] = new ClassInfo(className);
+                        classInfo[i] = new ClassInfo(className, cidx);
+                    }
+                }
+            }
+
+            return classInfo;
+        }
+
+        public ClassInfo[] getClassInfoForCIDs(long[] someCIDs) throws ODMGException
+        {
+            if (!getAllowNontransactionalReads()) {
+                // Validate txn active - interface requirement
+                getTransaction();
+            }
+
+            ClassInfo[] classInfo = new ClassInfo[someCIDs.length];
+            for (int i = 0; i < someCIDs.length; i++) {
+                long cid = someCIDs[i];
+                
+                if (cid != ObjectSerializer.NULL_CID) {
+                    // Resolve the class name. Try system CIDs first.
+                    String className = SystemCIDMap.getSystemClassNameForCID(cid);
+                    int cidx = 0;
+                    if (className == null) {
+                        Schema schema = getSchema();
+                        // TODO When we implement Schema Evolution, this will need to return version-specific information.
+                        ClassVersionSchema classVersion = schema.findClassVersion(cid);
+                        if (classVersion != null) {
+                            ClassSchema classSchema = classVersion.getClassSchema(); 
+                            className = classSchema.getClassName();
+                            cidx = classSchema.getClassIndex();
+                        }
+                    }
+                    else {
+                        cidx = (int)cid;
+                    }
+                    
+                    if (className != null) {
+                        classInfo[i] = new ClassInfo(className, cidx);
                     }
                 }
             }
@@ -1151,7 +1186,7 @@ public class BDBObjectServer extends BaseObjectServer
      * Serialize and deserialize the internal OID key entry. 
      * Split the oid into cidx and oidx so we can do partial key searches.
      */
-    private static final class OIDKeyTupleBinding extends TupleBinding
+    static final class OIDKeyTupleBinding extends TupleBinding
     {
         private boolean serializeOIDX;
         
@@ -1180,7 +1215,7 @@ public class BDBObjectServer extends BaseObjectServer
     }
     
     // Split the oid into cidx and oidx so we can do partial key searches.
-    private static final class OIDKey 
+    static final class OIDKey 
     {
         int cidx;
         long oidx;
@@ -1189,6 +1224,11 @@ public class BDBObjectServer extends BaseObjectServer
         {
             this.cidx = cidx;
             this.oidx = oidx;
+        }
+        
+        long getOID()
+        {
+            return OIDUtil.createOID(cidx, oidx);
         }
     }
 }
