@@ -371,10 +371,8 @@ abstract public class BaseObjectServer implements ObjectServer
                     }
                 }
                 
-                // Create an index for the class.
-                // TODOLOW maybe this should be optional?
-//                IndexMap indexMap = (IndexMap)schemaSession.getObjectForOID(INDEXES_OID);
-//                indexMap.createIndexForClass(classSchema, anIndexSchema);
+                // Create a BDB index for the class.
+                createPhysicalIndex(aClassName, anIndexSchema);
                 
                 classSchema.getIndexes().add(anIndexSchema);
 
@@ -394,6 +392,15 @@ abstract public class BaseObjectServer implements ObjectServer
                 schemaSession.popAsPersister();
             }
         }
-        
     }
+
+    /**
+     * Creates the physical index.
+     *
+     * @param aClassName the name of the class to add the index to.
+     * @param anIndexSchema the schema for the index.
+     * 
+     * @throws ODMGException
+     */
+    abstract public void createPhysicalIndex(String aClassName, IndexSchema anIndexSchema) throws ODMGException;
 }
