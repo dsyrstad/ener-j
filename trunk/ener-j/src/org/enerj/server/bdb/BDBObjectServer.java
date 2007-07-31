@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 
 import org.enerj.core.ClassSchema;
 import org.enerj.core.ClassVersionSchema;
+import org.enerj.core.IndexSchema;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
@@ -73,8 +74,6 @@ import com.sleepycatje.je.OperationStatus;
 import com.sleepycatje.je.Sequence;
 import com.sleepycatje.je.SequenceConfig;
 import com.sleepycatje.je.Transaction;
-import com.sleepycatje.util.keyrange.KeyRange;
-import com.sleepycatje.util.keyrange.RangeCursor;
 
 /** 
  * Ener-J ObjectServer based on Berkeley DB Java Edition. Stores objects in BDB databases.
@@ -103,6 +102,8 @@ public class BDBObjectServer extends BaseObjectServer
     
     /** Berkeley DB Environment. */
     private Environment bdbEnvironment = null;
+    /** Common BDB Database Configuration - post-create. */
+    DatabaseConfig bdbDBConfig = new DatabaseConfig();
     /** Berkeley DB Database. This is the main OID to object map. */
     private Database bdbDatabase = null;
     /** Bindery Database. Key is binding name, value is OID. */
@@ -162,9 +163,8 @@ public class BDBObjectServer extends BaseObjectServer
             bdbEnvConfig.setTxnWriteNoSync(true); 
             bdbEnvironment = new Environment( new File(dbDir), bdbEnvConfig);
             
-            DatabaseConfig bdbDBConfig = new DatabaseConfig();
+            bdbDBConfig = new DatabaseConfig();
             bdbDBConfig.setTransactional(true);
-
             // TODO bdbDBConfig.setReadOnly(true); based on Prop
     
             bdbDatabase = bdbEnvironment.openDatabase(null, mDBName, bdbDBConfig);
@@ -299,6 +299,27 @@ public class BDBObjectServer extends BaseObjectServer
         }
 	}
 
+	public void createPhysicalIndex(String aClassName, IndexSchema anIndexSchema) throws ODMGException
+	{
+        DatabaseConfig bdbDBConfig = new DatabaseConfig();
+        bdbDBConfig.setAllowCreate(true);
+        bdbDBConfig.setExclusiveCreate(true);
+        bdbDBConfig.setTransactional(true);
+        bdbDBConfig.setDeferredWrite(false);
+        bdbDBConfig.setNodeMaxEntries(512); // TODO Tunable
+        
+        // The index's key is a serialized GenericKey and value is an OID.
+        try {
+            Database db = bdbEnvironment.openDatabase(null, 
+                mDBName + ':' + aClassName + ':' + anIndexSchema.getName(), bdbDBConfig);
+            db.close();
+        }
+        catch (DatabaseException e) {
+            throw new ODMGException("Error creating index '" + anIndexSchema.getName() + "' on class " +
+                aClassName, e);
+        }
+	}
+	
     /**
      * Creates a DatabaseEntry key from an OID.
      *
