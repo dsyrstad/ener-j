@@ -47,8 +47,9 @@ public class BDBExtentIterator implements ExtentIterator
     private Cursor cursor;
     /** List of CIDs to iterate over. */
     private List<DatabaseEntry> cidxKeys;
+    /** List of CIDXs with 1-1 correspondence with cidxKeys. */
+    private List<Integer> cidxs;
     private int cidxKeyIdx = -1;
-    private int currCIDX;
     private DatabaseEntry nextOIDToReturn = null;
     private LockMode lockMode;
     private boolean isOpen = true;
@@ -60,14 +61,16 @@ public class BDBExtentIterator implements ExtentIterator
      *
      * @param session the session that owns this extent iterator.
      * @param cursor the cursor to use.
-     * @param cidxKeys the CIDXs to be iterated over. These are partial OID keys.
+     * @param cidxs a List of CIDXs corresponding to cidxKeys
+     * @param cidxKeys the CIDX keys to be iterated over. These are partial OID keys.
      * @param lockMode the lock mode for the Cursor. May be null.
      *
      * @throws ODMGRuntimeException if an error occurs.
      */
-    public BDBExtentIterator(BDBObjectServer.Session session, Cursor cursor, List<DatabaseEntry> cidxKeys, LockMode lockMode) throws ODMGRuntimeException
+    public BDBExtentIterator(BDBObjectServer.Session session, Cursor cursor, List<Integer> cidxs, List<DatabaseEntry> cidxKeys, LockMode lockMode) throws ODMGRuntimeException
     {
         this.cursor = cursor;
+        this.cidxs = cidxs;
         this.cidxKeys = cidxKeys;
         this.lockMode = lockMode;
         this.session = session;
@@ -100,24 +103,25 @@ public class BDBExtentIterator implements ExtentIterator
     {
         checkOpen();
         if (nextOIDToReturn == null) {
-            ++cidxKeyIdx;
             DatabaseEntry next = new DatabaseEntry();
             try {
-                while (cidxKeyIdx < cidxKeys.size() && cursor.getSearchKeyRange(cidxKeys.get(cidxKeyIdx), next, lockMode) == OperationStatus.NOTFOUND) {
-                    ++cidxKeyIdx;
+                for (++cidxKeyIdx; cidxKeyIdx < cidxKeys.size(); ++cidxKeyIdx) {
+                    if (cursor.getSearchKeyRange(cidxKeys.get(cidxKeyIdx), next, lockMode) != OperationStatus.NOTFOUND) {
+                        // Found one, but make sure CIDX matches.
+                        TupleBinding binding = new BDBObjectServer.OIDKeyTupleBinding(true);
+                        BDBObjectServer.OIDKey oidKey = (BDBObjectServer.OIDKey)binding.entryToObject(cidxKeys.get(cidxKeyIdx));
+                        if (oidKey.cidx == cidxs.get(cidxKeyIdx)) {
+                            break;
+                        }
+                    }
                 }
                 
-                // TOOD SAVE CIDX and compare while iterating
-                TupleBinding binding = new BDBObjectServer.OIDKeyTupleBinding(true);
-                BDBObjectServer.OIDKey oidKey = (BDBObjectServer.OIDKey)binding.entryToObject(cidxKeys.get(cidxKeyIdx));
-                currCIDX = oidKey.cidx;
+                if (cidxKeyIdx >= cidxKeys.size()) {
+                    return false;
+                }
             }
             catch (DatabaseException e) {
                 throw new ODMGRuntimeException("Error reading extent cursor", e);
-            }
-            
-            if (cidxKeyIdx >= cidxKeys.size()) {
-                return false;
             }
             
             nextOIDToReturn = next;
@@ -157,16 +161,18 @@ public class BDBExtentIterator implements ExtentIterator
         for (numObjs = 0; numObjs < aMaxNumObjects && hasNext(); ) {
             DatabaseEntry key = cidxKeys.get(cidxKeyIdx);
             BDBObjectServer.OIDKey oidKey = (BDBObjectServer.OIDKey)binding.entryToObject(key);
-            if (oidKey.cidx != currCIDX) {
-                nextOIDToReturn = null; // Move to next CID.
-                continue;
-            }
-
             oids[numObjs++] = oidKey.getOID();
+
             try {
                 // Prime next OID.
                 if (cursor.getNext(key, nextOIDToReturn, lockMode) == OperationStatus.NOTFOUND) {
-                    nextOIDToReturn = null; // Move to next CID.
+                    nextOIDToReturn = null; // Move to next CIDX.
+                    continue;
+                }
+
+                oidKey = (BDBObjectServer.OIDKey)binding.entryToObject(key);
+                if (oidKey.cidx != cidxs.get(cidxKeyIdx)) {
+                    nextOIDToReturn = null; // Move to next CIDX.
                     continue;
                 }
             }

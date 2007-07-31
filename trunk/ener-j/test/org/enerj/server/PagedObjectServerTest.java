@@ -115,6 +115,7 @@ public class PagedObjectServerTest extends AbstractObjectServerTest
     {
         Properties props = new Properties( System.getProperties() );
         props.setProperty(ObjectServer.ENERJ_DBNAME_PROP, DB_NAME);
+        props.setProperty(ObjectServer.ENERJ_OBJECT_SERVER, PagedObjectServer.class.getName());
         props.setProperty("PagedObjectServer.PageServerClass", CachedPageServer.class.getName() );
         props.setProperty("PagedObjectServer.LockServerClass", LockScheduler.class.getName() );
         props.setProperty("PagedObjectServer.RedoLogServerClass", ArchivingRedoLogServer.class.getName() );

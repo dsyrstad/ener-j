@@ -61,6 +61,7 @@ import com.sleepycatje.bind.tuple.TupleBinding;
 import com.sleepycatje.bind.tuple.TupleInput;
 import com.sleepycatje.bind.tuple.TupleOutput;
 import com.sleepycatje.je.Cursor;
+import com.sleepycatje.je.CursorConfig;
 import com.sleepycatje.je.Database;
 import com.sleepycatje.je.DatabaseConfig;
 import com.sleepycatje.je.DatabaseEntry;
@@ -72,6 +73,8 @@ import com.sleepycatje.je.OperationStatus;
 import com.sleepycatje.je.Sequence;
 import com.sleepycatje.je.SequenceConfig;
 import com.sleepycatje.je.Transaction;
+import com.sleepycatje.util.keyrange.KeyRange;
+import com.sleepycatje.util.keyrange.RangeCursor;
 
 /** 
  * Ener-J ObjectServer based on Berkeley DB Java Edition. Stores objects in BDB databases.
@@ -992,6 +995,22 @@ public class BDBObjectServer extends BaseObjectServer
             // TODO Remove from indexes too
         }
 
+        /**
+         * @return the common CursorConfig.
+         */
+        private CursorConfig getCursorConfig()
+        {
+            CursorConfig config = new CursorConfig();
+            if (getAllowNontransactionalReads()) {
+                config.setReadUncommitted(true);
+            }
+            else {
+                config.setReadCommitted(true);
+            }
+            
+            return config;
+        }
+        
         /** 
          * {@inheritDoc}
          * @see org.enerj.server.ObjectServerSession#getExtentSize(java.lang.String, boolean)
@@ -1003,12 +1022,21 @@ public class BDBObjectServer extends BaseObjectServer
             Cursor cursor = null;
             try {
                 long size = 0;
-                cursor = bdbDatabase.openCursor(getTransaction(), null);
+                cursor = bdbDatabase.openCursor(getTransaction(), getCursorConfig());
+                OIDKeyTupleBinding binding = new OIDKeyTupleBinding(true);
                 for (Integer cidx : cidxs) {
                     DatabaseEntry partialKey = createPartialOIDKey(cidx);
                     DatabaseEntry data = new DatabaseEntry();
-                    if (cursor.getSearchKeyRange(partialKey, data, getReadLockMode()) == OperationStatus.SUCCESS) {
-                        size += cursor.count();
+                    if (cursor.getSearchKeyRange(partialKey, data, null) == OperationStatus.SUCCESS) {
+                        do {
+                            OIDKey oidKey = (OIDKey)binding.entryToObject(partialKey);
+                            if (oidKey.cidx != cidx) {
+                                break;
+                            }
+                            
+                            ++size;
+                        }
+                        while (cursor.getNext(partialKey, data, null) == OperationStatus.SUCCESS);
                     }
                 }
                 
@@ -1073,14 +1101,14 @@ public class BDBObjectServer extends BaseObjectServer
             }
 
             try {
-                Cursor cursor = bdbDatabase.openCursor(getTransaction(), null);
+                Cursor cursor = bdbDatabase.openCursor(getTransaction(), getCursorConfig());
                 LockMode lockMode = getReadLockMode();
                 // BDB Cursor doesn't allow READ_COMMITTED
                 if (lockMode == LockMode.READ_COMMITTED) {
                     lockMode = null;
                 }
                 
-                BDBExtentIterator iter = new BDBExtentIterator(this, cursor, cidxKeys, lockMode);
+                BDBExtentIterator iter = new BDBExtentIterator(this, cursor, cidxs, cidxKeys, lockMode);
                 sessionIterators.add(iter);
                 mActiveExtents.add(iter);
                 return iter;
