@@ -93,5 +93,32 @@ public class SerializedObject implements Serializable
     {
         return mCID;
     }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (int) (mOID ^ (mOID >>> 32));
+        return result;
+    }
+
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final SerializedObject other = (SerializedObject) obj;
+        if (mOID != other.mOID)
+            return false;
+        return true;
+    }
+    
+    
 }
 

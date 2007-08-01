@@ -25,6 +25,7 @@ package org.enerj.core;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
 
+import org.enerj.annotations.Persist;
 import org.enerj.apache.commons.beanutils.PropertyUtils;
 import org.enerj.apache.commons.collections.comparators.NullComparator;
 import org.odmg.ODMGRuntimeException;
@@ -35,20 +36,25 @@ import org.odmg.ODMGRuntimeException;
  * @version $Id: $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
+@Persist
 public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey>
 {
-    /** Key components. Stored as an SCO. */
-    private Object[] mComponents;
+    transient Object[] mResolvedComponents = null;
+    
+    /** Key components. Stored as an SCO. Not used if only 1 key component. */
+    private Object[] mComponents = null;
+    // Slight Optimization if 1 key component. Eliminates serialization of the array.
+    private Object mComponent = null;
     
     /**
-     * Construct either a GenericKey or, if the key is a single simple Comparable type, the key object itself. 
+     * Construct a GenericKey. 
      *
      * @param anIndexSchema the index schema corresponding to anIndexObject. 
-     * @param anIndexedObject the object being indexed.
+     * @param anIndexedObject the object from which the key will be created.
      * 
-     * @return a Comparable object that is the key.
+     * @return a GenericKey.
      */
-    public static Comparable<?> createKey(IndexSchema anIndexSchema, Object anIndexedObject)
+    public static GenericKey createKey(IndexSchema anIndexSchema, Object anIndexedObject)
     {
         // Build the key. All the capabilities of Apache Beanutils are available for a property.
         // TODO Remove reliance on BeanUtils. It also has dependencies on commons-logging.
@@ -77,11 +83,6 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
         
         // TODO Handle this. anIndexSchema.getComparatorClassName(); Use it to compare elements.
         
-        // Simple optimization. If one element that is itself a Comparable, use it directly.
-        if (components.length == 1 && components[0] instanceof Comparable) {
-            return (Comparable<?>)components[0];
-        }
-        
         return new GenericKey(components);
     }
     
@@ -98,7 +99,19 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
             assert someComponents[i] instanceof Comparable;
         }
         
-        mComponents = someComponents;
+        if (someComponents.length == 1) {
+            mComponent = someComponents[0];
+        }
+        else {
+            mComponents = someComponents;
+        }
+    }
+
+    /**
+     * Construct a GenericKey for later de-serialization. Components are not initialized.
+     */
+    public GenericKey()
+    {
     }
     
     /**
@@ -108,7 +121,16 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
      */
     public Object[] getComponents()
     {
-        return mComponents;
+        if (mResolvedComponents == null) {
+            if (mComponents != null) {
+                mResolvedComponents = mComponents;
+            }
+            else {
+                mResolvedComponents = new Object[] { mComponent };
+            }
+        }
+        
+        return mResolvedComponents;
     }
     
     /** 
@@ -117,12 +139,16 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
      */
     public int compare(GenericKey anObject1, GenericKey anObject2)
     {
-        assert anObject1 != null && anObject2 != null && anObject1.mComponents.length == anObject2.mComponents.length;
+        assert anObject1 != null && anObject2 != null;
         
         // This is a ComparableComparator that handles nulls.
         Comparator comparator = NullComparator.COMPARABLE_INSTANCE_NULLS_HIGH;
-        for (int i = 0; i < anObject1.mComponents.length; i++) {
-            int result = comparator.compare(anObject1.mComponents[i], anObject2.mComponents[i]);
+        Object[] components1 = anObject1.getComponents();
+        Object[] components2 = anObject2.getComponents();
+        assert  components1.length == components2.length;
+        
+        for (int i = 0; i < components1.length; i++) {
+            int result = comparator.compare(components1[i], components2[i]);
             if (result != 0) {
                 return result;
             }
@@ -158,7 +184,7 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
     public int hashCode()
     {
         int hash = 0;
-        for (Object component : mComponents) {
+        for (Object component : getComponents()) {
             hash = (hash * 31) + (component == null ? 0 : component.hashCode());
         }
         

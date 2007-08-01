@@ -350,7 +350,7 @@ public class PersistableHelper
     
     /**
      * Creates a serialized image of the object. Note that this can cause new objects to be added 
-     * to the Persister's modified list.
+     * to the Persister's modified list if FCOs are referenced by aPersistable.
      *
      * @param aPersistable a persistable object.
      *
