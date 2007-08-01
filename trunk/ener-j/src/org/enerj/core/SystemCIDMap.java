@@ -69,6 +69,7 @@ public class SystemCIDMap
         sNameToCIDMap.put("org.enerj.core.PersistentBxTree$Node",           19L);
         sNameToCIDMap.put("org.enerj.apache.commons.collections.comparators.NullComparator", 20L);
         sNameToCIDMap.put("org.enerj.apache.commons.collections.comparators.ComparableComparator", 21L);
+        sNameToCIDMap.put("org.enerj.core.GenericKey",                      22L);
         
         for (Map.Entry<String, Long> entry : (Set<Map.Entry<String, Long>>)sNameToCIDMap.entrySet()) {
             sCIDToNameMap.put(entry.getValue(), entry.getKey());

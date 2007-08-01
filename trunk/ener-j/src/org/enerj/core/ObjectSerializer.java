@@ -1247,7 +1247,17 @@ public class ObjectSerializer
         {
             // Write class name of component type. For example, this would be "java.lang.Integer"
             // for an Integer[]. It would be "[[I" for a int[][][] (number of dimensions minus 1).
-            aContext.mStream.writeUTF( anObject.getClass().getComponentType().getName() );
+            Class componentType = anObject.getClass().getComponentType();
+            String componentClassName;
+            // Slight optimization - If really a Object[], don't write java.lang.Object.
+            if (componentType.equals(Object.class)) {
+                componentClassName = "";
+            }
+            else {
+                componentClassName = componentType.getName(); 
+            }
+            
+            aContext.mStream.writeUTF(componentClassName);
             Object[] aValue = (Object[])anObject;
             aContext.mStream.writeInt(aValue.length);
             for (int i = 0; i < aValue.length; i++) {
@@ -1260,11 +1270,17 @@ public class ObjectSerializer
         {
             String componentClassName = aContext.mStream.readUTF();
             Class componentClass;
-            try {
-                componentClass = Class.forName(componentClassName);
+            // Slight optimization - If really a Object[], we didn't write "java.lang.Object".
+            if (componentClassName.isEmpty()) {
+                componentClass = Object.class;
             }
-            catch (ClassNotFoundException e) {
-                throw new RuntimeException("Cannot load class " + componentClassName + " while reading array for a field in class " + anOwner);
+            else {
+                try {
+                    componentClass = Class.forName(componentClassName);
+                }
+                catch (ClassNotFoundException e) {
+                    throw new RuntimeException("Cannot load class " + componentClassName + " while reading array for a field in class " + anOwner);
+                }
             }
             
             int len = aContext.mStream.readInt();
