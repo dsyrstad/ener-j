@@ -853,7 +853,8 @@ public class BDBObjectServer extends BaseObjectServer
                                 // TODO that existed prior to update. For dupl keys, must match OID too.
                                 // TODO session method to retrieve stored object, (not updated) but
                                 // TODO what about second update. 
-                                // Pull old obj image PRIOR to updating in main OID list - put in serialized object.
+                                // Pull old obj image PRIOR to updating in main OID list and delete from index (delete by key/data)
+                                // Find it using a cursor.
                                 // DO this prior to store, only if we have indexes for the class...
                                 // TODO Use SearchBoth to match key and oid in dupl case. 
                                 ClassInfo classInfo = getClassInfoForOIDs(new long[] { oid } )[0];
