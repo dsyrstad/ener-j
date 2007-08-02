@@ -372,7 +372,7 @@ abstract public class BaseObjectServer implements ObjectServer
                 }
                 
                 // Create a BDB index for the class.
-                createPhysicalIndex(aClassName, anIndexSchema);
+                createPhysicalIndex(classSchema, anIndexSchema);
                 
                 classSchema.getIndexes().add(anIndexSchema);
 
@@ -397,10 +397,10 @@ abstract public class BaseObjectServer implements ObjectServer
     /**
      * Creates the physical index.
      *
-     * @param aClassName the name of the class to add the index to.
+     * @param aClassSchema the ClassSchema of the class to add the index to.
      * @param anIndexSchema the schema for the index.
      * 
      * @throws ODMGException
      */
-    abstract public void createPhysicalIndex(String aClassName, IndexSchema anIndexSchema) throws ODMGException;
+    abstract public void createPhysicalIndex(ClassSchema aClassSchema, IndexSchema anIndexSchema) throws ODMGException;
 }

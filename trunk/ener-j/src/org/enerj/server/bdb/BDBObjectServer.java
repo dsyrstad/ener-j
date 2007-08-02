@@ -76,6 +76,8 @@ import com.sleepycatje.je.Environment;
 import com.sleepycatje.je.EnvironmentConfig;
 import com.sleepycatje.je.LockMode;
 import com.sleepycatje.je.OperationStatus;
+import com.sleepycatje.je.SecondaryConfig;
+import com.sleepycatje.je.SecondaryDatabase;
 import com.sleepycatje.je.Sequence;
 import com.sleepycatje.je.SequenceConfig;
 import com.sleepycatje.je.Transaction;
@@ -115,6 +117,8 @@ public class BDBObjectServer extends BaseObjectServer
     private Database bdbDatabase = null;
     /** Bindery Database. Key is binding name, value is OID. */
     private Database bdbBinderyDatabase = null;
+    /** List of open indexes. */
+    private List<SecondaryDatabase> bdbIndexes = new ArrayList<SecondaryDatabase>();
     
     /** List of active transactions. List of BDB Transaction. Synchronized
      * around mTransactionLock.
@@ -174,13 +178,23 @@ public class BDBObjectServer extends BaseObjectServer
             bdbDBConfig.setTransactional(true);
             // TODO bdbDBConfig.setReadOnly(true); based on Prop
 
-            bdbDBDuplicateConfig = new DatabaseConfig();
-            bdbDBDuplicateConfig.setTransactional(true);
-            bdbDBDuplicateConfig.setSortedDuplicates(true);
-            // TODO bdbDBDuplicateConfig.setReadOnly(true); based on Prop
-    
             bdbDatabase = bdbEnvironment.openDatabase(null, mDBName, bdbDBConfig);
             bdbBinderyDatabase = bdbEnvironment.openDatabase(null, mDBName + BINDERY_SUFFIX, bdbDBConfig);
+            
+            // Open all indexes.
+            Schema schema = getSchema();
+            for (ClassSchema classSchema : schema.getClassSchemas()) {
+                for (IndexSchema indexSchema : classSchema.getIndexes()) {
+                    String indexDBName = createIndexDBName(classSchema.getClassName(), indexSchema);
+
+                    SecondaryConfig indexConfig = new SecondaryConfig();
+                    indexConfig.setSortedDuplicates( indexSchema.allowsDuplicateKeys() );
+                    indexConfig.setKeyCreator( new BDBJEKeyCreator(classSchema, indexSchema) );
+
+                    SecondaryDatabase indexDB = bdbEnvironment.openSecondaryDatabase(null, indexDBName, bdbDatabase, indexConfig); 
+                    bdbIndexes.add(indexDB);
+                }
+            }
             success = true;
         }
         catch (DatabaseException e) {
@@ -311,26 +325,28 @@ public class BDBObjectServer extends BaseObjectServer
         }
 	}
 
-	public void createPhysicalIndex(String aClassName, IndexSchema anIndexSchema) throws ODMGException
+	public void createPhysicalIndex(ClassSchema aClassSchema, IndexSchema anIndexSchema) throws ODMGException
 	{
-        DatabaseConfig bdbDBConfig = new DatabaseConfig();
-        bdbDBConfig.setAllowCreate(true);
-        bdbDBConfig.setExclusiveCreate(true);
-        bdbDBConfig.setTransactional(true);
-        bdbDBConfig.setDeferredWrite(false);
-        bdbDBConfig.setNodeMaxEntries(512); // TODO Tunable
-        bdbDBConfig.setSortedDuplicates( anIndexSchema.allowsDuplicateKeys() );
-        bdbDBConfig.setBtreeComparator(GenericKeyBDBComparator.class);
+	    String indexDBName = createIndexDBName(aClassSchema.getClassName(), anIndexSchema);
         
+	    SecondaryConfig indexConfig = new SecondaryConfig();
+        indexConfig.setAllowCreate(true);
+        indexConfig.setExclusiveCreate(true);
+        indexConfig.setTransactional(true);
+        indexConfig.setDeferredWrite(false);
+        indexConfig.setNodeMaxEntries(512); // TODO Tunable
+        indexConfig.setSortedDuplicates( anIndexSchema.allowsDuplicateKeys() );
+        indexConfig.setBtreeComparator(GenericKeyBDBComparator.class);
+        indexConfig.setKeyCreator( new BDBJEKeyCreator(aClassSchema, anIndexSchema) );
+
         // The index's key is a serialized GenericKey and value is an OID.
         try {
-            Database db = bdbEnvironment.openDatabase(null, 
-                createIndexDBName(aClassName, anIndexSchema), bdbDBConfig);
-            db.close();
+            SecondaryDatabase indexDB = bdbEnvironment.openSecondaryDatabase(null, indexDBName, bdbDatabase, indexConfig); 
+            bdbIndexes.add(indexDB);
         }
         catch (DatabaseException e) {
             throw new ODMGException("Error creating index '" + anIndexSchema.getName() + "' on class " +
-                aClassName, e);
+                aClassSchema.getClassName(), e);
         }
 	}
 	
@@ -422,6 +438,11 @@ public class BDBObjectServer extends BaseObjectServer
                 iter.close();
             }
             
+            // Close secondary databases - a.k.a. Indexes
+            for (SecondaryDatabase indexDB : bdbIndexes) {
+                indexDB.close();
+            }
+            
             if (bdbDatabase != null) {
                 bdbDatabase.close();
             }
@@ -429,7 +450,7 @@ public class BDBObjectServer extends BaseObjectServer
             if (bdbBinderyDatabase != null) {
                 bdbBinderyDatabase.close();
             }
-
+            
             if (bdbEnvironment != null) {
                 bdbEnvironment.close();
             }
