@@ -175,23 +175,6 @@ public class BDBObjectServer extends BaseObjectServer
             bdbDatabase = bdbEnvironment.openDatabase(null, mDBName, bdbDBConfig);
             bdbBinderyDatabase = bdbEnvironment.openDatabase(null, mDBName + BINDERY_SUFFIX, bdbDBConfig);
 
-            /* TODO 
-            Schema won't be available yet. 
-            // Open all indexes.
-            Schema schema = getSchema();
-            for (ClassSchema classSchema : schema.getClassSchemas()) {
-                for (IndexSchema indexSchema : classSchema.getIndexes()) {
-                    String indexDBName = createIndexDBName(classSchema.getClassName(), indexSchema);
-
-                    SecondaryConfig indexConfig = new SecondaryConfig();
-                    indexConfig.setSortedDuplicates( indexSchema.allowsDuplicateKeys() );
-                    indexConfig.setKeyCreator( createKeyCreator(classSchema, indexSchema) );
-
-                    SecondaryDatabase indexDB = bdbEnvironment.openSecondaryDatabase(null, indexDBName, bdbDatabase, indexConfig); 
-                    bdbIndexes.add(indexDB);
-                }
-            }
-            */
             success = true;
         }
         catch (DatabaseException e) {
@@ -550,7 +533,7 @@ public class BDBObjectServer extends BaseObjectServer
             }
         } 
         
-        if (!foundPropFile && dbConfigProps.getProperty("BDBObjectServer.PageServerClass") == null) {
+        if (!foundPropFile) {
             throw new ODMGException("Cannot open database " + dbname + " because it was not found or not configured properly.");
         }
 
@@ -570,10 +553,43 @@ public class BDBObjectServer extends BaseObjectServer
         
             Session session = server.new Session(server, isSchemaSession);
             server.mActiveSessions.add(session);
+
+            if (!isSchemaSession && server.bdbIndexes.isEmpty()) {
+                server.openIndexes();
+            }
             
             return session;
         } // End synchronized (sCurrentServers)
     }
+    
+    /**
+     * Opens the secondary databases for indexes.
+     *
+     * @throws ODMGException
+     */
+    private void openIndexes() throws ODMGException
+    {
+        try {
+            // Open all indexes.
+            Schema schema = getSchema();
+            for (ClassSchema classSchema : schema.getClassSchemas()) {
+                for (IndexSchema indexSchema : classSchema.getIndexes()) {
+                    String indexDBName = createIndexDBName(classSchema.getClassName(), indexSchema);
+    
+                    SecondaryConfig indexConfig = new SecondaryConfig();
+                    indexConfig.setSortedDuplicates( indexSchema.allowsDuplicateKeys() );
+                    indexConfig.setKeyCreator( createKeyCreator(classSchema, indexSchema) );
+    
+                    SecondaryDatabase indexDB = bdbEnvironment.openSecondaryDatabase(null, indexDBName, bdbDatabase, indexConfig); 
+                    bdbIndexes.add(indexDB);
+                }
+            }
+        }
+        catch (DatabaseException e) {
+            throw new ODMGException("Error opening indexes", e);
+        }
+    }
+    
     
     /**
      * Removes a session from the active session list.
