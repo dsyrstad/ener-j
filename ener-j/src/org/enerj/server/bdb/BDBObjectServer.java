@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000, 2006 Visual Systems Corporation.
+ * Copyright 2000, 2007 Visual Systems Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License version 2
  * which accompanies this distribution in a file named "COPYING".
@@ -19,8 +19,6 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
 // Ener-J
-// Copyright 2001-2003 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/BDBObjectServer.java,v 1.6 2006/05/05 13:47:14 dsyrstad Exp $
 
 package org.enerj.server.bdb;
 
@@ -33,18 +31,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import org.enerj.core.ClassSchema;
 import org.enerj.core.ClassVersionSchema;
-import org.enerj.core.GenericKey;
 import org.enerj.core.IndexSchema;
 import org.enerj.core.ObjectSerializer;
-import org.enerj.core.Persistable;
-import org.enerj.core.PersistableHelper;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
 import org.enerj.server.ClassInfo;
@@ -180,7 +174,9 @@ public class BDBObjectServer extends BaseObjectServer
 
             bdbDatabase = bdbEnvironment.openDatabase(null, mDBName, bdbDBConfig);
             bdbBinderyDatabase = bdbEnvironment.openDatabase(null, mDBName + BINDERY_SUFFIX, bdbDBConfig);
-            
+
+            /* TODO 
+            Schema won't be available yet. 
             // Open all indexes.
             Schema schema = getSchema();
             for (ClassSchema classSchema : schema.getClassSchemas()) {
@@ -189,12 +185,13 @@ public class BDBObjectServer extends BaseObjectServer
 
                     SecondaryConfig indexConfig = new SecondaryConfig();
                     indexConfig.setSortedDuplicates( indexSchema.allowsDuplicateKeys() );
-                    indexConfig.setKeyCreator( new BDBJEKeyCreator(classSchema, indexSchema) );
+                    indexConfig.setKeyCreator( createKeyCreator(classSchema, indexSchema) );
 
                     SecondaryDatabase indexDB = bdbEnvironment.openSecondaryDatabase(null, indexDBName, bdbDatabase, indexConfig); 
                     bdbIndexes.add(indexDB);
                 }
             }
+            */
             success = true;
         }
         catch (DatabaseException e) {
@@ -227,6 +224,30 @@ public class BDBObjectServer extends BaseObjectServer
         sLogger.fine("Server " + this + " is started" + localModeMsg + '.');
     }
     
+    
+    /**
+     * Builds a BDBJEKeyCreator for the index.
+     *
+     * @param schema
+     * @param classSchema
+     * @param indexSchema
+     * 
+     * @return a BDBJEKeyCreator.
+     */
+    private BDBJEKeyCreator createKeyCreator(ClassSchema classSchema, IndexSchema indexSchema)
+    {
+        // Build a list of valid CIDXs for this index. Any subclasses of the given class are eligible.
+        Set<Integer> cidxs = new HashSet<Integer>();
+        cidxs.add( classSchema.getClassIndex() );
+        
+        Schema schema = classSchema.getSchema();
+        for (ClassVersionSchema versionSchema : schema.getPersistableSubclasses(classSchema.getClassName())) {
+            cidxs.add( versionSchema.getClassSchema().getClassIndex() );
+        }
+
+        return new BDBJEKeyCreator(cidxs, indexSchema);
+    }
+
     /**
      * Creates a new database on disk. The "enerj.dbpath" and "enerj.dbdir" system property must be set.
      *
@@ -325,7 +346,8 @@ public class BDBObjectServer extends BaseObjectServer
         }
 	}
 
-	public void createPhysicalIndex(ClassSchema aClassSchema, IndexSchema anIndexSchema) throws ODMGException
+	@Override
+	protected void createPhysicalIndex(ClassSchema aClassSchema, IndexSchema anIndexSchema) throws ODMGException
 	{
 	    String indexDBName = createIndexDBName(aClassSchema.getClassName(), anIndexSchema);
         
@@ -334,10 +356,11 @@ public class BDBObjectServer extends BaseObjectServer
         indexConfig.setExclusiveCreate(true);
         indexConfig.setTransactional(true);
         indexConfig.setDeferredWrite(false);
+        indexConfig.setAllowPopulate(true); // Build index if DB not empty.
         indexConfig.setNodeMaxEntries(512); // TODO Tunable
         indexConfig.setSortedDuplicates( anIndexSchema.allowsDuplicateKeys() );
         indexConfig.setBtreeComparator(GenericKeyBDBComparator.class);
-        indexConfig.setKeyCreator( new BDBJEKeyCreator(aClassSchema, anIndexSchema) );
+        indexConfig.setKeyCreator( createKeyCreator(aClassSchema, anIndexSchema)  );
 
         // The index's key is a serialized GenericKey and value is an OID.
         try {
@@ -784,25 +807,19 @@ public class BDBObjectServer extends BaseObjectServer
             // TODO - SerializedObject should contain the version #. We should compare the object's version
             // to the current version before writing.
 
+            // TODO We need to handle replace somehow, which means we need the key
+            // TODO that existed prior to update. For dupl keys, must match OID too.
+            // TODO session method to retrieve stored object, (not updated) but
+            // TODO what about second update. 
+            // Pull old obj image PRIOR to updating in main OID list and delete from index (delete by key/data)
+            // Find it using a cursor.
+            // DO this prior to store, only if we have indexes for the class...
+            // TODO Use SearchBoth to match key and oid in dupl case. 
+
             SerializedObjectTupleBinding binding = new SerializedObjectTupleBinding(true);
-            // Collates objects that were stored by class so that we can index them if necessary.
-            Map<Integer, Set<SerializedObject>> cidxToObjsMap = new HashMap<Integer, Set<SerializedObject>>(someObjects.length); 
             for (SerializedObject object : someObjects) {
                 long oid = object.getOID();
-                int cidx = OIDUtil.getCIDX(oid);
                 
-                Set<SerializedObject> oids = cidxToObjsMap.get(cidx);
-                if (oids == null) {
-                    // First instance of the CID to be stored in this txn, create new list.
-                    oids = new HashSet<SerializedObject>(1000);
-                    cidxToObjsMap.put(cidx, oids);
-                }
-                
-                // Only add to set if it doesn't exist.
-                if (!oids.contains(object)) {
-                    oids.add(object);
-                }
-
                 // Prevent schema OIDs from being stored unless this is the schema session.
                 if (!isSchemaSession && oid == SCHEMA_OID) {
                     throw new ODMGException("Client is not allowed to update schema via object modification.");
@@ -823,113 +840,6 @@ public class BDBObjectServer extends BaseObjectServer
                 catch (DatabaseException e) {
                     throw new ODMGException("Error writing object", e);
                 }
-            }
-            
-            // Add to indexes
-            updateIndexes(cidxToObjsMap);
-        }
-        
-        private void updateIndexes(Map<Integer, Set<SerializedObject>> cidxToObjsMap) throws ODMGException
-        {
-            // Is Schema being built?
-            if (isInSchemaInit()) {
-                return;
-            }
-
-            Transaction txn = getTransaction();
-            Schema schema = getSchemaOrNull();
-            TupleBinding oidBinding = TupleBinding.getPrimitiveBinding(Long.class);
-            for (int cidx : cidxToObjsMap.keySet()) {
-                Set<SerializedObject> serializedObjects = cidxToObjsMap.get(cidx);
-                if (serializedObjects != null) {
-                    ClassSchema classSchema = schema.findClassSchema(cidx);
-                    if (classSchema == null) {
-                        if (SystemCIDMap.isSystemCID((long)cidx)) {
-                            continue; // Ignore.
-                        }
-
-                        throw new ODMGException("Cannot find class schema for CIDX " + cidx);
-                    }
-
-                    // For indexes, we have to go all of the way up the class hierarchy and
-                    // find parent indexes too.
-                    List<IndexInfo> indexes = new ArrayList<IndexInfo>();
-                    boolean success = false;
-                    try {
-                        buildIndexList(schema, classSchema, indexes);
-                        ClassVersionSchema version = classSchema.getLatestVersion();
-                        String[] superTypeNames = version.getSuperTypeNames();
-                        for (String superTypeName : superTypeNames) {
-                            ClassSchema superClassSchema = schema.findClassSchema(superTypeName);
-                            buildIndexList(schema, superClassSchema, indexes);
-                        }
-                        
-                        if (!indexes.isEmpty()) {
-                            for (SerializedObject serializedObject : serializedObjects) {
-                                long oid = serializedObject.getOID();
-                                DatabaseEntry oidData = new DatabaseEntry();
-                                oidBinding.objectToEntry(oid, oidData);
-                                
-                                // TODO We need to handle replace somehow, which means we need the key
-                                // TODO that existed prior to update. For dupl keys, must match OID too.
-                                // TODO session method to retrieve stored object, (not updated) but
-                                // TODO what about second update. 
-                                // Pull old obj image PRIOR to updating in main OID list and delete from index (delete by key/data)
-                                // Find it using a cursor.
-                                // DO this prior to store, only if we have indexes for the class...
-                                // TODO Use SearchBoth to match key and oid in dupl case. 
-                                ClassInfo classInfo = getClassInfoForOIDs(new long[] { oid } )[0];
-                                Persistable obj = PersistableHelper.createHollowPersistable(classInfo, oid, this);
-                                for (IndexInfo indexInfo : indexes) {
-                                    Object key = GenericKey.createKey(indexInfo.indexSchema, obj);
-                                    byte[] keyBytes = PersistableHelper.createSerializedImage((Persistable)key);
-                                    DatabaseEntry keyImage = new DatabaseEntry(keyBytes); 
-                                    if (indexInfo.indexDB.put(txn, keyImage, oidData) != OperationStatus.SUCCESS) {
-                                        throw new ODMGException("Error updating index: " + indexInfo.indexSchema.getName());
-                                    }
-                                }
-                            }
-                        }
-
-                        success = true;
-                    }
-                    catch (DatabaseException e) {
-                        throw new ODMGException("Error updating indexes", e);
-                    }
-                    finally {
-                        DatabaseException savedException = null;
-                        for (IndexInfo indexInfo : indexes) {
-                            try { 
-                                indexInfo.indexDB.close(); 
-                            } 
-                            catch (DatabaseException e) {
-                                savedException = e;
-                            }
-                        }
-                        
-                        if (!success && savedException != null) {
-                            throw new ODMGException("Error closing index", savedException);
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * Builds a list of IndexInfo for the given class. Adds the IndexInfos to indexes. 
-         */
-        private void buildIndexList(Schema schema, ClassSchema classSchema, List<IndexInfo> indexes) throws DatabaseException
-        {
-            if (classSchema == null) {
-                return;
-            }
-            
-            List<IndexSchema> indexSchemas = classSchema.getIndexes();
-            for (IndexSchema indexSchema : indexSchemas) {
-                String indexDBName = createIndexDBName(classSchema.getClassName(), indexSchema); 
-                Database indexDB = bdbEnvironment.openDatabase(null, indexDBName, 
-                    indexSchema.allowsDuplicateKeys() ? bdbDBDuplicateConfig : bdbDBConfig);
-                indexes.add( new IndexInfo(indexDB, indexSchema) );
             }
         }
 
@@ -1396,56 +1306,6 @@ public class BDBObjectServer extends BaseObjectServer
             SerializedObject serializedObj = (SerializedObject)object;
             output.writeFast(serializedObj.getImage());
             output.writeLong(serializedObj.getCID());
-        }
-    }
-
-    /**
-     * Serialize and deserialize the internal OID key entry. 
-     * Split the oid into cidx and oidx so we can do partial key searches.
-     */
-    static final class OIDKeyTupleBinding extends TupleBinding
-    {
-        private boolean serializeOIDX;
-        
-        OIDKeyTupleBinding(boolean serializeOIDX)
-        {
-            this.serializeOIDX = serializeOIDX;
-        }
-        
-        @Override
-        public Object entryToObject(TupleInput input)
-        {
-            int cidx = input.readShort();
-            long oidx = input.readLong(); 
-            return new OIDKey(cidx, oidx);
-        }
-
-        @Override
-        public void objectToEntry(Object object, TupleOutput output)
-        {
-            OIDKey key = (OIDKey)object;
-            output.writeShort(key.cidx);
-            if (serializeOIDX) {
-                output.writeLong(key.oidx);
-            }
-        }
-    }
-    
-    // Split the oid into cidx and oidx so we can do partial key searches.
-    static final class OIDKey 
-    {
-        int cidx;
-        long oidx;
-        
-        public OIDKey(int cidx, long oidx)
-        {
-            this.cidx = cidx;
-            this.oidx = oidx;
-        }
-        
-        long getOID()
-        {
-            return OIDUtil.createOID(cidx, oidx);
         }
     }
 
