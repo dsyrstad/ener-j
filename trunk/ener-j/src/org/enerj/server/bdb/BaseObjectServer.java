@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000, 2006 Visual Systems Corporation.
+ * Copyright 2000, 2007 Visual Systems Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License version 2
  * which accompanies this distribution in a file named "COPYING".
@@ -402,5 +402,5 @@ abstract public class BaseObjectServer implements ObjectServer
      * 
      * @throws ODMGException
      */
-    abstract public void createPhysicalIndex(ClassSchema aClassSchema, IndexSchema anIndexSchema) throws ODMGException;
+    abstract protected void createPhysicalIndex(ClassSchema aClassSchema, IndexSchema anIndexSchema) throws ODMGException;
 }

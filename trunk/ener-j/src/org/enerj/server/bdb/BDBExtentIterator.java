@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2000, 2006 Visual Systems Corporation.
+ * Copyright 2000, 2007 Visual Systems Corporation.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Public License version 2
  * which accompanies this distribution in a file named "COPYING".
@@ -19,8 +19,6 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
 // Ener-J
-// Copyright 2001-2004 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/DefaultExtentIterator.java,v 1.6 2006/01/17 02:41:09 dsyrstad Exp $
 
 package org.enerj.server.bdb;
 
@@ -108,8 +106,8 @@ public class BDBExtentIterator implements ExtentIterator
                 for (++cidxKeyIdx; cidxKeyIdx < cidxKeys.size(); ++cidxKeyIdx) {
                     if (cursor.getSearchKeyRange(cidxKeys.get(cidxKeyIdx), next, lockMode) != OperationStatus.NOTFOUND) {
                         // Found one, but make sure CIDX matches.
-                        TupleBinding binding = new BDBObjectServer.OIDKeyTupleBinding(true);
-                        BDBObjectServer.OIDKey oidKey = (BDBObjectServer.OIDKey)binding.entryToObject(cidxKeys.get(cidxKeyIdx));
+                        TupleBinding binding = new OIDKeyTupleBinding(true);
+                        OIDKey oidKey = (OIDKey)binding.entryToObject(cidxKeys.get(cidxKeyIdx));
                         if (oidKey.cidx == cidxs.get(cidxKeyIdx)) {
                             break;
                         }
@@ -156,11 +154,11 @@ public class BDBExtentIterator implements ExtentIterator
 
         long[] oids = new long[aMaxNumObjects];
         int numObjs;
-        TupleBinding binding = new BDBObjectServer.OIDKeyTupleBinding(true);
+        TupleBinding binding = new OIDKeyTupleBinding(true);
        
         for (numObjs = 0; numObjs < aMaxNumObjects && hasNext(); ) {
             DatabaseEntry key = cidxKeys.get(cidxKeyIdx);
-            BDBObjectServer.OIDKey oidKey = (BDBObjectServer.OIDKey)binding.entryToObject(key);
+            OIDKey oidKey = (OIDKey)binding.entryToObject(key);
             oids[numObjs++] = oidKey.getOID();
 
             try {
@@ -170,7 +168,7 @@ public class BDBExtentIterator implements ExtentIterator
                     continue;
                 }
 
-                oidKey = (BDBObjectServer.OIDKey)binding.entryToObject(key);
+                oidKey = (OIDKey)binding.entryToObject(key);
                 if (oidKey.cidx != cidxs.get(cidxKeyIdx)) {
                     nextOIDToReturn = null; // Move to next CIDX.
                     continue;
