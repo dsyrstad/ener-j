@@ -306,7 +306,6 @@ abstract public class BaseObjectServer implements ObjectServer
                     if (classSchema == null) {
                         classSchema = new ClassSchema(schema, aClassName, "");
                         schema.addClassSchema(classSchema);
-                        updateIndexes(classSchema);
                     }
                     
                     ClassVersionSchema classVersion = 
@@ -314,6 +313,8 @@ abstract public class BaseObjectServer implements ObjectServer
                                     null, somePersistentFieldNames, someTransientFieldNames);
                     classSchema.addVersion(classVersion);
                     
+                    updateIndexesForNewClass(classVersion);
+
                     schemaSession.flushModifiedObjects();
                     schemaSession.commitTransaction();
                     // Force cached schema to be re-read.
@@ -331,6 +332,16 @@ abstract public class BaseObjectServer implements ObjectServer
             }
         }
     }
+        
+    /**
+     * Notifies the sub-class that a new class is being added to the schema and that
+     * any index information related to super-classes should be updated.
+     *
+     * @param classSchema the class being added.
+     * 
+     * @throws ODMGException if an error occurs.
+     */
+    abstract protected void updateIndexesForNewClass(ClassVersionSchema classVersion) throws ODMGException;
     
     /**
      * Adds an index to the schema.

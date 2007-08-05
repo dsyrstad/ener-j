@@ -32,7 +32,6 @@ public class GenericKeyBDBComparator implements Comparator
      * {@inheritDoc}
      * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
      */
-    @Override
     public int compare(Object o1, Object o2)
     {
         byte[] b1 = (byte[])o1;

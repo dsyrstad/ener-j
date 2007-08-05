@@ -70,6 +70,7 @@ import com.sleepycatje.je.DatabaseEntry;
 import com.sleepycatje.je.DatabaseException;
 import com.sleepycatje.je.Environment;
 import com.sleepycatje.je.EnvironmentConfig;
+import com.sleepycatje.je.EnvironmentStats;
 import com.sleepycatje.je.LockMode;
 import com.sleepycatje.je.OperationStatus;
 import com.sleepycatje.je.SecondaryConfig;
@@ -167,9 +168,11 @@ public class BDBObjectServer extends BaseObjectServer
         try {
             EnvironmentConfig bdbEnvConfig = new EnvironmentConfig();
             bdbEnvConfig.setTransactional(true);
+            bdbEnvConfig.setCacheSize(256000000); // TODO COnfig only
             bdbEnvConfig.setTxnSerializableIsolation(true); // TODO This should be config, and should be able to override by txn
             // THIS IS IMPORTANT -- writes thru BDB buffers, but not thru OS. We use Transaction.commitSync() to force OS update.
-            bdbEnvConfig.setTxnWriteNoSync(true); 
+            bdbEnvConfig.setTxnWriteNoSync(true);
+            bdbEnvConfig.setTxnNoSync(true);
             bdbEnvironment = new Environment( new File(dbDir), bdbEnvConfig);
             
             bdbDBConfig = new DatabaseConfig();
@@ -380,8 +383,36 @@ public class BDBObjectServer extends BaseObjectServer
                 aClassSchema.getClassName(), e);
         }
 	}
-	
-	/**
+    
+    @Override
+    protected void updateIndexesForNewClass(ClassVersionSchema classVersion) throws ODMGException
+    {
+        // Update the BDBJEKeyCreators for all super-class indexes of this class to contain 
+        // this class' cidx.
+        ClassSchema classSchema = classVersion.getClassSchema();
+        int cidx = classSchema.getClassIndex();
+        Schema schema = classSchema.getSchema();
+        
+        try {
+            for (String superTypeName : classVersion.getSuperTypeNames()) {
+                ClassSchema superClassSchema = schema.findClassSchema(superTypeName);
+                if (superClassSchema != null) {
+                    List<SecondaryDatabase> indexes  = bdbIndexes.get(superClassSchema.getClassIndex());
+                    if (indexes != null) {
+                        for (SecondaryDatabase indexDB : indexes) {
+                            BDBJEKeyCreator keyCreator = (BDBJEKeyCreator)indexDB.getSecondaryConfig().getKeyCreator();
+                            keyCreator.addValidClassIndex(cidx);
+                        }
+                    }
+                }
+            }
+        }
+        catch (DatabaseException e) {
+            throw new ODMGException("Error getting index configuration", e);
+        }
+    }
+
+    /**
 	 * Adds an index to the map of open indexes.
 	 *
 	 * @param classIndex
@@ -480,6 +511,9 @@ public class BDBObjectServer extends BaseObjectServer
         } // End synchronized
         
         try {
+            //EnvironmentStats stats = bdbEnvironment.getStats(null);
+            //sLogger.info("Stats:" + stats);
+            
             // We need a copy because extents are removed from this list and would cause a concurrent operation exception.
             List<BDBExtentIterator> copyActiveExtents = new ArrayList<BDBExtentIterator>(mActiveExtents);
             for (BDBExtentIterator iter : copyActiveExtents) {

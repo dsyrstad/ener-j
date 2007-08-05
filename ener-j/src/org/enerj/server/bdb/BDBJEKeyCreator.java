@@ -3,6 +3,7 @@
  */
 package org.enerj.server.bdb;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.enerj.core.GenericKey;
@@ -25,6 +26,7 @@ import com.sleepycatje.je.SecondaryKeyCreator;
  */
 class BDBJEKeyCreator implements SecondaryKeyCreator
 {
+    // This set is synchronized.
     private Set<Integer> validCIDXs;
     private IndexSchema indexSchema;
 
@@ -34,15 +36,25 @@ class BDBJEKeyCreator implements SecondaryKeyCreator
      */
     public BDBJEKeyCreator(Set<Integer> validCIDXs, IndexSchema indexSchema)
     {
-        this.validCIDXs = validCIDXs;
+        this.validCIDXs = Collections.synchronizedSet(validCIDXs);
         this.indexSchema = indexSchema;
+    }
+    
+    /**
+     * Adds a valid class index for this index's key creator.
+     *
+     * @param cidx the new Class Index to be added.
+     */
+    void addValidClassIndex(int cidx)
+    {
+        validCIDXs.add(cidx);
     }
 
     /**
      * {@inheritDoc}
      * @see com.sleepycatje.je.SecondaryKeyCreator#createSecondaryKey(com.sleepycatje.je.SecondaryDatabase, com.sleepycatje.je.DatabaseEntry, com.sleepycatje.je.DatabaseEntry, com.sleepycatje.je.DatabaseEntry)
      */
-    @Override
+    //@Override
     public boolean createSecondaryKey(SecondaryDatabase secondary, DatabaseEntry key, DatabaseEntry data,
         DatabaseEntry result) throws DatabaseException
     {
