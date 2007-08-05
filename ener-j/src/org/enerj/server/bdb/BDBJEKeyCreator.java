@@ -5,7 +5,6 @@ package org.enerj.server.bdb;
 
 import java.util.Set;
 
-import org.enerj.core.ClassSchema;
 import org.enerj.core.GenericKey;
 import org.enerj.core.IndexSchema;
 import org.enerj.core.Persistable;
