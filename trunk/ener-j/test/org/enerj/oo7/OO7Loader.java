@@ -84,9 +84,6 @@ public class OO7Loader
                             mRandom.nextInt());
 
             int id = result[idx].getId();
-//          This isn't really necessary since it's in the map, but it'll flush out of memory faster this way.
-//TODO REMOVE THIS
-            mDB.makePersistent(result[idx]); 
         }
         
         // Construct ring
