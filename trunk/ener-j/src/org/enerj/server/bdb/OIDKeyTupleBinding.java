@@ -27,7 +27,7 @@ import com.sleepycatje.bind.tuple.TupleInput;
 import com.sleepycatje.bind.tuple.TupleOutput;
 
 /**
- * Serialize and deserialize the internal OID key entry. 
+ * Serialize and de-serialize the internal OID key entry. 
  * Split the oid into cidx and oidx so we can do partial key searches.
  */
 final class OIDKeyTupleBinding extends TupleBinding
@@ -39,11 +39,26 @@ final class OIDKeyTupleBinding extends TupleBinding
         this.serializeOIDX = serializeOIDX;
     }
     
+    int getSerializedSize()
+    {
+        return serializeOIDX ? 9 : 3;
+    }
+    
     @Override
     public Object entryToObject(TupleInput input)
     {
-        int cidx = input.readShort();
-        long oidx = input.readLong(); 
+        byte[] data = input.getBufferBytes();
+        int cidx =  ((data[0] & 0xff) << 16) |
+                    ((data[1] & 0xff) <<  8) |
+                     (data[2] & 0xff);
+        
+        long oidx = ((long)(data[3] & 0xff) << 40) |
+                    ((long)(data[4] & 0xff) << 32) |
+                    ((long)(data[5] & 0xff) << 24) |
+                    ((data[6] & 0xff) << 16) |
+                    ((data[7] & 0xff) <<  8) |
+                     (data[8] & 0xff);
+        
         return new OIDKey(cidx, oidx);
     }
 
@@ -51,9 +66,28 @@ final class OIDKeyTupleBinding extends TupleBinding
     public void objectToEntry(Object object, TupleOutput output)
     {
         OIDKey key = (OIDKey)object;
-        output.writeShort(key.cidx);
+
+        // Serialize cidx as 3 bytes, and oidx as 6 bytes
+        long oidx = key.oidx;
+        int cidx = key.cidx;
+        
+        int len = getSerializedSize();
+        output.makeSpace(len);
+        byte[] data = output.getBufferBytes();
+        
+        data[0] = (byte)(cidx >>> 16);
+        data[1] = (byte)(cidx >>>  8);
+        data[2] = (byte)cidx;
+
         if (serializeOIDX) {
-            output.writeLong(key.oidx);
+            data[3] = (byte)(oidx >>> 40);
+            data[4] = (byte)(oidx >>> 32);
+            data[5] = (byte)(oidx >>> 24);
+            data[6] = (byte)(oidx >>> 16);
+            data[7] = (byte)(oidx >>>  8);
+            data[8] = (byte)oidx;
         }
+        
+        output.addSize(len);
     }
 }

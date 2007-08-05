@@ -34,7 +34,7 @@ import org.enerj.annotations.Persist;
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
 @Persist
-public class IndexSchema
+public class IndexSchema implements Cloneable
 {
     private int mType;
     private String mName;
@@ -163,4 +163,14 @@ public class IndexSchema
         return Index.Type.values()[mType];
     }
 
+    @Override
+    public IndexSchema clone()
+    {
+        try {
+            return (IndexSchema)super.clone();
+        }
+        catch (CloneNotSupportedException e) {
+            return null; // Cannot happen.
+        }
+    }
 }

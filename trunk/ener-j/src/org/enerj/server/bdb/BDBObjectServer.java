@@ -39,6 +39,8 @@ import org.enerj.core.ClassSchema;
 import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.IndexSchema;
 import org.enerj.core.ObjectSerializer;
+import org.enerj.core.Persistable;
+import org.enerj.core.PersistableHelper;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
 import org.enerj.server.ClassInfo;
@@ -111,6 +113,8 @@ public class BDBObjectServer extends BaseObjectServer
     private Database bdbDatabase = null;
     /** Bindery Database. Key is binding name, value is OID. */
     private Database bdbBinderyDatabase = null;
+    /** The OID Sequence. */
+    private Sequence oidSequence = null; 
     /** List of open indexes. */
     private List<SecondaryDatabase> bdbIndexes = new ArrayList<SecondaryDatabase>();
     
@@ -175,6 +179,12 @@ public class BDBObjectServer extends BaseObjectServer
             bdbDatabase = bdbEnvironment.openDatabase(null, mDBName, bdbDBConfig);
             bdbBinderyDatabase = bdbEnvironment.openDatabase(null, mDBName + BINDERY_SUFFIX, bdbDBConfig);
 
+            SequenceConfig config = new SequenceConfig();
+            config.setCacheSize(1);
+            DatabaseEntry key = new DatabaseEntry();
+            new OIDKeyTupleBinding(true).objectToEntry( new OIDKey(0, NEXT_OID_NUM_OID), key);
+            oidSequence = bdbDatabase.openSequence(null, key, config);
+
             success = true;
         }
         catch (DatabaseException e) {
@@ -183,6 +193,11 @@ public class BDBObjectServer extends BaseObjectServer
         finally {
             if (!success) {
                 try {
+                    if (oidSequence != null) {
+                        oidSequence.close();
+                        oidSequence = null;
+                    }
+                    
                     if (bdbDatabase != null) {
                         bdbDatabase.close();
                         bdbDatabase = null;
@@ -228,6 +243,14 @@ public class BDBObjectServer extends BaseObjectServer
             cidxs.add( versionSchema.getClassSchema().getClassIndex() );
         }
 
+
+        // IndexSchema may be new and not yet committed yet. Clone it and disassociate it so the key creator can use it.
+        indexSchema = indexSchema.clone();
+        Persistable indexSchemaPersistable = (Persistable)(Object)indexSchema;
+        indexSchemaPersistable.enerj_SetNew(false);
+        indexSchemaPersistable.enerj_SetLoaded(true);
+        indexSchemaPersistable.enerj_SetPersister(null);
+        
         return new BDBJEKeyCreator(cidxs, indexSchema);
     }
 
@@ -267,7 +290,7 @@ public class BDBObjectServer extends BaseObjectServer
 
             // Create the OID number sequence.
             DatabaseEntry key = new DatabaseEntry();
-            TupleBinding.getPrimitiveBinding(Long.class).objectToEntry(NEXT_OID_NUM_OID, key);
+            new OIDKeyTupleBinding(true).objectToEntry( new OIDKey(0, NEXT_OID_NUM_OID), key);
 
             SequenceConfig config = new SequenceConfig();
             config.setAllowCreate(true);
@@ -447,6 +470,10 @@ public class BDBObjectServer extends BaseObjectServer
             // Close secondary databases - a.k.a. Indexes
             for (SecondaryDatabase indexDB : bdbIndexes) {
                 indexDB.close();
+            }
+            
+            if (oidSequence != null) {
+                oidSequence.close();
             }
             
             if (bdbDatabase != null) {
@@ -886,12 +913,7 @@ public class BDBObjectServer extends BaseObjectServer
 
             long oidNum;
             try {
-                SequenceConfig config = new SequenceConfig();
-                config.setCacheSize(1);
-                DatabaseEntry key = new DatabaseEntry();
-                TupleBinding.getPrimitiveBinding(Long.class).objectToEntry(NEXT_OID_NUM_OID, key);
-                Sequence seq = bdbDatabase.openSequence(null, key, config);
-                oidNum = seq.get(null, anOIDCount);
+                oidNum = oidSequence.get(null, anOIDCount);
             }
             catch (DatabaseException e) {
                 throw new ODMGException("Unable to get an OID block", e);

@@ -53,7 +53,7 @@ public class DesignObj
 
 
     /**
-     * Sets DesignObj.java.
+     * Sets the buildDate.
      *
      * @param someBuildDate a int.
      */
