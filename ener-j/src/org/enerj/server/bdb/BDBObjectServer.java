@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -40,7 +41,6 @@ import org.enerj.core.ClassVersionSchema;
 import org.enerj.core.IndexSchema;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
-import org.enerj.core.PersistableHelper;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
 import org.enerj.server.ClassInfo;
@@ -115,8 +115,8 @@ public class BDBObjectServer extends BaseObjectServer
     private Database bdbBinderyDatabase = null;
     /** The OID Sequence. */
     private Sequence oidSequence = null; 
-    /** List of open indexes. */
-    private List<SecondaryDatabase> bdbIndexes = new ArrayList<SecondaryDatabase>();
+    /** Map of all open indexes. Key is the CIDX of the index(es). Value is a List of SecondaryDatabase. */
+    private Map<Integer, List<SecondaryDatabase>> bdbIndexes = new HashMap<Integer, List<SecondaryDatabase>>(); 
     
     /** List of active transactions. List of BDB Transaction. Synchronized
      * around mTransactionLock.
@@ -224,7 +224,7 @@ public class BDBObjectServer extends BaseObjectServer
     
     
     /**
-     * Builds a BDBJEKeyCreator for the index.
+     * Builds a BDBJEKeyCreator for the index and adds it to the map of key creators.
      *
      * @param schema
      * @param classSchema
@@ -238,6 +238,8 @@ public class BDBObjectServer extends BaseObjectServer
         Set<Integer> cidxs = new HashSet<Integer>();
         cidxs.add( classSchema.getClassIndex() );
         
+        // Note: This only detects sub-classes available at the time the index is created. We also have to
+        // actively monitor schema changes for sub-class additions and add their cidxs to the key creator.
         Schema schema = classSchema.getSchema();
         for (ClassVersionSchema versionSchema : schema.getPersistableSubclasses(classSchema.getClassName())) {
             cidxs.add( versionSchema.getClassSchema().getClassIndex() );
@@ -371,12 +373,29 @@ public class BDBObjectServer extends BaseObjectServer
         // The index's key is a serialized GenericKey and value is an OID.
         try {
             SecondaryDatabase indexDB = bdbEnvironment.openSecondaryDatabase(null, indexDBName, bdbDatabase, indexConfig); 
-            bdbIndexes.add(indexDB);
+            addIndexToOpenMap(aClassSchema.getClassIndex(), indexDB);
         }
         catch (DatabaseException e) {
             throw new ODMGException("Error creating index '" + anIndexSchema.getName() + "' on class " +
                 aClassSchema.getClassName(), e);
         }
+	}
+	
+	/**
+	 * Adds an index to the map of open indexes.
+	 *
+	 * @param classIndex
+	 * @param indexDB
+	 */
+	private void addIndexToOpenMap(int classIndex, SecondaryDatabase indexDB)
+	{
+	    List<SecondaryDatabase> indexDBs = bdbIndexes.get(classIndex);
+	    if (indexDBs == null) {
+	        indexDBs = new ArrayList<SecondaryDatabase>();
+	        bdbIndexes.put(classIndex, indexDBs);
+	    }
+	    
+	    indexDBs.add(indexDB);
 	}
 	
 	/**
@@ -468,8 +487,10 @@ public class BDBObjectServer extends BaseObjectServer
             }
             
             // Close secondary databases - a.k.a. Indexes
-            for (SecondaryDatabase indexDB : bdbIndexes) {
-                indexDB.close();
+            for (List<SecondaryDatabase> indexDBs : bdbIndexes.values()) {
+                for (SecondaryDatabase indexDB : indexDBs) {
+                    indexDB.close();
+                }
             }
             
             if (oidSequence != null) {
@@ -608,7 +629,7 @@ public class BDBObjectServer extends BaseObjectServer
                     indexConfig.setKeyCreator( createKeyCreator(classSchema, indexSchema) );
     
                     SecondaryDatabase indexDB = bdbEnvironment.openSecondaryDatabase(null, indexDBName, bdbDatabase, indexConfig); 
-                    bdbIndexes.add(indexDB);
+                    addIndexToOpenMap(classSchema.getClassIndex(), indexDB);
                 }
             }
         }

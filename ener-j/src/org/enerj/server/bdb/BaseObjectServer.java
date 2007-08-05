@@ -302,16 +302,17 @@ abstract public class BaseObjectServer implements ObjectServer
                     schemaSession.beginTransaction();
                     Schema schema = (Schema)schemaSession.getObjectForOID(SCHEMA_OID);
     
-                    ClassSchema logicalClass = schema.findClassSchema(aClassName);
-                    if (logicalClass == null) {
-                        logicalClass = new ClassSchema(schema, aClassName, "");
-                        schema.addClassSchema(logicalClass);
+                    ClassSchema classSchema = schema.findClassSchema(aClassName);
+                    if (classSchema == null) {
+                        classSchema = new ClassSchema(schema, aClassName, "");
+                        schema.addClassSchema(classSchema);
+                        updateIndexes(classSchema);
                     }
                     
                     ClassVersionSchema classVersion = 
-                        new ClassVersionSchema(logicalClass, aCID, someSuperTypeNames, anOriginalByteCodeDef,
+                        new ClassVersionSchema(classSchema, aCID, someSuperTypeNames, anOriginalByteCodeDef,
                                     null, somePersistentFieldNames, someTransientFieldNames);
-                    logicalClass.addVersion(classVersion);
+                    classSchema.addVersion(classVersion);
                     
                     schemaSession.flushModifiedObjects();
                     schemaSession.commitTransaction();
