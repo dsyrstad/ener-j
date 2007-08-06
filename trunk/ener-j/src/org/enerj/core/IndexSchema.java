@@ -39,7 +39,6 @@ public class IndexSchema implements Cloneable
     private int mType;
     private String mName;
     private String[] mProperties;
-    private boolean mIsAscending;
     private boolean mAllowNullKeys;
     private boolean mAllowDuplicateKeys;
     /** The Key Comparator class name, if any. */
@@ -58,7 +57,6 @@ public class IndexSchema implements Cloneable
         mType = anIndexAnnotation.type().ordinal(); // Store ordinal Because it's persistent TODO handle enums
         mName = anIndexAnnotation.name();
         mProperties = anIndexAnnotation.properties();
-        mIsAscending = anIndexAnnotation.ascending();
         mAllowNullKeys = anIndexAnnotation.allowNullKeys();
         mAllowDuplicateKeys = anIndexAnnotation.allowDuplicateKeys();
         mComparatorClassName =  anIndexAnnotation.comparator();
@@ -121,16 +119,6 @@ public class IndexSchema implements Cloneable
     public Date getCreateDate()
     {
         return mCreateDate;
-    }
-
-    /**
-     * Answers whether this index is ascending. Only meaningful if this is an ordered index type. 
-     *
-     * @return true if the index is ordered ascending, else false.
-     */
-    public boolean isAscending()
-    {
-        return mIsAscending;
     }
 
     /**

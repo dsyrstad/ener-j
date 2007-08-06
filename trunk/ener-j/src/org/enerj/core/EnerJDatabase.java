@@ -734,7 +734,13 @@ public class EnerJDatabase implements Database, Persister
         }
         
         IndexSchema indexSchema = new IndexSchema(anIndexAnn, aPropertyName);
-        mObjectServerSession.addIndex(aClassName, indexSchema);
+        try {
+            mObjectServerSession.addIndex(aClassName, indexSchema);
+        }
+        catch (IndexAlreadyExistsException e) {
+            // Ignore - we already have it
+            return;
+        }
     }
 
     /**
