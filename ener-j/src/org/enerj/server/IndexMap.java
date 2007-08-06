@@ -106,8 +106,7 @@ class IndexMap
             }
             
             // TODO The node size should be tunable.
-            map = new PersistentBxTree(1000, comparator, 
-                            anIndexSchema.allowsDuplicateKeys(), false, anIndexSchema.isAscending());
+            map = new PersistentBxTree(1000, comparator, anIndexSchema.allowsDuplicateKeys(), false, true);
         }
         else {
             map = new LargePersistentHashMap(LargePersistentHashMap.DEFAULT_NODE_SIZE, 

@@ -89,7 +89,6 @@ public class CartesianProductCollection extends BaseSelectCollection
     private final class ProductIterator implements Iterator
     {
         private Iterator mLeftIterator;
-        private Object mCurrentLeftObject;
         private Iterator mRightIterator;
         private boolean mRightIsEmpty;
 
@@ -103,7 +102,7 @@ public class CartesianProductCollection extends BaseSelectCollection
             
             // Prime first left object.
             if (mLeftIterator.hasNext()) {
-                mCurrentLeftObject = mLeftIterator.next();
+                mLeftIterator.next();
             }
         }
 
@@ -114,8 +113,8 @@ public class CartesianProductCollection extends BaseSelectCollection
                 throw new NoSuchElementException("End of iterator reached");
             }
             
-            Object rightObject = mRightIterator.next();
-            //Object[] value = new Object[] { mCurrentLeftObject, rightObject };
+            mRightIterator.next();
+            
             // It's not necessary to return anything. TrackedValueFunctor takes care of tracking the
             // value for each iterator. Projection will take care of only projecting the
             // values the match the where clause.
@@ -124,7 +123,7 @@ public class CartesianProductCollection extends BaseSelectCollection
             // Prime next left object if right is now empty.
             if (!mRightIterator.hasNext() && mLeftIterator.hasNext()) {
                 // Read another left object and re-init right iterator.
-                mCurrentLeftObject = mLeftIterator.next();
+                mLeftIterator.next();
                 mRightIterator = mRightCollection.iterator();
             }
 

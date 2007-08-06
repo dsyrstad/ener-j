@@ -49,8 +49,6 @@ public @interface Index {
     String name() default ""; // Empty string means generate name.
     /** The property names that are indexed. Empty for FIELD and METHOD level annotations. */
     String[] properties() default { };
-    /** True if ascending order (default), false if descending. Only applies to ordered indexes. */
-    boolean ascending() default true;
     /** True if null keys are allowed. */ 
     boolean allowNullKeys() default true;
     /** True if duplicate keys are allowed. */

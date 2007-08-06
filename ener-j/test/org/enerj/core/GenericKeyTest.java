@@ -74,8 +74,8 @@ public class GenericKeyTest extends TestCase
     {
         Comparable key1 = GenericKey.createKey(mIndexSchemaEmplNum, mEmployee1);
         Comparable key2 = GenericKey.createKey(mIndexSchemaEmplNum, mEmployee2);
-        assertFalse( key1 instanceof Comparator );
-        assertFalse( key2 instanceof Comparator );
+        assertTrue( key1 instanceof Comparator );
+        assertTrue( key2 instanceof Comparator );
 
         Comparator key3 = (Comparator)GenericKey.createKey(mIndexSchemaComposite, mEmployee1);
         Comparator key4 = (Comparator)GenericKey.createKey(mIndexSchemaComposite, mEmployee2);
