@@ -145,16 +145,27 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
         Comparator comparator = NullComparator.COMPARABLE_INSTANCE_NULLS_HIGH;
         Object[] components1 = anObject1.getComponents();
         Object[] components2 = anObject2.getComponents();
-        assert  components1.length == components2.length;
-        
-        for (int i = 0; i < components1.length; i++) {
-            int result = comparator.compare(components1[i], components2[i]);
+
+        // The lengths of the components arrays may be different if a partial key search is being done. 
+        for (int i = 0; i < components1.length && i < components2.length; i++) {
+            Object o1 = components1[i];
+            Object o2 = components2[i];
+            Class o1Class = o1.getClass();
+            Class o2Class = o2.getClass();
+            if (o1 != null && o2 != null && 
+                !o1Class.isAssignableFrom(o2Class) &&
+                !o2Class.isAssignableFrom(o1Class)) {
+                // Must perform type conversion. Must first determine the type promotion.
+            }
+            
+            int result = comparator.compare(o1, o2);
             if (result != 0) {
                 return result;
             }
         }
-
-        return 0;
+        
+        // Treat different lengths as one key less than the other.
+        return components1.length - components2.length;
     }
 
     /** 
