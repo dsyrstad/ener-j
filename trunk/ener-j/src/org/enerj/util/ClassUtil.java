@@ -217,7 +217,7 @@ public class ClassUtil
 
 
     /**
-     * Maps the given class from one of the primitve class types to one of the wrapper types:  
+     * Maps the given class from one of the primitive class types to one of the wrapper types:  
      * Boolean, Integer, Double, Byte, Long, Float, Short, or Character.
      *
      * @param aClass the class to be mapped.
