@@ -155,7 +155,7 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
             if (o1 != null && o2 != null && 
                 !o1Class.isAssignableFrom(o2Class) &&
                 !o2Class.isAssignableFrom(o1Class)) {
-                // Must perform type conversion. Must first determine the type promotion.
+                // Must perform type conversion. Must first determine which object to convert.
             }
             
             int result = comparator.compare(o1, o2);
