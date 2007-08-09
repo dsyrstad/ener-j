@@ -111,8 +111,8 @@ public class CollectionExprAST extends BaseAST
         }
 
         if (List.class.isAssignableFrom(exprType)) {
-            // Use generic parameter type, if available.
-            return TypeUtil.getCollectionGenericType(exprType);
+            // Component type unknown.
+            return Object.class;
         }
 
         throw new QueryException("Parameter to " + mOp.getName() + "() must be a List or an array."); 
