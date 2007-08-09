@@ -18,34 +18,30 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
-//Ener-J
-//Copyright 2001-2005 Visual Systems Corporation
-//$Header: /cvsroot/ener-j/ener-j/src/org/enerj/util/TypeUtil.java,v 1.3 2005/08/12 02:56:45 dsyrstad Exp $
 
 package org.enerj.util;
 
-import java.io.File;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.URL;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
-import org.enerj.apache.commons.beanutils.Converter;
 import org.enerj.jga.fn.UnaryFunctor;
 import org.enerj.jga.fn.arithmetic.ValueOf;
 
 /**
  * Static utilities dealing with scalar types.
  * 
- * @version $Id: TypeUtil.java,v 1.3 2005/08/12 02:56:45 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
 public class TypeUtil
@@ -54,7 +50,7 @@ public class TypeUtil
     /** Key is a Number Class, Value is an Integer indicating rank. */
     private static final Map<Class<?>, Integer> NUMBER_RANK_MAP = new HashMap<Class<?>, Integer>();
     private static final Map<Class<?>, UnaryFunctor> NUMBER_PROMOTION_MAP = new HashMap<Class<?>, UnaryFunctor>();
-    private static final Map<ClassPair, Converter> CONVERTER_MAP = new HashMap<ClassPair, Converter>();  
+    private static final Map<ClassPair, Converter> CONVERTER_MAP = new HashMap<ClassPair, Converter>(256);  
     
     /**
      * Gets the ordinal type rank of the given Number Class. The rank can be used to determine type promotion.
@@ -147,28 +143,6 @@ public class TypeUtil
         return Map.class.isAssignableFrom(aClass); 
     }
     
-
-    /**
-     * Gets the generic parameterized type for the specified Collection type.
-     * 
-     * @param aCollectionClass a class derived from Collection.
-     * 
-     * @return the generic parameterized type, or Object.class if there is no parameterized type.
-     */
-    public static Class getCollectionGenericType(Class aCollectionClass)
-    {
-        // Use generic parameter type, if available.
-        TypeVariable[] elementTypes = aCollectionClass.getTypeParameters();
-        if (elementTypes.length == 1 && elementTypes[0] instanceof ParameterizedType) {
-            Type type = ((ParameterizedType)elementTypes[0]).getRawType();
-            if (type instanceof Class) {
-                return (Class)type;
-            }
-        }
-        
-        return Object.class;
-    }
-    
     /**
      * Convert one or both of the two objects in the given array so that the two objects are Comparable.
      * The objects are converted in place in the array (i.e., the return value is the objects in 
@@ -182,48 +156,52 @@ public class TypeUtil
         
         Object o1 = objs[0];
         Object o2 = objs[1];
-        Class o1Class = o1.getClass();
-        Class o2Class = o2.getClass();
-        if (o1Class == o2Class) {
-            return; // Short-cut
-        }
-        
-        boolean reversed = false;
 
-        // Special case for numeric -> numeric conversions. Saves a lot of mapping.
-        if (isNumericType(o1Class) && isNumericType(o2Class)) {
-            int rank1 = getRank(o1Class);
-            int rank2 = getRank(o2Class);
-            if (rank1 > rank2) {
-                // Swap objects to use same logic.
-                Object tmp = o1;
-                o1 = o2;
-                o2 = tmp;
-                Class tmpClass = o1Class;
-                o1Class = o2Class;
-                o2Class = tmpClass;
-                int tmpRank = rank1;
-                rank1 = rank2;
-                rank2 = tmpRank;
-                reversed = true;
+        // Do at most 2 successive conversions. Some conversions require intermediate steps.
+        for (int i = 0; i < 2; i++) {
+            Class o1Class = o1.getClass();
+            Class o2Class = o2.getClass();
+            if (o1Class == o2Class ||
+                o1Class.isAssignableFrom(o2Class) ||
+                o2Class.isAssignableFrom(o1Class)) {
+                break; // Done!
             }
-            
-            o1 = getNumberPromotionFunctor(o2Class).fn(o1);
+    
+            // Special case for numeric -> numeric conversions. Saves a lot of mapping.
+            if (isNumericType(o1Class) && isNumericType(o2Class)) {
+                int rank1 = getRank(o1Class);
+                int rank2 = getRank(o2Class);
+                if (rank1 > rank2) {
+                    o2 = getNumberPromotionFunctor(o1Class).fn(o2);
+                }
+                else {
+                    o1 = getNumberPromotionFunctor(o2Class).fn(o1);
+                }
+            }
+            else {
+                // For purposes of lookup, treat Calendar sub-types as Calendar
+                Class o1LookupClass = o1 instanceof Calendar ? Calendar.class : o1Class;
+                Class o2LookupClass = o2 instanceof Calendar ? Calendar.class : o2Class;
+
+                Converter converter = CONVERTER_MAP.get( new ClassPair(o1LookupClass, o2LookupClass) );
+                if (converter == null) {
+                    // Worse case: Both strings if not in map. Then we're done.
+                    o1 = o1.toString();
+                    o2 = o2.toString();
+                    break;
+                }
+                
+                if (converter.isObject1Conversion) {
+                    o1 = converter.convert(o2Class, o1);
+                }
+                else {
+                    o2 = converter.convert(o1Class, o2);
+                }
+            }
         }
-        else {
         
-            // Worse case: Both strings if not in map.
-        }
-        
-        
-        if (reversed) {
-            objs[0] = o2;
-            objs[1] = o1;
-        }
-        else {
-            objs[0] = o1;
-            objs[1] = o2;
-        }
+        objs[0] = o1;
+        objs[1] = o2;
     }
     
     
@@ -255,15 +233,266 @@ public class TypeUtil
             return class1.hashCode() * 31 ^ class2.hashCode();
         }
     }
+    
+    abstract private static class Converter
+    {
+        private boolean isObject1Conversion;
 
+        Converter()
+        {
+            this(true);
+        }
+
+        Converter(boolean isObject1Conversion)
+        {
+            this.isObject1Conversion = isObject1Conversion;
+        }
+        
+        /**
+         * Convert value into an object of type.
+         *
+         * @param type desired result type.
+         * @param value the value to convert. This must never be null.
+         */
+        abstract Object convert(Class type, Object value);
+
+        /** @return true if conversion is for the first of two objects. */
+        boolean isObject1Conversion()
+        {
+            return isObject1Conversion;
+        }
+
+        void setObject1Conversion(boolean isObject1Conversion)
+        {
+            this.isObject1Conversion = isObject1Conversion;
+        }
+    }
+    
+    private static final class StringToBooleanConverter extends Converter
+    {
+        StringToBooleanConverter() { }
+        
+        StringToBooleanConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            String str = value.toString();
+            if (str.equalsIgnoreCase("true") || 
+                str.equalsIgnoreCase("yes") ||
+                str.equalsIgnoreCase("t") ||
+                str.equals("1")) {
+                return Boolean.TRUE;
+            }
+            else {
+                return Boolean.FALSE;
+            }
+        }
+    }
+
+    private static final class BooleanToIntConverter extends Converter
+    {
+        BooleanToIntConverter() { }
+        
+        BooleanToIntConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            return ((Boolean)value) ? (Integer)1 : (Integer)0;
+        }
+    }
+
+    private static final class CharToIntConverter extends Converter
+    {
+        CharToIntConverter() { }
+        
+        CharToIntConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            return (Integer)(int)((Character)value).charValue();
+        }
+    }
+
+    private static final class NumberToLongConverter extends Converter
+    {
+        NumberToLongConverter() { }
+        
+        NumberToLongConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            return ((Number)value).longValue();
+        }
+    }
+
+    private static final class StringToDoubleConverter extends Converter
+    {
+        StringToDoubleConverter() { }
+        
+        StringToDoubleConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            return Double.valueOf(value.toString());
+        }
+    }
+
+    private static final class StringToBigDecimalConverter extends Converter
+    {
+        StringToBigDecimalConverter() { }
+        
+        StringToBigDecimalConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            return new BigDecimal(value.toString());
+        }
+    }
+
+    private static final class NumberToUtilDateConverter extends Converter
+    {
+        NumberToUtilDateConverter() { }
+        
+        NumberToUtilDateConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            return new java.util.Date( ((Number)value).longValue() );
+        }
+    }
+
+    private static final class NumberToSqlDateConverter extends Converter
+    {
+        NumberToSqlDateConverter() { }
+        
+        NumberToSqlDateConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            return new java.sql.Date( ((Number)value).longValue() );
+        }
+    }
+
+    private static final class NumberToTimeConverter extends Converter
+    {
+        NumberToTimeConverter() { }
+        
+        NumberToTimeConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            return new java.sql.Time( ((Number)value).longValue() );
+        }
+    }
+
+    private static final class NumberToTimestampConverter extends Converter
+    {
+        NumberToTimestampConverter() { }
+        
+        NumberToTimestampConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            return new java.sql.Timestamp( ((Number)value).longValue() );
+        }
+    }
+
+    private static final class NumberToCalendarConverter extends Converter
+    {
+        NumberToCalendarConverter() { }
+        
+        NumberToCalendarConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            if (type != GregorianCalendar.class) {
+                throw new IllegalArgumentException("Cannot convert to Calendar of type " + type + " from Long");
+            }
+            
+            Calendar cal = new GregorianCalendar();
+            cal.setTimeInMillis(((Number)value).longValue());
+            return cal;
+        }
+    }
+
+    private static final class DateToTimestampConverter extends Converter
+    {
+        DateToTimestampConverter() { }
+        
+        DateToTimestampConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            return new java.sql.Timestamp( ((java.util.Date)value).getTime() );
+        }
+    }
+
+    private static final class DateToCalendarConverter extends Converter
+    {
+        DateToCalendarConverter() { }
+        
+        DateToCalendarConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            if (type != GregorianCalendar.class) {
+                throw new IllegalArgumentException("Cannot convert to Calendar of type " + type + " from Long");
+            }
+            
+            Calendar cal = new GregorianCalendar();
+            cal.setTimeInMillis(((Number)value).longValue());
+            return cal;
+        }
+    }
+
+    
     static {
         NUMBER_RANK_MAP.put(Byte.class,       new Integer(2) ); 
         NUMBER_RANK_MAP.put(Short.class,      new Integer(3) );
         NUMBER_RANK_MAP.put(Integer.class,    new Integer(4) );
         NUMBER_RANK_MAP.put(Long.class,       new Integer(5) );
-        NUMBER_RANK_MAP.put(Float.class,      new Integer(6) );
-        NUMBER_RANK_MAP.put(Double.class,     new Integer(7) );
-        NUMBER_RANK_MAP.put(BigInteger.class, new Integer(8) );
+        NUMBER_RANK_MAP.put(BigInteger.class, new Integer(6) );
+        NUMBER_RANK_MAP.put(Float.class,      new Integer(7) );
+        NUMBER_RANK_MAP.put(Double.class,     new Integer(8) );
         NUMBER_RANK_MAP.put(BigDecimal.class, new Integer(9) );
         NUMBER_RANK_MAP.put(Number.class,     new Integer(10) );
         
@@ -271,180 +500,75 @@ public class TypeUtil
         NUMBER_PROMOTION_MAP.put(Short.class,      new ValueOf(Short.class) );
         NUMBER_PROMOTION_MAP.put(Integer.class,    new ValueOf(Integer.class) );
         NUMBER_PROMOTION_MAP.put(Long.class,       new ValueOf(Long.class) );
+        NUMBER_PROMOTION_MAP.put(BigInteger.class, new ValueOf(BigInteger.class) );
         NUMBER_PROMOTION_MAP.put(Float.class,      new ValueOf(Float.class) );
         NUMBER_PROMOTION_MAP.put(Double.class,     new ValueOf(Double.class) );
-        NUMBER_PROMOTION_MAP.put(BigInteger.class, new ValueOf(BigInteger.class) );
         NUMBER_PROMOTION_MAP.put(BigDecimal.class, new ValueOf(BigDecimal.class) );
         
         // Boolean  Character   Byte    Short   Integer Long    Float   Double  BigInteger  BigDecimal  java.util.Date  java.sql.Date   Time    Timestamp   Calendar    File    URL String
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, Character.class), O2StringToBooleanConverter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, Byte.class), BooleanToNumberConverter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, Short.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, Integer.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, Long.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, Float.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, Double.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, BigInteger.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, BigDecimal.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, java.util.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, java.sql.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, Time.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Boolean.class, String.class), Converter.INSTANCE);
+        // If Mapping is Number -> Number or mapping would be converting both to strings, it is not in this map.
+        // Some conversions convert to an intermediate type which must be passed thru the conversion again.
+        CONVERTER_MAP.put(new ClassPair(Boolean.class, Character.class), new StringToBooleanConverter(false));
+        CONVERTER_MAP.put(new ClassPair(Boolean.class, Byte.class), new BooleanToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Boolean.class, Short.class), new BooleanToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Boolean.class, Integer.class), new BooleanToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Boolean.class, Long.class), new BooleanToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Boolean.class, Float.class), new BooleanToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Boolean.class, Double.class), new BooleanToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Boolean.class, BigInteger.class), new BooleanToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Boolean.class, BigDecimal.class), new BooleanToIntConverter(true));
 
-        CONVERTER_MAP.put(new ClassPair(Character.class, Byte.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, Short.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, Integer.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, Long.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, Float.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, Double.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, BigInteger.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, BigDecimal.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, java.util.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, java.sql.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, Time.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Character.class, String.class), Converter.INSTANCE);
+        CONVERTER_MAP.put(new ClassPair(Character.class, Byte.class), new CharToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Character.class, Short.class), new CharToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Character.class, Integer.class), new CharToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Character.class, Long.class), new CharToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Character.class, Float.class), new CharToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Character.class, Double.class), new CharToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Character.class, BigInteger.class), new CharToIntConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Character.class, BigDecimal.class), new CharToIntConverter(true));
 
-        CONVERTER_MAP.put(new ClassPair(Byte.class, Short.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, Integer.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, Long.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, Float.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, Double.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, BigInteger.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, BigDecimal.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, java.util.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, java.sql.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, Time.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Byte.class, String.class), Converter.INSTANCE);
+        Class[] numberTypes = new Class[] { Byte.class, Short.class, Integer.class, Long.class,
+            Float.class, Double.class, BigInteger.class, BigDecimal.class
+        };
+        
+        for (Class numberType : numberTypes) {
+            CONVERTER_MAP.put(new ClassPair(numberType, java.util.Date.class), new NumberToUtilDateConverter(true));
+            CONVERTER_MAP.put(new ClassPair(numberType, java.sql.Date.class), new NumberToSqlDateConverter(true));
+            CONVERTER_MAP.put(new ClassPair(numberType, Time.class), new NumberToTimeConverter(true));
+            CONVERTER_MAP.put(new ClassPair(numberType, Timestamp.class), new NumberToTimestampConverter(true));
+            CONVERTER_MAP.put(new ClassPair(numberType, Calendar.class), new NumberToCalendarConverter(true));
+            CONVERTER_MAP.put(new ClassPair(numberType, String.class), new StringToDoubleConverter(false));
+        }
 
-        CONVERTER_MAP.put(new ClassPair(Short.class, Integer.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, Long.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, Float.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, Double.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, BigInteger.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, BigDecimal.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, java.util.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, java.sql.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, Time.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Short.class, String.class), Converter.INSTANCE);
+        CONVERTER_MAP.put(new ClassPair(BigDecimal.class, String.class), new StringToBigDecimalConverter(false));
 
-        CONVERTER_MAP.put(new ClassPair(Integer.class, Long.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Integer.class, Float.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Integer.class, Double.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Integer.class, BigInteger.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Integer.class, BigDecimal.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Integer.class, java.util.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Integer.class, java.sql.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Integer.class, Time.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Integer.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Integer.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Integer.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Integer.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Integer.class, String.class), Converter.INSTANCE);
+        // java.util.Date/java.sql.Date/Time are already comparable.
+        CONVERTER_MAP.put(new ClassPair(java.util.Date.class, Timestamp.class), new DateToTimestampConverter(true));
+        CONVERTER_MAP.put(new ClassPair(java.util.Date.class, Calendar.class), new DateToCalendarConverter(true));
 
-        CONVERTER_MAP.put(new ClassPair(Long.class, Float.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Long.class, Double.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Long.class, BigLong.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Long.class, BigDecimal.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Long.class, java.util.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Long.class, java.sql.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Long.class, Time.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Long.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Long.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Long.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Long.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Long.class, String.class), Converter.INSTANCE);
+        CONVERTER_MAP.put(new ClassPair(java.sql.Date.class, Timestamp.class), new DateToTimestampConverter(true));
+        CONVERTER_MAP.put(new ClassPair(java.sql.Date.class, Calendar.class), new DateToCalendarConverter(true));
 
-        CONVERTER_MAP.put(new ClassPair(Float.class, Double.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Float.class, BigInteger.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Float.class, BigDecimal.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Float.class, java.util.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Float.class, java.sql.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Float.class, Time.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Float.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Float.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Float.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Float.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Float.class, String.class), Converter.INSTANCE);
+        CONVERTER_MAP.put(new ClassPair(Time.class, Timestamp.class), new DateToTimestampConverter(true));
+        CONVERTER_MAP.put(new ClassPair(Time.class, Calendar.class), new DateToCalendarConverter(true));
 
-        CONVERTER_MAP.put(new ClassPair(Double.class, BigInteger.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Double.class, BigDecimal.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Double.class, java.util.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Double.class, java.sql.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Double.class, Time.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Double.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Double.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Double.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Double.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Double.class, String.class), Converter.INSTANCE);
-
-        CONVERTER_MAP.put(new ClassPair(BigInteger.class, BigDecimal.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigInteger.class, java.util.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigInteger.class, java.sql.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigInteger.class, Time.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigInteger.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigInteger.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigInteger.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigInteger.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigInteger.class, String.class), Converter.INSTANCE);
-
-        CONVERTER_MAP.put(new ClassPair(BigDecimal.class, java.util.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigDecimal.class, java.sql.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigDecimal.class, Time.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigDecimal.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigDecimal.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigDecimal.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigDecimal.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(BigDecimal.class, String.class), Converter.INSTANCE);
-
-        CONVERTER_MAP.put(new ClassPair(java.util.Date.class, java.sql.Date.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(java.util.Date.class, Time.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(java.util.Date.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(java.util.Date.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(java.util.Date.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(java.util.Date.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(java.util.Date.class, String.class), Converter.INSTANCE);
-
-        CONVERTER_MAP.put(new ClassPair(java.sql.Date.class, Time.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(java.sql.Date.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(java.sql.Date.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(java.sql.Date.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(java.sql.Date.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(java.sql.Date.class, String.class), Converter.INSTANCE);
-
-        CONVERTER_MAP.put(new ClassPair(Time.class, Timestamp.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Time.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Time.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Time.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Time.class, String.class), Converter.INSTANCE);
-
-        CONVERTER_MAP.put(new ClassPair(Timestamp.class, Calendar.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Timestamp.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Timestamp.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Timestamp.class, String.class), Converter.INSTANCE);
-
-        CONVERTER_MAP.put(new ClassPair(Calendar.class, File.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Calendar.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(Calendar.class, String.class), Converter.INSTANCE);
-
-        CONVERTER_MAP.put(new ClassPair(File.class, URL.class), Converter.INSTANCE);
-        CONVERTER_MAP.put(new ClassPair(File.class, String.class), Converter.INSTANCE);
-
-        CONVERTER_MAP.put(new ClassPair(URL.class, String.class), Converter.INSTANCE);
+        CONVERTER_MAP.put(new ClassPair(Timestamp.class, Calendar.class), new DateToCalendarConverter(true));
+        
+        // Create reverse mapping. We have to make a copy of the map entries because we'll be modifying the map.
+        Set<Map.Entry<ClassPair, Converter>> entries = new HashSet<Map.Entry<ClassPair,Converter>>(256);
+        entries.addAll(CONVERTER_MAP.entrySet());
+        for (Map.Entry<ClassPair, Converter> entry : entries) {
+            ClassPair currPair = entry.getKey();
+            Converter currConverter = entry.getValue();
+            try {
+                Converter newConverter = currConverter.getClass().newInstance();
+                // Reverse the sense of conversion.
+                newConverter.setObject1Conversion( !currConverter.isObject1Conversion );
+                CONVERTER_MAP.put(new ClassPair(currPair.class2, currPair.class1), newConverter);
+            }
+            catch (Exception e) {
+                throw new RuntimeException("Error initializing CONVERTER_MAP", e);
+            }
+        }
     }
 }

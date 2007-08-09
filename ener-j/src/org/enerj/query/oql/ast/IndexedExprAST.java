@@ -116,8 +116,8 @@ public class IndexedExprAST extends BaseAST
                 return List.class;
             }
             
-            // Use generic parameter type, if available.
-            return TypeUtil.getCollectionGenericType(exprType);
+            // Component type unknown.
+            return Object.class;
         }
         
         if (TypeUtil.isStringType(exprType)) {
