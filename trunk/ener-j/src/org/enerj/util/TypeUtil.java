@@ -28,6 +28,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 import org.enerj.jga.fn.UnaryFunctor;
 import org.enerj.jga.fn.arithmetic.ValueOf;
@@ -186,6 +188,14 @@ public class TypeUtil
                 Converter converter = CONVERTER_MAP.get( new ClassPair(o1LookupClass, o2LookupClass) );
                 if (converter == null) {
                     // Worse case: Both strings if not in map. Then we're done.
+                    if (o1 instanceof java.util.Date || o1 instanceof java.util.Calendar) {
+                        o1 = DateToStringConverter.INSTANCE.convert(o1Class, o1);
+                    }
+                    
+                    if (o2 instanceof java.util.Date || o2 instanceof java.util.Calendar) {
+                        o2 = DateToStringConverter.INSTANCE.convert(o2Class, o2);
+                    }
+
                     o1 = o1.toString();
                     o2 = o2.toString();
                     break;
@@ -283,6 +293,7 @@ public class TypeUtil
             if (str.equalsIgnoreCase("true") || 
                 str.equalsIgnoreCase("yes") ||
                 str.equalsIgnoreCase("t") ||
+                str.equalsIgnoreCase("y") ||
                 str.equals("1")) {
                 return Boolean.TRUE;
             }
@@ -443,6 +454,7 @@ public class TypeUtil
             }
             
             Calendar cal = new GregorianCalendar();
+            cal.setTimeZone( TimeZone.getTimeZone("GMT") );
             cal.setTimeInMillis(((Number)value).longValue());
             return cal;
         }
@@ -481,6 +493,35 @@ public class TypeUtil
             Calendar cal = new GregorianCalendar();
             cal.setTimeInMillis(((Number)value).longValue());
             return cal;
+        }
+    }
+
+    // Converts a Date or Calendar to a string. TZ is GMT, or that of the calendar.
+    private static final class DateToStringConverter extends Converter
+    {
+        static final DateToStringConverter INSTANCE = new DateToStringConverter(); 
+        DateToStringConverter() { }
+        
+        DateToStringConverter(boolean isObject1Conversion)
+        {
+            super(isObject1Conversion);
+        }
+        
+        Object convert(Class type, Object value)
+        {
+            TimeZone tz;
+            if (value instanceof Calendar) {
+                Calendar cal = (Calendar)value; 
+                value = cal.getTime();
+                tz = cal.getTimeZone();
+            }
+            else {
+                tz = TimeZone.getTimeZone("GMT");
+            }
+            
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            formatter.setTimeZone(tz);
+            return formatter.format((java.util.Date)value);
         }
     }
 
