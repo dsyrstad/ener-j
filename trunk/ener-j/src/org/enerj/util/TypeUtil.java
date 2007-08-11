@@ -164,8 +164,12 @@ public class TypeUtil
             Class o1Class = o1.getClass();
             Class o2Class = o2.getClass();
             if (o1Class == o2Class ||
-                o1Class.isAssignableFrom(o2Class) ||
-                o2Class.isAssignableFrom(o1Class)) {
+                 ((o1Class == java.util.Date.class || o1Class == java.sql.Date.class || o1Class == Time.class) &&
+                  (o2Class == java.util.Date.class || o2Class == java.sql.Date.class || o2Class == Time.class)) ||
+                 ((o1Class.isAssignableFrom(o2Class) ||
+                   o2Class.isAssignableFrom(o1Class)) && 
+                  o1Class != Timestamp.class &&
+                  o2Class != Timestamp.class)) {
                 break; // Done!
             }
     
@@ -487,11 +491,12 @@ public class TypeUtil
         Object convert(Class type, Object value)
         {
             if (type != GregorianCalendar.class) {
-                throw new IllegalArgumentException("Cannot convert to Calendar of type " + type + " from Long");
+                throw new IllegalArgumentException("Cannot convert to Calendar of type " + type + " from Date");
             }
             
             Calendar cal = new GregorianCalendar();
-            cal.setTimeInMillis(((Number)value).longValue());
+            cal.setTimeZone( TimeZone.getTimeZone("GMT") );
+            cal.setTimeInMillis(((java.util.Date)value).getTime());
             return cal;
         }
     }
