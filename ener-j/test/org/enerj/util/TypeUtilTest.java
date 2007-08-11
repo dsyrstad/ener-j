@@ -24,14 +24,12 @@ package org.enerj.util;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.URL;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.TimeZone;
 
 import junit.framework.TestCase;
@@ -44,8 +42,6 @@ import junit.framework.TestCase;
  */
 public class TypeUtilTest extends TestCase
 {
-
-    private static final String TEST_URL = "http://www.ener-j.org";
 
     /**
      * Construct a new TypeUtilTest.
@@ -182,8 +178,6 @@ public class TypeUtilTest extends TestCase
         Object[] objs = new Object[] { o1, o2 };
         TypeUtil.makeComparable(objs);
         
-        assertEquals("Types do not match. o1=" + objs[0] + ", o2=" + objs[1], objs[0].getClass(), objs[1].getClass());
-        
         assertEquals("Expected type does not match.", expectedO1.getClass(), objs[0].getClass()); 
         assertEquals("Expected type does not match.", expectedO2.getClass(), objs[1].getClass());
         
@@ -221,40 +215,6 @@ public class TypeUtilTest extends TestCase
      */
     public void testMakeComparable() throws Exception
     {
-        /*
-        String[] smallerValues = new String[] {
-            "Boolean.FALSE", "Character.valueOf('A')", "Byte.valueOf((byte)5)", "Short.valueOf((short)5)", "Integer.valueOf(5)",
-            "Long.valueOf(5)", "BigInteger.valueOf(5)", "Float.valueOf(5.0F)", "Double.valueOf(5.0)", "BigDecimal.valueOf(5.0)",
-            "new java.util.Date(5L)",  "new java.sql.Date(5L)", "new Time(5L)", "new Timestamp(5L)", "createCalendar(5L)", "new File(\"AAA\")", 
-            "new URL(\"AAA\")", "\"5\""
-        };
-
-        String[] largerValues = new String[] {
-            "Boolean.TRUE", "Character.valueOf('B')", "Byte.valueOf((byte)10)", "Short.valueOf((short)10)", "Integer.valueOf(10)",
-            "Long.valueOf(10)", "BigInteger.valueOf(10)", "Float.valueOf(10.0F)", "Double.valueOf(10.0)", "BigDecimal.valueOf(10.0)",
-            "new java.util.Date(10L)",  "new java.sql.Date(10L)", "new Time(10L)", "new Timestamp(10L)", "createCalendar(10L)", "new File(\"AAA\")", 
-            "new URL(\"AAA\")", "\"10\""
-        };
-
-        for (int i = 0; i < smallerValues.length; i++) {
-            String smallerValue = smallerValues[i];
-            for (int j = 0; j < largerValues.length; j++) {
-                String largerValue = largerValues[j];
-                String resultSmallerValue = largerValue;
-                String resultLargerValue = largerValue;
-                
-                if (j < i || (smallerValue.contains("Boolean") && largerValue.contains("Character")) ||
-                    ((smallerValue.contains("Byte") || smallerValue.contains("Short") || smallerValue.contains("Integer") || smallerValue.contains("Long") || smallerValue.contains("Float") || smallerValue.contains("Double") || smallerValue.contains("BigDecimal")) 
-                        && (largerValue.contains("Date") || largerValue.contains("Time") || largerValue.contains("Calendar")))
-                    ) {
-                    resultSmallerValue = smallerValue;
-                    resultLargerValue = smallerValue;
-                }
-                
-                System.out.println("checkMakeComparable(" + smallerValue + ", " + largerValue + ", " + resultSmallerValue + ", " + resultLargerValue + " );");
-            }
-        }*/
-        
         // Test all combinations of Numbers.
         checkMakeComparable(Byte.valueOf((byte)5), Byte.valueOf((byte)6), Byte.valueOf((byte)5), Byte.valueOf((byte)6), -1);
         checkMakeComparable(Byte.valueOf((byte)5), Short.valueOf((short)6), Short.valueOf((short)5), Short.valueOf((short)6), -1);
@@ -338,8 +298,8 @@ public class TypeUtilTest extends TestCase
         checkMakeComparable(Boolean.FALSE, new Timestamp(10L), "false", "1970-01-01 00:00:00.010", 1);
         checkMakeComparable(Boolean.FALSE, createCalendar(10L),  "false", "1970-01-01 00:00:00.010", 1);
         checkMakeComparable(Boolean.FALSE, new File("AAA"), "false", "AAA", 1);
-        checkMakeComparable(Boolean.FALSE, new URL(TEST_URL),  "false", TEST_URL, -1);
         checkMakeComparable(Boolean.FALSE, "string", "false", "string", -1);
+        
         checkMakeComparable(Character.valueOf('X'), Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, -1);
         checkMakeComparable(Character.valueOf('A'), Character.valueOf('B'), Character.valueOf('A'), Character.valueOf('B'), -1);
         checkMakeComparable(Character.valueOf('A'), Byte.valueOf((byte)10), Integer.valueOf(65), Integer.valueOf(10), 1);
@@ -356,8 +316,8 @@ public class TypeUtilTest extends TestCase
         checkMakeComparable(Character.valueOf('A'), new Timestamp(10L), "A", "1970-01-01 00:00:00.010", 1);
         checkMakeComparable(Character.valueOf('A'), createCalendar(10L), "A", "1970-01-01 00:00:00.010", 1);
         checkMakeComparable(Character.valueOf('A'), new File("AAA"), "A", "AAA", -1);
-        checkMakeComparable(Character.valueOf('A'), new URL(TEST_URL), "A", TEST_URL, -1);
         checkMakeComparable(Character.valueOf('A'), "string", "A", "string", -1);
+
         checkMakeComparable(Byte.valueOf((byte)5), Boolean.TRUE, Integer.valueOf(5), Integer.valueOf(1), 1);
         checkMakeComparable(Byte.valueOf((byte)5), Character.valueOf('B'), Integer.valueOf(5), Integer.valueOf(66), -1);
         checkMakeComparable(Byte.valueOf((byte)5), new java.util.Date(10L), new java.util.Date(5), new java.util.Date(10), -1);
@@ -366,221 +326,202 @@ public class TypeUtilTest extends TestCase
         checkMakeComparable(Byte.valueOf((byte)5), new Timestamp(10L), new Timestamp(5), new Timestamp(10), -1);
         checkMakeComparable(Byte.valueOf((byte)5), createCalendar(10L), createCalendar(5), createCalendar(10), -1);
         checkMakeComparable(Byte.valueOf((byte)5), new File("AAA"), "5", "AAA", -1);
-        checkMakeComparable(Byte.valueOf((byte)5), new URL(TEST_URL), "5", TEST_URL, -1);
-        checkMakeComparable(Byte.valueOf((byte)5), "10", "5", "10", -1);//
-        checkMakeComparable(Short.valueOf((short)5), Boolean.TRUE, Short.valueOf((short)5), Short.valueOf((short)5), -1);
-        checkMakeComparable(Short.valueOf((short)5), Character.valueOf('B'), Short.valueOf((short)5), Short.valueOf((short)5), -1);
-        checkMakeComparable(Short.valueOf((short)5), new java.util.Date(10L), Short.valueOf((short)5), Short.valueOf((short)5), -1);
-        checkMakeComparable(Short.valueOf((short)5), new java.sql.Date(10L), Short.valueOf((short)5), Short.valueOf((short)5), -1);
-        checkMakeComparable(Short.valueOf((short)5), new Time(10L), Short.valueOf((short)5), Short.valueOf((short)5), -1);
-        checkMakeComparable(Short.valueOf((short)5), new Timestamp(10L), Short.valueOf((short)5), Short.valueOf((short)5), -1);
-        checkMakeComparable(Short.valueOf((short)5), createCalendar(10L), Short.valueOf((short)5), Short.valueOf((short)5), -1);
-        checkMakeComparable(Short.valueOf((short)5), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(Short.valueOf((short)5), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(Short.valueOf((short)5), "10", "10", "10", -1);
-        checkMakeComparable(Integer.valueOf(5), Boolean.TRUE, Integer.valueOf(5), Integer.valueOf(5), -1);
-        checkMakeComparable(Integer.valueOf(5), Character.valueOf('B'), Integer.valueOf(5), Integer.valueOf(5), -1);
-        checkMakeComparable(Integer.valueOf(5), new java.util.Date(10L), Integer.valueOf(5), Integer.valueOf(5), -1);
-        checkMakeComparable(Integer.valueOf(5), new java.sql.Date(10L), Integer.valueOf(5), Integer.valueOf(5), -1);
-        checkMakeComparable(Integer.valueOf(5), new Time(10L), Integer.valueOf(5), Integer.valueOf(5), -1);
-        checkMakeComparable(Integer.valueOf(5), new Timestamp(10L), Integer.valueOf(5), Integer.valueOf(5), -1);
-        checkMakeComparable(Integer.valueOf(5), createCalendar(10L), Integer.valueOf(5), Integer.valueOf(5), -1);
-        checkMakeComparable(Integer.valueOf(5), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(Integer.valueOf(5), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(Integer.valueOf(5), "10", "10", "10", -1);
-        checkMakeComparable(Long.valueOf(5), Boolean.TRUE, Long.valueOf(5), Long.valueOf(5), -1);
-        checkMakeComparable(Long.valueOf(5), Character.valueOf('B'), Long.valueOf(5), Long.valueOf(5), -1);
-        checkMakeComparable(Long.valueOf(5), new java.util.Date(10L), Long.valueOf(5), Long.valueOf(5), -1);
-        checkMakeComparable(Long.valueOf(5), new java.sql.Date(10L), Long.valueOf(5), Long.valueOf(5), -1);
-        checkMakeComparable(Long.valueOf(5), new Time(10L), Long.valueOf(5), Long.valueOf(5), -1);
-        checkMakeComparable(Long.valueOf(5), new Timestamp(10L), Long.valueOf(5), Long.valueOf(5), -1);
-        checkMakeComparable(Long.valueOf(5), createCalendar(10L), Long.valueOf(5), Long.valueOf(5), -1);
-        checkMakeComparable(Long.valueOf(5), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(Long.valueOf(5), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(Long.valueOf(5), "10", "10", "10", -1);
-        checkMakeComparable(BigInteger.valueOf(5), Boolean.TRUE, BigInteger.valueOf(5), BigInteger.valueOf(5), -1);
-        checkMakeComparable(BigInteger.valueOf(5), Character.valueOf('B'), BigInteger.valueOf(5), BigInteger.valueOf(5), -1);
-        checkMakeComparable(BigInteger.valueOf(5), new java.util.Date(10L), BigInteger.valueOf(5), BigInteger.valueOf(5), -1);
-        checkMakeComparable(BigInteger.valueOf(5), new java.sql.Date(10L), BigInteger.valueOf(5), BigInteger.valueOf(5), -1);
-        checkMakeComparable(BigInteger.valueOf(5), new Time(10L), BigInteger.valueOf(5), BigInteger.valueOf(5), -1);
-        checkMakeComparable(BigInteger.valueOf(5), new Timestamp(10L), BigInteger.valueOf(5), BigInteger.valueOf(5), -1);
-        checkMakeComparable(BigInteger.valueOf(5), createCalendar(10L), BigInteger.valueOf(5), BigInteger.valueOf(5), -1);
-        checkMakeComparable(BigInteger.valueOf(5), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(BigInteger.valueOf(5), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(BigInteger.valueOf(5), "10", "10", "10", -1);
-        checkMakeComparable(Float.valueOf(5.0F), Boolean.TRUE, Float.valueOf(5.0F), Float.valueOf(5.0F), -1);
-        checkMakeComparable(Float.valueOf(5.0F), Character.valueOf('B'), Float.valueOf(5.0F), Float.valueOf(5.0F), -1);
-        checkMakeComparable(Float.valueOf(5.0F), new java.util.Date(10L), Float.valueOf(5.0F), Float.valueOf(5.0F), -1);
-        checkMakeComparable(Float.valueOf(5.0F), new java.sql.Date(10L), Float.valueOf(5.0F), Float.valueOf(5.0F), -1);
-        checkMakeComparable(Float.valueOf(5.0F), new Time(10L), Float.valueOf(5.0F), Float.valueOf(5.0F), -1);
-        checkMakeComparable(Float.valueOf(5.0F), new Timestamp(10L), Float.valueOf(5.0F), Float.valueOf(5.0F), -1);
-        checkMakeComparable(Float.valueOf(5.0F), createCalendar(10L), Float.valueOf(5.0F), Float.valueOf(5.0F), -1);
-        checkMakeComparable(Float.valueOf(5.0F), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(Float.valueOf(5.0F), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(Float.valueOf(5.0F), "10", "10", "10", -1);
-        checkMakeComparable(Double.valueOf(5.0), Boolean.TRUE, Double.valueOf(5.0), Double.valueOf(5.0), -1);
-        checkMakeComparable(Double.valueOf(5.0), Character.valueOf('B'), Double.valueOf(5.0), Double.valueOf(5.0), -1);
-        checkMakeComparable(Double.valueOf(5.0), new java.util.Date(10L), Double.valueOf(5.0), Double.valueOf(5.0), -1);
-        checkMakeComparable(Double.valueOf(5.0), new java.sql.Date(10L), Double.valueOf(5.0), Double.valueOf(5.0), -1);
-        checkMakeComparable(Double.valueOf(5.0), new Time(10L), Double.valueOf(5.0), Double.valueOf(5.0), -1);
-        checkMakeComparable(Double.valueOf(5.0), new Timestamp(10L), Double.valueOf(5.0), Double.valueOf(5.0), -1);
-        checkMakeComparable(Double.valueOf(5.0), createCalendar(10L), Double.valueOf(5.0), Double.valueOf(5.0), -1);
-        checkMakeComparable(Double.valueOf(5.0), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(Double.valueOf(5.0), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(Double.valueOf(5.0), "10", "10", "10", -1);
-        checkMakeComparable(BigDecimal.valueOf(5.0), Boolean.TRUE, BigDecimal.valueOf(5.0), BigDecimal.valueOf(5.0), -1);
-        checkMakeComparable(BigDecimal.valueOf(5.0), Character.valueOf('B'), BigDecimal.valueOf(5.0), BigDecimal.valueOf(5.0), -1);
-        checkMakeComparable(BigDecimal.valueOf(5.0), new java.util.Date(10L), BigDecimal.valueOf(5.0), BigDecimal.valueOf(5.0), -1);
-        checkMakeComparable(BigDecimal.valueOf(5.0), new java.sql.Date(10L), BigDecimal.valueOf(5.0), BigDecimal.valueOf(5.0), -1);
-        checkMakeComparable(BigDecimal.valueOf(5.0), new Time(10L), BigDecimal.valueOf(5.0), BigDecimal.valueOf(5.0), -1);
-        checkMakeComparable(BigDecimal.valueOf(5.0), new Timestamp(10L), BigDecimal.valueOf(5.0), BigDecimal.valueOf(5.0), -1);
-        checkMakeComparable(BigDecimal.valueOf(5.0), createCalendar(10L), BigDecimal.valueOf(5.0), BigDecimal.valueOf(5.0), -1);
-        checkMakeComparable(BigDecimal.valueOf(5.0), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(BigDecimal.valueOf(5.0), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(BigDecimal.valueOf(5.0), "10", "10", "10", -1);
-        checkMakeComparable(new java.util.Date(5L), Boolean.TRUE, new java.util.Date(5L), new java.util.Date(5L), -1);
-        checkMakeComparable(new java.util.Date(5L), Character.valueOf('B'), new java.util.Date(5L), new java.util.Date(5L), -1);
-        checkMakeComparable(new java.util.Date(5L), Byte.valueOf((byte)10), new java.util.Date(5L), new java.util.Date(5L), -1);
-        checkMakeComparable(new java.util.Date(5L), Short.valueOf((short)10), new java.util.Date(5L), new java.util.Date(5L), -1);
-        checkMakeComparable(new java.util.Date(5L), Integer.valueOf(10), new java.util.Date(5L), new java.util.Date(5L), -1);
-        checkMakeComparable(new java.util.Date(5L), Long.valueOf(10), new java.util.Date(5L), new java.util.Date(5L), -1);
-        checkMakeComparable(new java.util.Date(5L), BigInteger.valueOf(10), new java.util.Date(5L), new java.util.Date(5L), -1);
-        checkMakeComparable(new java.util.Date(5L), Float.valueOf(10.0F), new java.util.Date(5L), new java.util.Date(5L), -1);
-        checkMakeComparable(new java.util.Date(5L), Double.valueOf(10.0), new java.util.Date(5L), new java.util.Date(5L), -1);
-        checkMakeComparable(new java.util.Date(5L), BigDecimal.valueOf(10.0), new java.util.Date(5L), new java.util.Date(5L), -1);
-        checkMakeComparable(new java.util.Date(5L), new java.util.Date(10L), new java.util.Date(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new java.util.Date(5L), new java.sql.Date(10L), new java.sql.Date(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new java.util.Date(5L), new Time(10L), new Time(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new java.util.Date(5L), new Timestamp(10L), new Timestamp(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new java.util.Date(5L), createCalendar(10L), createCalendar(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new java.util.Date(5L), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new java.util.Date(5L), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new java.util.Date(5L), "10", "10", "10", -1);
-        checkMakeComparable(new java.sql.Date(5L), Boolean.TRUE, new java.sql.Date(5L), new java.sql.Date(5L), -1);
-        checkMakeComparable(new java.sql.Date(5L), Character.valueOf('B'), new java.sql.Date(5L), new java.sql.Date(5L), -1);
-        checkMakeComparable(new java.sql.Date(5L), Byte.valueOf((byte)10), new java.sql.Date(5L), new java.sql.Date(5L), -1);
-        checkMakeComparable(new java.sql.Date(5L), Short.valueOf((short)10), new java.sql.Date(5L), new java.sql.Date(5L), -1);
-        checkMakeComparable(new java.sql.Date(5L), Integer.valueOf(10), new java.sql.Date(5L), new java.sql.Date(5L), -1);
-        checkMakeComparable(new java.sql.Date(5L), Long.valueOf(10), new java.sql.Date(5L), new java.sql.Date(5L), -1);
-        checkMakeComparable(new java.sql.Date(5L), BigInteger.valueOf(10), new java.sql.Date(5L), new java.sql.Date(5L), -1);
-        checkMakeComparable(new java.sql.Date(5L), Float.valueOf(10.0F), new java.sql.Date(5L), new java.sql.Date(5L), -1);
-        checkMakeComparable(new java.sql.Date(5L), Double.valueOf(10.0), new java.sql.Date(5L), new java.sql.Date(5L), -1);
-        checkMakeComparable(new java.sql.Date(5L), BigDecimal.valueOf(10.0), new java.sql.Date(5L), new java.sql.Date(5L), -1);
-        checkMakeComparable(new java.sql.Date(5L), new java.util.Date(10L), new java.sql.Date(5L), new java.sql.Date(5L), -1);
-        checkMakeComparable(new java.sql.Date(5L), new java.sql.Date(10L), new java.sql.Date(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new java.sql.Date(5L), new Time(10L), new Time(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new java.sql.Date(5L), new Timestamp(10L), new Timestamp(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new java.sql.Date(5L), createCalendar(10L), createCalendar(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new java.sql.Date(5L), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new java.sql.Date(5L), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new java.sql.Date(5L), "10", "10", "10", -1);
-        checkMakeComparable(new Time(5L), Boolean.TRUE, new Time(5L), new Time(5L), -1);
-        checkMakeComparable(new Time(5L), Character.valueOf('B'), new Time(5L), new Time(5L), -1);
-        checkMakeComparable(new Time(5L), Byte.valueOf((byte)10), new Time(5L), new Time(5L), -1);
-        checkMakeComparable(new Time(5L), Short.valueOf((short)10), new Time(5L), new Time(5L), -1);
-        checkMakeComparable(new Time(5L), Integer.valueOf(10), new Time(5L), new Time(5L), -1);
-        checkMakeComparable(new Time(5L), Long.valueOf(10), new Time(5L), new Time(5L), -1);
-        checkMakeComparable(new Time(5L), BigInteger.valueOf(10), new Time(5L), new Time(5L), -1);
-        checkMakeComparable(new Time(5L), Float.valueOf(10.0F), new Time(5L), new Time(5L), -1);
-        checkMakeComparable(new Time(5L), Double.valueOf(10.0), new Time(5L), new Time(5L), -1);
-        checkMakeComparable(new Time(5L), BigDecimal.valueOf(10.0), new Time(5L), new Time(5L), -1);
-        checkMakeComparable(new Time(5L), new java.util.Date(10L), new Time(5L), new Time(5L), -1);
-        checkMakeComparable(new Time(5L), new java.sql.Date(10L), new Time(5L), new Time(5L), -1);
-        checkMakeComparable(new Time(5L), new Time(10L), new Time(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new Time(5L), new Timestamp(10L), new Timestamp(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new Time(5L), createCalendar(10L), createCalendar(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new Time(5L), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new Time(5L), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new Time(5L), "10", "10", "10", -1);
-        checkMakeComparable(new Timestamp(5L), Boolean.TRUE, new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), Character.valueOf('B'), new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), Byte.valueOf((byte)10), new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), Short.valueOf((short)10), new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), Integer.valueOf(10), new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), Long.valueOf(10), new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), BigInteger.valueOf(10), new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), Float.valueOf(10.0F), new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), Double.valueOf(10.0), new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), BigDecimal.valueOf(10.0), new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), new java.util.Date(10L), new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), new java.sql.Date(10L), new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), new Time(10L), new Timestamp(5L), new Timestamp(5L), -1);
-        checkMakeComparable(new Timestamp(5L), new Timestamp(10L), new Timestamp(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new Timestamp(5L), createCalendar(10L), createCalendar(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(new Timestamp(5L), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new Timestamp(5L), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new Timestamp(5L), "10", "10", "10", -1);
-        checkMakeComparable(createCalendar(5L), Boolean.TRUE, createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), Character.valueOf('B'), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), Byte.valueOf((byte)10), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), Short.valueOf((short)10), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), Integer.valueOf(10), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), Long.valueOf(10), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), BigInteger.valueOf(10), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), Float.valueOf(10.0F), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), Double.valueOf(10.0), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), BigDecimal.valueOf(10.0), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), new java.util.Date(10L), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), new java.sql.Date(10L), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), new Time(10L), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), new Timestamp(10L), createCalendar(5L), createCalendar(5L), -1);
-        checkMakeComparable(createCalendar(5L), createCalendar(10L), createCalendar(10L), "1970-01-01 00:00:00.010", -1);
-        checkMakeComparable(createCalendar(5L), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(createCalendar(5L), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(createCalendar(5L), "10", "10", "10", -1);
-        checkMakeComparable(new File("AAA"), Boolean.TRUE, new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), Character.valueOf('B'), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), Byte.valueOf((byte)10), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), Short.valueOf((short)10), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), Integer.valueOf(10), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), Long.valueOf(10), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), BigInteger.valueOf(10), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), Float.valueOf(10.0F), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), Double.valueOf(10.0), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), BigDecimal.valueOf(10.0), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), new java.util.Date(10L), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), new java.sql.Date(10L), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), new Time(10L), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), new Timestamp(10L), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), createCalendar(10L), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), new File("AAA"), new File("AAA"), "AAA", -1);
-        checkMakeComparable(new File("AAA"), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new File("AAA"), "10", "10", "10", -1);
-        checkMakeComparable(new URL(TEST_URL), Boolean.TRUE, new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), Character.valueOf('B'), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), Byte.valueOf((byte)10), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), Short.valueOf((short)10), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), Integer.valueOf(10), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), Long.valueOf(10), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), BigInteger.valueOf(10), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), Float.valueOf(10.0F), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), Double.valueOf(10.0), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), BigDecimal.valueOf(10.0), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), new java.util.Date(10L), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), new java.sql.Date(10L), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), new Time(10L), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), new Timestamp(10L), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), createCalendar(10L), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), new File("AAA"), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), new URL(TEST_URL), new URL(TEST_URL), TEST_URL, -1);
-        checkMakeComparable(new URL(TEST_URL), "10", "10", "10", -1);
-        checkMakeComparable("5", Boolean.TRUE, "5", "5", -1);
-        checkMakeComparable("5", Character.valueOf('B'), "5", "5", -1);
-        checkMakeComparable("5", Byte.valueOf((byte)10), "5", "5", -1);
-        checkMakeComparable("5", Short.valueOf((short)10), "5", "5", -1);
-        checkMakeComparable("5", Integer.valueOf(10), "5", "5", -1);
-        checkMakeComparable("5", Long.valueOf(10), "5", "5", -1);
-        checkMakeComparable("5", BigInteger.valueOf(10), "5", "5", -1);
-        checkMakeComparable("5", Float.valueOf(10.0F), "5", "5", -1);
-        checkMakeComparable("5", Double.valueOf(10.0), "5", "5", -1);
-        checkMakeComparable("5", BigDecimal.valueOf(10.0), "5", "5", -1);
-        checkMakeComparable("5", new java.util.Date(10L), "5", "5", -1);
-        checkMakeComparable("5", new java.sql.Date(10L), "5", "5", -1);
-        checkMakeComparable("5", new Time(10L), "5", "5", -1);
-        checkMakeComparable("5", new Timestamp(10L), "5", "5", -1);
-        checkMakeComparable("5", createCalendar(10L), "5", "5", -1);
-        checkMakeComparable("5", new File("AAA"), "5", "5", -1);
-        checkMakeComparable("5", new URL(TEST_URL), "5", "5", -1);
-        checkMakeComparable("5", "10", "10", "10", -1);
+        checkMakeComparable(Byte.valueOf((byte)5), "10.1", Double.valueOf(5), Double.valueOf(10.1), -1);
+        
+        checkMakeComparable(Short.valueOf((short)5), Boolean.TRUE, Integer.valueOf(5), Integer.valueOf(1), 1);
+        checkMakeComparable(Short.valueOf((short)5), Character.valueOf('B'), Integer.valueOf(5), Integer.valueOf(66), -1);
+        checkMakeComparable(Short.valueOf((short)5), new java.util.Date(10L), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(Short.valueOf((short)5), new java.sql.Date(10L), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(Short.valueOf((short)5), new Time(10L), new Time(5), new Time(10), -1);
+        checkMakeComparable(Short.valueOf((short)5), new Timestamp(10L), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(Short.valueOf((short)5), createCalendar(10L), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(Short.valueOf((short)5), new File("AAA"), "5", "AAA", -1);
+        checkMakeComparable(Short.valueOf((short)5), "10.1", Double.valueOf(5), Double.valueOf(10.1), -1);
+        
+        checkMakeComparable(Integer.valueOf(5), Boolean.TRUE, Integer.valueOf(5), Integer.valueOf(1), 1);
+        checkMakeComparable(Integer.valueOf(5), Character.valueOf('B'), Integer.valueOf(5), Integer.valueOf(66), -1);
+        checkMakeComparable(Integer.valueOf(5), new java.util.Date(10L), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(Integer.valueOf(5), new java.sql.Date(10L), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(Integer.valueOf(5), new Time(10L), new Time(5), new Time(10), -1);
+        checkMakeComparable(Integer.valueOf(5), new Timestamp(10L), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(Integer.valueOf(5), createCalendar(10L), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(Integer.valueOf(5), new File("AAA"), "5", "AAA", -1);
+        checkMakeComparable(Integer.valueOf(5), "10.1", Double.valueOf(5), Double.valueOf(10.1), -1);
+        
+        checkMakeComparable(Long.valueOf(5), Boolean.TRUE, Long.valueOf(5), Long.valueOf(1), 1);
+        checkMakeComparable(Long.valueOf(5), Character.valueOf('B'), Long.valueOf(5), Long.valueOf(66), -1);
+        checkMakeComparable(Long.valueOf(5), new java.util.Date(10L), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(Long.valueOf(5), new java.sql.Date(10L), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(Long.valueOf(5), new Time(10L), new Time(5), new Time(10), -1);
+        checkMakeComparable(Long.valueOf(5), new Timestamp(10L), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(Long.valueOf(5), createCalendar(10L), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(Long.valueOf(5), new File("AAA"), "5", "AAA", -1);
+        checkMakeComparable(Long.valueOf(5), "10.1", Double.valueOf(5), Double.valueOf(10.1), -1);
+        
+        checkMakeComparable(BigInteger.valueOf(5), Boolean.TRUE, BigInteger.valueOf(5), BigInteger.valueOf(1), 1);
+        checkMakeComparable(BigInteger.valueOf(5), Character.valueOf('B'), BigInteger.valueOf(5), BigInteger.valueOf(66), -1);
+        checkMakeComparable(BigInteger.valueOf(5), new java.util.Date(10L), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(BigInteger.valueOf(5), new java.sql.Date(10L), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(BigInteger.valueOf(5), new Time(10L), new Time(5), new Time(10), -1);
+        checkMakeComparable(BigInteger.valueOf(5), new Timestamp(10L), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(BigInteger.valueOf(5), createCalendar(10L), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(BigInteger.valueOf(5), new File("AAA"), "5", "AAA", -1);
+        checkMakeComparable(BigInteger.valueOf(5), "10.1", Double.valueOf(5), Double.valueOf(10.1), -1);
+        
+        checkMakeComparable(Float.valueOf(5), Boolean.TRUE, Float.valueOf(5), Float.valueOf(1), 1);
+        checkMakeComparable(Float.valueOf(5), Character.valueOf('B'), Float.valueOf(5), Float.valueOf(66), -1);
+        checkMakeComparable(Float.valueOf(5), new java.util.Date(10L), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(Float.valueOf(5), new java.sql.Date(10L), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(Float.valueOf(5), new Time(10L), new Time(5), new Time(10), -1);
+        checkMakeComparable(Float.valueOf(5), new Timestamp(10L), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(Float.valueOf(5), createCalendar(10L), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(Float.valueOf(5), new File("AAA"), "5.0", "AAA", -1);
+        checkMakeComparable(Float.valueOf(5), "10.1", Double.valueOf(5), Double.valueOf(10.1), -1);
+        
+        checkMakeComparable(Double.valueOf(5), Boolean.TRUE, Double.valueOf(5), Double.valueOf(1), 1);
+        checkMakeComparable(Double.valueOf(5), Character.valueOf('B'), Double.valueOf(5), Double.valueOf(66), -1);
+        checkMakeComparable(Double.valueOf(5), new java.util.Date(10L), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(Double.valueOf(5), new java.sql.Date(10L), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(Double.valueOf(5), new Time(10L), new Time(5), new Time(10), -1);
+        checkMakeComparable(Double.valueOf(5), new Timestamp(10L), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(Double.valueOf(5), createCalendar(10L), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(Double.valueOf(5), new File("AAA"), "5.0", "AAA", -1);
+        checkMakeComparable(Double.valueOf(5), "10.1", Double.valueOf(5), Double.valueOf(10.1), -1);
+        
+        checkMakeComparable(BigDecimal.valueOf(5), Boolean.TRUE, BigDecimal.valueOf(5), BigDecimal.valueOf(1), 1);
+        checkMakeComparable(BigDecimal.valueOf(5), Character.valueOf('B'), BigDecimal.valueOf(5), BigDecimal.valueOf(66), -1);
+        checkMakeComparable(BigDecimal.valueOf(5), new java.util.Date(10L), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(BigDecimal.valueOf(5), new java.sql.Date(10L), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(BigDecimal.valueOf(5), new Time(10L), new Time(5), new Time(10), -1);
+        checkMakeComparable(BigDecimal.valueOf(5), new Timestamp(10L), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(BigDecimal.valueOf(5), createCalendar(10L), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(BigDecimal.valueOf(5), new File("AAA"), "5", "AAA", -1);
+        checkMakeComparable(BigDecimal.valueOf(5), "10.1", BigDecimal.valueOf(5), BigDecimal.valueOf(10.1), -1);
+        
+        checkMakeComparable(new java.util.Date(5L), Boolean.TRUE, "1970-01-01 00:00:00.005", "true", -1);
+        checkMakeComparable(new java.util.Date(5L), Character.valueOf('B'), "1970-01-01 00:00:00.005", "B", -1);
+        checkMakeComparable(new java.util.Date(5L), Byte.valueOf((byte)10), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(new java.util.Date(5L), Short.valueOf((short)10), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(new java.util.Date(5L), Integer.valueOf(10), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(new java.util.Date(5L), Long.valueOf(10), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(new java.util.Date(5L), BigInteger.valueOf(10), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(new java.util.Date(5L), Float.valueOf(10.1F), new java.util.Date(5), new java.util.Date(10), -1);
+        checkMakeComparable(new java.util.Date(5L), Double.valueOf(10.1), new java.util.Date(5L), new java.util.Date(10L), -1);
+        checkMakeComparable(new java.util.Date(5L), BigDecimal.valueOf(10.1), new java.util.Date(5L), new java.util.Date(10L), -1);
+        checkMakeComparable(new java.util.Date(5L), new java.util.Date(10L), new java.util.Date(5L), new java.util.Date(10L), -1);
+        checkMakeComparable(new java.util.Date(5L), new java.sql.Date(10L), new java.util.Date(5L), new java.sql.Date(10L), -1);
+        checkMakeComparable(new java.util.Date(5L), new Time(10L), new java.util.Date(5L), new Time(10L), -1);
+        checkMakeComparable(new java.util.Date(5L), new Timestamp(10L), new Timestamp(5L), new Timestamp(10L), -1);
+        checkMakeComparable(new java.util.Date(5L), createCalendar(10L), createCalendar(5L), createCalendar(10L), -1);
+        checkMakeComparable(new java.util.Date(5L), new File("AAA"), "1970-01-01 00:00:00.005", "AAA", -1);
+        checkMakeComparable(new java.util.Date(5L), "string", "1970-01-01 00:00:00.005", "string", -1);
+        
+        checkMakeComparable(new java.sql.Date(5L), Boolean.TRUE, "1970-01-01 00:00:00.005", "true", -1);
+        checkMakeComparable(new java.sql.Date(5L), Character.valueOf('B'), "1970-01-01 00:00:00.005", "B", -1);
+        checkMakeComparable(new java.sql.Date(5L), Byte.valueOf((byte)10), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(new java.sql.Date(5L), Short.valueOf((short)10), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(new java.sql.Date(5L), Integer.valueOf(10), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(new java.sql.Date(5L), Long.valueOf(10), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(new java.sql.Date(5L), BigInteger.valueOf(10), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(new java.sql.Date(5L), Float.valueOf(10.1F), new java.sql.Date(5), new java.sql.Date(10), -1);
+        checkMakeComparable(new java.sql.Date(5L), Double.valueOf(10.1), new java.sql.Date(5L), new java.sql.Date(10L), -1);
+        checkMakeComparable(new java.sql.Date(5L), BigDecimal.valueOf(10.1), new java.sql.Date(5L), new java.sql.Date(10L), -1);
+        checkMakeComparable(new java.sql.Date(5L), new java.sql.Date(10L), new java.sql.Date(5L), new java.sql.Date(10L), -1);
+        checkMakeComparable(new java.sql.Date(5L), new java.sql.Date(10L), new java.sql.Date(5L), new java.sql.Date(10L), -1);
+        checkMakeComparable(new java.sql.Date(5L), new Time(10L), new java.sql.Date(5L), new Time(10L), -1);
+        checkMakeComparable(new java.sql.Date(5L), new Timestamp(10L), new Timestamp(5L), new Timestamp(10L), -1);
+        checkMakeComparable(new java.sql.Date(5L), createCalendar(10L), createCalendar(5L), createCalendar(10L), -1);
+        checkMakeComparable(new java.sql.Date(5L), new File("AAA"), "1970-01-01 00:00:00.005", "AAA", -1);
+        checkMakeComparable(new java.sql.Date(5L), "string", "1970-01-01 00:00:00.005", "string", -1);
+        
+        checkMakeComparable(new Time(5L), Boolean.TRUE, "1970-01-01 00:00:00.005", "true", -1);
+        checkMakeComparable(new Time(5L), Character.valueOf('B'), "1970-01-01 00:00:00.005", "B", -1);
+        checkMakeComparable(new Time(5L), Byte.valueOf((byte)10), new Time(5), new Time(10), -1);
+        checkMakeComparable(new Time(5L), Short.valueOf((short)10), new Time(5), new Time(10), -1);
+        checkMakeComparable(new Time(5L), Integer.valueOf(10), new Time(5), new Time(10), -1);
+        checkMakeComparable(new Time(5L), Long.valueOf(10), new Time(5), new Time(10), -1);
+        checkMakeComparable(new Time(5L), BigInteger.valueOf(10), new Time(5), new Time(10), -1);
+        checkMakeComparable(new Time(5L), Float.valueOf(10.1F), new Time(5), new Time(10), -1);
+        checkMakeComparable(new Time(5L), Double.valueOf(10.1), new Time(5L), new Time(10L), -1);
+        checkMakeComparable(new Time(5L), BigDecimal.valueOf(10.1), new Time(5L), new Time(10L), -1);
+        checkMakeComparable(new Time(5L), new Time(10L), new Time(5L), new Time(10L), -1);
+        checkMakeComparable(new Time(5L), new Time(10L), new Time(5L), new Time(10L), -1);
+        checkMakeComparable(new Time(5L), new Time(10L), new Time(5L), new Time(10L), -1);
+        checkMakeComparable(new Time(5L), new Timestamp(10L), new Timestamp(5L), new Timestamp(10L), -1);
+        checkMakeComparable(new Time(5L), createCalendar(10L), createCalendar(5L), createCalendar(10L), -1);
+        checkMakeComparable(new Time(5L), new File("AAA"), "1970-01-01 00:00:00.005", "AAA", -1);
+        checkMakeComparable(new Time(5L), "string", "1970-01-01 00:00:00.005", "string", -1);
+
+        checkMakeComparable(new Timestamp(5L), Boolean.TRUE, "1970-01-01 00:00:00.005", "true", -1);
+        checkMakeComparable(new Timestamp(5L), Character.valueOf('B'), "1970-01-01 00:00:00.005", "B", -1);
+        checkMakeComparable(new Timestamp(5L), Byte.valueOf((byte)10), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(new Timestamp(5L), Short.valueOf((short)10), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(new Timestamp(5L), Integer.valueOf(10), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(new Timestamp(5L), Long.valueOf(10), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(new Timestamp(5L), BigInteger.valueOf(10), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(new Timestamp(5L), Float.valueOf(10.1F), new Timestamp(5), new Timestamp(10), -1);
+        checkMakeComparable(new Timestamp(5L), Double.valueOf(10.1), new Timestamp(5L), new Timestamp(10L), -1);
+        checkMakeComparable(new Timestamp(5L), BigDecimal.valueOf(10.1), new Timestamp(5L), new Timestamp(10L), -1);
+        checkMakeComparable(new Timestamp(5L), new Timestamp(10L), new Timestamp(5L), new Timestamp(10L), -1);
+        checkMakeComparable(new Timestamp(5L), new Timestamp(10L), new Timestamp(5L), new Timestamp(10L), -1);
+        checkMakeComparable(new Timestamp(5L), new Time(10L), new Timestamp(5L), new Timestamp(10L), -1);
+        checkMakeComparable(new Timestamp(5L), new Timestamp(10L), new Timestamp(5L), new Timestamp(10L), -1);
+        checkMakeComparable(new Timestamp(5L), createCalendar(10L), createCalendar(5L), createCalendar(10L), -1);
+        checkMakeComparable(new Timestamp(5L), new File("AAA"), "1970-01-01 00:00:00.005", "AAA", -1);
+        checkMakeComparable(new Timestamp(5L), "string", "1970-01-01 00:00:00.005", "string", -1);
+        
+        checkMakeComparable(createCalendar(5L), Boolean.TRUE, "1970-01-01 00:00:00.005", "true", -1);
+        checkMakeComparable(createCalendar(5L), Character.valueOf('B'), "1970-01-01 00:00:00.005", "B", -1);
+        checkMakeComparable(createCalendar(5L), Byte.valueOf((byte)10), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(createCalendar(5L), Short.valueOf((short)10), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(createCalendar(5L), Integer.valueOf(10), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(createCalendar(5L), Long.valueOf(10), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(createCalendar(5L), BigInteger.valueOf(10), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(createCalendar(5L), Float.valueOf(10.1F), createCalendar(5), createCalendar(10), -1);
+        checkMakeComparable(createCalendar(5L), Double.valueOf(10.1), createCalendar(5L), createCalendar(10L), -1);
+        checkMakeComparable(createCalendar(5L), BigDecimal.valueOf(10.1), createCalendar(5L), createCalendar(10L), -1);
+        checkMakeComparable(createCalendar(5L), createCalendar(10L), createCalendar(5L), createCalendar(10L), -1);
+        checkMakeComparable(createCalendar(5L), createCalendar(10L), createCalendar(5L), createCalendar(10L), -1);
+        checkMakeComparable(createCalendar(5L), new Time(10L), createCalendar(5L), createCalendar(10L), -1);
+        checkMakeComparable(createCalendar(5L), new Timestamp(10L), createCalendar(5L), createCalendar(10L), -1);
+        checkMakeComparable(createCalendar(5L), createCalendar(10L), createCalendar(5L), createCalendar(10L), -1);
+        checkMakeComparable(createCalendar(5L), new File("AAA"), "1970-01-01 00:00:00.005", "AAA", -1);
+        checkMakeComparable(createCalendar(5L), "string", "1970-01-01 00:00:00.005", "string", -1);
+
+        checkMakeComparable(new File("AAA"), Boolean.TRUE, "AAA", "true", -1);
+        checkMakeComparable(new File("AAA"), Character.valueOf('B'), "AAA", "B", -1);
+        checkMakeComparable(new File("AAA"), Byte.valueOf((byte)10), "AAA", "10", 1);
+        checkMakeComparable(new File("AAA"), Short.valueOf((short)10), "AAA", "10", 1);
+        checkMakeComparable(new File("AAA"), Integer.valueOf(10), "AAA", "10", 1);
+        checkMakeComparable(new File("AAA"), Long.valueOf(10), "AAA", "10", 1);
+        checkMakeComparable(new File("AAA"), BigInteger.valueOf(10), "AAA", "10", 1);
+        checkMakeComparable(new File("AAA"), Float.valueOf(10.0F), "AAA", "10.0", 1);
+        checkMakeComparable(new File("AAA"), Double.valueOf(10.0), "AAA", "10.0", 1);
+        checkMakeComparable(new File("AAA"), BigDecimal.valueOf(10.0), "AAA", "10.0", 1);
+        checkMakeComparable(new File("AAA"), new java.util.Date(10L), "AAA", "1970-01-01 00:00:00.010", 1);
+        checkMakeComparable(new File("AAA"), new java.sql.Date(10L), "AAA", "1970-01-01 00:00:00.010", 1);
+        checkMakeComparable(new File("AAA"), new Time(10L), "AAA", "1970-01-01 00:00:00.010", 1);
+        checkMakeComparable(new File("AAA"), new Timestamp(10L), "AAA", "1970-01-01 00:00:00.010", 1);
+        checkMakeComparable(new File("AAA"), createCalendar(10L), "AAA", "1970-01-01 00:00:00.010", 1);
+        checkMakeComparable(new File("AAA"), new File("BBB"), new File("AAA"), new File("BBB"), -1);
+        checkMakeComparable(new File("AAA"), "string", "AAA", "string", -1);
+        
+        checkMakeComparable("5", Boolean.TRUE, "5", "true", -1);
+        checkMakeComparable("5", Character.valueOf('B'), "5", "B", -1);
+        checkMakeComparable("5", Byte.valueOf((byte)10), Double.valueOf(5), Double.valueOf(10), -1);
+        checkMakeComparable("5", Short.valueOf((short)10), Double.valueOf(5), Double.valueOf(10), -1);
+        checkMakeComparable("5", Integer.valueOf(10), Double.valueOf(5), Double.valueOf(10), -1);
+        checkMakeComparable("5", Long.valueOf(10), Double.valueOf(5), Double.valueOf(10), -1);
+        checkMakeComparable("5", BigInteger.valueOf(10), Double.valueOf(5), Double.valueOf(10), -1);
+        checkMakeComparable("5", Float.valueOf(10.0F), Double.valueOf(5), Double.valueOf(10.0), -1);
+        checkMakeComparable("5", Double.valueOf(10.0), Double.valueOf(5), Double.valueOf(10.0), -1);
+        checkMakeComparable("5", BigDecimal.valueOf(10.0), BigDecimal.valueOf(5), BigDecimal.valueOf(10.0), -1);
+        checkMakeComparable("5", new java.util.Date(10L), "5", "1970-01-01 00:00:00.010", 1);
+        checkMakeComparable("5", new java.sql.Date(10L), "5", "1970-01-01 00:00:00.010", 1);
+        checkMakeComparable("5", new Time(10L), "5", "1970-01-01 00:00:00.010", 1);
+        checkMakeComparable("5", new Timestamp(10L), "5", "1970-01-01 00:00:00.010", 1);
+        checkMakeComparable("5", createCalendar(10L), "5", "1970-01-01 00:00:00.010", 1);
+        checkMakeComparable("5", new File("AAA"), "5", "AAA", -1);
+        checkMakeComparable("5", "string", "5", "string", -1);
     }
 }

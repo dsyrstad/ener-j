@@ -28,6 +28,7 @@ import java.util.Comparator;
 import org.enerj.annotations.Persist;
 import org.enerj.apache.commons.beanutils.PropertyUtils;
 import org.enerj.apache.commons.collections.comparators.NullComparator;
+import org.enerj.util.TypeUtil;
 import org.odmg.ODMGRuntimeException;
 
 /**
@@ -152,10 +153,12 @@ public class GenericKey implements Comparable<GenericKey>, Comparator<GenericKey
             Object o2 = components2[i];
             Class o1Class = o1.getClass();
             Class o2Class = o2.getClass();
-            if (o1 != null && o2 != null && 
-                !o1Class.isAssignableFrom(o2Class) &&
-                !o2Class.isAssignableFrom(o1Class)) {
-                // Must perform type conversion. Must first determine which object to convert.
+            if (o1 != null && o2 != null && o1Class != o2Class) {
+                // Must perform type conversion.
+                Object[] objs = new Object[] { o1, o2 };
+                TypeUtil.makeComparable(objs);
+                o1 = objs[0];
+                o2 = objs[1];
             }
             
             int result = comparator.compare(o1, o2);
