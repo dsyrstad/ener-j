@@ -18,48 +18,50 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
-// Ener-J
-// Copyright 2001 - 2003 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/PageServerNotConnectedException.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
 
 package org.enerj.server;
 
-import java.io.*;
-import java.util.*;
+import org.odmg.ODMGRuntimeException;
 
-import org.odmg.*;
+import java.util.NoSuchElementException;
+
 
 /**
- * Exception thrown from a Ener-J Page Server if it's not currently connected.
+ * Ener-J DBIterator interface. Instances of this type are created and maintained
+ * by an ObjectServerSession.
  *
- * @version $Id: PageServerNotConnectedException.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class PageServerNotConnectedException extends PageServerException
+public interface DBIterator
 {
 
-    public PageServerNotConnectedException()
-    {
-        super();
-    }
+    /**
+     * Determines if more objects are available from this iterator.
+     *
+     * @return true if more objects are available, otherwise false.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    public boolean hasNext() throws ODMGRuntimeException;
 
 
-    public PageServerNotConnectedException(String aMessage)
-    {
-        super(aMessage);
-    }
+    /**
+     * Gets, at most, the next N objects from the iterator, where N is aMaxNumObjects.
+     *
+     * @param aMaxNumObjects the maximum number of objects to be retrieved.
+     *
+     * @return an array of OIDs. This array may be from 1 to aMaxNumObjects elements in length.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     * @throws NoSuchElementException if there are no more objects available from the iterator.
+     */
+    public long[] next(int aMaxNumObjects) throws ODMGRuntimeException, NoSuchElementException;
 
 
-    public PageServerNotConnectedException(String aMessage, Throwable aCause)
-    {
-        super(aMessage, aCause);
-    }
-
-
-    public PageServerNotConnectedException(Throwable aCause)
-    {
-        super(aCause);
-    }
+    /**
+     * Closes this iterator.
+     */
+    public void close();
 
 }
 

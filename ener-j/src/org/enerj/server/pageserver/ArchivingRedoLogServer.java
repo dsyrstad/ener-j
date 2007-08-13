@@ -2,7 +2,7 @@
 // Copyright 2001-2003 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/ArchivingRedoLogServer.java,v 1.4 2006/05/05 13:47:14 dsyrstad Exp $
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
 import java.io.File;
 import java.io.FileNotFoundException;

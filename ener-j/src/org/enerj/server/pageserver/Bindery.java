@@ -20,7 +20,7 @@
  *******************************************************************************/
 //$Header: $
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
 import java.util.Map;
 

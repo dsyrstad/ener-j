@@ -21,7 +21,7 @@
 // Ener-J
 // Copyright 2001 - 2003 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/ObjectServerSession.java,v 1.4 2006/01/09 02:25:12 dsyrstad Exp $
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
 import java.util.Map;
 

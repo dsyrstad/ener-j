@@ -29,6 +29,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.enerj.server.pageserver.ArchivingRedoLogServer;
+import org.enerj.server.pageserver.CachedPageServer;
+import org.enerj.server.pageserver.FilePageServer;
+import org.enerj.server.pageserver.LockScheduler;
+import org.enerj.server.pageserver.PagedObjectServer;
 import org.enerj.util.CreateDatabase;
 
 import junit.framework.Test;

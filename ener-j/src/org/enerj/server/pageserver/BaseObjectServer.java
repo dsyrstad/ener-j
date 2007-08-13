@@ -20,7 +20,7 @@
  *******************************************************************************/
 //$Header: $
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,6 +35,8 @@ import org.enerj.core.Persistable;
 import org.enerj.core.PersistableHelper;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
+import org.enerj.server.ObjectServer;
+import org.enerj.server.PluginHelper;
 import org.enerj.util.OIDUtil;
 import org.enerj.util.StringUtil;
 import org.odmg.ODMGException;

@@ -20,7 +20,7 @@
  *******************************************************************************/
 // Ener-J
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
 import static org.enerj.util.ByteArrayUtil.getLong;
 import static org.enerj.util.ByteArrayUtil.putLong;

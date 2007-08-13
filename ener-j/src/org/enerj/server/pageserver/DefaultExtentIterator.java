@@ -22,21 +22,22 @@
 // Copyright 2001-2004 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/DefaultExtentIterator.java,v 1.6 2006/01/17 02:41:09 dsyrstad Exp $
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.enerj.core.SparseBitSet;
+import org.enerj.server.DBIterator;
 import org.odmg.ODMGRuntimeException;
 
 /**
- * Ener-J's default ExtentIterator implementation.
+ * Ener-J's default DBIterator implementation.
  *
  * @version $Id: DefaultExtentIterator.java,v 1.6 2006/01/17 02:41:09 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class DefaultExtentIterator implements ExtentIterator
+public class DefaultExtentIterator implements DBIterator
 {
     /** List of extents to iterate over. */
     private List<SparseBitSet> mExtents;

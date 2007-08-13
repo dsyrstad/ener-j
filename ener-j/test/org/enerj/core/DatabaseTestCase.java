@@ -29,8 +29,8 @@ import java.util.logging.Logger;
 
 import junit.framework.TestCase;
 
-import org.enerj.server.PagedObjectServer;
 import org.enerj.server.bdb.BDBObjectServer;
+import org.enerj.server.pageserver.PagedObjectServer;
 import org.enerj.util.CreateDatabase;
 
 /**

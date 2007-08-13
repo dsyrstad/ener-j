@@ -26,6 +26,10 @@ package org.enerj.server;
 
 import java.util.Properties;
 
+import org.enerj.server.pageserver.LockScheduler;
+import org.enerj.server.pageserver.LockServer;
+import org.enerj.server.pageserver.LockServerTransaction;
+
 
 
 /**

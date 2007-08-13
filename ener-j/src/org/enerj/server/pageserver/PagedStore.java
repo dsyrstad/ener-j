@@ -22,7 +22,7 @@
 // Copyright 2001-2003 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/PagedStore.java,v 1.4 2006/05/05 13:47:14 dsyrstad Exp $
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
 import static org.enerj.util.ByteArrayUtil.getInt;
 import static org.enerj.util.ByteArrayUtil.getLong;
@@ -36,6 +36,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.enerj.core.CorruptDatabaseException;
+import org.enerj.server.PluginHelper;
 import org.enerj.server.logentry.StoreObjectLogEntry;
 import org.enerj.util.RequestProcessor;
 import org.odmg.ODMGException;

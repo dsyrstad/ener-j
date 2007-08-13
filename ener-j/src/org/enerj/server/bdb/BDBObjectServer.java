@@ -44,7 +44,7 @@ import org.enerj.core.Persistable;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
 import org.enerj.server.ClassInfo;
-import org.enerj.server.ExtentIterator;
+import org.enerj.server.DBIterator;
 import org.enerj.server.ObjectServer;
 import org.enerj.server.ObjectServerSession;
 import org.enerj.server.SerializedObject;
@@ -70,7 +70,6 @@ import com.sleepycatje.je.DatabaseEntry;
 import com.sleepycatje.je.DatabaseException;
 import com.sleepycatje.je.Environment;
 import com.sleepycatje.je.EnvironmentConfig;
-import com.sleepycatje.je.EnvironmentStats;
 import com.sleepycatje.je.LockMode;
 import com.sleepycatje.je.OperationStatus;
 import com.sleepycatje.je.SecondaryConfig;
@@ -130,8 +129,8 @@ public class BDBObjectServer extends BaseObjectServer
     /** List of active sessions. */
     private List<Session> mActiveSessions = new LinkedList<Session>();
     
-    /** List of active extent iterators. */
-    private List<BDBExtentIterator> mActiveExtents = Collections.synchronizedList( new LinkedList<BDBExtentIterator>() );
+    /** List of active iterators. */
+    private List<DBIterator> mActiveIterators = Collections.synchronizedList( new LinkedList<DBIterator>() );
 
     /** True if any session that connected was running locally in the client. */
     private boolean mIsLocal = false;
@@ -502,8 +501,9 @@ public class BDBObjectServer extends BaseObjectServer
 
         synchronized (sCurrentServers) {
             if (!mActiveTransactions.isEmpty()) {
-                //  TODO  log msg
-                throw new ODMGException("Transaction list is not clear! INTERNAL ERROR!");
+                String msg = "Transaction list is not clear! INTERNAL ERROR!";
+                sLogger.severe(msg);
+                throw new ODMGException(msg);
             }
 
             // Remove this server from the global list.
@@ -515,8 +515,8 @@ public class BDBObjectServer extends BaseObjectServer
             //sLogger.info("Stats:" + stats);
             
             // We need a copy because extents are removed from this list and would cause a concurrent operation exception.
-            List<BDBExtentIterator> copyActiveExtents = new ArrayList<BDBExtentIterator>(mActiveExtents);
-            for (BDBExtentIterator iter : copyActiveExtents) {
+            List<DBIterator> copyActiveIterators = new ArrayList<DBIterator>(mActiveIterators);
+            for (DBIterator iter : copyActiveIterators) {
                 iter.close();
             }
             
@@ -768,7 +768,7 @@ public class BDBObjectServer extends BaseObjectServer
 
             // If transaction is active on session, roll it back.
             if (txn != null) {
-                //  TODO  Log in messages as forced rollback.
+                sLogger.warning("Forcing rollback on session disconnect");
                 rollbackTransaction();
             }
 
@@ -904,16 +904,6 @@ public class BDBObjectServer extends BaseObjectServer
             
             // TODO - SerializedObject should contain the version #. We should compare the object's version
             // to the current version before writing.
-
-            // TODO We need to handle replace somehow, which means we need the key
-            // TODO that existed prior to update. For dupl keys, must match OID too.
-            // TODO session method to retrieve stored object, (not updated) but
-            // TODO what about second update. 
-            // Pull old obj image PRIOR to updating in main OID list and delete from index (delete by key/data)
-            // Find it using a cursor.
-            // DO this prior to store, only if we have indexes for the class...
-            // TODO Use SearchBoth to match key and oid in dupl case. 
-
             SerializedObjectTupleBinding binding = new SerializedObjectTupleBinding(true);
             for (SerializedObject object : someObjects) {
                 long oid = object.getOID();
@@ -1001,7 +991,8 @@ public class BDBObjectServer extends BaseObjectServer
 
             Transaction txn;
             try {
-                // TODO Nested transactions are allowed by BDB, as well as txn semantics.
+                // TODO Nested transactions are allowed by BDB (JE doesn't support them as of 3.2.23)
+                // TODO BDB can handle txn semantics.
                 txn = bdbEnvironment.beginTransaction(null, null);
                 setTransaction(txn);
             }
@@ -1182,9 +1173,7 @@ public class BDBObjectServer extends BaseObjectServer
         public void removeFromExtent(long anOID) throws ObjectNotPersistentException
         {
             Transaction txn = getTransaction();
-            // Hmmm... The object is implicitly part of its extent.
-
-            // TODO Remove from indexes too
+            // TODO Hmmm... The object is implicitly part of its extent. Mark as deleted from extent/indexes?
         }
 
         /**
@@ -1284,7 +1273,7 @@ public class BDBObjectServer extends BaseObjectServer
          * {@inheritDoc}
          * @see org.enerj.server.ObjectServerSession#createExtentIterator(java.lang.String, boolean)
          */
-        public ExtentIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
+        public DBIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
         {
             List<Integer> cidxs = getExtentCIDXs(aClassName, wantSubclasses);
             List<DatabaseEntry> cidxKeys = new ArrayList<DatabaseEntry>(cidxs.size());
@@ -1302,7 +1291,7 @@ public class BDBObjectServer extends BaseObjectServer
                 
                 BDBExtentIterator iter = new BDBExtentIterator(this, cursor, cidxs, cidxKeys, lockMode);
                 sessionIterators.add(iter);
-                mActiveExtents.add(iter);
+                mActiveIterators.add(iter);
                 return iter;
             }
             catch (DatabaseException e) {
@@ -1330,7 +1319,7 @@ public class BDBObjectServer extends BaseObjectServer
         void removeExtentIterator(BDBExtentIterator iter)
         {
             sessionIterators.remove(iter);
-            mActiveExtents.remove(iter);
+            mActiveIterators.remove(iter);
         }
         // ...End of ObjectServerSession interface methods.
     }
@@ -1353,14 +1342,12 @@ public class BDBObjectServer extends BaseObjectServer
 
         public void run()
         {
-            // TODO log shutdown hook invoked.
-            //System.err.println("BDBObjectServer Shutdown hook invoked.");
+            sLogger.fine("BDBObjectServer Shutdown hook invoked.");
             try {
                 mObjectServer.shutdown();
             }
             catch (ODMGException e) {
-                //  TODO  log...
-                System.err.println("Shutdown problem:");
+                sLogger.severe("Shutdown problem:");
                 e.printStackTrace();
             }
         }

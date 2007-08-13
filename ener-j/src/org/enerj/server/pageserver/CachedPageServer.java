@@ -22,7 +22,7 @@
 // Copyright 2001 - 2003 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/CachedPageServer.java,v 1.4 2006/05/05 13:47:14 dsyrstad Exp $
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import org.enerj.server.PluginHelper;
 import org.odmg.ODMGException;
 
 /**

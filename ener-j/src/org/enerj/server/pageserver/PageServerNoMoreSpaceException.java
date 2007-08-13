@@ -20,41 +20,44 @@
  *******************************************************************************/
 // Ener-J
 // Copyright 2001 - 2003 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/VolumeNeedsRecoveryException.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
+// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/PageServerNoMoreSpaceException.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
+import java.io.*;
+import java.util.*;
 
+import org.odmg.*;
 
 /**
- * Exception thrown from a Ener-J Page Server if a volume was not closed properly.
- * Indicates that the ObjectServer should perform recovery.
+ * Exception thrown from a Ener-J Page Server if there is no more space available in the
+ * volume.
  *
- * @version $Id: VolumeNeedsRecoveryException.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
+ * @version $Id: PageServerNoMoreSpaceException.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class VolumeNeedsRecoveryException extends PageServerException
+public class PageServerNoMoreSpaceException extends PageServerException
 {
 
-    public VolumeNeedsRecoveryException()
+    public PageServerNoMoreSpaceException()
     {
         super();
     }
 
 
-    public VolumeNeedsRecoveryException(String aMessage)
+    public PageServerNoMoreSpaceException(String aMessage)
     {
         super(aMessage);
     }
 
 
-    public VolumeNeedsRecoveryException(String aMessage, Throwable aCause)
+    public PageServerNoMoreSpaceException(String aMessage, Throwable aCause)
     {
         super(aMessage, aCause);
     }
 
 
-    public VolumeNeedsRecoveryException(Throwable aCause)
+    public PageServerNoMoreSpaceException(Throwable aCause)
     {
         super(aCause);
     }

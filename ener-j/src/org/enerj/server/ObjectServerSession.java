@@ -292,18 +292,18 @@ public interface ObjectServerSession
     
 
     /**
-     * Creates an ExtentIterator.
+     * Creates an DBIterator.
      *
      * @param aClassName the class name to iterate over. If wantSubclasses is true,
      *  then aClassName does not have to be a persistable class.
      *
      * @param wantSubclasses if true, all subclasses of aClassName are also included in the iterator.
      *
-     * @return an ExtentIterator used to iterate over the extent.
+     * @return an DBIterator used to iterate over the extent.
      *
      * @throws ODMGRuntimeException if an error occurs.
      */
-    public ExtentIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException;
+    public DBIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException;
     
     /**
      * Gets the schema for the database.

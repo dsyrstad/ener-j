@@ -55,7 +55,7 @@ import org.enerj.annotations.Index;
 import org.enerj.annotations.Indexes;
 import org.enerj.annotations.SchemaAnnotation;
 import org.enerj.server.ClassInfo;
-import org.enerj.server.ExtentIterator;
+import org.enerj.server.DBIterator;
 import org.enerj.server.ObjectServerSession;
 import org.enerj.server.PluginHelper;
 import org.enerj.server.SerializedObject;
@@ -864,12 +864,12 @@ public class EnerJDatabase implements Database, Persister
      * 
      * @return the Extent.
      */
-    ExtentIterator getExtentIterator(Class<?> aPersistentCapableClass, boolean wantSubClassInstances)
+    DBIterator getExtentIterator(Class<?> aPersistentCapableClass, boolean wantSubClassInstances)
     {
-        ExtentIterator iterator = mObjectServerSession.createExtentIterator(aPersistentCapableClass.getName(), wantSubClassInstances);
+        DBIterator iterator = mObjectServerSession.createExtentIterator(aPersistentCapableClass.getName(), wantSubClassInstances);
         //if (mIsLocal) {
             // Server is running locally so we have to proxy the iterator using the session's RequestProcessor.
-        //    iterator = (ExtentIterator)RequestProcessorProxy.newInstance(iterator, mLocalRequestProcessor);
+        //    iterator = (DBIterator)RequestProcessorProxy.newInstance(iterator, mLocalRequestProcessor);
         //}
         
         return iterator;

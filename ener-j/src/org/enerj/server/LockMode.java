@@ -66,7 +66,7 @@ public final class LockMode
      * @return true if this LockMode more exclusive than the given mode, or
      *  false if this mode is the same or less exclusive than aLockMode.
      */
-    boolean isMoreExclusiveThan(LockMode aLockMode)
+    public boolean isMoreExclusiveThan(LockMode aLockMode)
     {
         return (mExclusivity - aLockMode.mExclusivity) > 0;
     }
@@ -81,7 +81,7 @@ public final class LockMode
      * @return true if this mode is compatible with aRequestedMode or false if
      *  it conflicts with it.
      */
-    boolean isCompatible(LockMode aRequestedMode)
+    public boolean isCompatible(LockMode aRequestedMode)
     {
         return mCompatibilityMatrix[mExclusivity][aRequestedMode.mExclusivity];
     }

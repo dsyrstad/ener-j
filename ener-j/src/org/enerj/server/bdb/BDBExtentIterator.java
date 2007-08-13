@@ -25,7 +25,7 @@ package org.enerj.server.bdb;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.enerj.server.ExtentIterator;
+import org.enerj.server.DBIterator;
 import org.odmg.ODMGRuntimeException;
 
 import com.sleepycatje.bind.tuple.TupleBinding;
@@ -36,11 +36,11 @@ import com.sleepycatje.je.LockMode;
 import com.sleepycatje.je.OperationStatus;
 
 /**
- * BDB ExtentIterator implementation.
+ * BDB DBIterator implementation for extents.
  *
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class BDBExtentIterator implements ExtentIterator
+public class BDBExtentIterator implements DBIterator
 {
     private Cursor cursor;
     /** List of CIDs to iterate over. */
