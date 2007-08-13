@@ -19,54 +19,47 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
 // Ener-J
-// Copyright 2001-2003 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/util/DumpRedoLog.java,v 1.3 2005/08/12 02:56:45 dsyrstad Exp $
+// Copyright 2001 - 2003 Visual Systems Corporation
+// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/PageServerException.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
 
-package org.enerj.util;
+package org.enerj.server.pageserver;
 
+import java.io.*;
 import java.util.*;
 
 import org.odmg.*;
 
-import org.enerj.core.*;
-import org.enerj.server.*;
-import org.enerj.server.logentry.*;
-import org.enerj.server.pageserver.ArchivingRedoLogServer;
-import org.enerj.server.pageserver.RedoLogServer;
-
 /**
- * Utility to dump a redo log.
+ * Base Exception thrown from a Ener-J Page Server.
  *
- * @version $Id: DumpRedoLog.java,v 1.3 2005/08/12 02:56:45 dsyrstad Exp $
+ * @version $Id: PageServerException.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class DumpRedoLog 
+public class PageServerException extends ODMGException
 {
-    
 
-    public static void usage()
+    public PageServerException()
     {
-        System.err.println("Usage: " + DumpRedoLog.class.getName() + " log-name");
-        System.exit(1);
+        super();
     }
-    
 
-    public static void main(String[] args) throws Exception
+
+    public PageServerException(String aMessage)
     {
-        if (args.length < 1) {
-            usage();
-        }
-        
-        String logName = args[0];
-        
-        RedoLogServer server = new ArchivingRedoLogServer(logName);
-        long position = server.getFirstLogEntryPosition();
-        LogEntry entry;
-        while ((entry = server.read(position)) != null) {
-            System.out.println("Position: " + position + ':' + new Date(entry.getTimestamp()).toString() + ": " + entry);
-            position = entry.getNextLogEntryPosition();
-        }
-
-        System.exit(0);
+        super(aMessage);
     }
+
+
+    public PageServerException(String aMessage, Throwable aCause)
+    {
+        super(aMessage, aCause);
+    }
+
+
+    public PageServerException(Throwable aCause)
+    {
+        super(aCause.getMessage(), aCause);
+    }
+
 }
+

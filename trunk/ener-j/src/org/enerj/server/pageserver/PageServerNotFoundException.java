@@ -19,36 +19,48 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
 // Ener-J
-// Copyright 2001-2003 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/DeadlockAlgorithm.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
+// Copyright 2001 - 2003 Visual Systems Corporation
+// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/PageServerNotFoundException.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
+
+import java.io.*;
+import java.util.*;
+
+import org.odmg.*;
 
 /**
- * Type-safe enumeration of deadlock algorithms.
+ * Exception thrown from a Ener-J Page Server if the page volume/configuration
+ * cannot be found.
  *
- * @version $Id: DeadlockAlgorithm.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
+ * @version $Id: PageServerNotFoundException.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
- * @see LockScheduler
  */
-public final class DeadlockAlgorithm
+public class PageServerNotFoundException extends PageServerException
 {
-    /** Use the accurate, but more time consuming "waits-for" algorithm. */
-    public static final DeadlockAlgorithm WAITS_FOR = new DeadlockAlgorithm("Waits-For");
-    /** Use the less accurate, but much less time consuming timestamp algorithm. */
-    public static final DeadlockAlgorithm TIMESTAMP = new DeadlockAlgorithm("Timestamp");
 
-    private String mName;
-
-
-    private DeadlockAlgorithm(String aName)
+    public PageServerNotFoundException()
     {
-        mName = aName;
+        super();
     }
 
 
-    public String toString()
+    public PageServerNotFoundException(String aMessage)
     {
-        return mName;
+        super(aMessage);
     }
+
+
+    public PageServerNotFoundException(String aMessage, Throwable aCause)
+    {
+        super(aMessage, aCause);
+    }
+
+
+    public PageServerNotFoundException(Throwable aCause)
+    {
+        super(aCause);
+    }
+
 }
+

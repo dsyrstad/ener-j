@@ -18,7 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
-//$Header: $
 
 package org.enerj.core;
 
@@ -34,7 +33,6 @@ import org.odmg.ODMGRuntimeException;
 /**
  * Represents a generic immutable index key. <p>
  * 
- * @version $Id: $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad </a>
  */
 @Persist

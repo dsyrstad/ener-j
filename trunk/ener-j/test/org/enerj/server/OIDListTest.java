@@ -28,6 +28,10 @@ import java.io.File;
 import java.util.Properties;
 
 import org.enerj.core.ObjectSerializer;
+import org.enerj.server.pageserver.CachedPageServer;
+import org.enerj.server.pageserver.FilePageServer;
+import org.enerj.server.pageserver.OIDList;
+import org.enerj.server.pageserver.PageServer;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

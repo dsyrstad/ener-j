@@ -20,7 +20,7 @@
  *******************************************************************************/
 //$Header: $
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
 import org.enerj.core.EnerJDatabase;
 import org.enerj.core.EnerJImplementation;

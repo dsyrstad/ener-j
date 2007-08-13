@@ -30,9 +30,9 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.enerj.server.ObjectServer;
-import org.enerj.server.PagedObjectServer;
 import org.enerj.server.PluginHelper;
 import org.enerj.server.bdb.BDBObjectServer;
+import org.enerj.server.pageserver.PagedObjectServer;
 import org.odmg.DatabaseNotFoundException;
 import org.odmg.ODMGException;
 

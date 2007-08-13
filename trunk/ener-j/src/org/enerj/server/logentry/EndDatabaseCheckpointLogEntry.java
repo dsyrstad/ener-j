@@ -27,7 +27,7 @@ package org.enerj.server.logentry;
 import java.io.DataInput;
 import java.io.IOException;
 
-import org.enerj.server.RedoLogServer;
+import org.enerj.server.pageserver.RedoLogServer;
 
 
 /** 

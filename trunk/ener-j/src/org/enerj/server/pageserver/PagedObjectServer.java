@@ -22,7 +22,7 @@
 // Copyright 2001-2003 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/PagedObjectServer.java,v 1.6 2006/05/05 13:47:14 dsyrstad Exp $
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -43,7 +43,12 @@ import org.enerj.core.EnerJTransaction;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Schema;
 import org.enerj.core.SystemCIDMap;
-import org.enerj.server.PagedStore.StoreObjectRequest;
+import org.enerj.server.ClassInfo;
+import org.enerj.server.LockMode;
+import org.enerj.server.ObjectServer;
+import org.enerj.server.ObjectServerSession;
+import org.enerj.server.PluginHelper;
+import org.enerj.server.SerializedObject;
 import org.enerj.server.logentry.BeginTransactionLogEntry;
 import org.enerj.server.logentry.CheckpointTransactionLogEntry;
 import org.enerj.server.logentry.CommitTransactionLogEntry;
@@ -51,6 +56,7 @@ import org.enerj.server.logentry.EndDatabaseCheckpointLogEntry;
 import org.enerj.server.logentry.RollbackTransactionLogEntry;
 import org.enerj.server.logentry.StartDatabaseCheckpointLogEntry;
 import org.enerj.server.logentry.StoreObjectLogEntry;
+import org.enerj.server.pageserver.PagedStore.StoreObjectRequest;
 import org.enerj.util.FileUtil;
 import org.enerj.util.OIDUtil;
 import org.enerj.util.RequestProcessor;

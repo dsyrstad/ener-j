@@ -19,47 +19,36 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
 // Ener-J
-// Copyright 2001 - 2003 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/PageServerException.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
+// Copyright 2001-2003 Visual Systems Corporation
+// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/DeadlockAlgorithm.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
 
-package org.enerj.server;
-
-import java.io.*;
-import java.util.*;
-
-import org.odmg.*;
+package org.enerj.server.pageserver;
 
 /**
- * Base Exception thrown from a Ener-J Page Server.
+ * Type-safe enumeration of deadlock algorithms.
  *
- * @version $Id: PageServerException.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
+ * @version $Id: DeadlockAlgorithm.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
+ * @see LockScheduler
  */
-public class PageServerException extends ODMGException
+public final class DeadlockAlgorithm
 {
+    /** Use the accurate, but more time consuming "waits-for" algorithm. */
+    public static final DeadlockAlgorithm WAITS_FOR = new DeadlockAlgorithm("Waits-For");
+    /** Use the less accurate, but much less time consuming timestamp algorithm. */
+    public static final DeadlockAlgorithm TIMESTAMP = new DeadlockAlgorithm("Timestamp");
 
-    public PageServerException()
+    private String mName;
+
+
+    private DeadlockAlgorithm(String aName)
     {
-        super();
+        mName = aName;
     }
 
 
-    public PageServerException(String aMessage)
+    public String toString()
     {
-        super(aMessage);
+        return mName;
     }
-
-
-    public PageServerException(String aMessage, Throwable aCause)
-    {
-        super(aMessage, aCause);
-    }
-
-
-    public PageServerException(Throwable aCause)
-    {
-        super(aCause.getMessage(), aCause);
-    }
-
 }
-

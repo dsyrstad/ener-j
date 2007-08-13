@@ -29,6 +29,8 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.enerj.core.DeadlockException;
+import org.enerj.server.pageserver.LockServer;
+import org.enerj.server.pageserver.LockServerTransaction;
 
 
 /**

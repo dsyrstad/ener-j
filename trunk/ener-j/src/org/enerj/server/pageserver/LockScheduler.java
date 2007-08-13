@@ -22,7 +22,7 @@
 // Copyright 2001-2003 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/LockScheduler.java,v 1.3 2005/08/12 02:56:50 dsyrstad Exp $
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +32,7 @@ import java.util.Properties;
 import org.odmg.LockNotGrantedException;
 import org.odmg.ODMGException;
 import org.enerj.core.DeadlockException;
+import org.enerj.server.LockMode;
 
 /**
  * The primary implementation of LockServer. Schedules and manages arbitrary locks on arbitrary objects. 

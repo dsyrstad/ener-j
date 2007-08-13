@@ -22,7 +22,7 @@
 // Copyright 2001 - 2003 Visual Systems Corporation
 // $Header: /cvsroot/ener-j/ener-j/src/org/enerj/server/ObjectServerSession.java,v 1.4 2006/01/09 02:25:12 dsyrstad Exp $
 
-package org.enerj.server;
+package org.enerj.server.pageserver;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +50,11 @@ import org.enerj.core.PersisterRegistry;
 import org.enerj.core.Schema;
 import org.enerj.core.SparseBitSet;
 import org.enerj.core.SystemCIDMap;
+import org.enerj.server.ClassInfo;
+import org.enerj.server.DBIterator;
+import org.enerj.server.ObjectServer;
+import org.enerj.server.ObjectServerSession;
+import org.enerj.server.SerializedObject;
 import org.enerj.util.OIDUtil;
 import org.odmg.ODMGException;
 import org.odmg.ODMGRuntimeException;
@@ -384,7 +389,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
      * {@inheritDoc}
      * @see org.enerj.server.ObjectServerSession#createExtentIterator(java.lang.String, boolean)
      */
-    public ExtentIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
+    public DBIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException
     {
         // TODO What about objects added during txn? Flush from client first? I think we're OK. Flush updates extents.
         Schema schema;
@@ -417,7 +422,7 @@ abstract public class BaseObjectServerSession implements ObjectServerSession, Pe
                 }
             }
     
-            ExtentIterator extentIterator = new DefaultExtentIterator(extents);
+            DBIterator extentIterator = new DefaultExtentIterator(extents);
             return extentIterator;
         }
         finally {

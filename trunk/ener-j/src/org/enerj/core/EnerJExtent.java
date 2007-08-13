@@ -31,7 +31,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.enerj.server.ExtentIterator;
+import org.enerj.server.DBIterator;
 import org.odmg.ODMGRuntimeException;
 
 
@@ -239,8 +239,8 @@ public class EnerJExtent implements Extent
     {
         private static final int DEFAULT_CHUNK_SIZE = 50;
 
-        /** ExtentIterator returned from the session. */
-        private ExtentIterator mExtentIterator;
+        /** DBIterator returned from the session. */
+        private DBIterator mExtentIterator;
         /** Queue of Objects represent the chunk of objects we got back from next(). */
         private Persistable[] mObjects = null;
         /** Queue position. */
