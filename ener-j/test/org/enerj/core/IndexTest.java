@@ -18,11 +18,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
-// Ener-J
-// Copyright 2001, 2002 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/test/org/enerj/core/BasicODMGTest.java,v 1.2 2006/06/05 01:17:03 dsyrstad Exp $
 
 package org.enerj.core;
+
+import java.util.Random;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -30,15 +29,14 @@ import junit.framework.TestSuite;
 import org.enerj.annotations.Index;
 import org.enerj.annotations.Indexes;
 import org.enerj.annotations.Persist;
+import org.enerj.server.DBIterator;
 import org.odmg.Database;
 import org.odmg.Implementation;
-import org.odmg.ObjectNameNotFoundException;
 import org.odmg.Transaction;
 
 /**
  * Tests Index functionality.
  *
- * @version $Id: BasicODMGTest.java,v 1.2 2006/06/05 01:17:03 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
 public class IndexTest extends DatabaseTestCase
@@ -61,7 +59,7 @@ public class IndexTest extends DatabaseTestCase
     public void testBasic() throws Exception
     {
         Implementation impl = EnerJImplementation.getInstance();
-        Database db = impl.newDatabase();
+        EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
         
         db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
 
@@ -69,11 +67,31 @@ public class IndexTest extends DatabaseTestCase
         txn.begin();
 
         String[] values = { "Orange", "Red", "Brown", "Green", "Blue", "Black", "Yellow" };
+        final int numObjs = 1000;
+        Random rand = new Random();
         try {
-            for (int i = 0; i < values.length; i++) {
-                TestClass1 test = new TestClass1(i, values[i]);
-                db.bind(test, "Link" + i);
+            for (int i = 0; i < numObjs; i++) {
+                TestClass1 test = new TestClass1(rand.nextInt(5000), values[i % values.length]);
+                db.makePersistent(test);
             }
+        }
+        finally {
+            txn.commit();
+            db.close();
+        }
+
+        // Re-open and read from iterator.
+        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
+
+        txn = impl.newTransaction();
+        txn.begin();
+
+        try {
+            // Check size.
+            long size = db.getIndexKeyRangeSize(TestClass1.class, "testIndex2", null, null);
+            assertEquals((long)numObjs, size);
+            
+            DBIterator iter = db.getIndexIterator(TestClass1.class, "testIndex2", null, null);
         }
         finally {
             txn.commit();
