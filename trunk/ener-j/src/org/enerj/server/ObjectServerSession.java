@@ -22,6 +22,7 @@
 
 package org.enerj.server;
 
+import org.enerj.core.GenericKey;
 import org.enerj.core.IndexAlreadyExistsException;
 import org.enerj.core.IndexSchema;
 import org.enerj.core.ObjectSerializer;
@@ -290,9 +291,8 @@ public interface ObjectServerSession
      */
     public long getExtentSize(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException;
     
-
     /**
-     * Creates an DBIterator.
+     * Creates an DBIterator for an extent.
      *
      * @param aClassName the class name to iterate over. If wantSubclasses is true,
      *  then aClassName does not have to be a persistable class.
@@ -305,6 +305,34 @@ public interface ObjectServerSession
      */
     public DBIterator createExtentIterator(String aClassName, boolean wantSubclasses) throws ODMGRuntimeException;
     
+    /**
+     * Determines the number of objects in an Index key range.
+     *
+     * @param aClassName the class name of the index.
+     * @param anIndexName the name of the index.
+     * @param aStartKey the starting key, inclusive. May be null to start at the beginning of the index.
+     * @param anEndKey the ending key, inclusive. May be null to end and the end of the index.
+     *
+     * @return the number of objects in the given key range for the index.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    public long getIndexKeyRangeSize(String aClassName, String anIndexName, GenericKey aStartKey, GenericKey anEndKey) throws ODMGRuntimeException;
+    
+    /**
+     * Creates an DBIterator for an index key range.
+     *
+     * @param aClassName the class name of the index.
+     * @param anIndexName the name of the index.
+     * @param aStartKey the starting key, inclusive. May be null to start at the beginning of the index.
+     * @param anEndKey the ending key, inclusive. May be null to end and the end of the index.
+     *
+     * @return an DBIterator used to iterate over the index within the given key range.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    public DBIterator createIndexIterator(String aClassName, String anIndexName, GenericKey aStartKey, GenericKey anEndKey) throws ODMGRuntimeException;
+
     /**
      * Gets the schema for the database.
      *

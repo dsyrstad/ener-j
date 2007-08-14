@@ -57,6 +57,10 @@ public class DefaultExtentIterator implements DBIterator
         mExtents = someExtents;
     }
 
+    public boolean isOpen()
+    {
+        return mIsOpen;
+    }
 
     /**
      * Verifies that the iterator is open.
