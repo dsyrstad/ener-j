@@ -23,14 +23,10 @@
 package org.enerj.core;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.util.logging.Logger;
 
 import junit.framework.TestCase;
 
-import org.enerj.server.bdb.BDBObjectServer;
-import org.enerj.server.pageserver.PagedObjectServer;
 import org.enerj.util.CreateDatabase;
 
 /**

@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 
 import org.enerj.core.ClassSchema;
 import org.enerj.core.ClassVersionSchema;
+import org.enerj.core.GenericKey;
 import org.enerj.core.IndexSchema;
 import org.enerj.core.ObjectSerializer;
 import org.enerj.core.Persistable;
@@ -73,6 +74,7 @@ import com.sleepycatje.je.EnvironmentConfig;
 import com.sleepycatje.je.LockMode;
 import com.sleepycatje.je.OperationStatus;
 import com.sleepycatje.je.SecondaryConfig;
+import com.sleepycatje.je.SecondaryCursor;
 import com.sleepycatje.je.SecondaryDatabase;
 import com.sleepycatje.je.Sequence;
 import com.sleepycatje.je.SequenceConfig;
@@ -359,7 +361,7 @@ public class BDBObjectServer extends BaseObjectServer
 	@Override
 	protected void createPhysicalIndex(ClassSchema aClassSchema, IndexSchema anIndexSchema) throws ODMGException
 	{
-	    String indexDBName = createIndexDBName(aClassSchema.getClassName(), anIndexSchema);
+	    String indexDBName = createIndexDBName(aClassSchema.getClassName(), anIndexSchema.getName());
         
 	    SecondaryConfig indexConfig = new SecondaryConfig();
         indexConfig.setAllowCreate(true);
@@ -432,13 +434,13 @@ public class BDBObjectServer extends BaseObjectServer
 	 * Creates the BDB database name for an index.
 	 * 
 	 * @param className
-	 * @param indexSchema
+	 * @param indexName
 	 * 
 	 * @return the database name.
 	 */
-	private String createIndexDBName(String className, IndexSchema indexSchema)
+	private String createIndexDBName(String className, String indexName)
 	{
-	    return mDBName + ':' + className + ':' + indexSchema.getName();	    
+	    return mDBName + ':' + className + ':' + indexName;	    
 	}
 	
     /**
@@ -656,7 +658,7 @@ public class BDBObjectServer extends BaseObjectServer
             Schema schema = getSchema();
             for (ClassSchema classSchema : schema.getClassSchemas()) {
                 for (IndexSchema indexSchema : classSchema.getIndexes()) {
-                    String indexDBName = createIndexDBName(classSchema.getClassName(), indexSchema);
+                    String indexDBName = createIndexDBName(classSchema.getClassName(), indexSchema.getName());
     
                     SecondaryConfig indexConfig = new SecondaryConfig();
                     indexConfig.setSortedDuplicates( indexSchema.allowsDuplicateKeys() );
@@ -707,7 +709,7 @@ public class BDBObjectServer extends BaseObjectServer
         private Transaction txn = null;
         /** If true, this is a privileged session that may update the schema. */
         private boolean isSchemaSession = false;
-        private List<BDBExtentIterator> sessionIterators = new ArrayList<BDBExtentIterator>(); 
+        private List<DBIterator> sessionIterators = new ArrayList<DBIterator>(); 
 
         /**
          * Constructs a new Session in a connected state.
@@ -1283,27 +1285,22 @@ public class BDBObjectServer extends BaseObjectServer
 
             try {
                 Cursor cursor = bdbDatabase.openCursor(getTransaction(), getCursorConfig());
-                LockMode lockMode = getReadLockMode();
-                // BDB Cursor doesn't allow READ_COMMITTED
-                if (lockMode == LockMode.READ_COMMITTED) {
-                    lockMode = null;
-                }
-                
-                BDBExtentIterator iter = new BDBExtentIterator(this, cursor, cidxs, cidxKeys, lockMode);
+                BDBExtentIterator iter = new BDBExtentIterator(this, cursor, cidxs, cidxKeys);
                 sessionIterators.add(iter);
                 mActiveIterators.add(iter);
                 return iter;
             }
             catch (DatabaseException e) {
-                throw new ODMGRuntimeException("Error opening extent", e);
+                throw new ODMGRuntimeException("Error creating extent iterator", e);
             }
             
         }
         
         void closeActiveIterators()
         {
-            List<BDBExtentIterator> iters = new ArrayList<BDBExtentIterator>(sessionIterators);
-            for (BDBExtentIterator iter : iters) {
+            // Make a copy of the list before closing because closing removes the iterator from the list.
+            List<DBIterator> iters = new ArrayList<DBIterator>(sessionIterators);
+            for (DBIterator iter : iters) {
                 if (iter.isOpen()) {
                     iter.close();
                 }
@@ -1312,16 +1309,78 @@ public class BDBObjectServer extends BaseObjectServer
         
         
         /**
-         * Removes an extent iterator from the list of active ones.
+         * Removes an iterator from the list of active ones.
          *
          * @param iter
          */
-        void removeExtentIterator(BDBExtentIterator iter)
+        void removeIterator(DBIterator iter)
         {
             sessionIterators.remove(iter);
             mActiveIterators.remove(iter);
         }
         // ...End of ObjectServerSession interface methods.
+
+        @Override
+        public long getIndexKeyRangeSize(String aClassName, String anIndexName, GenericKey aStartKey,
+                        GenericKey anEndKey) throws ODMGRuntimeException
+        {
+            long size = 0;
+            DBIterator iterator = createIndexIterator(aClassName, anIndexName, aStartKey, anEndKey);
+            while (iterator.hasNext()) {
+                size += iterator.next(1000).length;
+            }
+            
+            return size;
+        }
+
+        @Override
+        public DBIterator createIndexIterator(String aClassName, String anIndexName, GenericKey aStartKey,
+                        GenericKey anEndKey) throws ODMGRuntimeException
+        {
+            Schema schema;
+            try {
+                schema = getSchema();
+            }
+            catch (ODMGException e) {
+                throw new ODMGRuntimeException(e);
+            }
+            
+            ClassSchema classSchema = schema.findClassSchema(aClassName);
+            if (classSchema == null) {
+                throw new ODMGRuntimeException("Cannot find class " + aClassName);
+            }
+            
+            int cidx = classSchema.getClassIndex();
+            List<SecondaryDatabase> indexes = bdbIndexes.get(cidx);
+            if (indexes == null) {
+                throw new ODMGRuntimeException("Cannot find index " + anIndexName + " for class " + aClassName);
+            }
+            
+            try {
+                String indexDBName = createIndexDBName(aClassName, anIndexName);
+                SecondaryDatabase index = null;
+                for (SecondaryDatabase targetIndex : indexes) {
+                    if (targetIndex.getDatabaseName().equals(indexDBName)) {
+                        index = targetIndex;
+                        break;
+                    }
+                }
+                
+                if (index == null) {
+                    throw new ODMGRuntimeException("Cannot find index " + anIndexName + " for class " + aClassName);
+                }
+                
+                SecondaryCursor cursor = index.openSecondaryCursor(getTransaction(), getCursorConfig());
+                BDBIndexIterator iterator = new BDBIndexIterator(this, cursor, aStartKey, anEndKey);
+                sessionIterators.add(iterator);
+                mActiveIterators.add(iterator);
+                return iterator;
+
+            }
+            catch (DatabaseException e) {
+                throw new ODMGRuntimeException("Error creating index iterator", e);
+            }
+        }
     }
 
 

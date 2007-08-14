@@ -34,6 +34,10 @@ import java.util.NoSuchElementException;
  */
 public interface DBIterator
 {
+    /**
+     * @return true if the iterator is open, else false.
+     */
+    public boolean isOpen();
 
     /**
      * Determines if more objects are available from this iterator.

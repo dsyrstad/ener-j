@@ -22,52 +22,55 @@
 
 package org.enerj.server.bdb;
 
-import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.enerj.core.GenericKey;
+import org.enerj.core.Persistable;
+import org.enerj.core.PersistableHelper;
+import org.enerj.core.Persister;
+import org.enerj.core.PersisterRegistry;
 import org.enerj.server.DBIterator;
 import org.odmg.ODMGRuntimeException;
 
 import com.sleepycatje.bind.tuple.TupleBinding;
-import com.sleepycatje.je.Cursor;
 import com.sleepycatje.je.DatabaseEntry;
 import com.sleepycatje.je.DatabaseException;
 import com.sleepycatje.je.OperationStatus;
+import com.sleepycatje.je.SecondaryCursor;
 
 /**
- * BDB DBIterator implementation for extents.
+ * BDB DBIterator implementation for indexes.
  *
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
-public class BDBExtentIterator implements DBIterator
+public class BDBIndexIterator implements DBIterator
 {
-    private Cursor cursor;
-    /** List of CIDs to iterate over. */
-    private List<DatabaseEntry> cidxKeys;
-    /** List of CIDXs with 1-1 correspondence with cidxKeys. */
-    private List<Integer> cidxs;
-    private int cidxKeyIdx = -1;
-    private DatabaseEntry nextOIDToReturn = null;
+    private SecondaryCursor cursor;
     private boolean isOpen = true;
     private BDBObjectServer.Session session;
+    private GenericKey startKey;
+    private GenericKey endKey;
+    // Current OID key in the iteration.
+    private DatabaseEntry currKey = null;
+    private boolean exhusted = false;
 
 
     /**
-     * Constructs a BDBExtentIterator.
+     * Constructs a BDBIndexIterator.
      *
-     * @param session the session that owns this extent iterator.
+     * @param session the session that owns this iterator.
      * @param cursor the cursor to use.
-     * @param cidxs a List of CIDXs corresponding to cidxKeys
-     * @param cidxKeys the CIDX keys to be iterated over. These are partial OID keys.
+     * @param startKey the starting key, inclusive. May be null to start at the first key.
+     * @param endKey the ending key, inclusive. May be null to iterator through the last key in the index.
      *
      * @throws ODMGRuntimeException if an error occurs.
      */
-    public BDBExtentIterator(BDBObjectServer.Session session, Cursor cursor, List<Integer> cidxs, List<DatabaseEntry> cidxKeys) throws ODMGRuntimeException
+    public BDBIndexIterator(BDBObjectServer.Session session, SecondaryCursor cursor, GenericKey startKey, GenericKey endKey) throws ODMGRuntimeException
     {
         this.cursor = cursor;
-        this.cidxs = cidxs;
-        this.cidxKeys = cidxKeys;
         this.session = session;
+        this.startKey = startKey;
+        this.endKey = endKey;
     }
 
     /**
@@ -84,6 +87,37 @@ public class BDBExtentIterator implements DBIterator
     {
         return isOpen;
     }
+    
+    /**
+     * Determines if the given key is between startKey and endKey, inclusive.
+     *
+     * @return true if the key is in range, else false.
+     */
+    private boolean isKeyInRange(DatabaseEntry key)
+    {
+        // Short-cut to eliminate de-serialization.
+        if (startKey == null && endKey == null) {
+            return true;  
+        }
+        
+        Persister persister = PersisterRegistry.getCurrentPersisterForThread();
+        GenericKey genericKey = new GenericKey();
+        PersistableHelper.loadSerializedImage(persister, (Persistable)genericKey, key.getData());
+
+        if (startKey != null) {
+            if (genericKey.compareTo(startKey) < 0) {
+                return false;
+            }
+        }
+
+        if (endKey != null) {
+            if (genericKey.compareTo(endKey) > 0) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
 
     /**
      * Determines if more objects are available from this iterator. Primes nextOIDToReturn if necessary.
@@ -95,29 +129,31 @@ public class BDBExtentIterator implements DBIterator
     public boolean hasNext() throws ODMGRuntimeException
     {
         checkOpen();
-        if (nextOIDToReturn == null) {
-            DatabaseEntry next = new DatabaseEntry();
+
+        if (exhusted) {
+            return false;
+        }
+        
+        if (currKey == null) {
             try {
-                for (++cidxKeyIdx; cidxKeyIdx < cidxKeys.size(); ++cidxKeyIdx) {
-                    if (cursor.getSearchKeyRange(cidxKeys.get(cidxKeyIdx), next, null) != OperationStatus.NOTFOUND) {
-                        // Found one, but make sure CIDX matches.
-                        TupleBinding binding = new OIDKeyTupleBinding(true);
-                        OIDKey oidKey = (OIDKey)binding.entryToObject(cidxKeys.get(cidxKeyIdx));
-                        if (oidKey.cidx == cidxs.get(cidxKeyIdx)) {
-                            break;
-                        }
-                    }
+                // Prime the iterator
+                OperationStatus status;
+                DatabaseEntry searchKey; 
+                if (startKey == null) {
+                    searchKey = new DatabaseEntry();
+                    status = cursor.getFirst(searchKey, currKey, new DatabaseEntry(), null);
+                }
+                else {
+                    byte[] keyBytes = PersistableHelper.createSerializedImage((Persistable)(Object)startKey);
+                    searchKey = new DatabaseEntry(keyBytes);
+                    status = cursor.getSearchKeyRange(searchKey, currKey, new DatabaseEntry(), null);
                 }
                 
-                if (cidxKeyIdx >= cidxKeys.size()) {
-                    return false;
-                }
+                return status != OperationStatus.NOTFOUND && isKeyInRange(searchKey);
             }
             catch (DatabaseException e) {
                 throw new ODMGRuntimeException("Error reading extent cursor", e);
             }
-            
-            nextOIDToReturn = next;
         }
 
         return true;
@@ -137,14 +173,13 @@ public class BDBExtentIterator implements DBIterator
      */
     public long[] next(int aMaxNumObjects) throws ODMGRuntimeException, NoSuchElementException
     {
-        // TODO This should return SerializedObjects, or at least oid and ClassInfo
         if (aMaxNumObjects < 1) {
             throw new IllegalArgumentException("Maximum Number of objects must be >= 1");
         }
 
         checkOpen();
         if (!hasNext()) {
-            throw new NoSuchElementException("Attempted to go past the end of the Extent iterator.");
+            throw new NoSuchElementException("Attempted to go past the end of the iterator.");
         }
 
         long[] oids = new long[aMaxNumObjects];
@@ -152,21 +187,17 @@ public class BDBExtentIterator implements DBIterator
         TupleBinding binding = new OIDKeyTupleBinding(true);
        
         for (numObjs = 0; numObjs < aMaxNumObjects && hasNext(); ) {
-            DatabaseEntry key = cidxKeys.get(cidxKeyIdx);
+            DatabaseEntry key = currKey;
             OIDKey oidKey = (OIDKey)binding.entryToObject(key);
             oids[numObjs++] = oidKey.getOID();
 
             try {
                 // Prime next OID.
-                if (cursor.getNext(key, nextOIDToReturn, null) == OperationStatus.NOTFOUND) {
-                    nextOIDToReturn = null; // Move to next CIDX.
-                    continue;
-                }
-
-                oidKey = (OIDKey)binding.entryToObject(key);
-                if (oidKey.cidx != cidxs.get(cidxKeyIdx)) {
-                    nextOIDToReturn = null; // Move to next CIDX.
-                    continue;
+                DatabaseEntry searchKey = new DatabaseEntry();
+                OperationStatus status = cursor.getNext(searchKey, currKey, new DatabaseEntry(), null);
+                if (status == OperationStatus.NOTFOUND || !isKeyInRange(searchKey)) {
+                    exhusted = true;
+                    break;
                 }
             }
             catch (DatabaseException e) {
