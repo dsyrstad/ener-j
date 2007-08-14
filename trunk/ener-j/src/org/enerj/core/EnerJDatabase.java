@@ -856,27 +856,6 @@ public class EnerJDatabase implements Database, Persister
     }
     
     /**
-     * Gets an extent iterator for the given class. For Ener-J internal use only.
-     * Clients should use getExtent().iterator().
-     *
-     * @param aPersistentCapableClass the class to retrieve the extent for.
-     * @param wantSubClassInstances true if subclasses should be included in the extent.
-     * 
-     * @return the Extent.
-     */
-    DBIterator getExtentIterator(Class<?> aPersistentCapableClass, boolean wantSubClassInstances)
-    {
-        DBIterator iterator = mObjectServerSession.createExtentIterator(aPersistentCapableClass.getName(), wantSubClassInstances);
-        //if (mIsLocal) {
-            // Server is running locally so we have to proxy the iterator using the session's RequestProcessor.
-        //    iterator = (DBIterator)RequestProcessorProxy.newInstance(iterator, mLocalRequestProcessor);
-        //}
-        
-        return iterator;
-    }
-    
-
-    /**
      * Gets the open transaction that is bound to this database.
      *
      * @return the EnerJTransaction, or null if no transaction is bound. 
@@ -1410,6 +1389,54 @@ public class EnerJDatabase implements Database, Persister
         return mObjectServerSession.getExtentSize(aPersistentCapableClass.getName(), wantSubClassInstances);
     }
 
+    /**
+     * Gets an extent iterator for the given class. For Ener-J internal use only.
+     * Clients should use getExtent().iterator().
+     *
+     * @param aPersistentCapableClass the class to retrieve the extent for.
+     * @param wantSubClassInstances true if subclasses should be included in the extent.
+     * 
+     * @return the Extent.
+     */
+    DBIterator getExtentIterator(Class<?> aPersistentCapableClass, boolean wantSubClassInstances)
+    {
+        return mObjectServerSession.createExtentIterator(aPersistentCapableClass.getName(), wantSubClassInstances);
+    }
+    
+    /**
+     * Determines the number of objects in an Index key range.
+     *
+     * @param aPersistentCapableClass the class of the index.
+     * @param anIndexName the name of the index.
+     * @param aStartKey the starting key, inclusive. May be null to start at the beginning of the index.
+     * @param anEndKey the ending key, inclusive. May be null to end and the end of the index.
+     *
+     * @return the number of objects in the given key range for the index.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    public long getIndexKeyRangeSize(Class aPersistentCapableClass, String anIndexName, GenericKey aStartKey, GenericKey anEndKey) throws ODMGRuntimeException
+    {
+        return mObjectServerSession.getIndexKeyRangeSize(aPersistentCapableClass.getName(), anIndexName, aStartKey, anEndKey);
+    }
+
+    /**
+     * Creates an DBIterator for an index key range.
+     *
+     * @param aPersistentCapableClass the class of the index.
+     * @param anIndexName the name of the index.
+     * @param aStartKey the starting key, inclusive. May be null to start at the beginning of the index.
+     * @param anEndKey the ending key, inclusive. May be null to end and the end of the index.
+     *
+     * @return an DBIterator used to iterate over the index within the given key range.
+     *
+     * @throws ODMGRuntimeException if an error occurs.
+     */
+    DBIterator getIndexIterator(Class<?> aPersistentCapableClass, String anIndexName, GenericKey aStartKey, GenericKey anEndKey) throws ODMGRuntimeException
+    {
+        return mObjectServerSession.createIndexIterator(aPersistentCapableClass.getName(), anIndexName, aStartKey, anEndKey);
+    }
+    
     /**
      * Checks if a Persistable is at or above the desired lock level.
      *

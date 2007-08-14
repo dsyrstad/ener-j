@@ -1,4 +1,4 @@
-RoadMap to June 2007
+RoadMap to Sept 2007
 ---------------------
 
 - Query indexed filter and join optimizations
@@ -12,4 +12,3 @@ RoadMap to June 2007
 
 Later
 -----
-- Txn log update optimizations?
