@@ -21,6 +21,8 @@
 
 package org.enerj.core;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import junit.framework.Test;
@@ -29,7 +31,6 @@ import junit.framework.TestSuite;
 import org.enerj.annotations.Index;
 import org.enerj.annotations.Indexes;
 import org.enerj.annotations.Persist;
-import org.enerj.server.DBIterator;
 import org.odmg.Database;
 import org.odmg.Implementation;
 import org.odmg.Transaction;
@@ -66,12 +67,16 @@ public class IndexTest extends DatabaseTestCase
         Transaction txn = impl.newTransaction();
         txn.begin();
 
-        String[] values = { "Orange", "Red", "Brown", "Green", "Blue", "Black", "Yellow" };
+        String[] strValues = { "Orange", "Red", "Brown", "Green", "Blue", "Black", "Yellow" };
         final int numObjs = 1000;
         Random rand = new Random();
+        // Track values to ensure they're all found later.
+        List<Integer> values = new ArrayList<Integer>(numObjs);
         try {
             for (int i = 0; i < numObjs; i++) {
-                TestClass1 test = new TestClass1(rand.nextInt(5000), values[i % values.length]);
+                int value = rand.nextInt(5000);
+                values.add((Integer)value);
+                TestClass1 test = new TestClass1(value, strValues[i % strValues.length]);
                 db.makePersistent(test);
             }
         }
@@ -80,7 +85,7 @@ public class IndexTest extends DatabaseTestCase
             db.close();
         }
 
-        // Re-open and read from iterator.
+        // Re-open and read from value index iterator.
         db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
 
         txn = impl.newTransaction();
@@ -91,7 +96,53 @@ public class IndexTest extends DatabaseTestCase
             long size = db.getIndexKeyRangeSize(TestClass1.class, "testIndex2", null, null);
             assertEquals((long)numObjs, size);
             
-            DBIterator iter = db.getIndexIterator(TestClass1.class, "testIndex2", null, null);
+            IndexIterator<TestClass1> iter = db.getIndexIterator(TestClass1.class, "testIndex2", null, null);
+            int lastValue = -1;
+            while (iter.hasNext()) {
+                TestClass1 obj = iter.next();
+                int value = obj.getValue();
+                if (lastValue >= 0) {
+                    assertTrue(value >= lastValue);
+                }
+             
+                // Remove values from set 
+                values.remove((Integer)value);
+                lastValue = value;
+            }
+            
+            iter.close();
+            
+            assertTrue("Not all values found", values.isEmpty());
+        }
+        finally {
+            txn.commit();
+            db.close();
+        }
+
+        // Re-open and read from string index iterator.
+        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
+
+        txn = impl.newTransaction();
+        txn.begin();
+
+        try {
+            // Check size.
+            long size = db.getIndexKeyRangeSize(TestClass1.class, "testIndex", null, null);
+            assertEquals((long)numObjs, size);
+            
+            IndexIterator<TestClass1> iter = db.getIndexIterator(TestClass1.class, "testIndex", null, null);
+            String lastValue = null;
+            while (iter.hasNext()) {
+                TestClass1 obj = iter.next();
+                String value = obj.getString();
+                if (lastValue != null) {
+                    assertTrue(value.compareTo(lastValue) >= 0);
+                }
+             
+                lastValue = value;
+            }
+            
+            iter.close();
         }
         finally {
             txn.commit();

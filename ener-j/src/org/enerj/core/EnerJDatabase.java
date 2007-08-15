@@ -1428,13 +1428,14 @@ public class EnerJDatabase implements Database, Persister
      * @param aStartKey the starting key, inclusive. May be null to start at the beginning of the index.
      * @param anEndKey the ending key, inclusive. May be null to end and the end of the index.
      *
-     * @return an DBIterator used to iterate over the index within the given key range.
+     * @return an Iterator used to iterate over the index within the given key range.
      *
      * @throws ODMGRuntimeException if an error occurs.
      */
-    DBIterator getIndexIterator(Class<?> aPersistentCapableClass, String anIndexName, GenericKey aStartKey, GenericKey anEndKey) throws ODMGRuntimeException
+    public <T> IndexIterator<T> getIndexIterator(Class<T> aPersistentCapableClass, String anIndexName, GenericKey aStartKey, GenericKey anEndKey) throws ODMGRuntimeException
     {
-        return mObjectServerSession.createIndexIterator(aPersistentCapableClass.getName(), anIndexName, aStartKey, anEndKey);
+        DBIterator dbIterator = mObjectServerSession.createIndexIterator(aPersistentCapableClass.getName(), anIndexName, aStartKey, anEndKey);
+        return new IndexIterator<T>(this, dbIterator);
     }
     
     /**
