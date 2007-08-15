@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *******************************************************************************/
-// Ener-J
-// Copyright 2001-2004 Visual Systems Corporation
-// $Header: /cvsroot/ener-j/ener-j/src/org/enerj/core/EnerJExtent.java,v 1.8 2006/02/09 03:42:24 dsyrstad Exp $
 
 package org.enerj.core;
 
@@ -38,7 +35,6 @@ import org.odmg.ODMGRuntimeException;
 /**
  * Ener-J implementation of Extent.
  *
- * @version $Id: EnerJExtent.java,v 1.8 2006/02/09 03:42:24 dsyrstad Exp $
  * @author <a href="mailto:dsyrstad@ener-j.org">Dan Syrstad</a>
  */
 public class EnerJExtent implements Extent

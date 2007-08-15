@@ -139,6 +139,7 @@ public class BDBIndexIterator implements DBIterator
                 // Prime the iterator
                 OperationStatus status;
                 DatabaseEntry searchKey; 
+                currKey = new DatabaseEntry();
                 if (startKey == null) {
                     searchKey = new DatabaseEntry();
                     status = cursor.getFirst(searchKey, currKey, new DatabaseEntry(), null);
@@ -187,8 +188,7 @@ public class BDBIndexIterator implements DBIterator
         TupleBinding binding = new OIDKeyTupleBinding(true);
        
         for (numObjs = 0; numObjs < aMaxNumObjects && hasNext(); ) {
-            DatabaseEntry key = currKey;
-            OIDKey oidKey = (OIDKey)binding.entryToObject(key);
+            OIDKey oidKey = (OIDKey)binding.entryToObject(currKey);
             oids[numObjs++] = oidKey.getOID();
 
             try {
@@ -197,6 +197,7 @@ public class BDBIndexIterator implements DBIterator
                 OperationStatus status = cursor.getNext(searchKey, currKey, new DatabaseEntry(), null);
                 if (status == OperationStatus.NOTFOUND || !isKeyInRange(searchKey)) {
                     exhusted = true;
+                    currKey = null;
                     break;
                 }
             }

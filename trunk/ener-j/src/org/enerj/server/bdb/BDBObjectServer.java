@@ -663,6 +663,7 @@ public class BDBObjectServer extends BaseObjectServer
                     SecondaryConfig indexConfig = new SecondaryConfig();
                     indexConfig.setSortedDuplicates( indexSchema.allowsDuplicateKeys() );
                     indexConfig.setKeyCreator( createKeyCreator(classSchema, indexSchema) );
+                    indexConfig.setTransactional(true);
     
                     SecondaryDatabase indexDB = bdbEnvironment.openSecondaryDatabase(null, indexDBName, bdbDatabase, indexConfig); 
                     addIndexToOpenMap(classSchema.getClassIndex(), indexDB);
