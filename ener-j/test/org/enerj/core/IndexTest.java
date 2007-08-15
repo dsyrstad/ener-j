@@ -69,14 +69,34 @@ public class IndexTest extends DatabaseTestCase
 
         String[] strValues = { "Orange", "Red", "Brown", "Green", "Blue", "Black", "Yellow" };
         final int numObjs = 1000;
+        long colorRangeSize = 0;
+        long le12Size = 0;
+        long ge10Le12Size = 0;
+        long ge10Size = 0;
         Random rand = new Random();
         // Track values to ensure they're all found later.
         List<Integer> values = new ArrayList<Integer>(numObjs);
         try {
             for (int i = 0; i < numObjs; i++) {
                 int value = rand.nextInt(5000);
+                if (value <= 12) {
+                    ++le12Size;
+                    if (value >= 10) {
+                        ++ge10Le12Size;
+                    }
+                }
+
+                if (value >= 10) {
+                    ++ge10Size;
+                }
+                
                 values.add((Integer)value);
-                TestClass1 test = new TestClass1(value, strValues[i % strValues.length]);
+                String string = strValues[i % strValues.length];
+                if (string.equals("Green") || string.equals("Orange") || string.equals("Red")) {
+                    ++colorRangeSize;
+                }
+                
+                TestClass1 test = new TestClass1(value, string);
                 db.makePersistent(test);
             }
         }
@@ -93,10 +113,10 @@ public class IndexTest extends DatabaseTestCase
 
         try {
             // Check size.
-            long size = db.getIndexKeyRangeSize(TestClass1.class, "testIndex2", null, null);
+            long size = db.getIndexKeyRangeSize(TestClass1.class, "valueIndex", null, null);
             assertEquals((long)numObjs, size);
             
-            IndexIterator<TestClass1> iter = db.getIndexIterator(TestClass1.class, "testIndex2", null, null);
+            IndexIterator<TestClass1> iter = db.getIndexIterator(TestClass1.class, "valueIndex", null, null);
             int lastValue = -1;
             while (iter.hasNext()) {
                 TestClass1 obj = iter.next();
@@ -127,10 +147,10 @@ public class IndexTest extends DatabaseTestCase
 
         try {
             // Check size.
-            long size = db.getIndexKeyRangeSize(TestClass1.class, "testIndex", null, null);
+            long size = db.getIndexKeyRangeSize(TestClass1.class, "stringIndex", null, null);
             assertEquals((long)numObjs, size);
             
-            IndexIterator<TestClass1> iter = db.getIndexIterator(TestClass1.class, "testIndex", null, null);
+            IndexIterator<TestClass1> iter = db.getIndexIterator(TestClass1.class, "stringIndex", null, null);
             String lastValue = null;
             while (iter.hasNext()) {
                 TestClass1 obj = iter.next();
@@ -143,6 +163,73 @@ public class IndexTest extends DatabaseTestCase
             }
             
             iter.close();
+            
+            // Try ranges on full keys. Green, Orange, Red
+            GenericKey greenStartKey = new GenericKey( new Object[] { "Green"} );
+            GenericKey redEndKey = new GenericKey( new Object[] { "Red"} );
+            size = db.getIndexKeyRangeSize(TestClass1.class, "stringIndex", greenStartKey, redEndKey);
+            assertEquals(colorRangeSize, size);
+
+            iter = db.getIndexIterator(TestClass1.class, "stringIndex", greenStartKey, redEndKey);
+            long iterRangeSize = 0;
+            while (iter.hasNext()) {
+                TestClass1 obj = iter.next();
+                ++iterRangeSize;
+                String value = obj.getString();
+                assertTrue(value.equals("Green") || value.equals("Orange") || value.equals("Red"));
+            }
+
+            assertEquals(iterRangeSize, size);
+            
+            iter.close();
+            
+            // Try open start and bounded end key
+            GenericKey end12Key = new GenericKey( new Object[] { 12 } );
+            size = db.getIndexKeyRangeSize(TestClass1.class, "valueIndex", null, end12Key);
+            assertEquals(le12Size, size);
+
+            iter = db.getIndexIterator(TestClass1.class, "valueIndex", null, end12Key);
+            iterRangeSize = 0;
+            while (iter.hasNext()) {
+                TestClass1 obj = iter.next();
+                ++iterRangeSize;
+                assertTrue( obj.getValue() <= 12 );
+            }
+
+            assertEquals(le12Size, iterRangeSize);
+            iter.close();
+
+            // Try a fully bounded search
+            GenericKey start10Key = new GenericKey( new Object[] { 10 } );
+            size = db.getIndexKeyRangeSize(TestClass1.class, "valueIndex", start10Key, end12Key);
+            assertEquals(ge10Le12Size, size);
+
+            iter = db.getIndexIterator(TestClass1.class, "valueIndex", start10Key, end12Key);
+            iterRangeSize = 0;
+            while (iter.hasNext()) {
+                TestClass1 obj = iter.next();
+                ++iterRangeSize;
+                assertTrue( obj.getValue() <= 12 && obj.getValue() >= 10 );
+            }
+
+            assertEquals(ge10Le12Size, iterRangeSize);
+            iter.close();
+            
+            // Try a bounded start and open end search
+            size = db.getIndexKeyRangeSize(TestClass1.class, "valueIndex", start10Key, null);
+            assertEquals(ge10Size, size);
+
+            iter = db.getIndexIterator(TestClass1.class, "valueIndex", start10Key, null);
+            iterRangeSize = 0;
+            while (iter.hasNext()) {
+                TestClass1 obj = iter.next();
+                ++iterRangeSize;
+                assertTrue( obj.getValue() >= 10 );
+            }
+
+            assertEquals(ge10Size, iterRangeSize);
+            iter.close();
+            
         }
         finally {
             txn.commit();
@@ -154,9 +241,9 @@ public class IndexTest extends DatabaseTestCase
 
     @Persist
     @Indexes( {
-        @Index(name="testIndex", properties={ "string" }),
-        @Index(name="testIndex2", properties={ "value" }),
-        @Index(name="testIndex3", properties={ "value", "string" })
+        @Index(name="stringIndex", properties={ "string" }),
+        @Index(name="valueIndex", properties={ "value" }),
+        @Index(name="valueStringIndex", properties={ "value", "string" })
     } )
     public static class TestClass1
     {
