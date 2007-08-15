@@ -90,7 +90,7 @@ public abstract class DatabaseTestCase extends TestCase
      */
     public static void clearDBFiles()
     {
-        deleteDBFilesInDir(PARENT_DIR + '/' + DBNAME);
+        //deleteDBFilesInDir(PARENT_DIR + '/' + DBNAME);
         clearDB2Files();
     }
     

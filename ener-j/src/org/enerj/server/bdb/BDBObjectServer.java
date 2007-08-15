@@ -362,6 +362,7 @@ public class BDBObjectServer extends BaseObjectServer
 	protected void createPhysicalIndex(ClassSchema aClassSchema, IndexSchema anIndexSchema) throws ODMGException
 	{
 	    String indexDBName = createIndexDBName(aClassSchema.getClassName(), anIndexSchema.getName());
+	    sLogger.warning("Opening " + indexDBName);
         
 	    SecondaryConfig indexConfig = new SecondaryConfig();
         indexConfig.setAllowCreate(true);
@@ -659,7 +660,6 @@ public class BDBObjectServer extends BaseObjectServer
             for (ClassSchema classSchema : schema.getClassSchemas()) {
                 for (IndexSchema indexSchema : classSchema.getIndexes()) {
                     String indexDBName = createIndexDBName(classSchema.getClassName(), indexSchema.getName());
-    
                     SecondaryConfig indexConfig = new SecondaryConfig();
                     indexConfig.setSortedDuplicates( indexSchema.allowsDuplicateKeys() );
                     indexConfig.setKeyCreator( createKeyCreator(classSchema, indexSchema) );

@@ -23,6 +23,7 @@ package org.enerj.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Random;
 
 import junit.framework.Test;
@@ -57,7 +58,7 @@ public class IndexTest extends DatabaseTestCase
     /**
      * Tests 
      */
-    public void testBasic() throws Exception
+    public void testIterator() throws Exception
     {
         Implementation impl = EnerJImplementation.getInstance();
         EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
@@ -226,6 +227,15 @@ public class IndexTest extends DatabaseTestCase
                 ++iterRangeSize;
                 assertTrue( obj.getValue() >= 10 );
             }
+            
+            // Trying next() should get a NoSuchElementException
+            try {
+                iter.next();
+                fail("Expected NoSuchElementException");
+            }
+            catch (NoSuchElementException e) {
+                // Expected
+            }
 
             assertEquals(ge10Size, iterRangeSize);
             iter.close();
@@ -238,6 +248,79 @@ public class IndexTest extends DatabaseTestCase
 
     }
 
+    public void testUpdateKey() throws Exception
+    {
+        Implementation impl = EnerJImplementation.getInstance();
+        EnerJDatabase db = (EnerJDatabase)impl.newDatabase();
+        
+        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
+
+        EnerJTransaction txn = (EnerJTransaction)impl.newTransaction();
+        txn.begin();
+
+        try {
+            db.makePersistent( new TestClass1(1, "one") );
+            db.makePersistent( new TestClass1(2, "two") );
+            db.makePersistent( new TestClass1(3, "three") );
+        }
+        finally {
+            txn.commit();
+            db.close();
+        }
+
+        // Re-open and update keys
+        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
+
+        txn = (EnerJTransaction)impl.newTransaction();
+        txn.begin();
+
+        try {
+            IndexIterator<TestClass1> iter = db.getIndexIterator(TestClass1.class, "valueIndex", null, null);
+            while (iter.hasNext()) {
+                TestClass1 obj = iter.next();
+                obj.setValue( 10 - obj.getValue() ); // Cause reversal of ordering
+            }
+            
+            iter.close();
+        }
+        finally {
+            txn.commit();
+            db.close();
+        }
+
+        // Read keys after commit. Make sure the values 7, 8, 9 are there.
+        db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
+
+        txn = (EnerJTransaction)impl.newTransaction();
+        txn.begin();
+        try {
+            IndexIterator<TestClass1> iter = db.getIndexIterator(TestClass1.class, "valueIndex", null, null);
+            while (iter.hasNext()) {
+                TestClass1 obj = iter.next();
+                System.out.println(obj.getValue() + " " + obj.getString());
+            }
+
+            TestClass1 obj = iter.next();
+            assertEquals(7, obj.getValue() );
+            assertEquals("three", obj.getString() );
+
+            obj = iter.next();
+            assertEquals(8, obj.getValue() );
+            assertEquals("two", obj.getString() );
+            
+            obj = iter.next();
+            assertEquals(9, obj.getValue() );
+            assertEquals("one", obj.getString() );
+
+            assertFalse(iter.hasNext());
+            
+            iter.close();
+        }
+        finally {
+            txn.commit();
+            db.close();
+        }
+    }
 
     @Persist
     @Indexes( {
