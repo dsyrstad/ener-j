@@ -288,7 +288,7 @@ public class IndexTest extends DatabaseTestCase
             db.close();
         }
 
-        // Read keys after commit. Make sure the values 7, 8, 9 are there.
+        // Read keys after commit. Make sure the values 7, 8, 9 are there, in the new order.
         db.open(DATABASE_URI, Database.OPEN_READ_WRITE);
 
         txn = (EnerJTransaction)impl.newTransaction();
@@ -362,6 +362,11 @@ public class IndexTest extends DatabaseTestCase
         public void setString(String someString)
         {
             mString = someString;
+        }
+        
+        public String toString()
+        {
+            return "value=" + mValue + " String=" + mString;
         }
     }
 }
