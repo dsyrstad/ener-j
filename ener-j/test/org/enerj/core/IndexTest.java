@@ -295,10 +295,6 @@ public class IndexTest extends DatabaseTestCase
         txn.begin();
         try {
             IndexIterator<TestClass1> iter = db.getIndexIterator(TestClass1.class, "valueIndex", null, null);
-            while (iter.hasNext()) {
-                TestClass1 obj = iter.next();
-                System.out.println(obj.getValue() + " " + obj.getString());
-            }
 
             TestClass1 obj = iter.next();
             assertEquals(7, obj.getValue() );

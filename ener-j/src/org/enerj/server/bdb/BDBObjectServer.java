@@ -169,7 +169,7 @@ public class BDBObjectServer extends BaseObjectServer
         try {
             EnvironmentConfig bdbEnvConfig = new EnvironmentConfig();
             bdbEnvConfig.setTransactional(true);
-            bdbEnvConfig.setCacheSize(256000000); // TODO COnfig only
+            bdbEnvConfig.setCachePercent(50); // TODO COnfig only
             bdbEnvConfig.setTxnSerializableIsolation(true); // TODO This should be config, and should be able to override by txn
             // THIS IS IMPORTANT -- writes thru BDB buffers, but not thru OS. We use Transaction.commitSync() to force OS update.
             bdbEnvConfig.setTxnWriteNoSync(true);
