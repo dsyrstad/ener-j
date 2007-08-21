@@ -3,7 +3,6 @@
  */
 package org.enerj.server.bdb;
 
-import java.util.Arrays;
 import java.util.Comparator;
 
 import org.enerj.core.GenericKey;

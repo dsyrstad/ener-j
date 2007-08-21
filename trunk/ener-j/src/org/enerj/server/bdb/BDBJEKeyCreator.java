@@ -66,7 +66,8 @@ class BDBJEKeyCreator implements SecondaryKeyCreator
         }
         
         Persister persister = PersisterRegistry.getCurrentPersisterForThread();
-        Persistable obj = persister.getObjectForOID( oidKey.getOID() );
+        Persistable obj = persister.getObjectForOID(oidKey.getOID());
+        PersistableHelper.loadSerializedImage(persister, obj, data.getData());
         Object idxKey = GenericKey.createKey(indexSchema, obj);
         byte[] keyBytes = PersistableHelper.createSerializedImage((Persistable)idxKey);
         result.setData(keyBytes);
