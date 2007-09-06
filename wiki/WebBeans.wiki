@@ -2,6 +2,7 @@
 
 = Introduction =
 
+Wicket Web Beans (WBB) 
 
  Represents the metadata for a bean properties and actions. All beans must be Serializable by Wicket convention.
 
@@ -28,6 +29,7 @@ Author:
 
 = Details =
 
+{{{
 # Default specification/context for bean TestBean. Package name is optional.
 # Standard parameters are: label, actions, props, tabs, displayed, viewOnly.
 TestBean {
@@ -122,3 +124,4 @@ TestBean2 {
 		firstName{viewOnly: false},
 		lastName;
 }
+}}}
