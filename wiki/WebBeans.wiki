@@ -1,8 +1,8 @@
 #summary Wicket Web Beans
 
-= Introduction =
+= Introduction to Wicket Web Beans =
 
-Wicket Web Beans (WBB) 
+Wicket Web Beans (WWB)
 
  Represents the metadata for a bean properties and actions. All beans must be Serializable by Wicket convention.
 
@@ -125,3 +125,7 @@ TestBean2 {
 		lastName;
 }
 }}}
+
+
+= CSS Guide =
+
