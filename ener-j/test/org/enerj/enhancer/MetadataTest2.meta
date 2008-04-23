@@ -1,4 +1,0 @@
-# $Header: /cvsroot/ener-j/ener-j/test/org/enerj/enhancer/MetadataTest2.meta,v 1.3 2005/08/12 02:56:44 dsyrstad Exp $
-
-class *
-preersistent=not  # Bad key for class - must remain on line 4

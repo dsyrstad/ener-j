@@ -1,9 +1,0 @@
-# $Header: /cvsroot/ener-j/ener-j/test/org/enerj/enhancer/OptionsTest3.meta,v 1.3 2005/08/12 02:56:44 dsyrstad Exp $
-
-# No classes persistent
-class *
-persistent=not  
-
-
-class org.enerj.enhancer.OptionsTest$TestClass2
-persistent=capable
