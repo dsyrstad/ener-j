@@ -1,4 +1,4 @@
-package org.enerj.fa.core;
+ package org.enerj.fa.core;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +46,7 @@ public class Tuple
             return getAtom(index);
         }
 
-        return null;
+        return new Atom(atomName);
     }
 
     /**
